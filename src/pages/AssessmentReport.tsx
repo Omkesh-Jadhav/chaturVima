@@ -4,7 +4,7 @@ import html2canvas from "html2canvas";
 import { ResponsiveChord } from '@nivo/chord';
 import { ResponsiveAreaBump } from '@nivo/bump';
 import { ResponsiveStream } from '@nivo/stream';
-import { ResponsiveTreeMap } from '@nivo/treemap';
+import { ResponsiveSwarmPlot } from '@nivo/swarmplot';
 import { ResponsiveCirclePacking } from '@nivo/circle-packing';
 import { ResponsiveRadialBar } from '@nivo/radial-bar';
 import {
@@ -243,36 +243,45 @@ const AssessmentReport: React.FC = () => {
         { period: 'Jun', Honeymoon: 55, 'Self-Reflection': 32, 'Soul-searching': 38, 'Steady State': 42 }
     ];
 
-    // TreeMap Data - Department Distribution
-    const treeMapData = {
-        name: 'Organization',
-        children: [
-            {
-                name: 'Engineering',
-                children: [
-                    { name: 'Frontend', value: 45, stage: 'Honeymoon' },
-                    { name: 'Backend', value: 38, stage: 'Self-Reflection' },
-                    { name: 'DevOps', value: 25, stage: 'Steady State' }
-                ]
-            },
-            {
-                name: 'Product',
-                children: [
-                    { name: 'Design', value: 32, stage: 'Soul-searching' },
-                    { name: 'Management', value: 28, stage: 'Steady State' },
-                    { name: 'Research', value: 22, stage: 'Honeymoon' }
-                ]
-            },
-            {
-                name: 'Marketing',
-                children: [
-                    { name: 'Digital', value: 35, stage: 'Self-Reflection' },
-                    { name: 'Content', value: 18, stage: 'Honeymoon' },
-                    { name: 'Analytics', value: 15, stage: 'Steady State' }
-                ]
-            }
-        ]
-    };
+    // SwarmPlot Data - Individual Employee Distribution
+    const swarmPlotData = [
+        // Engineering Department
+        { id: 'Sarah Chen', group: 'Engineering', value: 88, team: 'Frontend', stage: 'Honeymoon', experience: 3.5 },
+        { id: 'Mike Rodriguez', group: 'Engineering', value: 82, team: 'Frontend', stage: 'Honeymoon', experience: 2.1 },
+        { id: 'Emily Davis', group: 'Engineering', value: 75, team: 'Frontend', stage: 'Self-Reflection', experience: 4.2 },
+        { id: 'Alex Kim', group: 'Engineering', value: 90, team: 'Frontend', stage: 'Honeymoon', experience: 1.8 },
+        { id: 'David Wilson', group: 'Engineering', value: 72, team: 'Backend', stage: 'Self-Reflection', experience: 5.1 },
+        { id: 'Lisa Zhang', group: 'Engineering', value: 78, team: 'Backend', stage: 'Self-Reflection', experience: 3.8 },
+        { id: 'James Brown', group: 'Engineering', value: 68, team: 'Backend', stage: 'Soul-searching', experience: 6.2 },
+        { id: 'Maria Garcia', group: 'Engineering', value: 85, team: 'Backend', stage: 'Steady State', experience: 4.5 },
+        { id: 'Ryan Johnson', group: 'Engineering', value: 70, team: 'DevOps', stage: 'Steady State', experience: 7.1 },
+        { id: 'Anna Lee', group: 'Engineering', value: 65, team: 'DevOps', stage: 'Self-Reflection', experience: 3.2 },
+        { id: 'Tom Anderson', group: 'Engineering', value: 75, team: 'DevOps', stage: 'Steady State', experience: 5.8 },
+        
+        // Product Department
+        { id: 'Jessica Taylor', group: 'Product', value: 80, team: 'Design', stage: 'Soul-searching', experience: 4.1 },
+        { id: 'Kevin Wu', group: 'Product', value: 72, team: 'Design', stage: 'Self-Reflection', experience: 2.9 },
+        { id: 'Sophie Miller', group: 'Product', value: 88, team: 'Design', stage: 'Honeymoon', experience: 1.5 },
+        { id: 'Chris Evans', group: 'Product', value: 74, team: 'Design', stage: 'Soul-searching', experience: 3.7 },
+        { id: 'Rachel Green', group: 'Product', value: 85, team: 'Management', stage: 'Steady State', experience: 8.2 },
+        { id: 'Mark Thompson', group: 'Product', value: 78, team: 'Management', stage: 'Self-Reflection', experience: 6.5 },
+        { id: 'Linda Wang', group: 'Product', value: 80, team: 'Management', stage: 'Steady State', experience: 7.8 },
+        { id: 'Daniel Park', group: 'Product', value: 82, team: 'Research', stage: 'Honeymoon', experience: 2.3 },
+        { id: 'Amy Liu', group: 'Product', value: 76, team: 'Research', stage: 'Self-Reflection', experience: 4.6 },
+        { id: 'Robert Smith', group: 'Product', value: 84, team: 'Research', stage: 'Honeymoon', experience: 1.9 },
+        
+        // Marketing Department
+        { id: 'Nicole Adams', group: 'Marketing', value: 79, team: 'Digital', stage: 'Self-Reflection', experience: 3.4 },
+        { id: 'Brian Clark', group: 'Marketing', value: 71, team: 'Digital', stage: 'Soul-searching', experience: 4.8 },
+        { id: 'Samantha Lee', group: 'Marketing', value: 86, team: 'Digital', stage: 'Honeymoon', experience: 2.1 },
+        { id: 'Jason Martinez', group: 'Marketing', value: 74, team: 'Digital', stage: 'Self-Reflection', experience: 5.2 },
+        { id: 'Emma Wilson', group: 'Marketing', value: 70, team: 'Content', stage: 'Honeymoon', experience: 1.7 },
+        { id: 'Tyler Davis', group: 'Marketing', value: 77, team: 'Content', stage: 'Self-Reflection', experience: 3.1 },
+        { id: 'Grace Kim', group: 'Marketing', value: 73, team: 'Content', stage: 'Soul-searching', experience: 4.3 },
+        { id: 'Andrew Chen', group: 'Marketing', value: 81, team: 'Analytics', stage: 'Steady State', experience: 6.7 },
+        { id: 'Olivia Brown', group: 'Marketing', value: 75, team: 'Analytics', stage: 'Self-Reflection', experience: 3.9 },
+        { id: 'Nathan Taylor', group: 'Marketing', value: 72, team: 'Analytics', stage: 'Soul-searching', experience: 4.1 }
+    ];
 
     // Circle Packing Data - Skill Hierarchies
     const circlePackingData = {
@@ -1229,54 +1238,75 @@ const AssessmentReport: React.FC = () => {
                     </p>
                 </section>
 
-                {/* 15. Department Distribution - TreeMap */}
+                {/* 15. Department Distribution - SwarmPlot */}
                 <section className="p-6 bg-orange-50 rounded-2xl shadow-inner">
                     <h2 className="text-2xl font-semibold text-orange-700 mb-4">
                         15. Department Distribution
                     </h2>
                     <p className="text-gray-700 mb-6">
-                        This treemap visualization shows the hierarchical distribution of employees
-                        across departments and teams, with size representing team size and colors indicating stage distribution.
+                        This swarm plot visualization shows individual employees grouped by department,
+                        with each point representing an employee's performance score. Point size reflects experience level, and colors distinguish departments.
                     </p>
 
                     <div className="bg-white rounded-xl p-4 border border-orange-200 mb-4">
                         <div className="w-full h-96">
-                            <ResponsiveTreeMap
-                                data={treeMapData}
-                                identity="name"
+                            <ResponsiveSwarmPlot
+                                data={swarmPlotData}
+                                groups={['Engineering', 'Product', 'Marketing']}
                                 value="value"
-                                valueFormat=".02s"
-                                margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                                labelSkipSize={12}
-                                labelTextColor={{
-                                    from: 'color',
-                                    modifiers: [
-                                        [
-                                            'darker',
-                                            1.2
-                                        ]
-                                    ]
-                                }}
-                                parentLabelPosition="left"
-                                parentLabelTextColor={{
-                                    from: 'color',
-                                    modifiers: [
-                                        [
-                                            'darker',
-                                            2
-                                        ]
-                                    ]
-                                }}
+                                valueFormat=".0f"
+                                valueScale={{ type: 'linear', min: 60, max: 95 }}
+                                size={8}
+                                forceStrength={4}
+                                simulationIterations={100}
+                                margin={{ top: 80, right: 100, bottom: 80, left: 100 }}
+                                colors={{ scheme: 'nivo' }}
+                                colorBy="group"
                                 borderColor={{
                                     from: 'color',
                                     modifiers: [
                                         [
                                             'darker',
-                                            0.1
+                                            0.6
                                         ]
                                     ]
                                 }}
-                                colors={{ scheme: 'nivo' }}
+                                borderWidth={1}
+                                motionConfig="wobbly"
+                                axisTop={null}
+                                axisRight={null}
+                                axisBottom={{
+                                    tickSize: 10,
+                                    tickPadding: 5,
+                                    tickRotation: 0,
+                                    legend: 'Department',
+                                    legendPosition: 'middle',
+                                    legendOffset: 46
+                                }}
+                                axisLeft={{
+                                    tickSize: 10,
+                                    tickPadding: 5,
+                                    tickRotation: 0,
+                                    legend: 'Performance Score',
+                                    legendPosition: 'middle',
+                                    legendOffset: -76
+                                }}
+                                tooltip={({ data }) => (
+                                    <div style={{
+                                        background: 'white',
+                                        padding: '9px 12px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        fontSize: '12px'
+                                    }}>
+                                        <strong>{data.id}</strong><br/>
+                                        Department: {data.group}<br/>
+                                        Team: {data.team}<br/>
+                                        Experience: {data.experience} years<br/>
+                                        Performance: {data.value}<br/>
+                                        Stage: {data.stage}
+                                    </div>
+                                )}
                             />
                         </div>
                     </div>
@@ -1285,15 +1315,20 @@ const AssessmentReport: React.FC = () => {
                         <div className="bg-red-50 p-4 rounded-xl">
                             <h4 className="font-semibold text-red-700 mb-2">Department Insights</h4>
                             <ul className="text-sm text-gray-700 space-y-1">
-                                <li>• Rectangle size indicates team size</li>
-                                <li>• Colors represent different departments</li>
+                                <li>• X-axis groups employees by department</li>
+                                <li>• Y-axis shows performance score</li>
+                                <li>• Point size represents experience level</li>
+                                <li>• Colors distinguish departments</li>
+                                <li>• Each point is an individual employee</li>
                             </ul>
                         </div>
                         <div className="bg-yellow-50 p-4 rounded-xl">
-                            <h4 className="font-semibold text-yellow-700 mb-2">Organizational Structure</h4>
+                            <h4 className="font-semibold text-yellow-700 mb-2">Performance Analysis</h4>
                             <ul className="text-sm text-gray-700 space-y-1">
-                                <li>• Nested view shows team hierarchies</li>
-                                <li>• Identify resource allocation patterns</li>
+                                <li>• Swarm pattern shows performance distribution within departments</li>
+                                <li>• Easily compare department performance ranges</li>
+                                <li>• Identify high-performing employees and outliers</li>
+                                <li>• Analyze performance clustering patterns</li>
                             </ul>
                         </div>
                     </div>
