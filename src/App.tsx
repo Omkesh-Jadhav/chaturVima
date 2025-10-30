@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Assessment from "./pages/Assessment";
 import Analytics from "./pages/Analytics";
+import AssessmentReport from "./pages/AssessmentReport";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -74,6 +75,7 @@ function AppRoutes() {
         <Route path="/team" element={<TeamPage />} />
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/journey" element={<JourneyPage />} />
+        <Route path="/assessment-report" element={<AssessmentReport />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

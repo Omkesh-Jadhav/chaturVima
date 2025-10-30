@@ -64,6 +64,12 @@ const NAV_ITEMS: NavItem[] = [
     path: "/journey",
     icon: <TrendingUp className="h-5 w-5" />,
   },
+  {
+    id: "assessment-report",
+    label: "Assessment Report",
+    path: "/assessment-report",
+    icon: <FileText className="h-5 w-5" />,
+  },
 ];
 
 const Sidebar = () => {
