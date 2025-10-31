@@ -21,6 +21,7 @@ import {
     Area,
     AreaChart,
 } from "recharts";
+import assessmentData from '../data/assessmentReportData.json';
 
 interface CategoryScore {
     category: string;
@@ -35,137 +36,22 @@ interface SubCategoryScore {
 const AssessmentReport: React.FC = () => {
     const reportRef = useRef<HTMLDivElement>(null);
 
-    // Dummy Assessment Data
-    const overviewText = `
-    This assessment analyzes the employee’s behavioral patterns, work preferences,
-    and interpersonal style based on a series of situational and self-reflective questions.
-    The goal is to understand the employee’s fitment to organizational culture and
-    identify areas of growth for personal and professional development.
-  `;
-
-    const interpretationText = `
-    The scores represent the employee’s tendency towards specific workplace behaviors
-    and psychological traits. Higher scores in a given category indicate stronger alignment
-    with that category’s defining characteristics.
-  `;
-
-    const categoryScores: CategoryScore[] = [
-        { category: "Honeymoon", score: 82 },
-        { category: "Self-Reflection", score: 74 },
-        { category: "Soul-searching", score: 68 },
-        { category: "Steady State", score: 61 },
-    ];
-
-    const mainCategory = "Honeymoon";
-
-    const subCategoryScores: SubCategoryScore[] = [
-        { subCategory: "Enthusiasm", score: 88 },
-        { subCategory: "Optimism", score: 80 },
-        { subCategory: "Engagement", score: 76 },
-        { subCategory: "Learning Eagerness", score: 70 },
-    ];
-
-    const strengths = [
-        "Highly innovative and forward-thinking mindset",
-        "Strong adaptability to change and ambiguity",
-        "Excellent ideation and problem-solving skills",
-    ];
-
-    const weaknesses = [
-        "May lose interest in repetitive tasks",
-        "Occasionally overlooks finer details in pursuit of big ideas",
-    ];
-
-    const opportunities = [
-        "Can drive innovation initiatives within the organization",
-        "Potential to lead R&D or creative strategy projects",
-    ];
-
-    const threats = [
-        "Overemphasis on innovation may lead to underestimating executional challenges",
-        "May face friction in highly structured or bureaucratic environments",
-    ];
-
-    const actionPlan = [
-        "Enroll in project management or execution-focused training",
-        "Collaborate with structured thinkers to balance ideation and implementation",
-        "Engage in quarterly mentorship sessions focused on strategic alignment",
-    ];
-
-    // Action Plan Bullet Chart Data
-    const actionPlanData = [
-        {
-            id: "Training",
-            title: "Project Management Training",
-            subtitle: "Execution-focused skills development",
-            ranges: [100],
-            measures: [75],
-            markers: [85]
-        },
-        {
-            id: "Collaboration",
-            title: "Structured Collaboration",
-            subtitle: "Balance ideation with implementation",
-            ranges: [100],
-            measures: [60],
-            markers: [70]
-        },
-        {
-            id: "Mentorship",
-            title: "Strategic Mentorship",
-            subtitle: "Quarterly alignment sessions",
-            ranges: [100],
-            measures: [45],
-            markers: [65]
-        }
-    ];
+    // Assessment Data from JSON
+    const overviewText = assessmentData.overview.text;
+    const interpretationText = assessmentData.interpretation.text;
+    const categoryScores: CategoryScore[] = assessmentData.categoryScores;
+    const mainCategory = assessmentData.mainCategory;
+    const subCategoryScores: SubCategoryScore[] = assessmentData.subCategoryScores;
+    const strengths = assessmentData.swot.strengths;
+    const weaknesses = assessmentData.swot.weaknesses;
+    const opportunities = assessmentData.swot.opportunities;
+    const threats = assessmentData.swot.threats;
+    const actionPlan = assessmentData.actionPlan.items;
+    const actionPlanData = assessmentData.actionPlan.data;
 
     // Stage Transition Flow Data
-    const transitionFlowData = [
-        {
-            stage: "Honeymoon",
-            stageColor: "#6366F1",
-            transitions: [
-                { to: "Self-Reflection", percentage: 46, count: 12 },
-                { to: "Soul-searching", percentage: 31, count: 8 },
-                { to: "Steady State", percentage: 23, count: 6 }
-            ]
-        },
-        {
-            stage: "Self-Reflection",
-            stageColor: "#8B5CF6",
-            transitions: [
-                { to: "Honeymoon", percentage: 12, count: 5 },
-                { to: "Soul-searching", percentage: 35, count: 15 },
-                { to: "Steady State", percentage: 27, count: 11 }
-            ]
-        },
-        {
-            stage: "Soul-searching",
-            stageColor: "#06B6D4",
-            transitions: [
-                { to: "Honeymoon", percentage: 36, count: 14 },
-                { to: "Self-Reflection", percentage: 33, count: 13 },
-                { to: "Steady State", percentage: 26, count: 10 }
-            ]
-        },
-        {
-            stage: "Steady State",
-            stageColor: "#10B981",
-            transitions: [
-                { to: "Honeymoon", percentage: 17, count: 7 },
-                { to: "Self-Reflection", percentage: 23, count: 9 },
-                { to: "Soul-searching", percentage: 19, count: 8 }
-            ]
-        }
-    ];
-
-    const transitionStats = {
-        highIntensity: 78,
-        lowIntensity: 22,
-        employeeCount: 42,
-        transitionCount: 156
-    };
+    const transitionFlowData = assessmentData.transitionFlow.data;
+    const transitionStats = assessmentData.transitionFlow.stats;
 
     // Predictive Trends Data (Next 90 Days)
     const generatePredictiveData = () => {
@@ -192,127 +78,23 @@ const AssessmentReport: React.FC = () => {
 
     const predictiveData = generatePredictiveData();
 
-    const predictionMetrics = {
-        forecastAccuracy: 85,
-        confidenceInterval: 95,
-        dataPoints: 90,
-        modelType: 'Linear Regression with Historical Trends'
-    };
+    const predictionMetrics = assessmentData.predictive.metrics;
 
     // Chord Diagram Data - Stage Relationships
-    const chordData = [
-        [11, 58, 89, 28], // Honeymoon relationships
-        [51, 18, 64, 32], // Self-Reflection relationships  
-        [80, 145, 80, 45], // Soul-searching relationships
-        [103, 99, 40, 35] // Steady State relationships
-    ];
-
-    const chordKeys = ['Honeymoon', 'Self-Reflection', 'Soul-searching', 'Steady State'];
+    const chordData = assessmentData.chord.data;
+    const chordKeys = assessmentData.chord.keys;
 
     // Area Bump Chart Data - Stage Rankings Over Time
-    const areaBumpData = [
-        {
-            id: 'Honeymoon', data: [
-                { x: 'Q1', y: 1 }, { x: 'Q2', y: 2 }, { x: 'Q3', y: 1 }, { x: 'Q4', y: 1 }
-            ]
-        },
-        {
-            id: 'Self-Reflection', data: [
-                { x: 'Q1', y: 2 }, { x: 'Q2', y: 1 }, { x: 'Q3', y: 3 }, { x: 'Q4', y: 2 }
-            ]
-        },
-        {
-            id: 'Soul-searching', data: [
-                { x: 'Q1', y: 3 }, { x: 'Q2', y: 4 }, { x: 'Q3', y: 2 }, { x: 'Q4', y: 3 }
-            ]
-        },
-        {
-            id: 'Steady State', data: [
-                { x: 'Q1', y: 4 }, { x: 'Q2', y: 3 }, { x: 'Q3', y: 4 }, { x: 'Q4', y: 4 }
-            ]
-        }
-    ];
+    const areaBumpData = assessmentData.areaBump.data;
 
     // Stream Chart Data - Employee Flow Over Time
-    const streamData = [
-        { period: 'Jan', Honeymoon: 45, 'Self-Reflection': 35, 'Soul-searching': 25, 'Steady State': 30 },
-        { period: 'Feb', Honeymoon: 52, 'Self-Reflection': 28, 'Soul-searching': 32, 'Steady State': 35 },
-        { period: 'Mar', Honeymoon: 38, 'Self-Reflection': 42, 'Soul-searching': 28, 'Steady State': 40 },
-        { period: 'Apr', Honeymoon: 48, 'Self-Reflection': 38, 'Soul-searching': 35, 'Steady State': 32 },
-        { period: 'May', Honeymoon: 42, 'Self-Reflection': 45, 'Soul-searching': 30, 'Steady State': 38 },
-        { period: 'Jun', Honeymoon: 55, 'Self-Reflection': 32, 'Soul-searching': 38, 'Steady State': 42 }
-    ];
+    const streamData = assessmentData.stream.data;
 
     // SwarmPlot Data - Individual Employee Distribution
-    const swarmPlotData = [
-        // Engineering Department
-        { id: 'Sarah Chen', group: 'Engineering', value: 88, team: 'Frontend', stage: 'Honeymoon', experience: 3.5 },
-        { id: 'Mike Rodriguez', group: 'Engineering', value: 82, team: 'Frontend', stage: 'Honeymoon', experience: 2.1 },
-        { id: 'Emily Davis', group: 'Engineering', value: 75, team: 'Frontend', stage: 'Self-Reflection', experience: 4.2 },
-        { id: 'Alex Kim', group: 'Engineering', value: 90, team: 'Frontend', stage: 'Honeymoon', experience: 1.8 },
-        { id: 'David Wilson', group: 'Engineering', value: 72, team: 'Backend', stage: 'Self-Reflection', experience: 5.1 },
-        { id: 'Lisa Zhang', group: 'Engineering', value: 78, team: 'Backend', stage: 'Self-Reflection', experience: 3.8 },
-        { id: 'James Brown', group: 'Engineering', value: 68, team: 'Backend', stage: 'Soul-searching', experience: 6.2 },
-        { id: 'Maria Garcia', group: 'Engineering', value: 85, team: 'Backend', stage: 'Steady State', experience: 4.5 },
-        { id: 'Ryan Johnson', group: 'Engineering', value: 70, team: 'DevOps', stage: 'Steady State', experience: 7.1 },
-        { id: 'Anna Lee', group: 'Engineering', value: 65, team: 'DevOps', stage: 'Self-Reflection', experience: 3.2 },
-        { id: 'Tom Anderson', group: 'Engineering', value: 75, team: 'DevOps', stage: 'Steady State', experience: 5.8 },
-        
-        // Product Department
-        { id: 'Jessica Taylor', group: 'Product', value: 80, team: 'Design', stage: 'Soul-searching', experience: 4.1 },
-        { id: 'Kevin Wu', group: 'Product', value: 72, team: 'Design', stage: 'Self-Reflection', experience: 2.9 },
-        { id: 'Sophie Miller', group: 'Product', value: 88, team: 'Design', stage: 'Honeymoon', experience: 1.5 },
-        { id: 'Chris Evans', group: 'Product', value: 74, team: 'Design', stage: 'Soul-searching', experience: 3.7 },
-        { id: 'Rachel Green', group: 'Product', value: 85, team: 'Management', stage: 'Steady State', experience: 8.2 },
-        { id: 'Mark Thompson', group: 'Product', value: 78, team: 'Management', stage: 'Self-Reflection', experience: 6.5 },
-        { id: 'Linda Wang', group: 'Product', value: 80, team: 'Management', stage: 'Steady State', experience: 7.8 },
-        { id: 'Daniel Park', group: 'Product', value: 82, team: 'Research', stage: 'Honeymoon', experience: 2.3 },
-        { id: 'Amy Liu', group: 'Product', value: 76, team: 'Research', stage: 'Self-Reflection', experience: 4.6 },
-        { id: 'Robert Smith', group: 'Product', value: 84, team: 'Research', stage: 'Honeymoon', experience: 1.9 },
-        
-        // Marketing Department
-        { id: 'Nicole Adams', group: 'Marketing', value: 79, team: 'Digital', stage: 'Self-Reflection', experience: 3.4 },
-        { id: 'Brian Clark', group: 'Marketing', value: 71, team: 'Digital', stage: 'Soul-searching', experience: 4.8 },
-        { id: 'Samantha Lee', group: 'Marketing', value: 86, team: 'Digital', stage: 'Honeymoon', experience: 2.1 },
-        { id: 'Jason Martinez', group: 'Marketing', value: 74, team: 'Digital', stage: 'Self-Reflection', experience: 5.2 },
-        { id: 'Emma Wilson', group: 'Marketing', value: 70, team: 'Content', stage: 'Honeymoon', experience: 1.7 },
-        { id: 'Tyler Davis', group: 'Marketing', value: 77, team: 'Content', stage: 'Self-Reflection', experience: 3.1 },
-        { id: 'Grace Kim', group: 'Marketing', value: 73, team: 'Content', stage: 'Soul-searching', experience: 4.3 },
-        { id: 'Andrew Chen', group: 'Marketing', value: 81, team: 'Analytics', stage: 'Steady State', experience: 6.7 },
-        { id: 'Olivia Brown', group: 'Marketing', value: 75, team: 'Analytics', stage: 'Self-Reflection', experience: 3.9 },
-        { id: 'Nathan Taylor', group: 'Marketing', value: 72, team: 'Analytics', stage: 'Soul-searching', experience: 4.1 }
-    ];
+    const swarmPlotData = assessmentData.swarmPlot.data;
 
     // Circle Packing Data - Skill Hierarchies
-    const circlePackingData = {
-        name: 'Skills',
-        children: [
-            {
-                name: 'Technical',
-                children: [
-                    { name: 'Programming', value: 120 },
-                    { name: 'Architecture', value: 85 },
-                    { name: 'Testing', value: 65 }
-                ]
-            },
-            {
-                name: 'Leadership',
-                children: [
-                    { name: 'Communication', value: 95 },
-                    { name: 'Strategy', value: 75 },
-                    { name: 'Mentoring', value: 55 }
-                ]
-            },
-            {
-                name: 'Creative',
-                children: [
-                    { name: 'Innovation', value: 88 },
-                    { name: 'Problem Solving', value: 72 },
-                    { name: 'Design Thinking', value: 48 }
-                ]
-            }
-        ]
-    };
+    const circlePackingData = assessmentData.circlePacking.data;
 
     const generatePDF = async () => {
         const element = reportRef.current;
@@ -560,7 +342,7 @@ const AssessmentReport: React.FC = () => {
                         Employee Personality Assessment Report
                     </h1>
                     <p className="text-gray-600">
-                        Employee: <strong>Jane Doe</strong> | Department: R&D | Assessment Date:{" "}
+                        Employee: <strong>{assessmentData.employee.name}</strong> | Department: {assessmentData.employee.department} | Assessment Date:{" "}
                         {new Date().toLocaleDateString()}
                     </p>
                 </header>
@@ -1230,11 +1012,7 @@ const AssessmentReport: React.FC = () => {
                         14. Detailed Interpretation
                     </h2>
                     <p className="text-gray-700 leading-relaxed">
-                        The employee demonstrates a high degree of creative intelligence and
-                        an intrinsic motivation to innovate. This personality type thrives in
-                        dynamic environments where autonomy and exploration are encouraged.
-                        Balanced coaching should aim at converting abstract thinking into
-                        actionable strategies that align with company objectives.
+                        {assessmentData.detailedInterpretation.text}
                     </p>
                 </section>
 
