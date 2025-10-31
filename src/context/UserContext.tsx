@@ -4,7 +4,7 @@
  */
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { User, UserContext as UserContextType } from "../types";
+import type { User, UserContext as UserContextType, UserRole } from "../types";
 import { getUserByEmail, DEFAULT_USER } from "../data/mockUsers";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -60,11 +60,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.removeItem("chaturvima_user");
   };
 
+  const switchRole = (newRole: UserRole) => {
+    if (!user) return;
+    const updatedUser = { ...user, role: newRole };
+    setUser(updatedUser);
+    setIsAuthenticated(true);
+    localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));
+  };
+
   const value: UserContextType = {
     user,
     isAuthenticated,
     login,
     logout,
+    switchRole,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
