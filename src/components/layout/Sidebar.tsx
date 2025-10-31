@@ -2,14 +2,13 @@
  * Sidebar Component
  * Collapsible navigation sidebar
  */
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
 import {
-  LayoutDashboard,
+  // LayoutDashboard,
   FileText,
-  BarChart3,
+  // BarChart3,
   Users,
   Building2,
   TrendingUp,
@@ -17,8 +16,14 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  User,
+  UserCog,
+  Shield,
+  Crown,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
+import { useSidebar } from "../../context/SidebarContext";
+import type { UserRole } from "../../types";
 
 interface NavItem {
   id: string;
@@ -28,24 +33,24 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    path: "/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
+  // {
+  //   id: "dashboard",
+  //   label: "Dashboard",
+  //   path: "/dashboard",
+  //   icon: <LayoutDashboard className="h-5 w-5" />,
+  // },
   {
     id: "assessment",
     label: "Assessment",
     path: "/assessment",
     icon: <FileText className="h-5 w-5" />,
   },
-  {
-    id: "analytics",
-    label: "Analytics",
-    path: "/analytics",
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
+  // {
+  //   id: "analytics",
+  //   label: "Analytics",
+  //   path: "/analytics",
+  //   icon: <BarChart3 className="h-5 w-5" />,
+  // },
   {
     id: "team",
     label: "Team View",
@@ -64,18 +69,46 @@ const NAV_ITEMS: NavItem[] = [
     path: "/journey",
     icon: <TrendingUp className="h-5 w-5" />,
   },
-  {
-    id: "assessment-report",
-    label: "Assessment Report",
-    path: "/assessment-report",
-    icon: <FileText className="h-5 w-5" />,
-  },
+  // {
+  //   id: "assessment-report",
+  //   label: "Assessment Report",
+  //   path: "/assessment-report",
+  //   icon: <FileText className="h-5 w-5" />,
+  // },
 ];
 
+const ROLE_CONFIG: Record<
+  UserRole,
+  { label: string; icon: React.ReactNode; color: string }
+> = {
+  employee: {
+    label: "Employee",
+    icon: <User className="h-3 w-3" />,
+    color: "text-blue-600 bg-blue-50",
+  },
+  manager: {
+    label: "Manager",
+    icon: <UserCog className="h-3 w-3" />,
+    color: "text-purple-600 bg-purple-50",
+  },
+  "hr-admin": {
+    label: "HR Admin",
+    icon: <Shield className="h-3 w-3" />,
+    color: "text-green-600 bg-green-50",
+  },
+  executive: {
+    label: "Executive",
+    icon: <Crown className="h-3 w-3" />,
+    color: "text-amber-600 bg-amber-50",
+  },
+};
+
 const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const location = useLocation();
   const { user, logout } = useUser();
+
+  const currentRoleConfig = user ? ROLE_CONFIG[user.role] : null;
 
   return (
     <motion.aside
@@ -109,8 +142,8 @@ const Sidebar = () => {
           )}
         </AnimatePresence>
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          onClick={toggleSidebar}
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
@@ -143,9 +176,19 @@ const Sidebar = () => {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {user.name}
                   </p>
-                  <p className="text-xs text-gray-500 truncate capitalize">
-                    {user.role.replace("-", " ")}
-                  </p>
+                  {currentRoleConfig && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div
+                        className={cn(
+                          "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                          currentRoleConfig.color
+                        )}
+                      >
+                        {currentRoleConfig.icon}
+                        <span>{currentRoleConfig.label}</span>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

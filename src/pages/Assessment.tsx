@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../context/AssessmentContext";
-import { Button, Card, CardContent } from "../components/ui";
+import { Button } from "../components/ui";
 import QuestionCard from "../components/assessment/QuestionCard";
 import AssessmentProgress from "../components/assessment/AssessmentProgress";
 import EnergyBreak from "../components/assessment/EnergyBreak";
@@ -67,80 +67,246 @@ const Assessment = () => {
   // Not started state
   if (!hasStarted && !isComplete) {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Card variant="elevated" className="text-center">
-            <CardContent className="py-12">
-              <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brand-teal to-brand-navy flex items-center justify-center">
-                  <PlayCircle className="w-16 h-16 text-white" />
+          {/* Hero Section */}
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="flex justify-center mb-6"
+            >
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-brand-teal via-brand-navy to-purple-600 flex items-center justify-center shadow-lg">
+                  <PlayCircle className="w-20 h-20 text-white" />
                 </div>
+                <motion.div
+                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-green-500 border-4 border-white"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </div>
+            </motion.div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Employee Assessment
-              </h1>
-
-              <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-                This assessment will help us understand your current
-                organizational stage across the ChaturVima framework. It takes
-                about 10-15 minutes to complete.
-              </p>
-
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600 mb-1">
-                    {progress.totalQuestions}
-                  </p>
-                  <p className="text-sm text-gray-600">Questions</p>
-                </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <p className="text-2xl font-bold text-purple-600 mb-1">
-                    ~12min
-                  </p>
-                  <p className="text-sm text-gray-600">Duration</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600 mb-1">
-                    4 Stages
-                  </p>
-                  <p className="text-sm text-gray-600">Evaluated</p>
-                </div>
-              </div>
-
-              <div className="mb-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg text-left max-w-2xl mx-auto">
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  Before you begin:
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li>
-                    ✓ Answer honestly - there are no right or wrong answers
-                  </li>
-                  <li>
-                    ✓ Take your time - we'll show energy breaks every 5
-                    questions
-                  </li>
-                  <li>✓ You can go back to previous questions if needed</li>
-                  <li>
-                    ✓ Your responses are confidential and used only for
-                    organizational insights
-                  </li>
-                </ul>
-              </div>
-
-              <Button
-                onClick={handleStart}
-                size="lg"
-                variant="primary"
-                className="px-12"
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              <span
+                className="inline-block bg-gradient-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent"
+                style={{ paddingBottom: "0.15em", lineHeight: "1.1" }}
               >
-                Start Assessment
-              </Button>
-            </CardContent>
-          </Card>
+                Organizational Health Assessment
+              </span>
+            </h1>
+
+            <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto leading-relaxed">
+              Discover your organizational stage and unlock insights into your
+              workplace journey
+            </p>
+            <p className="text-base text-gray-500 max-w-2xl mx-auto">
+              Based on the ChaturVima framework - a comprehensive evaluation of
+              your organizational engagement
+            </p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid md:grid-cols-4 gap-4 mb-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-4xl font-bold text-blue-600">
+                  {progress.totalQuestions}
+                </p>
+                <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
+                  <span className="text-2xl">❓</span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-blue-900">Questions</p>
+              <p className="text-xs text-blue-700 mt-1">Thoughtfully curated</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-4xl font-bold text-purple-600">~12</p>
+                <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center">
+                  <span className="text-2xl">⏱️</span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-purple-900">Minutes</p>
+              <p className="text-xs text-purple-700 mt-1">Quick & focused</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-4xl font-bold text-green-600">4</p>
+                <div className="w-12 h-12 rounded-full bg-green-200 flex items-center justify-center">
+                  <span className="text-2xl">🎯</span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-green-900">Stages</p>
+              <p className="text-xs text-green-700 mt-1">
+                Comprehensive evaluation
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-4xl font-bold text-amber-600">100%</p>
+                <div className="w-12 h-12 rounded-full bg-amber-200 flex items-center justify-center">
+                  <span className="text-2xl">🔒</span>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-amber-900">Private</p>
+              <p className="text-xs text-amber-700 mt-1">Your data secured</p>
+            </motion.div>
+          </div>
+
+          {/* Information Cards */}
+          <div className="grid md:grid-cols-2 gap-6 mb-10">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-200"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    What You'll Discover
+                  </h3>
+                  <ul className="space-y-1.5 text-sm text-gray-700">
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      Your dominant organizational stage
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      Detailed stage distribution analysis
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      Personalized insights and recommendations
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      Alignment with organizational goals
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="p-6 bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border border-rose-200"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">💡</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Tips for Best Results
+                  </h3>
+                  <ul className="space-y-1.5 text-sm text-gray-700">
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-500">•</span>
+                      Answer honestly - no right or wrong answers
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-500">•</span>
+                      Take energy breaks when prompted
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-500">•</span>
+                      You can navigate back to previous questions
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-500">•</span>
+                      Your responses are completely confidential
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Process Steps */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mb-10 p-6 bg-gradient-to-r from-brand-teal/10 via-brand-navy/10 to-purple-50 rounded-xl border border-brand-teal/20"
+          >
+            <h3 className="font-semibold text-gray-900 mb-4 text-center">
+              Assessment Process
+            </h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                { step: "1", title: "Answer Questions", icon: "✍️" },
+                { step: "2", title: "Take Breaks", icon: "☕" },
+                { step: "3", title: "Review Insights", icon: "📈" },
+                { step: "4", title: "Get Results", icon: "🎉" },
+              ].map((item, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-white border-2 border-brand-teal flex items-center justify-center mb-2 shadow-sm">
+                    <span className="text-2xl">{item.icon}</span>
+                  </div>
+                  <div className="text-xs font-medium text-brand-teal mb-1">
+                    Step {item.step}
+                  </div>
+                  <div className="text-sm text-gray-700">{item.title}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-center"
+          >
+            <Button
+              onClick={handleStart}
+              size="lg"
+              className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all"
+            >
+              <PlayCircle className="mr-2 h-6 w-6" />
+              Start Assessment
+            </Button>
+            <p className="mt-4 text-sm text-gray-500">
+              Estimated completion time: 12 minutes
+            </p>
+          </motion.div>
         </motion.div>
       </div>
     );

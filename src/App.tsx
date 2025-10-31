@@ -5,6 +5,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "./context/UserContext";
 import { AssessmentProvider } from "./context/AssessmentContext";
+import { SidebarProvider } from "./context/SidebarContext";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -63,9 +64,11 @@ function AppRoutes() {
       <Route
         element={
           <ProtectedRoute>
-            <AssessmentProvider>
-              <Layout />
-            </AssessmentProvider>
+            <SidebarProvider>
+              <AssessmentProvider>
+                <Layout />
+              </AssessmentProvider>
+            </SidebarProvider>
           </ProtectedRoute>
         }
       >

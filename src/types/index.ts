@@ -7,7 +7,11 @@
 // STAGE TYPES
 // ============================================================================
 
-export type StageType = 'honeymoon' | 'self-reflection' | 'soul-searching' | 'steady-state';
+export type StageType =
+  | "honeymoon"
+  | "self-reflection"
+  | "soul-searching"
+  | "steady-state";
 
 export interface Stage {
   id: StageType;
@@ -18,22 +22,26 @@ export interface Stage {
     light: string;
     dark: string;
   };
-  shape: 'square' | 'triangle' | 'circle' | 'diamond';
+  shape: "square" | "triangle" | "circle" | "diamond";
   icon: string; // Unicode symbol
 }
 
 export interface StageDistribution {
   honeymoon: number; // percentage (0-100)
-  'self-reflection': number;
-  'soul-searching': number;
-  'steady-state': number;
+  "self-reflection": number;
+  "soul-searching": number;
+  "steady-state": number;
 }
 
 // ============================================================================
 // ORGANIZATIONAL LEVEL TYPES
 // ============================================================================
 
-export type OrganizationalLevel = 'employee' | 'manager' | 'department' | 'company';
+export type OrganizationalLevel =
+  | "employee"
+  | "manager"
+  | "department"
+  | "company";
 
 export interface LevelData {
   level: OrganizationalLevel;
@@ -41,7 +49,7 @@ export interface LevelData {
   stageDistribution: StageDistribution;
   dominantStage: StageType;
   alignmentScore: number; // 0-100
-  trend: 'improving' | 'stable' | 'declining';
+  trend: "improving" | "stable" | "declining";
   lastUpdated: Date;
 }
 
@@ -49,7 +57,7 @@ export interface LevelData {
 // ASSESSMENT TYPES
 // ============================================================================
 
-export type QuestionType = 'likert' | 'multiple-choice' | 'scenario';
+export type QuestionType = "likert" | "multiple-choice" | "scenario";
 
 export interface Question {
   id: string;
@@ -91,7 +99,7 @@ export interface AssessmentResult {
 // USER TYPES
 // ============================================================================
 
-export type UserRole = 'employee' | 'manager' | 'hr-admin' | 'executive';
+export type UserRole = "employee" | "manager" | "hr-admin" | "executive";
 
 export interface User {
   id: string;
@@ -108,6 +116,7 @@ export interface UserContext {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  switchRole: (newRole: UserRole) => void;
 }
 
 // ============================================================================
@@ -120,7 +129,7 @@ export interface DashboardMetrics {
   participationRate: number; // 0-100 percentage
   averageCompletionTime: number; // minutes
   totalAssessments: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   trendPercentage: number;
 }
 
@@ -149,7 +158,7 @@ export interface AlignmentData {
   gaps: Array<{
     from: OrganizationalLevel;
     to: OrganizationalLevel;
-    severity: 'low' | 'medium' | 'high';
+    severity: "low" | "medium" | "high";
     description: string;
   }>;
 }
@@ -196,7 +205,7 @@ export interface Achievement {
 export interface Milestone {
   percentage: number; // 25, 50, 75, 100
   message: string;
-  celebration: 'confetti' | 'sparkles' | 'badge';
+  celebration: "confetti" | "sparkles" | "badge";
   achieved: boolean;
 }
 
@@ -213,7 +222,7 @@ export interface GamificationState {
 // THEME TYPES
 // ============================================================================
 
-export type ColorVariant = '3a' | '3b' | '3c'; // Warm Pastels, Cool Blues, Earthy Naturals
+export type ColorVariant = "3a" | "3b" | "3c"; // Warm Pastels, Cool Blues, Earthy Naturals
 
 export interface ThemeConfig {
   variant: ColorVariant;
