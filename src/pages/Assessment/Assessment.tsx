@@ -5,14 +5,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAssessment } from "../context/AssessmentContext";
-import { useUser } from "../context/UserContext";
-import { Button } from "../components/ui";
-import QuestionCard from "../components/assessment/QuestionCard";
-import AssessmentProgress from "../components/assessment/AssessmentProgress";
-import EnergyBreak from "../components/assessment/EnergyBreak";
-import AssessmentResults from "../components/assessment/AssessmentResults";
-import CelebrationConfetti from "../components/assessment/CelebrationConfetti";
+import { useAssessment } from "../../context/AssessmentContext";
+import { useUser } from "../../context/UserContext";
+import { Button } from "../../components/ui";
+import QuestionCard from "../../components/assessment/QuestionCard";
+import AssessmentProgress from "../../components/assessment/AssessmentProgress";
+import EnergyBreak from "../../components/assessment/EnergyBreak";
+import AssessmentResults from "../../components/assessment/AssessmentResults";
+import CelebrationConfetti from "../../components/assessment/CelebrationConfetti";
 import { PlayCircle } from "lucide-react";
 
 const Assessment = () => {
@@ -402,8 +402,6 @@ const Assessment = () => {
       </div>
     );
   }
-
-  // Assessment complete states
 
   // Assessment complete state
   if (isComplete && result) {

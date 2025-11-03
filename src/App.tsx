@@ -9,7 +9,7 @@ import { SidebarProvider } from "./context/SidebarContext";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Assessment from "./pages/Assessment";
+import Assessment from "./pages/Assessment/Assessment";
 import AssessmentQuestions from "./pages/AssessmentQuestions";
 import Analytics from "./pages/Analytics";
 import AssessmentReport from "./pages/AssessmentReport";
