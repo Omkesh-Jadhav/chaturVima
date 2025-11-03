@@ -7,19 +7,20 @@
  * - Test History table with View Report
  * - Detailed Report view with insights and PDF download
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo, useRef } from "react";
 import { motion } from "framer-motion";
 import { ResponsiveLine } from "@nivo/line";
 import { ResponsivePie } from "@nivo/pie";
-import { ResponsiveBar } from "@nivo/bar";
 import {
-  Download,
-  MoveLeft,
   Play,
   AlertTriangle,
   Clock,
   CheckCircle2,
   ChevronDown,
+  CheckCircle,
+  FileText,
+  TrendingUp,
+  Calendar,
 } from "lucide-react";
 
 type Priority = "High" | "Medium" | "Low";
@@ -41,15 +42,11 @@ type CompletedAssessment = {
   percentile: number; // 0-100
 };
 
-type ReportDetail = CompletedAssessment & {
-  insights: string[];
-  recommendations: string[];
-  skills: Array<{ name: string; score: number }>;
-};
-
 const brand = {
   teal: "#0ea5a4",
   tealDark: "#0b8584",
+  tealBrand: "#2BC6B4",
+  navyBrand: "#1E3A5F",
   purple: "#7c3aed",
   purpleLight: "#a78bfa",
   sky: "#38bdf8",
@@ -65,27 +62,52 @@ const SummaryCard = ({
   label,
   value,
   subText,
-  accent,
+  icon: Icon,
+  gradient,
 }: {
   label: string;
   value: string | number;
   subText?: string;
-  accent?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  gradient?: string;
 }) => (
   <motion.div
-    whileHover={{ y: -3, scale: 1.01 }}
+    whileHover={{ y: -4, scale: 1.02 }}
     transition={{ type: "spring", stiffness: 200, damping: 15 }}
-    className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+    className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md"
   >
-    <div className="flex items-center justify-between">
-      <p className="text-sm font-medium text-gray-600">{label}</p>
-      <span
-        className="h-2 w-2 rounded-full"
-        style={{ backgroundColor: accent ?? brand.teal }}
-      />
+    {/* Background gradient on hover */}
+    <div
+      className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-5 ${
+        gradient || "bg-gradient-to-br from-brand-teal to-brand-navy"
+      }`}
+    />
+
+    <div className="relative">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <div className="text-3xl font-bold text-gray-900">{value}</div>
+          </div>
+          {subText && (
+            <div className="mt-2 text-xs font-medium text-gray-500">
+              {subText}
+            </div>
+          )}
+        </div>
+        {Icon && (
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-sm ${
+              gradient || "bg-gradient-to-br from-brand-teal to-brand-navy"
+            }`}
+          >
+            <Icon className="h-6 w-6 text-white" />
+          </motion.div>
+        )}
+      </div>
     </div>
-    <div className="mt-3 text-3xl font-bold text-gray-900">{value}</div>
-    {subText && <div className="mt-1 text-xs text-gray-500">{subText}</div>}
   </motion.div>
 );
 
@@ -179,81 +201,118 @@ const AssessmentDashboard = () => {
   // no target overlay for strengths
 
   // Animated strength rings component (pure SVG, no library)
-  const StrengthRing = ({
-    label,
-    value,
-    color,
-  }: {
-    label: string;
-    value: number;
-    color: string;
-  }) => {
-    const size = 120;
-    const stroke = 10;
-    const radius = (size - stroke) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const progress = Math.max(0, Math.min(100, value)) / 100;
+  // Track animation state globally to prevent re-animation on parent re-renders
+  const animationCompletedRef = useRef<Set<string>>(new Set());
 
-    return (
-      <motion.div
-        whileHover={{ scale: 1.05, y: -2 }}
-        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-100 bg-white shadow-sm"
-      >
-        <div className="relative" style={{ width: size, height: size }}>
-          <svg width={size} height={size}>
-            <defs>
-              <linearGradient
-                id={`grad-${label}`}
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="0%"
-              >
-                <stop offset="0%" stopColor={color} stopOpacity="1" />
-                <stop offset="100%" stopColor={brand.sky} stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={brand.slate200}
-              strokeWidth={stroke}
-              fill="none"
-            />
-            {/* target overlay removed */}
-            <motion.circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={`url(#grad-${label})`}
-              strokeWidth={stroke}
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference}
-              strokeLinecap="round"
-              fill="none"
-              style={{
-                transform: "rotate(-90deg)",
-                transformOrigin: "50% 50%",
-              }}
-              animate={{ strokeDashoffset: circumference * (1 - progress) }}
-              transition={{ type: "spring", stiffness: 120, damping: 18 }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-xl font-bold text-gray-900">{value}</div>
-              <div className="text-[10px] uppercase tracking-wide text-gray-500">
-                Score
+  const StrengthRing = memo(
+    ({ label, value }: { label: string; value: number }) => {
+      const size = 120;
+      const stroke = 10;
+      const radius = (size - stroke) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const progress = Math.max(0, Math.min(100, value)) / 100;
+      const ringId = `${label}-${value}`;
+      const hasAnimated = animationCompletedRef.current.has(ringId);
+
+      return (
+        <motion.div
+          whileHover={{ scale: 1.05, y: -2 }}
+          className="flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-100 bg-white shadow-sm"
+        >
+          <div className="relative" style={{ width: size, height: size }}>
+            <svg width={size} height={size}>
+              <defs>
+                <linearGradient
+                  id={`grad-${label}`}
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor={brand.tealBrand}
+                    stopOpacity="1"
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={brand.navyBrand}
+                    stopOpacity="1"
+                  />
+                </linearGradient>
+              </defs>
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke={brand.slate200}
+                strokeWidth={stroke}
+                fill="none"
+              />
+              {/* target overlay removed */}
+              {hasAnimated ? (
+                <circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke={`url(#grad-${label})`}
+                  strokeWidth={stroke}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference * (1 - progress)}
+                  strokeLinecap="round"
+                  fill="none"
+                  style={{
+                    transform: "rotate(-90deg)",
+                    transformOrigin: "50% 50%",
+                  }}
+                />
+              ) : (
+                <motion.circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke={`url(#grad-${label})`}
+                  strokeWidth={stroke}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference}
+                  strokeLinecap="round"
+                  fill="none"
+                  style={{
+                    transform: "rotate(-90deg)",
+                    transformOrigin: "50% 50%",
+                  }}
+                  animate={{ strokeDashoffset: circumference * (1 - progress) }}
+                  onAnimationComplete={() => {
+                    animationCompletedRef.current.add(ringId);
+                  }}
+                  transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                />
+              )}
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-xl font-bold text-gray-900">{value}</div>
+                <div className="text-[10px] uppercase tracking-wide text-gray-500">
+                  Score
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="text-sm font-medium text-gray-800">{label}</div>
-        {/* no target label */}
-      </motion.div>
-    );
-  };
+          <div className="text-sm font-medium text-gray-800">{label}</div>
+          {/* no target label */}
+        </motion.div>
+      );
+    },
+    (prevProps, nextProps) => {
+      // Only re-render if label or value actually changes
+      return (
+        prevProps.label === nextProps.label &&
+        prevProps.value === nextProps.value
+      );
+    }
+  );
+
+  StrengthRing.displayName = "StrengthRing";
 
   const categoryDistribution = useMemo(
     () => [
@@ -297,7 +356,7 @@ const AssessmentDashboard = () => {
     return [
       {
         id: "Score",
-        color: brand.teal,
+        color: brand.tealBrand,
         data: sliceByRange(scoreTrendAll),
       },
     ];
@@ -311,13 +370,29 @@ const AssessmentDashboard = () => {
   );
   const lastCompleted = completed[completed.length - 1]?.date ?? "—";
 
-  // Detail view state
-  const [selectedReport, setSelectedReport] = useState<ReportDetail | null>(
-    null
+  // Category filtering removed: use strengths as-is
+  // Memoize to prevent new array reference on each render
+  const filteredStrengths = useMemo(() => strengths, [strengths]);
+
+  // Memoize the strength rings list to prevent re-renders
+  const strengthRingsList = useMemo(
+    () =>
+      filteredStrengths.map((s) => (
+        <StrengthRing
+          key={`${s.name}-${s.score}`}
+          label={s.name}
+          value={s.score}
+        />
+      )),
+    [filteredStrengths]
   );
 
-  // Category filtering removed: use strengths as-is
-  const filteredStrengths = strengths;
+  // Pending assessments filter
+  const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
+  const filteredPending = useMemo(() => {
+    if (priorityFilter === "All") return pending;
+    return pending.filter((item) => item.priority === priorityFilter);
+  }, [pending, priorityFilter]);
 
   // Test history: search and sort
   const [historySearch, setHistorySearch] = useState("");
@@ -345,29 +420,6 @@ const AssessmentDashboard = () => {
     percentile: "Sort by Percentile",
   } as const;
 
-  const openReport = (row: CompletedAssessment) => {
-    const detail: ReportDetail = {
-      ...row,
-      insights: [
-        "Consistent improvement over the last quarter",
-        "Strong performance in analysis and leadership",
-        "Opportunity to deepen time-blocking discipline",
-      ],
-      recommendations: [
-        "Schedule weekly deep-work blocks",
-        "Enroll in advanced presentation workshop",
-        "Pair with mentor for strategic projects",
-      ],
-      skills: strengths,
-    };
-    setSelectedReport(detail);
-  };
-
-  const downloadPdf = () => {
-    // Simple placeholder: trigger print dialog (could be replaced by html2pdf)
-    window.print();
-  };
-
   const header = (
     <div className="mb-6">
       <h1 className="text-3xl font-bold text-gray-900">Assessment Dashboard</h1>
@@ -376,126 +428,6 @@ const AssessmentDashboard = () => {
       </p>
     </div>
   );
-
-  if (selectedReport) {
-    return (
-      <div className="space-y-6">
-        {header}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setSelectedReport(null)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <MoveLeft className="h-4 w-4" /> Back to Dashboard
-          </button>
-          <button
-            onClick={downloadPdf}
-            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white hover:bg-teal-700"
-          >
-            <Download className="h-4 w-4" /> Download PDF
-          </button>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-2">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {selectedReport.title}
-            </h2>
-            <p className="text-sm text-gray-500">
-              Category: {selectedReport.category} • Completed on{" "}
-              {selectedReport.date}
-            </p>
-
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
-              <SummaryCard
-                label="Score"
-                value={`${selectedReport.score}`}
-                subText="out of 100"
-                accent={brand.teal}
-              />
-              <SummaryCard
-                label="Percentile"
-                value={`${selectedReport.percentile}%`}
-                subText="compared to peers"
-                accent={brand.purple}
-              />
-              <SummaryCard
-                label="Status"
-                value={
-                  (
-                    <span className="inline-flex items-center gap-1 text-green-600">
-                      <CheckCircle2 className="h-5 w-5" /> Completed
-                    </span>
-                  ) as unknown as number
-                }
-                subText="successfully finished"
-                accent={brand.green}
-              />
-            </div>
-
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-gray-700">
-                Performance by Skill
-              </h3>
-              <div className="mt-3 h-72">
-                <ResponsiveBar
-                  data={selectedReport.skills}
-                  keys={["score"]}
-                  indexBy="name"
-                  margin={{ top: 10, right: 10, bottom: 40, left: 50 }}
-                  padding={0.3}
-                  layout="horizontal"
-                  valueScale={{ type: "linear" }}
-                  indexScale={{ type: "band", round: true }}
-                  colors={[brand.teal]}
-                  axisBottom={{
-                    tickSize: 0,
-                    tickPadding: 10,
-                    legend: "Score",
-                    legendOffset: 32,
-                  }}
-                  axisLeft={{ tickSize: 0, tickPadding: 10 }}
-                  theme={{
-                    text: { fontSize: 12, fill: brand.slate700 },
-                    axis: { ticks: { text: { fill: brand.slate700 } } },
-                    grid: { line: { stroke: brand.slate200 } },
-                  }}
-                  enableGridX
-                  borderRadius={4}
-                  labelSkipWidth={24}
-                  labelTextColor={{ from: "color", modifiers: [["darker", 3]] }}
-                  maxValue={100}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-medium text-gray-700">
-                Key Insights
-              </h3>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
-                {selectedReport.insights.map((i, idx) => (
-                  <li key={idx}>{i}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-medium text-gray-700">
-                Recommendations
-              </h3>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-600">
-                {selectedReport.recommendations.map((r, idx) => (
-                  <li key={idx}>{r}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 relative">
@@ -531,32 +463,41 @@ const AssessmentDashboard = () => {
           label="Assessments Completed"
           value={totalCompleted}
           subText="All time"
-          accent={brand.teal}
+          icon={CheckCircle}
+          gradient="bg-gradient-to-b from-brand-teal to-brand-navy"
         />
         <SummaryCard
           label="Pending Assessments"
           value={totalPending}
           subText="Awaiting action"
-          accent={brand.amber}
+          icon={FileText}
+          gradient="bg-gradient-to-b from-amber-500 to-orange-600"
         />
         <SummaryCard
           label="Average Score"
           value={`${averageScore}`}
           subText="Across completed"
-          accent={brand.purple}
+          icon={TrendingUp}
+          gradient="bg-gradient-to-b from-purple-500 to-indigo-600"
         />
         <SummaryCard
           label="Last Completed"
           value={lastCompleted}
           subText="Most recent test"
-          accent={brand.sky}
+          icon={Calendar}
+          gradient="bg-gradient-to-b from-sky-500 to-blue-600"
         />
       </div>
 
       {/* Visual Analytics */}
       <div className="relative z-10 grid gap-6 xl:grid-cols-3">
         {/* Line Chart */}
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm xl:col-span-2">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md xl:col-span-2"
+        >
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -566,17 +507,19 @@ const AssessmentDashboard = () => {
             </div>
             <div className="flex items-center gap-2">
               {(["3M", "6M", "1Y"] as Range[]).map((r) => (
-                <button
+                <motion.button
                   key={r}
                   onClick={() => setRange(r)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border ${
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     range === r
-                      ? "bg-teal-600 text-white border-teal-600"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                      ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white border-transparent shadow-md"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 hover:border-brand-teal/30"
                   }`}
                 >
                   {r}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -596,7 +539,7 @@ const AssessmentDashboard = () => {
               axisRight={null}
               axisBottom={{ tickSize: 0, tickPadding: 10 }}
               axisLeft={{ tickSize: 0, tickPadding: 10 }}
-              colors={[brand.teal]}
+              colors={[brand.tealBrand]}
               lineWidth={3}
               pointSize={8}
               pointBorderWidth={2}
@@ -613,10 +556,15 @@ const AssessmentDashboard = () => {
               useMesh
             />
           </div>
-        </div>
+        </motion.div>
 
-        {/* Pie Chart */}
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        {/* Category Distribution - Pie Chart with Priority Colors */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        >
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -629,31 +577,99 @@ const AssessmentDashboard = () => {
             <ResponsivePie
               data={categoryDistribution}
               margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-              innerRadius={0.6}
-              padAngle={1}
-              cornerRadius={4}
-              activeOuterRadiusOffset={8}
-              colors={[
-                brand.teal,
-                brand.purple,
-                brand.sky,
-                brand.green,
-                brand.amber,
-              ]}
-              enableArcLinkLabels={false}
-              arcLabelsSkipAngle={12}
-              arcLabelsTextColor={{ from: "color", modifiers: [["darker", 3]] }}
-              theme={{
-                text: { fontSize: 12, fill: brand.slate700 },
+              innerRadius={0.65}
+              padAngle={2}
+              cornerRadius={6}
+              activeOuterRadiusOffset={10}
+              colors={(d: { label: string }) => {
+                // Lighter priority colors - base colors for gradients (unique for each)
+                const gradients: Record<string, string> = {
+                  Leadership: "#EF4444", // Red
+                  Communication: "#F59E0B", // Amber
+                  Analytics: "#22C55E", // Green
+                  Cognitive: "#F97316", // Orange (distinct from amber)
+                  Productivity: "#EC4899", // Rose/Pink (distinct from red)
+                };
+                return gradients[d.label] || "#94A3B8";
               }}
+              enableArcLinkLabels={false}
+              arcLabelsSkipAngle={10}
+              arcLabelsTextColor="#fff"
+              arcLabelsRadiusOffset={0.55}
+              defs={[
+                {
+                  id: "gradientRed",
+                  type: "linearGradient",
+                  colors: [
+                    { offset: 0, color: "#FCA5A5" },
+                    { offset: 100, color: "#DC2626" },
+                  ],
+                },
+                {
+                  id: "gradientAmber",
+                  type: "linearGradient",
+                  colors: [
+                    { offset: 0, color: "#FDE047" },
+                    { offset: 100, color: "#F59E0B" },
+                  ],
+                },
+                {
+                  id: "gradientGreen",
+                  type: "linearGradient",
+                  colors: [
+                    { offset: 0, color: "#86EFAC" },
+                    { offset: 100, color: "#16A34A" },
+                  ],
+                },
+                {
+                  id: "gradientOrange",
+                  type: "linearGradient",
+                  colors: [
+                    { offset: 0, color: "#FDBA74" },
+                    { offset: 100, color: "#F97316" },
+                  ],
+                },
+                {
+                  id: "gradientRose",
+                  type: "linearGradient",
+                  colors: [
+                    { offset: 0, color: "#FBCFE8" },
+                    { offset: 100, color: "#EC4899" },
+                  ],
+                },
+              ]}
+              fill={[
+                { match: { id: "Leadership" }, id: "gradientRed" },
+                { match: { id: "Communication" }, id: "gradientAmber" },
+                { match: { id: "Analytics" }, id: "gradientGreen" },
+                { match: { id: "Cognitive" }, id: "gradientOrange" },
+                { match: { id: "Productivity" }, id: "gradientRose" },
+              ]}
+              theme={{
+                text: { fontSize: 12, fill: brand.slate700, fontWeight: 600 },
+                tooltip: {
+                  container: {
+                    background: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  },
+                },
+              }}
+              animate
+              motionConfig="gentle"
             />
-            {/* Category filter removed */}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Strengths (Animated Rings only) */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -666,19 +682,17 @@ const AssessmentDashboard = () => {
           <div />
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {filteredStrengths.map((s) => (
-            <StrengthRing
-              key={s.name}
-              label={s.name}
-              value={s.score}
-              color={brand.teal}
-            />
-          ))}
+          {strengthRingsList}
         </div>
-      </div>
+      </motion.div>
 
       {/* Pending Assessments */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -689,75 +703,106 @@ const AssessmentDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {(["All", "High", "Medium", "Low"] as const).map((p) => (
-              <button
-                key={p}
-                className="px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 hover:bg-gray-50"
-              >
-                {p}
-              </button>
-            ))}
+            {(["All", "High", "Medium", "Low"] as const).map((p) => {
+              const isActive = priorityFilter === p;
+              const buttonStyles = {
+                All: isActive
+                  ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white border-transparent shadow-md font-semibold"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm",
+                High: isActive
+                  ? "bg-gradient-to-r from-red-500 to-red-600 text-white border-transparent shadow-md font-semibold"
+                  : "bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 hover:shadow-sm hover:text-red-700",
+                Medium: isActive
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white border-transparent shadow-md font-semibold"
+                  : "bg-white text-amber-600 border-amber-300 hover:bg-amber-50 hover:border-amber-400 hover:shadow-sm hover:text-amber-700",
+                Low: isActive
+                  ? "bg-gradient-to-r from-green-500 to-green-600 text-white border-transparent shadow-md font-semibold"
+                  : "bg-white text-green-600 border-green-300 hover:bg-green-50 hover:border-green-400 hover:shadow-sm hover:text-green-700",
+              };
+              return (
+                <motion.button
+                  key={p}
+                  onClick={() => setPriorityFilter(p)}
+                  whileHover={{ scale: 1.08, y: -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 text-xs font-medium rounded-lg border transition-all ${buttonStyles[p]}`}
+                >
+                  {p}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
         <div className="mt-4 space-y-3">
-          {pending.map((item, idx) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ scale: 1.01, y: -2 }}
-              className="relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
-            >
-              <div className="absolute left-0 top-0 h-full w-1 bg-linear-to-b from-teal-500 to-sky-400" />
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${priorityPill(
-                        item.priority
-                      )}`}
+          {filteredPending.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 text-sm">
+              No {priorityFilter !== "All" ? priorityFilter : ""} priority
+              assessments found.
+            </div>
+          ) : (
+            filteredPending.map((item, idx) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ scale: 1.01, y: -2 }}
+                className="relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${priorityPill(
+                          item.priority
+                        )}`}
+                      >
+                        {item.priority === "High" ? (
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                        ) : item.priority === "Medium" ? (
+                          <Clock className="h-3.5 w-3.5" />
+                        ) : (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        )}{" "}
+                        {item.priority}
+                      </span>
+                      <span className="truncate text-sm font-semibold text-gray-900">
+                        {item.title}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      Category: {item.category} • Due by {item.dueDate}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      className="relative inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-teal to-brand-navy px-3 py-2 text-sm font-medium text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg overflow-hidden"
                     >
-                      {item.priority === "High" ? (
-                        <AlertTriangle className="h-3.5 w-3.5" />
-                      ) : item.priority === "Medium" ? (
-                        <Clock className="h-3.5 w-3.5" />
-                      ) : (
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      )}{" "}
-                      {item.priority}
-                    </span>
-                    <span className="truncate text-sm font-semibold text-gray-900">
-                      {item.title}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-gray-500">
-                    Category: {item.category} • Due by {item.dueDate}
+                      <span
+                        className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
+                        style={{
+                          background:
+                            "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.25), transparent 40%)",
+                        }}
+                      />
+                      <Play className="h-4 w-4" /> Start Test
+                    </motion.button>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    className="relative inline-flex items-center gap-2 rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white hover:bg-teal-700 overflow-hidden"
-                  >
-                    <span
-                      className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.25), transparent 40%)",
-                      }}
-                    />
-                    <Play className="h-4 w-4" /> Start Test
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Test History */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+      >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -772,12 +817,12 @@ const AssessmentDashboard = () => {
               value={historySearch}
               onChange={(e) => setHistorySearch(e.target.value)}
               placeholder="Search..."
-              className="h-9 w-40 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="h-9 w-40 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-brand-teal/50 transition-all"
             />
             <div className="relative">
               <button
                 onClick={() => setSortMenuOpen((o) => !o)}
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-teal-300/60 bg-white px-3 text-sm text-gray-700 shadow-[inset_0_0_0_1px_rgba(13,148,136,0.15)] hover:bg-teal-50/50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand-teal/30 bg-white px-3 text-sm text-gray-700 shadow-sm hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
               >
                 {sortLabel[historySort]}
                 <ChevronDown
@@ -806,10 +851,10 @@ const AssessmentDashboard = () => {
                         setHistorySort(key as "date" | "score" | "percentile");
                         setSortMenuOpen(false);
                       }}
-                      className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+                      className={`block w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors ${
                         historySort === key
-                          ? "bg-teal-50 text-teal-700"
-                          : "text-gray-700"
+                          ? "bg-gradient-to-r from-brand-teal/15 to-brand-navy/15 text-brand-navy font-medium"
+                          : "text-gray-700 hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5"
                       }`}
                     >
                       {sortLabel[key]}
@@ -823,41 +868,112 @@ const AssessmentDashboard = () => {
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
-              <tr className="text-xs uppercase tracking-wider text-gray-500">
-                <th className="whitespace-nowrap px-3 py-2">Title</th>
-                <th className="whitespace-nowrap px-3 py-2">Category</th>
-                <th className="whitespace-nowrap px-3 py-2">Completed On</th>
-                <th className="whitespace-nowrap px-3 py-2">Score</th>
-                <th className="whitespace-nowrap px-3 py-2">Percentile</th>
-                <th className="whitespace-nowrap px-3 py-2 text-right">
+              <tr className="border-b-2 border-gray-200">
+                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Title
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Category
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Completed On
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Score
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Percentile
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {visibleHistory.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-3 py-3 font-medium text-gray-900">
-                    {row.title}
-                  </td>
-                  <td className="px-3 py-3 text-gray-700">{row.category}</td>
-                  <td className="px-3 py-3 text-gray-700">{row.date}</td>
-                  <td className="px-3 py-3 text-gray-700">{row.score}</td>
-                  <td className="px-3 py-3 text-gray-700">{row.percentile}%</td>
-                  <td className="px-3 py-3 text-right">
-                    <button
-                      onClick={() => openReport(row)}
-                      className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      View Report
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {visibleHistory.map((row, idx) => {
+                const scoreColor =
+                  row.score >= 85
+                    ? "border-brand-teal/50 bg-brand-teal/5 text-brand-navy"
+                    : row.score >= 70
+                    ? "border-amber-300 bg-amber-50 text-amber-700"
+                    : "border-red-300 bg-red-50 text-red-700";
+                const percentileColor =
+                  row.percentile >= 85
+                    ? "border-purple-300 bg-purple-50 text-purple-700"
+                    : row.percentile >= 70
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-gray-300 bg-gray-50 text-gray-700";
+
+                return (
+                  <motion.tr
+                    key={row.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5 transition-all cursor-pointer group"
+                  >
+                    <td className="px-4 py-4 font-semibold text-gray-900 group-hover:text-brand-navy transition-colors">
+                      {row.title}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        {row.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-gray-600">{row.date}</td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex items-center justify-center w-12 h-8 rounded-md border font-bold text-sm shadow-sm ${scoreColor}`}
+                      >
+                        {row.score}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md border font-semibold text-xs shadow-sm ${percentileColor}`}
+                      >
+                        {row.percentile}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <motion.button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Placeholder - no navigation for now
+                        }}
+                        whileHover={{ scale: 1.08, x: -3 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-md border border-brand-teal/30 bg-gradient-to-r from-brand-teal/10 to-brand-navy/10 px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md transition-all hover:border-brand-teal/50 hover:from-brand-teal/15 hover:to-brand-navy/15 hover:shadow-lg"
+                      >
+                        {/* Shine effect on hover */}
+                        <motion.span
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          initial={{ x: "-100%" }}
+                          whileHover={{ x: "100%" }}
+                          transition={{
+                            duration: 0.6,
+                            repeat: Infinity,
+                            repeatDelay: 2,
+                          }}
+                        />
+                        <span className="relative">View Report</span>
+                        <motion.span
+                          initial={{ x: 0 }}
+                          whileHover={{ x: 3 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="relative inline-block"
+                        >
+                          →
+                        </motion.span>
+                      </motion.button>
+                    </td>
+                  </motion.tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
