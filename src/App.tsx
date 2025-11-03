@@ -73,7 +73,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/assessment-dashboard" element={<Dashboard />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/assessment/questions" element={<AssessmentQuestions />} />
         <Route path="/analytics" element={<Analytics />} />
@@ -85,10 +85,16 @@ function AppRoutes() {
       </Route>
 
       {/* Redirect root to dashboard or login */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/"
+        element={<Navigate to="/assessment-dashboard" replace />}
+      />
 
       {/* 404 fallback */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="*"
+        element={<Navigate to="/assessment-dashboard" replace />}
+      />
     </Routes>
   );
 }
