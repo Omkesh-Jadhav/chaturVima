@@ -394,7 +394,7 @@ const Assessment = () => {
             ) : (
               <p className="mt-4 text-sm text-gray-500">
                 Estimated completion time: 10-15 minutes • Your responses are
-                automatically saved
+                automatically saved!
               </p>
             )}
           </motion.div>
@@ -402,6 +402,8 @@ const Assessment = () => {
       </div>
     );
   }
+
+  // Assessment complete states
 
   // Assessment complete state
   if (isComplete && result) {
