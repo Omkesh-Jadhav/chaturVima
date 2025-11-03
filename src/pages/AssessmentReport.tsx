@@ -13,14 +13,10 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    RadarChart,
-    PolarGrid,
-    PolarAngleAxis,
-    PolarRadiusAxis,
-    Radar,
     Area,
     AreaChart,
 } from "recharts";
+import { ResponsiveRadar } from '@nivo/radar';
 import assessmentData from '../data/assessmentReportData.json';
 
 interface CategoryScore {
@@ -331,7 +327,7 @@ const AssessmentReport: React.FC = () => {
     };
 
     return (
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen flex flex-col items-center p-8">
+        <div className="bg-linear-to-br from-indigo-50 to-purple-100 min-h-screen flex flex-col items-center p-8">
             <div
                 ref={reportRef}
                 className="bg-white shadow-2xl rounded-3xl max-w-4xl w-full p-10 space-y-10"
@@ -432,21 +428,35 @@ const AssessmentReport: React.FC = () => {
                         sub-traits that contribute to the {mainCategory} archetype.
                     </p>
 
-                    <div className="w-full h-80 flex justify-center">
-                        <ResponsiveContainer width="80%" height="100%">
-                            <RadarChart data={subCategoryScores}>
-                                <PolarGrid />
-                                <PolarAngleAxis dataKey="subCategory" />
-                                <PolarRadiusAxis />
-                                <Radar
-                                    name="Score"
-                                    dataKey="score"
-                                    stroke="#f43f5e"
-                                    fill="#fda4af"
-                                    fillOpacity={0.6}
-                                />
-                            </RadarChart>
-                        </ResponsiveContainer>
+                    <div className="w-full h-80">
+                        <ResponsiveRadar
+                            data={subCategoryScores.map(item => ({
+                                subCategory: item.subCategory,
+                                score: item.score
+                            }))}
+                            keys={['score']}
+                            indexBy="subCategory"
+                            valueFormat=">-.2f"
+                            margin={{ top: 70, right: 80, bottom: 40, left: 80 }}
+                            borderColor={{ from: 'color' }}
+                            gridLevels={5}
+                            gridShape="circular"
+                            gridLabelOffset={36}
+                            enableDots={true}
+                            dotSize={10}
+                            dotColor={{ theme: 'background' }}
+                            dotBorderWidth={2}
+                            dotBorderColor={{ from: 'color' }}
+                            enableDotLabel={true}
+                            dotLabel="value"
+                            dotLabelYOffset={-12}
+                            colors={{ scheme: 'nivo' }}
+                            fillOpacity={0.25}
+                            blendMode="multiply"
+                            animate={true}
+                            motionConfig="wobbly"
+                            isInteractive={true}
+                        />
                     </div>
                 </section>
 
