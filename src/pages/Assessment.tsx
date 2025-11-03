@@ -2,9 +2,11 @@
  * Assessment Page
  * Complete assessment flow with gamification
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../context/AssessmentContext";
+import { useUser } from "../context/UserContext";
 import { Button } from "../components/ui";
 import QuestionCard from "../components/assessment/QuestionCard";
 import AssessmentProgress from "../components/assessment/AssessmentProgress";
@@ -14,6 +16,8 @@ import CelebrationConfetti from "../components/assessment/CelebrationConfetti";
 import { PlayCircle } from "lucide-react";
 
 const Assessment = () => {
+  const navigate = useNavigate();
+  const { user } = useUser();
   const {
     progress,
     currentQuestion,
@@ -23,11 +27,34 @@ const Assessment = () => {
     answerQuestion,
     goToPreviousQuestion,
     resetAssessment,
+    answers,
   } = useAssessment();
+
+  // Wrapper for backward compatibility with QuestionCard
+  const handleAnswer = (optionIndex: number) => {
+    if (currentQuestion) {
+      answerQuestion(currentQuestion.id, optionIndex);
+    }
+  };
 
   const [showEnergyBreak, setShowEnergyBreak] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+
+  // Check if user has existing saved answers
+  const hasExistingAnswers = useMemo(() => {
+    if (!user) return false;
+
+    try {
+      // Use user-specific storage key
+      const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const storageKey = `chaturvima_assessment_answers_${emailKey}`;
+      const savedAnswers = localStorage.getItem(storageKey);
+      return savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
+    } catch {
+      return Object.keys(answers).length > 0;
+    }
+  }, [answers, user]);
 
   // Check if we should show energy break (every 5 questions, but not at the end)
   useEffect(() => {
@@ -50,8 +77,32 @@ const Assessment = () => {
   }, [progress.percentComplete]);
 
   const handleStart = () => {
-    startAssessment();
-    setHasStarted(true);
+    // Check if there are saved answers
+    if (!user) {
+      startAssessment();
+      navigate("/assessment/questions");
+      return;
+    }
+
+    try {
+      // Use user-specific storage key
+      const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const storageKey = `chaturvima_assessment_answers_${emailKey}`;
+      const savedAnswers = localStorage.getItem(storageKey);
+      const hasExistingAnswers =
+        savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
+
+      if (!hasExistingAnswers) {
+        // No saved answers - start fresh assessment
+        startAssessment();
+      }
+      // If has existing answers, don't call startAssessment() to preserve them
+      navigate("/assessment/questions");
+    } catch {
+      // If error parsing, start fresh
+      startAssessment();
+      navigate("/assessment/questions");
+    }
   };
 
   const handleContinueFromBreak = () => {
@@ -103,12 +154,14 @@ const Assessment = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto leading-relaxed">
-              Discover your organizational stage and unlock insights into your
-              workplace journey
+              Evaluate your organizational health across four key stages of
+              engagement and discover your current position in the workplace
+              journey
             </p>
             <p className="text-base text-gray-500 max-w-2xl mx-auto">
-              Based on the ChaturVima framework - a comprehensive evaluation of
-              your organizational engagement
+              Built on the ChaturVima framework - a validated model for
+              understanding employee experience, organizational alignment, and
+              workplace satisfaction
             </p>
           </div>
 
@@ -121,15 +174,15 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">
-                  {progress.totalQuestions}
-                </p>
+                <p className="text-4xl font-bold text-blue-600">25</p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
               </div>
               <p className="text-sm font-medium text-blue-900">Questions</p>
-              <p className="text-xs text-blue-700 mt-1">Thoughtfully curated</p>
+              <p className="text-xs text-blue-700 mt-1">
+                Multi-dimensional evaluation
+              </p>
             </motion.div>
 
             <motion.div
@@ -139,13 +192,13 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-purple-600">~12</p>
+                <p className="text-4xl font-bold text-purple-600">10-15</p>
                 <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center">
                   <span className="text-2xl">⏱️</span>
                 </div>
               </div>
               <p className="text-sm font-medium text-purple-900">Minutes</p>
-              <p className="text-xs text-purple-700 mt-1">Quick & focused</p>
+              <p className="text-xs text-purple-700 mt-1">At your own pace</p>
             </motion.div>
 
             <motion.div
@@ -202,19 +255,23 @@ const Assessment = () => {
                   <ul className="space-y-1.5 text-sm text-gray-700">
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      Your dominant organizational stage
+                      Your primary organizational stage (Honeymoon,
+                      Self-Reflection, Soul-Searching, or Steady-State)
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      Detailed stage distribution analysis
+                      Stage-by-stage breakdown showing your responses across all
+                      four dimensions
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      Personalized insights and recommendations
+                      Insights into engagement levels, trust, alignment, and
+                      satisfaction
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
-                      Alignment with organizational goals
+                      Actionable recommendations based on your assessment
+                      results
                     </li>
                   </ul>
                 </div>
@@ -238,19 +295,23 @@ const Assessment = () => {
                   <ul className="space-y-1.5 text-sm text-gray-700">
                     <li className="flex items-center gap-2">
                       <span className="text-blue-500">•</span>
-                      Answer honestly - no right or wrong answers
+                      Answer based on your genuine experience - there are no
+                      wrong answers
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-blue-500">•</span>
-                      Take energy breaks when prompted
+                      You can review and edit your answers anytime before
+                      submitting
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-blue-500">•</span>
-                      You can navigate back to previous questions
+                      Your progress is automatically saved - return anytime to
+                      continue
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-blue-500">•</span>
-                      Your responses are completely confidential
+                      Use the quick navigation sidebar to jump to specific
+                      questions
                     </li>
                   </ul>
                 </div>
@@ -270,10 +331,30 @@ const Assessment = () => {
             </h3>
             <div className="grid md:grid-cols-4 gap-4">
               {[
-                { step: "1", title: "Answer Questions", icon: "✍️" },
-                { step: "2", title: "Take Breaks", icon: "☕" },
-                { step: "3", title: "Review Insights", icon: "📈" },
-                { step: "4", title: "Get Results", icon: "🎉" },
+                {
+                  step: "1",
+                  title: "Complete 25 Questions",
+                  icon: "✍️",
+                  desc: "Multi-stage evaluation",
+                },
+                {
+                  step: "2",
+                  title: "Auto-saved Progress",
+                  icon: "💾",
+                  desc: "Never lose your work",
+                },
+                {
+                  step: "3",
+                  title: "Review Your Answers",
+                  icon: "📋",
+                  desc: "Edit before submitting",
+                },
+                {
+                  step: "4",
+                  title: "Get Detailed Results",
+                  icon: "📊",
+                  desc: "Insights & recommendations",
+                },
               ].map((item, idx) => (
                 <div key={idx} className="text-center">
                   <div className="w-16 h-16 mx-auto rounded-full bg-white border-2 border-brand-teal flex items-center justify-center mb-2 shadow-sm">
@@ -282,7 +363,10 @@ const Assessment = () => {
                   <div className="text-xs font-medium text-brand-teal mb-1">
                     Step {item.step}
                   </div>
-                  <div className="text-sm text-gray-700">{item.title}</div>
+                  <div className="text-sm font-medium text-gray-900 mb-0.5">
+                    {item.title}
+                  </div>
+                  <div className="text-xs text-gray-600">{item.desc}</div>
                 </div>
               ))}
             </div>
@@ -301,11 +385,18 @@ const Assessment = () => {
               className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all"
             >
               <PlayCircle className="mr-2 h-6 w-6" />
-              Start Assessment
+              {hasExistingAnswers ? "Continue Assessment" : "Start Assessment"}
             </Button>
-            <p className="mt-4 text-sm text-gray-500">
-              Estimated completion time: 12 minutes
-            </p>
+            {hasExistingAnswers ? (
+              <p className="mt-4 text-sm text-brand-teal font-medium">
+                Your previous progress has been saved
+              </p>
+            ) : (
+              <p className="mt-4 text-sm text-gray-500">
+                Estimated completion time: 10-15 minutes • Your responses are
+                automatically saved
+              </p>
+            )}
           </motion.div>
         </motion.div>
       </div>
@@ -343,7 +434,7 @@ const Assessment = () => {
             question={currentQuestion}
             questionNumber={progress.currentQuestionIndex + 1}
             totalQuestions={progress.totalQuestions}
-            onAnswer={answerQuestion}
+            onAnswer={handleAnswer}
             onPrevious={goToPreviousQuestion}
             canGoPrevious={progress.currentQuestionIndex > 0}
           />

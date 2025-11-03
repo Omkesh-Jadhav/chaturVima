@@ -10,6 +10,7 @@ import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Assessment from "./pages/Assessment";
+import AssessmentQuestions from "./pages/AssessmentQuestions";
 import Analytics from "./pages/Analytics";
 import AssessmentReport from "./pages/AssessmentReport";
 
@@ -74,6 +75,7 @@ function AppRoutes() {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/assessment" element={<Assessment />} />
+        <Route path="/assessment/questions" element={<AssessmentQuestions />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/organization" element={<OrganizationPage />} />

@@ -5,7 +5,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User, UserContext as UserContextType, UserRole } from "../types";
-import { getUserByEmail, DEFAULT_USER } from "../data/mockUsers";
+import { getUserByEmail } from "../data/mockUsers";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -44,8 +44,32 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Mock authentication - any password works for demo
-    const foundUser = getUserByEmail(email) || DEFAULT_USER;
+    // Try to find existing user by email
+    let foundUser = getUserByEmail(email);
+
+    // If user doesn't exist, create a new user dynamically
+    if (!foundUser) {
+      // Extract name from email (e.g., "john.doe@example.com" -> "John Doe")
+      const nameFromEmail = email
+        .split("@")[0]
+        .split(/[._-]/)
+        .map(
+          (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+        )
+        .join(" ");
+
+      // Generate avatar based on email
+      const avatarSeed = email.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+      foundUser = {
+        id: `user-${Date.now()}`,
+        name: nameFromEmail || "User",
+        email: email.toLowerCase(),
+        role: "employee", // Default role
+        department: "General",
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+      };
+    }
 
     setUser(foundUser);
     setIsAuthenticated(true);

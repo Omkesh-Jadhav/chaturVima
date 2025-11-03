@@ -2,7 +2,13 @@
  * Assessment Context
  * Manages assessment state, progress, and answers
  */
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import type { ReactNode } from "react";
 import type {
   Answer,
@@ -19,9 +25,14 @@ interface AssessmentContextType {
   currentQuestion: (typeof MOCK_QUESTIONS)[0] | null;
   isComplete: boolean;
   result: AssessmentResult | null;
+  questions: typeof MOCK_QUESTIONS;
+  answers: Record<string, number>; // questionId -> selectedOption
   startAssessment: () => void;
-  answerQuestion: (optionIndex: number) => void;
+  answerQuestion: (questionId: string, optionIndex: number) => void;
+  goToQuestion: (index: number) => void;
   goToPreviousQuestion: () => void;
+  goToNextQuestion: () => void;
+  submitAssessment: () => void;
   resetAssessment: () => void;
 }
 
@@ -41,22 +52,79 @@ interface AssessmentProviderProps {
   children: ReactNode;
 }
 
+// Helper function to get user-specific storage keys
+const getStorageKeys = (userEmail: string | null) => {
+  const emailKey = userEmail
+    ? userEmail.toLowerCase().replace(/[^a-z0-9]/g, "_")
+    : "anonymous";
+  return {
+    answers: `chaturvima_assessment_answers_${emailKey}`,
+    index: `chaturvima_assessment_index_${emailKey}`,
+  };
+};
+
 export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
   const { user } = useUser();
-  const [progress, setProgress] = useState<AssessmentProgress>({
-    currentQuestionIndex: 0,
-    totalQuestions: MOCK_QUESTIONS.length,
-    answers: [],
-    percentComplete: 0,
-    timeStarted: new Date(),
-    timeElapsed: 0,
+
+  // Load saved answers and index from localStorage on mount
+  const loadSavedState = (): {
+    answers: Record<string, number>;
+    index: number;
+  } => {
+    if (!user) {
+      return { answers: {}, index: 0 };
+    }
+
+    const storageKeys = getStorageKeys(user.email);
+    try {
+      const savedAnswers = localStorage.getItem(storageKeys.answers);
+      const savedIndex = localStorage.getItem(storageKeys.index);
+      return {
+        answers: savedAnswers ? JSON.parse(savedAnswers) : {},
+        index: savedIndex ? parseInt(savedIndex, 10) : 0,
+      };
+    } catch (error) {
+      console.error("Error loading saved assessment state:", error);
+      return { answers: {}, index: 0 };
+    }
+  };
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    return loadSavedState().index;
+  });
+  const [answers, setAnswers] = useState<Record<string, number>>(() => {
+    return loadSavedState().answers;
   });
   const [isComplete, setIsComplete] = useState(false);
   const [result, setResult] = useState<AssessmentResult | null>(null);
 
+  // Reload answers when user changes
+  useEffect(() => {
+    const savedState = loadSavedState();
+    setAnswers(savedState.answers);
+    setCurrentQuestionIndex(savedState.index);
+  }, [user?.email]); // Reload when user email changes
+
+  const totalQuestions = MOCK_QUESTIONS.length;
+  const answeredCount = Object.keys(answers).length;
+  const percentComplete = Math.round((answeredCount / totalQuestions) * 100);
+
+  const progress: AssessmentProgress = {
+    currentQuestionIndex,
+    totalQuestions,
+    answers: Object.entries(answers).map(([questionId, selectedOption]) => ({
+      questionId,
+      selectedOption,
+      timestamp: new Date(),
+    })),
+    percentComplete,
+    timeStarted: new Date(),
+    timeElapsed: 0,
+  };
+
   const currentQuestion =
-    progress.currentQuestionIndex < MOCK_QUESTIONS.length
-      ? MOCK_QUESTIONS[progress.currentQuestionIndex]
+    currentQuestionIndex < MOCK_QUESTIONS.length
+      ? MOCK_QUESTIONS[currentQuestionIndex]
       : null;
 
   const calculateStageDistribution = useCallback(
@@ -136,108 +204,161 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
   };
 
   const startAssessment = useCallback(() => {
-    setProgress({
-      currentQuestionIndex: 0,
-      totalQuestions: MOCK_QUESTIONS.length,
-      answers: [],
-      percentComplete: 0,
-      timeStarted: new Date(),
-      timeElapsed: 0,
-    });
+    setCurrentQuestionIndex(0);
+    setAnswers({});
     setIsComplete(false);
     setResult(null);
-  }, []);
+    // Clear saved state when starting new assessment
+    if (user) {
+      const storageKeys = getStorageKeys(user.email);
+      try {
+        localStorage.removeItem(storageKeys.answers);
+        localStorage.removeItem(storageKeys.index);
+      } catch (error) {
+        console.error("Error clearing localStorage:", error);
+      }
+    }
+  }, [user]);
 
   const answerQuestion = useCallback(
-    (optionIndex: number) => {
-      if (!currentQuestion) return;
-
-      const answer: Answer = {
-        questionId: currentQuestion.id,
-        selectedOption: optionIndex,
-        timestamp: new Date(),
-      };
-
-      setProgress((prev) => {
-        const newAnswers = [...prev.answers, answer];
-        const newIndex = prev.currentQuestionIndex + 1;
-        const percentComplete = Math.round(
-          (newIndex / prev.totalQuestions) * 100
-        );
-        const timeElapsed = Math.floor(
-          (new Date().getTime() - prev.timeStarted.getTime()) / 1000
-        );
-
-        // Check if assessment is complete
-        if (newIndex >= prev.totalQuestions) {
-          const distribution = calculateStageDistribution(newAnswers);
-          const dominantStage = getDominantStage(distribution);
-
-          setIsComplete(true);
-          setResult({
-            userId: user?.id || "unknown",
-            level: "employee",
-            stageDistribution: distribution,
-            dominantStage,
-            completedAt: new Date(),
-            score: Math.round(
-              Object.values(distribution).reduce((sum, val) => sum + val, 0) / 4
-            ),
-          });
-        }
-
-        return {
+    (questionId: string, optionIndex: number) => {
+      setAnswers((prev) => {
+        const newAnswers = {
           ...prev,
-          currentQuestionIndex: newIndex,
-          answers: newAnswers,
-          percentComplete,
-          timeElapsed,
+          [questionId]: optionIndex,
         };
+        // Auto-save to localStorage
+        if (user) {
+          const storageKeys = getStorageKeys(user.email);
+          try {
+            localStorage.setItem(
+              storageKeys.answers,
+              JSON.stringify(newAnswers)
+            );
+          } catch (error) {
+            console.error("Error saving answers to localStorage:", error);
+          }
+        }
+        return newAnswers;
       });
     },
-    [currentQuestion, user, calculateStageDistribution]
+    [user]
+  );
+
+  const goToQuestion = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < totalQuestions) {
+        setCurrentQuestionIndex(index);
+        // Save current page index
+        if (user) {
+          const storageKeys = getStorageKeys(user.email);
+          try {
+            localStorage.setItem(storageKeys.index, index.toString());
+          } catch (error) {
+            console.error("Error saving page index to localStorage:", error);
+          }
+        }
+      }
+    },
+    [totalQuestions, user]
   );
 
   const goToPreviousQuestion = useCallback(() => {
-    setProgress((prev) => {
-      if (prev.currentQuestionIndex === 0) return prev;
-
-      const newIndex = prev.currentQuestionIndex - 1;
-      const newAnswers = prev.answers.slice(0, -1); // Remove last answer
-      const percentComplete = Math.round(
-        (newIndex / prev.totalQuestions) * 100
-      );
-
-      return {
-        ...prev,
-        currentQuestionIndex: newIndex,
-        answers: newAnswers,
-        percentComplete,
-      };
+    setCurrentQuestionIndex((prev) => {
+      const newIndex = Math.max(0, prev - 1);
+      if (user) {
+        const storageKeys = getStorageKeys(user.email);
+        try {
+          localStorage.setItem(storageKeys.index, newIndex.toString());
+        } catch (error) {
+          console.error("Error saving page index to localStorage:", error);
+        }
+      }
+      return newIndex;
     });
-  }, []);
+  }, [user]);
+
+  const goToNextQuestion = useCallback(() => {
+    setCurrentQuestionIndex((prev) => {
+      const newIndex = Math.min(totalQuestions - 1, prev + 1);
+      if (user) {
+        const storageKeys = getStorageKeys(user.email);
+        try {
+          localStorage.setItem(storageKeys.index, newIndex.toString());
+        } catch (error) {
+          console.error("Error saving page index to localStorage:", error);
+        }
+      }
+      return newIndex;
+    });
+  }, [totalQuestions, user]);
+
+  const submitAssessment = useCallback(() => {
+    const answerArray: Answer[] = Object.entries(answers).map(
+      ([questionId, selectedOption]) => ({
+        questionId,
+        selectedOption,
+        timestamp: new Date(),
+      })
+    );
+
+    const distribution = calculateStageDistribution(answerArray);
+    const dominantStage = getDominantStage(distribution);
+
+    setIsComplete(true);
+    setResult({
+      userId: user?.id || "unknown",
+      level: "employee",
+      stageDistribution: distribution,
+      dominantStage,
+      completedAt: new Date(),
+      score: Math.round(
+        Object.values(distribution).reduce((sum, val) => sum + val, 0) / 4
+      ),
+    });
+
+    // Clear saved state after successful submission
+    if (user) {
+      const storageKeys = getStorageKeys(user.email);
+      try {
+        localStorage.removeItem(storageKeys.answers);
+        localStorage.removeItem(storageKeys.index);
+      } catch (error) {
+        console.error("Error clearing localStorage after submission:", error);
+      }
+    }
+  }, [answers, user, calculateStageDistribution]);
 
   const resetAssessment = useCallback(() => {
-    setProgress({
-      currentQuestionIndex: 0,
-      totalQuestions: MOCK_QUESTIONS.length,
-      answers: [],
-      percentComplete: 0,
-      timeStarted: new Date(),
-      timeElapsed: 0,
-    });
+    setCurrentQuestionIndex(0);
+    setAnswers({});
     setIsComplete(false);
     setResult(null);
-  }, []);
+    // Clear saved state when resetting
+    if (user) {
+      const storageKeys = getStorageKeys(user.email);
+      try {
+        localStorage.removeItem(storageKeys.answers);
+        localStorage.removeItem(storageKeys.index);
+      } catch (error) {
+        console.error("Error clearing localStorage:", error);
+      }
+    }
+  }, [user]);
 
   const value: AssessmentContextType = {
     progress,
     currentQuestion,
     isComplete,
     result,
+    questions: MOCK_QUESTIONS,
+    answers,
     startAssessment,
     answerQuestion,
+    goToQuestion,
     goToPreviousQuestion,
+    goToNextQuestion,
+    submitAssessment,
     resetAssessment,
   };
 

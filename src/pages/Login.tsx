@@ -60,8 +60,8 @@ const GoogleLogo = ({ className }: { className?: string }) => (
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useUser();
-  const [email, setEmail] = useState("priya.sharma@example.com");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -93,8 +93,10 @@ const Login = () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     try {
-      // For demo, use a default email for Google sign-in
-      await login("priya.sharma@example.com", "google-signin");
+      // Simulate getting email from Google OAuth
+      // In a real app, this would come from the OAuth response
+      const googleEmail = email || "user@example.com";
+      await login(googleEmail, "google-signin");
       navigate("/assessment");
     } catch {
       setError("Google sign-in failed. Please try again.");
