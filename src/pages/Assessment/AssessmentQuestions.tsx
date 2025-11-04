@@ -22,9 +22,7 @@ import {
   Target,
   ArrowLeft,
 } from "lucide-react";
-import { STAGES } from "../../data/stages";
 import { cn } from "../../utils/cn";
-import type { StageType } from "../../types";
 
 // Success Modal Component
 const SuccessModal = ({
@@ -306,31 +304,6 @@ const AssessmentQuestions = () => {
     return questions.slice(start, end);
   }, [questions, currentPage, questionsPerPage]);
 
-  // Calculate stage progress
-  const stageProgress = useMemo(() => {
-    const stageCounts: Record<StageType, { total: number; answered: number }> =
-      {
-        honeymoon: { total: 0, answered: 0 },
-        "self-reflection": { total: 0, answered: 0 },
-        "soul-searching": { total: 0, answered: 0 },
-        "steady-state": { total: 0, answered: 0 },
-      };
-
-    questions.forEach((q) => {
-      stageCounts[q.stage].total++;
-      if (answers[q.id] !== undefined) {
-        stageCounts[q.stage].answered++;
-      }
-    });
-
-    return Object.entries(stageCounts).map(([stage, data]) => ({
-      stage: stage as StageType,
-      total: data.total,
-      answered: data.answered,
-      percentage: Math.round((data.answered / data.total) * 100),
-    }));
-  }, [questions, answers]);
-
   const allAnswered = Object.keys(answers).length === questions.length;
   const answeredCount = Object.keys(answers).length;
 
@@ -554,7 +527,6 @@ const AssessmentQuestions = () => {
                   const questionNumber =
                     currentPage * questionsPerPage + idx + 1;
                   const selectedAnswer = answers[question.id];
-                  const stageInfo = STAGES[question.stage];
 
                   return (
                     <motion.div
@@ -624,16 +596,9 @@ const AssessmentQuestions = () => {
                           {/* Animated border gradient for answered */}
                           {selectedAnswer !== undefined && (
                             <motion.div
-                              className="absolute inset-0 rounded-lg"
-                              style={{
-                                background: `linear-gradient(135deg, ${stageInfo.color.main}15, transparent)`,
-                              }}
+                              className="absolute inset-0 rounded-lg bg-gradient-to-r from-brand-teal/10 to-brand-navy/5"
                               animate={{
-                                background: [
-                                  `linear-gradient(135deg, ${stageInfo.color.main}15, transparent)`,
-                                  `linear-gradient(225deg, ${stageInfo.color.main}20, transparent)`,
-                                  `linear-gradient(135deg, ${stageInfo.color.main}15, transparent)`,
-                                ],
+                                opacity: [0.5, 0.8, 0.5],
                               }}
                               transition={{
                                 duration: 3,
@@ -646,16 +611,6 @@ const AssessmentQuestions = () => {
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <motion.div
-                                    style={{
-                                      backgroundColor: stageInfo.color.light,
-                                      color: stageInfo.color.main,
-                                    }}
-                                    className="px-3 py-1 rounded-full text-xs font-semibold"
-                                    whileHover={{ scale: 1.05 }}
-                                  >
-                                    {stageInfo.name}
-                                  </motion.div>
                                   <span className="text-sm text-gray-500">
                                     Question {questionNumber} of{" "}
                                     {questions.length}
@@ -1074,54 +1029,6 @@ const AssessmentQuestions = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </motion.div>
-
-              {/* Stage Progress Card */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Card variant="elevated" className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Star className="h-5 w-5 text-brand-teal" />
-                    Stage Completion
-                  </h3>
-                  <div className="space-y-4">
-                    {stageProgress.map((stageData) => {
-                      const stage = STAGES[stageData.stage];
-                      return (
-                        <div key={stageData.stage}>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-3 h-3 rounded"
-                                style={{ backgroundColor: stage.color.main }}
-                              />
-                              <span className="text-sm font-medium text-gray-700">
-                                {stage.name}
-                              </span>
-                            </div>
-                            <span className="text-xs font-semibold text-gray-600">
-                              {stageData.answered}/{stageData.total}
-                            </span>
-                          </div>
-                          <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <motion.div
-                              className="absolute inset-y-0 left-0 rounded-full"
-                              style={{ backgroundColor: stage.color.main }}
-                              initial={{ width: 0 }}
-                              animate={{
-                                width: `${stageData.percentage}%`,
-                              }}
-                              transition={{ duration: 0.6, ease: "easeOut" }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
                   </div>
                 </Card>
               </motion.div>
