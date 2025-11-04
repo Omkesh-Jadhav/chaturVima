@@ -546,127 +546,184 @@ const AssessmentQuestions = () => {
                         layout
                         className="relative"
                       >
-                        <div
-                          className={cn(
-                            "p-6 rounded-lg border transition-all duration-300 relative overflow-hidden group",
+                        <motion.div
+                          animate={
                             selectedAnswer !== undefined
-                              ? "border-brand-teal border-2 shadow-lg"
-                              : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
-                          )}
+                              ? {
+                                  boxShadow: [
+                                    "0 0 0 0px rgba(43, 198, 180, 0.4)",
+                                    "0 0 0 8px rgba(43, 198, 180, 0)",
+                                  ],
+                                }
+                              : {}
+                          }
+                          transition={{ duration: 0.6 }}
                         >
-                          {selectedAnswer !== undefined && (
-                            <div className="absolute inset-0 rounded-lg bg-brand-teal/5" />
-                          )}
-                          <div className="relative z-10">
-                            {/* Question Header */}
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <span className="text-sm text-gray-500">
-                                    Question {questionNumber} of{" "}
-                                    {questions.length}
-                                  </span>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                  {question.text}
-                                </h3>
-                                {question.description && (
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {question.description}
-                                  </p>
-                                )}
-                              </div>
-                              {selectedAnswer !== undefined && (
-                                <div className="flex-shrink-0 ml-4">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md">
-                                    <Check className="h-5 w-5 text-white" />
+                          <div
+                            className={cn(
+                              "p-6 rounded-lg border transition-all duration-300 relative overflow-hidden group",
+                              selectedAnswer !== undefined
+                                ? "border-brand-teal border-2 shadow-lg"
+                                : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
+                            )}
+                          >
+                            {/* Animated border gradient for answered */}
+                            {selectedAnswer !== undefined && (
+                              <motion.div
+                                className="absolute inset-0 rounded-lg bg-gradient-to-r from-brand-teal/10 to-brand-navy/5"
+                                animate={{
+                                  opacity: [0.5, 0.8, 0.5],
+                                }}
+                                transition={{
+                                  duration: 3,
+                                  repeat: Infinity,
+                                }}
+                              />
+                            )}
+                            <div className="relative z-10">
+                              {/* Question Header */}
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-sm text-gray-500">
+                                      Question {questionNumber} of{" "}
+                                      {questions.length}
+                                    </span>
                                   </div>
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    {question.text}
+                                  </h3>
+                                  {question.description && (
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {question.description}
+                                    </p>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-
-                            {/* Options */}
-                            <div className="space-y-3 mt-6">
-                              {question.options.map((option, optionIndex) => {
-                                const isSelected =
-                                  selectedAnswer === optionIndex;
-                                return (
-                                  <motion.button
-                                    key={optionIndex}
-                                    type="button"
-                                    onClick={() =>
-                                      handleAnswerChange(
-                                        question.id,
-                                        optionIndex
-                                      )
-                                    }
-                                    whileHover={{
-                                      scale: 1.02,
-                                      x: 4,
-                                      boxShadow: isSelected
-                                        ? "0 4px 12px rgba(43, 198, 180, 0.2)"
-                                        : "0 4px 12px rgba(0, 0, 0, 0.08)",
-                                    }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className={cn(
-                                      "w-full text-left p-4 rounded-lg border-2 transition-all cursor-pointer relative overflow-hidden group/option",
-                                      isSelected
-                                        ? "border-brand-teal bg-brand-teal/10 shadow-md"
-                                        : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
-                                    )}
-                                  >
-                                    {/* Ripple effect on click - only animate once */}
-                                    {isSelected && (
+                                <AnimatePresence>
+                                  {selectedAnswer !== undefined && (
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -180 }}
+                                      animate={{
+                                        scale: 1,
+                                        rotate: 0,
+                                        y: [0, -5, 0],
+                                      }}
+                                      exit={{ scale: 0, rotate: 180 }}
+                                      transition={{
+                                        rotate: {
+                                          type: "spring",
+                                          stiffness: 200,
+                                        },
+                                        y: {
+                                          duration: 2,
+                                          repeat: Infinity,
+                                          repeatType: "reverse",
+                                        },
+                                      }}
+                                      className="flex-shrink-0 ml-4 relative"
+                                    >
                                       <motion.div
-                                        className="absolute inset-0 rounded-lg bg-brand-teal/20"
-                                        initial={{ scale: 0, opacity: 0.5 }}
-                                        animate={{ scale: 2, opacity: 0 }}
-                                        transition={{ duration: 0.6 }}
+                                        className="absolute inset-0 rounded-full bg-green-400/30 blur-md"
+                                        animate={{
+                                          scale: [1, 1.3, 1],
+                                          opacity: [0.5, 0, 0.5],
+                                        }}
+                                        transition={{
+                                          duration: 2,
+                                          repeat: Infinity,
+                                        }}
                                       />
-                                    )}
-
-                                    {/* Static background for selected */}
-                                    {isSelected && (
-                                      <>
-                                        <div className="absolute inset-0 bg-gradient-to-r from-brand-teal/10 via-brand-navy/5 to-brand-teal/10" />
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy" />
-                                      </>
-                                    )}
-                                    <div className="flex items-center gap-3 relative z-10">
-                                      <div
-                                        className={cn(
-                                          "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 relative transition-all",
-                                          isSelected
-                                            ? "border-brand-teal bg-brand-teal"
-                                            : "border-gray-300 group-hover/option:border-brand-teal/50"
-                                        )}
-                                      >
-                                        {isSelected && (
-                                          <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="w-2 h-2 rounded-full bg-white"
-                                          />
-                                        )}
+                                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+                                        <Check className="h-5 w-5 text-white" />
                                       </div>
-                                      <span
-                                        className={cn(
-                                          "text-sm font-medium",
-                                          isSelected
-                                            ? "text-gray-900"
-                                            : "text-gray-700"
-                                        )}
-                                      >
-                                        {option}
-                                      </span>
-                                    </div>
-                                  </motion.button>
-                                );
-                              })}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+
+                              {/* Options */}
+                              <div className="space-y-3 mt-6">
+                                {question.options.map((option, optionIndex) => {
+                                  const isSelected =
+                                    selectedAnswer === optionIndex;
+                                  return (
+                                    <motion.button
+                                      key={optionIndex}
+                                      type="button"
+                                      onClick={() =>
+                                        handleAnswerChange(
+                                          question.id,
+                                          optionIndex
+                                        )
+                                      }
+                                      whileHover={{
+                                        scale: 1.02,
+                                        x: 4,
+                                        boxShadow: isSelected
+                                          ? "0 4px 12px rgba(43, 198, 180, 0.2)"
+                                          : "0 4px 12px rgba(0, 0, 0, 0.08)",
+                                      }}
+                                      whileTap={{ scale: 0.98 }}
+                                      className={cn(
+                                        "w-full text-left p-4 rounded-lg border-2 transition-all cursor-pointer relative overflow-hidden group/option",
+                                        isSelected
+                                          ? "border-brand-teal bg-brand-teal/10 shadow-md"
+                                          : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
+                                      )}
+                                    >
+                                      {/* Ripple effect on click - only animate once */}
+                                      {isSelected && (
+                                        <motion.div
+                                          className="absolute inset-0 rounded-lg bg-brand-teal/20"
+                                          initial={{ scale: 0, opacity: 0.5 }}
+                                          animate={{ scale: 2, opacity: 0 }}
+                                          transition={{ duration: 0.6 }}
+                                        />
+                                      )}
+
+                                      {/* Static background for selected */}
+                                      {isSelected && (
+                                        <>
+                                          <div className="absolute inset-0 bg-gradient-to-r from-brand-teal/10 via-brand-navy/5 to-brand-teal/10" />
+                                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy" />
+                                        </>
+                                      )}
+                                      <div className="flex items-center gap-3 relative z-10">
+                                        <div
+                                          className={cn(
+                                            "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 relative transition-all",
+                                            isSelected
+                                              ? "border-brand-teal bg-brand-teal"
+                                              : "border-gray-300 group-hover/option:border-brand-teal/50"
+                                          )}
+                                        >
+                                          {isSelected && (
+                                            <motion.div
+                                              initial={{ scale: 0 }}
+                                              animate={{ scale: 1 }}
+                                              transition={{ duration: 0.3 }}
+                                              className="w-2 h-2 rounded-full bg-white"
+                                            />
+                                          )}
+                                        </div>
+                                        <span
+                                          className={cn(
+                                            "text-sm font-medium",
+                                            isSelected
+                                              ? "text-gray-900"
+                                              : "text-gray-700"
+                                          )}
+                                        >
+                                          {option}
+                                        </span>
+                                      </div>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       </motion.div>
                     );
                   })}
