@@ -703,82 +703,41 @@ const AssessmentQuestions = () => {
                                         : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
                                     )}
                                   >
-                                    {/* Ripple effect on click */}
-                                    <motion.div
-                                      className="absolute inset-0 rounded-lg bg-brand-teal/20"
-                                      initial={{ scale: 0, opacity: 0.5 }}
-                                      animate={
-                                        isSelected
-                                          ? {
-                                              scale: [0, 2],
-                                              opacity: [0.5, 0],
-                                            }
-                                          : {}
-                                      }
-                                      transition={{ duration: 0.6 }}
-                                    />
+                                    {/* Ripple effect on click - only animate once */}
+                                    {isSelected && (
+                                      <motion.div
+                                        className="absolute inset-0 rounded-lg bg-brand-teal/20"
+                                        initial={{ scale: 0, opacity: 0.5 }}
+                                        animate={{ scale: 2, opacity: 0 }}
+                                        transition={{ duration: 0.6 }}
+                                      />
+                                    )}
 
-                                    {/* Animated background gradient for selected */}
+                                    {/* Static background for selected */}
                                     {isSelected && (
                                       <>
-                                        <motion.div
-                                          className="absolute inset-0 bg-gradient-to-r from-brand-teal/10 via-brand-navy/5 to-brand-teal/10"
-                                          initial={{ x: "-100%" }}
-                                          animate={{ x: "100%" }}
-                                          transition={{
-                                            duration: 2,
-                                            repeat: Infinity,
-                                            repeatType: "reverse",
-                                          }}
-                                        />
-                                        <motion.div
-                                          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy"
-                                          initial={{ scaleY: 0 }}
-                                          animate={{ scaleY: 1 }}
-                                          transition={{ duration: 0.3 }}
-                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-brand-teal/10 via-brand-navy/5 to-brand-teal/10" />
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy" />
                                       </>
                                     )}
                                     <div className="flex items-center gap-3 relative z-10">
-                                      <motion.div
+                                      <div
                                         className={cn(
-                                          "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 relative",
+                                          "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 relative transition-all",
                                           isSelected
                                             ? "border-brand-teal bg-brand-teal"
                                             : "border-gray-300 group-hover/option:border-brand-teal/50"
                                         )}
-                                        animate={
-                                          isSelected
-                                            ? {
-                                                scale: [1, 1.2, 1],
-                                                rotate: [0, 180, 360],
-                                              }
-                                            : {}
-                                        }
-                                        transition={{ duration: 0.5 }}
                                       >
-                                        {/* Pulsing ring for selected */}
                                         {isSelected && (
                                           <motion.div
-                                            className="absolute inset-0 rounded-full border-2 border-brand-teal"
-                                            animate={{
-                                              scale: [1, 1.5, 1],
-                                              opacity: [1, 0, 1],
-                                            }}
-                                            transition={{
-                                              duration: 1.5,
-                                              repeat: Infinity,
-                                            }}
-                                          />
-                                        )}
-                                        {isSelected && (
-                                          <motion.div
-                                            initial={{ scale: 0, rotate: -180 }}
-                                            animate={{ scale: 1, rotate: 0 }}
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ duration: 0.3 }}
                                             className="w-2 h-2 rounded-full bg-white"
                                           />
                                         )}
-                                      </motion.div>
+                                      </div>
                                       <span
                                         className={cn(
                                           "text-sm font-medium",
@@ -972,7 +931,7 @@ const AssessmentQuestions = () => {
                 transition={{ delay: 0.2 }}
               >
                 <Card variant="elevated" className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 pt-0 mt-0 flex items-center gap-2">
                     <Target className="h-5 w-5 text-brand-teal" />
                     Your Progress
                   </h3>
