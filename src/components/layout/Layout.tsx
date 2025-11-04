@@ -20,7 +20,9 @@ const Layout = () => {
       >
         <Navbar />
         <main className="flex-1 overflow-hidden relative">
-          <Outlet />
+          <div className="h-full w-full px-4 py-3 lg:px-6 lg:py-8 relative">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

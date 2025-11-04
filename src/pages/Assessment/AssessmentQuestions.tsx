@@ -450,8 +450,8 @@ const AssessmentQuestions = () => {
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="relative z-10 h-full w-full overflow-hidden">
-        <div className="h-full px-4 py-3 lg:px-6 lg:py-3 overflow-hidden flex flex-col">
+      <div className="relative z-10 h-full w-full overflow-hidden px-4 py-3 lg:px-6 lg:py-8">
+        <div className="h-full overflow-hidden flex flex-col">
           <div className="grid lg:grid-cols-3 gap-4 h-full min-h-0 flex-1 overflow-hidden">
             {/* Main Questions Area */}
             <div className="lg:col-span-2 flex flex-col h-full min-h-0 overflow-hidden">
