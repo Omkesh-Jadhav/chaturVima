@@ -144,7 +144,7 @@ const Assessment = () => {
               </div>
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
               <span
                 className="inline-block bg-gradient-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent"
                 style={{ paddingBottom: "0.15em", lineHeight: "1.1" }}

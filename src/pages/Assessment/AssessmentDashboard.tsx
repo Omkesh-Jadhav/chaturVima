@@ -1,11 +1,17 @@
 /**
  * Assessment Dashboard (custom build with Nivo)
+ *
  * Features:
  * - Summary Cards (completed, pending, avg score, last completed)
  * - Visual Analytics: Score progress (Line), Category distribution (Pie), Strengths (Bar)
  * - Pending Assessments list with priorities and Start buttons
  * - Test History table with View Report
- * - Detailed Report view with insights and PDF download
+ *
+ * Typography Standards:
+ * - Page Title: text-2xl md:text-3xl font-bold
+ * - Section Headings: text-lg font-semibold
+ * - Subsection Headings: text-base font-medium
+ * - Card Labels: text-sm font-medium
  */
 import { useMemo, useState, memo, useRef } from "react";
 import { motion } from "framer-motion";
@@ -42,6 +48,7 @@ type CompletedAssessment = {
   percentile: number; // 0-100
 };
 
+// Brand colors - centralized for consistency
 const brand = {
   teal: "#0ea5a4",
   tealDark: "#0b8584",
@@ -56,7 +63,7 @@ const brand = {
   green: "#22c55e",
   amber: "#f59e0b",
   red: "#ef4444",
-};
+} as const;
 
 const SummaryCard = ({
   label,
@@ -111,13 +118,14 @@ const SummaryCard = ({
   </motion.div>
 );
 
-const priorityPill = (p: Priority) => {
-  const map: Record<Priority, string> = {
+// Priority styling - centralized for consistency
+const getPriorityStyles = (priority: Priority): string => {
+  const styles: Record<Priority, string> = {
     High: "bg-red-50 text-red-700 border-red-200",
     Medium: "bg-amber-50 text-amber-700 border-amber-200",
     Low: "bg-green-50 text-green-700 border-green-200",
   };
-  return map[p];
+  return styles[priority];
 };
 
 const AssessmentDashboard = () => {
@@ -422,7 +430,9 @@ const AssessmentDashboard = () => {
 
   const header = (
     <div className="mb-6">
-      <h1 className="text-3xl font-bold text-gray-900">Assessment Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+        Assessment Dashboard
+      </h1>
       <p className="mt-1 text-gray-600">
         Your assessments, insights, and progress at a glance.
       </p>
@@ -753,7 +763,7 @@ const AssessmentDashboard = () => {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${priorityPill(
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${getPriorityStyles(
                           item.priority
                         )}`}
                       >

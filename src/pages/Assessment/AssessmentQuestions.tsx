@@ -2,6 +2,12 @@
  * Assessment Questions Page
  * Multi-question assessment interface with progress sidebar
  * Optimized for 80+ questions with engaging animations
+ *
+ * Typography Standards:
+ * - Page Title: text-2xl md:text-3xl font-bold
+ * - Section Headings: text-lg font-semibold
+ * - Question Text: text-base font-medium
+ * - Body Text: text-sm font-normal
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -476,7 +482,7 @@ const AssessmentQuestions = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <motion.h1
-                        className="text-xl font-semibold text-gray-900"
+                        className="text-2xl md:text-3xl font-bold text-gray-900"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
@@ -864,7 +870,7 @@ const AssessmentQuestions = () => {
                   transition={{ delay: 0.2 }}
                 >
                   <Card variant="elevated" className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <Target className="h-4 w-4 text-brand-teal" />
                       Your Progress
                     </h3>
@@ -938,7 +944,7 @@ const AssessmentQuestions = () => {
                   transition={{ delay: 0.4 }}
                 >
                   <Card variant="elevated" className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
                       Quick Navigation
                     </h3>
                     {/* Show approximately 20 questions visible, then scroll for more */}
