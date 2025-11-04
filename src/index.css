@@ -3,23 +3,23 @@
 @theme {
   /* Variant 3B: Cool Blues & Purples Colors */
   --color-stages-honeymoon: #475569;
-  --color-stages-honeymoon-light: #F1F5F9;
-  --color-stages-honeymoon-dark: #1E293B;
+  --color-stages-honeymoon-light: #f1f5f9;
+  --color-stages-honeymoon-dark: #1e293b;
 
-  --color-stages-self-reflection: #7C3AED;
-  --color-stages-self-reflection-light: #F5F3FF;
-  --color-stages-self-reflection-dark: #5B21B6;
+  --color-stages-self-reflection: #7c3aed;
+  --color-stages-self-reflection-light: #f5f3ff;
+  --color-stages-self-reflection-dark: #5b21b6;
 
-  --color-stages-soul-searching: #0284C7;
-  --color-stages-soul-searching-light: #E0F2FE;
+  --color-stages-soul-searching: #0284c7;
+  --color-stages-soul-searching-light: #e0f2fe;
   --color-stages-soul-searching-dark: #075985;
 
-  --color-stages-steady-state: #0D9488;
-  --color-stages-steady-state-light: #CCFBF1;
-  --color-stages-steady-state-dark: #134E4A;
+  --color-stages-steady-state: #0d9488;
+  --color-stages-steady-state-light: #ccfbf1;
+  --color-stages-steady-state-dark: #134e4a;
 
-  --color-brand-navy: #1E3A5F;
-  --color-brand-teal: #2BC6B4;
+  --color-brand-navy: #1e3a5f;
+  --color-brand-teal: #2bc6b4;
 
   /* Custom animations */
   --animate-fade-in: fadeIn 0.3s ease-in-out;
@@ -29,42 +29,73 @@
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideDown {
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(243, 244, 246, 0.5);
+  border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 9999px;
+  background: linear-gradient(to bottom, #2bc6b4, #1e3a5f);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: linear-gradient(to bottom, #2bc6b4, #1e3a5f);
+  box-shadow: 0 0 8px rgba(43, 198, 180, 0.4);
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2bc6b4 #f3f4f6;
 }
 
 /* Stage shapes */

@@ -431,97 +431,103 @@ const AssessmentQuestions = () => {
         ))}
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 lg:px-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 lg:px-8 overflow-x-hidden">
+        <div className="grid lg:grid-cols-3 gap-8 h-[calc(100vh-8rem)]">
           {/* Main Questions Area */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Back Button */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              whileHover={{ x: -4 }}
-            >
-              <Button
-                variant="outline"
-                onClick={() => navigate("/assessment")}
-                className="cursor-pointer mb-4 group"
-              >
-                <motion.span
-                  animate={{ x: [0, -3, 0] }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    repeatDelay: 2,
-                  }}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                </motion.span>
-                Back to Assessment
-              </Button>
-            </motion.div>
-
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative mb-6"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <motion.h1
-                    className="text-3xl font-bold text-gray-900"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    Assessment Questions
-                  </motion.h1>
-                  <motion.p
-                    className="text-gray-600 mt-1"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    {getMotivationalMessage()}
-                  </motion.p>
-                </div>
-                <motion.div
-                  className="text-right relative"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, type: "spring" }}
-                >
-                  <div className="relative">
-                    <motion.div
-                      className="text-2xl font-bold text-brand-teal"
-                      key={progress.percentComplete}
-                      initial={{ scale: 1 }}
-                      animate={{ scale: [1, 1.15, 1] }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      {progress.percentComplete}%
-                    </motion.div>
-                    <motion.div
-                      className="absolute -inset-2 bg-brand-teal/20 rounded-full blur-xl"
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">Complete</div>
-                </motion.div>
-              </div>
-
-              {/* Decorative progress indicator line */}
+          <div className="lg:col-span-2 flex flex-col overflow-hidden">
+            {/* Fixed Header Section */}
+            <div className="flex-shrink-0 space-y-4 pb-4 bg-gradient-to-b from-white via-white to-transparent relative z-10">
+              {/* Back Button */}
               <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand-teal/30 to-transparent"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-              />
-            </motion.div>
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileHover={{ x: -4 }}
+              >
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/assessment")}
+                  className="cursor-pointer group"
+                >
+                  <motion.span
+                    animate={{ x: [0, -3, 0] }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                    }}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                  </motion.span>
+                  Back to Assessment
+                </Button>
+              </motion.div>
 
-            {/* Questions List */}
-            <div className="space-y-6">
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <motion.h1
+                      className="text-3xl font-bold text-gray-900"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      Assessment Questions
+                    </motion.h1>
+                    <motion.p
+                      className="text-gray-600 mt-1"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      {getMotivationalMessage()}
+                    </motion.p>
+                  </div>
+                  <motion.div
+                    className="text-right relative"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring" }}
+                  >
+                    <div className="relative">
+                      <motion.div
+                        className="text-2xl font-bold text-brand-teal"
+                        key={progress.percentComplete}
+                        initial={{ scale: 1 }}
+                        animate={{ scale: [1, 1.15, 1] }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        {progress.percentComplete}%
+                      </motion.div>
+                      <motion.div
+                        className="absolute -inset-2 bg-brand-teal/20 rounded-full blur-xl"
+                        animate={{
+                          scale: [1, 1.2, 1],
+                          opacity: [0.3, 0.5, 0.3],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Complete</div>
+                  </motion.div>
+                </div>
+
+                {/* Decorative progress indicator line */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand-teal/30 to-transparent"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                />
+              </motion.div>
+            </div>
+
+            {/* Scrollable Questions List */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar space-y-6">
               <AnimatePresence mode="wait">
                 {currentPageQuestions.map((question, idx) => {
                   const questionNumber =
@@ -797,8 +803,8 @@ const AssessmentQuestions = () => {
               </AnimatePresence>
             </div>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between pt-6">
+            {/* Fixed Navigation */}
+            <div className="flex-shrink-0 flex items-center justify-between pt-6 border-t border-gray-200 bg-white mt-4">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -958,7 +964,7 @@ const AssessmentQuestions = () => {
 
           {/* Progress Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-6">
+            <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
               {/* Overall Progress Card */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
