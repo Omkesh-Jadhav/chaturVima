@@ -307,16 +307,6 @@ const AssessmentQuestions = () => {
   const allAnswered = Object.keys(answers).length === questions.length;
   const answeredCount = Object.keys(answers).length;
 
-  // Motivational messages based on progress
-  const getMotivationalMessage = () => {
-    if (progress.percentComplete < 25) return "You're just getting started!";
-    if (progress.percentComplete < 50) return "Halfway there! Keep going!";
-    if (progress.percentComplete < 75)
-      return "Almost there! You're doing great!";
-    if (progress.percentComplete < 100) return "Final stretch! Finish strong!";
-    return "Perfect! Ready to submit!";
-  };
-
   const handleAnswerChange = (questionId: string, optionIndex: number) => {
     answerQuestion(questionId, optionIndex);
   };
@@ -463,59 +453,15 @@ const AssessmentQuestions = () => {
                   </Button>
                 </motion.div>
 
-                {/* Header */}
+                {/* Minimal Header */}
                 <motion.div
-                  initial={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="relative"
+                  className="mt-4"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <motion.h1
-                        className="text-3xl font-bold text-gray-900"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        Assessment Questions
-                      </motion.h1>
-                      <motion.p
-                        className="text-gray-600 mt-1"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        {getMotivationalMessage()}
-                      </motion.p>
-                    </div>
-                    <motion.div
-                      className="text-right relative"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.3, type: "spring" }}
-                    >
-                      <div className="relative">
-                        <motion.div
-                          className="text-2xl font-bold text-brand-teal"
-                          key={progress.percentComplete}
-                          initial={{ scale: 1 }}
-                          animate={{ scale: [1, 1.15, 1] }}
-                          transition={{ duration: 0.4 }}
-                        >
-                          {progress.percentComplete}%
-                        </motion.div>
-                        <motion.div
-                          className="absolute -inset-2 bg-brand-teal/20 rounded-full blur-xl"
-                          animate={{
-                            scale: [1, 1.2, 1],
-                            opacity: [0.3, 0.5, 0.3],
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">Complete</div>
-                    </motion.div>
-                  </div>
+                  <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                    Assessment Questions
+                  </h1>
                 </motion.div>
               </div>
 
@@ -561,10 +507,10 @@ const AssessmentQuestions = () => {
                         >
                           <div
                             className={cn(
-                              "p-6 rounded-lg border transition-all duration-300 relative overflow-hidden group",
+                              "p-4 sm:p-5 rounded-lg border transition-all duration-300 relative overflow-hidden group",
                               selectedAnswer !== undefined
-                                ? "border-brand-teal border-2 shadow-lg"
-                                : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
+                                ? "border-brand-teal border-2 shadow-md"
+                                : "border-gray-200 hover:border-brand-teal/30 hover:shadow-sm"
                             )}
                           >
                             {/* Animated border gradient for answered */}
@@ -584,17 +530,17 @@ const AssessmentQuestions = () => {
                               {/* Question Header */}
                               <div className="flex items-start justify-between mb-4">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-sm text-gray-500">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-xs font-medium text-gray-400">
                                       Question {questionNumber} of{" "}
                                       {questions.length}
                                     </span>
                                   </div>
-                                  <h3 className="text-lg font-semibold text-gray-900">
+                                  <h3 className="text-base sm:text-lg font-medium text-gray-900 leading-relaxed">
                                     {question.text}
                                   </h3>
                                   {question.description && (
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-2 leading-relaxed">
                                       {question.description}
                                     </p>
                                   )}
@@ -633,8 +579,8 @@ const AssessmentQuestions = () => {
                                           repeat: Infinity,
                                         }}
                                       />
-                                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
-                                        <Check className="h-5 w-5 text-white" />
+                                      <div className="relative w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md">
+                                        <Check className="h-4 w-4 text-white" />
                                       </div>
                                     </motion.div>
                                   )}
@@ -642,7 +588,7 @@ const AssessmentQuestions = () => {
                               </div>
 
                               {/* Options */}
-                              <div className="space-y-3 mt-6">
+                              <div className="space-y-2 sm:space-y-2.5 mt-4 sm:mt-5">
                                 {question.options.map((option, optionIndex) => {
                                   const isSelected =
                                     selectedAnswer === optionIndex;
@@ -665,9 +611,9 @@ const AssessmentQuestions = () => {
                                       }}
                                       whileTap={{ scale: 0.98 }}
                                       className={cn(
-                                        "w-full text-left p-4 rounded-lg border-2 transition-all cursor-pointer relative overflow-hidden group/option",
+                                        "w-full text-left p-3 sm:p-3.5 rounded-lg border-2 transition-all cursor-pointer relative overflow-hidden group/option",
                                         isSelected
-                                          ? "border-brand-teal bg-brand-teal/10 shadow-md"
+                                          ? "border-brand-teal bg-brand-teal/10 shadow-sm"
                                           : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
                                       )}
                                     >
@@ -688,10 +634,10 @@ const AssessmentQuestions = () => {
                                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy" />
                                         </>
                                       )}
-                                      <div className="flex items-center gap-3 relative z-10">
+                                      <div className="flex items-center gap-2.5 sm:gap-3 relative z-10">
                                         <div
                                           className={cn(
-                                            "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 relative transition-all",
+                                            "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 relative transition-all",
                                             isSelected
                                               ? "border-brand-teal bg-brand-teal"
                                               : "border-gray-300 group-hover/option:border-brand-teal/50"
@@ -702,13 +648,13 @@ const AssessmentQuestions = () => {
                                               initial={{ scale: 0 }}
                                               animate={{ scale: 1 }}
                                               transition={{ duration: 0.3 }}
-                                              className="w-2 h-2 rounded-full bg-white"
+                                              className="w-1.5 h-1.5 rounded-full bg-white"
                                             />
                                           )}
                                         </div>
                                         <span
                                           className={cn(
-                                            "text-sm font-medium",
+                                            "text-xs sm:text-sm font-normal leading-relaxed",
                                             isSelected
                                               ? "text-gray-900"
                                               : "text-gray-700"
@@ -902,14 +848,14 @@ const AssessmentQuestions = () => {
                   transition={{ delay: 0.2 }}
                 >
                   <div className="p-3 sm:p-4 rounded-lg border border-gray-200">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
-                      <Target className="h-3 w-3 sm:h-4 sm:w-4 text-brand-teal" />
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-brand-teal" />
                       Your Progress
                     </h3>
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-700">
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-xs sm:text-sm font-medium text-gray-700">
                             Overall Completion
                           </span>
                           <motion.span
@@ -960,7 +906,7 @@ const AssessmentQuestions = () => {
                               ? "So close!"
                               : "Perfect!"}
                           </span>
-                          <span className="text-sm font-bold text-brand-teal">
+                          <span className="text-xs sm:text-sm font-semibold text-brand-teal">
                             {answeredCount} / {questions.length}
                           </span>
                         </div>
@@ -976,7 +922,7 @@ const AssessmentQuestions = () => {
                   transition={{ delay: 0.4 }}
                 >
                   <div className="p-3 sm:p-4 rounded-lg border border-gray-200">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2.5 sm:mb-3">
                       Quick Navigation
                     </h3>
                     {/* Show approximately 20 questions visible, then scroll for more */}
@@ -1013,7 +959,7 @@ const AssessmentQuestions = () => {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               className={cn(
-                                "w-full aspect-square rounded-lg border-2 transition-all cursor-pointer flex items-center justify-center text-xs font-medium",
+                                "w-full aspect-square rounded-lg border-2 transition-all cursor-pointer flex items-center justify-center text-[10px] sm:text-xs font-medium",
                                 isAnswered
                                   ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100 shadow-sm"
                                   : isCurrent
@@ -1025,7 +971,7 @@ const AssessmentQuestions = () => {
                               }: ${question.text.slice(0, 30)}...`}
                             >
                               {isAnswered ? (
-                                <Check className="h-4 w-4" />
+                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               ) : (
                                 <span>{idx + 1}</span>
                               )}
@@ -1062,7 +1008,7 @@ const AssessmentQuestions = () => {
                         <p className="font-semibold text-green-900">
                           All Questions Answered!
                         </p>
-                        <p className="text-xs text-green-700">
+                        <p className="text-xs text-green-600">
                           Ready to submit your assessment
                         </p>
                       </div>
