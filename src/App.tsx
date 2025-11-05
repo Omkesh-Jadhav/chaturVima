@@ -17,6 +17,8 @@ import OrganizationSetup from "./pages/superAdmin/OrganizationSetup";
 import EmployeeSetup from "./pages/superAdmin/EmployeeSetup";
 import DepartmentSetup from "./pages/superAdmin/DepartmentSetup";
 import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+import Settings from "./pages/Settings";
+import EditProfile from "./pages/Settings/EditProfile";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -52,13 +54,6 @@ const JourneyPage = () => (
   </div>
 );
 
-const SettingsPage = () => (
-  <div>
-    <h1 className="text-3xl font-bold">Settings</h1>
-    <p className="mt-4 text-gray-600">Settings page coming soon...</p>
-  </div>
-);
-
 function AppRoutes() {
   return (
     <Routes>
@@ -85,7 +80,8 @@ function AppRoutes() {
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/journey" element={<JourneyPage />} />
         <Route path="/assessment-report" element={<AssessmentReport />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/edit-profile" element={<EditProfile />} />
         <Route path="/organization-setup" element={<OrganizationSetup />} />
         <Route path="/employee-setup" element={<EmployeeSetup />} />
         <Route path="/department-setup" element={<DepartmentSetup />} />

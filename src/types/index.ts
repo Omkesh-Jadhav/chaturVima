@@ -99,7 +99,12 @@ export interface AssessmentResult {
 // USER TYPES
 // ============================================================================
 
-export type UserRole = "employee" | "manager" | "hr-admin" | "department-head" | "super-admin";
+export type UserRole =
+  | "employee"
+  | "manager"
+  | "hr-admin"
+  | "department-head"
+  | "super-admin";
 
 export interface User {
   id: string;
@@ -117,6 +122,7 @@ export interface UserContext {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
+  updateProfile: (profileData: Partial<User>) => void;
 }
 
 // ============================================================================
