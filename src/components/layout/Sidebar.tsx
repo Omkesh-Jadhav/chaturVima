@@ -26,20 +26,65 @@ interface NavItem {
   label: string;
   path: string;
   icon: React.ReactNode;
+  roles: UserRole[]; // Roles that can access this item
 }
 
 const NAV_ITEMS: NavItem[] = [
+  {
+    id: "super-admin-dashboard",
+    label: "Dashboard",
+    path: "/super-admin-dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["super-admin"],
+  },
   {
     id: "assessment-dashboard",
     label: "Dashboard",
     path: "/assessment-dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["employee"],
+  },
+  {
+    id: "manager-dashboard",
+    label: "Dashboard",
+    path: "/manager-dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["manager"],
   },
   {
     id: "assessment",
     label: "Assessment",
     path: "/assessment",
     icon: <FileText className="h-5 w-5" />,
+    roles: ["employee"],
+  },
+  {
+    id: "organization-setup",
+    label: "Organization Setup",
+    path: "/organization-setup",
+    icon: <FileText className="h-5 w-5" />,
+    roles: ["super-admin"],
+  },
+  {
+    id: "hr-dashboard",
+    label: "HR Dashboard",
+    path: "/hr-dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["hr-admin"],
+  },
+  {
+    id: "employee-setup",
+    label: "Employee Setup",
+    path: "/employee-setup",
+    icon: <FileText className="h-5 w-5" />,
+    roles: ["hr-admin", "super-admin"],
+  },
+  {
+    id: "deaprtment-setup",
+    label: "Department Setup",
+    path: "/department-setup",
+    icon: <FileText className="h-5 w-5" />,
+    roles: ["department-head", "hr-admin", "super-admin"],
   },
 ];
 
@@ -62,8 +107,13 @@ const ROLE_CONFIG: Record<
     icon: <Shield className="h-3 w-3" />,
     color: "text-green-600 bg-green-50",
   },
-  executive: {
-    label: "Executive",
+  "department-head": {
+    label: "Department Head",
+    icon: <UserCog className="h-3 w-3" />,
+    color: "text-orange-600 bg-orange-50",
+  },
+  "super-admin": {
+    label: "Super Admin",
     icon: <Crown className="h-3 w-3" />,
     color: "text-amber-600 bg-amber-50",
   },
@@ -75,6 +125,14 @@ const Sidebar = () => {
   const { user, logout } = useUser();
 
   const currentRoleConfig = user ? ROLE_CONFIG[user.role] : null;
+
+  // Filter navigation items based on user role
+  const getVisibleNavItems = () => {
+    if (!user) return [];
+    return NAV_ITEMS.filter(item => item.roles.includes(user.role));
+  };
+
+  const visibleNavItems = getVisibleNavItems();
 
   return (
     <motion.aside
@@ -164,7 +222,7 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link

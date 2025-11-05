@@ -13,6 +13,11 @@ import Assessment from "./pages/Assessment/Assessment";
 import AssessmentQuestions from "./pages/Assessment/AssessmentQuestions";
 import Analytics from "./pages/Analytics";
 import AssessmentReport from "./pages/Assessment/AssessmentReport";
+import OrganizationSetup from "./pages/superAdmin/OrganizationSetup";
+import EmployeeSetup from "./pages/superAdmin/EmployeeSetup";
+import DepartmentSetup from "./pages/superAdmin/DepartmentSetup";
+import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -82,6 +87,10 @@ function AppRoutes() {
         <Route path="/journey" element={<JourneyPage />} />
         <Route path="/assessment-report" element={<AssessmentReport />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/organization-setup" element={<OrganizationSetup />} />
+        <Route path="/employee-setup" element={<EmployeeSetup />} />
+        <Route path="/department-setup" element={<DepartmentSetup />} />
+        <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
       </Route>
 
       {/* Redirect root to dashboard or login */}

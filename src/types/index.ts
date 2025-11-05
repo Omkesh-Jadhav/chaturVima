@@ -99,7 +99,7 @@ export interface AssessmentResult {
 // USER TYPES
 // ============================================================================
 
-export type UserRole = "employee" | "manager" | "hr-admin" | "executive";
+export type UserRole = "employee" | "manager" | "hr-admin" | "department-head" | "super-admin";
 
 export interface User {
   id: string;
