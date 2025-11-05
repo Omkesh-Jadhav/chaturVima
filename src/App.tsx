@@ -13,10 +13,10 @@ import Assessment from "./pages/Assessment/Assessment";
 import AssessmentQuestions from "./pages/Assessment/AssessmentQuestions";
 import Analytics from "./pages/Analytics";
 import AssessmentReport from "./pages/Assessment/AssessmentReport";
-import OrganizationSetup from "./pages/superAdmin/OrganizationSetup";
-import EmployeeSetup from "./pages/superAdmin/EmployeeSetup";
-import DepartmentSetup from "./pages/superAdmin/DepartmentSetup";
-import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+import OrganizationSetup from "./pages/superAdmin/Organization/OrganizationSetup";
+import EmployeeSetup from "./pages/superAdmin/Employee/EmployeeSetup";
+import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
+import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
 
 
 // Protected Route Component

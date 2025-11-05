@@ -24,7 +24,6 @@ import {
   ArrowRight,
   Shield,
   TrendingUp,
-  Users,
   X,
   CheckCircle2,
   KeyRound,
