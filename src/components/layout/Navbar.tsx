@@ -41,8 +41,13 @@ const ROLE_CONFIG: Record<
     icon: <Shield className="h-4 w-4" />,
     color: "text-green-600 bg-green-50",
   },
-  executive: {
-    label: "Executive",
+  "department-head": {
+    label: "Department Head",
+    icon: <UserCog className="h-4 w-4" />,
+    color: "text-orange-600 bg-orange-50",
+  },
+  "super-admin": {
+    label: "Super Admin",
     icon: <Crown className="h-4 w-4" />,
     color: "text-amber-600 bg-amber-50",
   },
@@ -60,7 +65,7 @@ const Navbar = () => {
   const currentRoleConfig = ROLE_CONFIG[user.role];
 
   // Get all available roles that the user can switch to
-  const allRoles: UserRole[] = ["employee", "manager", "hr-admin", "executive"];
+  const allRoles: UserRole[] = ["employee", "manager", "hr-admin", "department-head", "super-admin"];
   const availableRoles = allRoles.filter((role) => role !== user.role);
 
   const handleRoleSwitch = (newRole: UserRole) => {
