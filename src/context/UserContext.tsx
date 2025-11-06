@@ -40,8 +40,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  const login = async (email: string, _password: string): Promise<void> => {
-    // Simulate API call delay
+  const loginWithOTP = async (email: string, mobile: string): Promise<void> => {
+    // Simulate API call delay for OTP verification
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Try to find existing user by email
@@ -103,7 +103,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   const value: UserContextType = {
     user,
     isAuthenticated,
-    login,
+    loginWithOTP,
     logout,
     switchRole,
     updateProfile,

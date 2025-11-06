@@ -1,8 +1,8 @@
 /**
  * Login Page
- * Professional authentication page with forgot password
+ * OTP-based authentication page with email and mobile verification
  */
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
@@ -18,64 +18,220 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail,
-  Lock,
-  Eye,
-  EyeOff,
+  Phone,
   ArrowRight,
-  Shield,
   TrendingUp,
-  X,
   CheckCircle2,
-  KeyRound,
-  Send,
+  Shield,
+  RefreshCw,
 } from "lucide-react";
+
+type LoginStep = "credentials" | "otp" | "success";
+
+const OTP_LENGTH = 6;
+const OTP_TIMER_DURATION = 60;
+const OTP_SEND_DELAY = 1500;
+const OTP_VERIFY_DELAY = 1500;
+const REDIRECT_DELAY = 1500;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { loginWithOTP } = useUser();
+  const [step, setStep] = useState<LoginStep>("credentials");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
   const [error, setError] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
-  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [canResendOTP, setCanResendOTP] = useState(false);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  // OTP timer countdown
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (otpTimer === 0 && step === "otp") {
+      setCanResendOTP(true);
+    }
+  }, [otpTimer, step]);
+
+  // Validation helpers
+  const validateEmail = useCallback((email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }, []);
+
+  const validateMobile = useCallback((mobile: string) => {
+    return /^[0-9]{10}$/.test(mobile.replace(/\D/g, ""));
+  }, []);
+
+  const formatMobile = useCallback((value: string) => {
+    return value.replace(/\D/g, "").slice(0, 10);
+  }, []);
+
+  const handleSendOTP = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setError("");
+
+      if (!validateEmail(email)) {
+        setError("Please enter a valid email address");
+        return;
+      }
+
+      if (!validateMobile(mobile)) {
+        setError("Please enter a valid 10-digit mobile number");
+        return;
+      }
+
+      setIsSendingOTP(true);
+
+      try {
+        // Simulate API call to send OTP
+        await new Promise((resolve) => setTimeout(resolve, OTP_SEND_DELAY));
+
+        setOtpTimer(OTP_TIMER_DURATION);
+        setCanResendOTP(false);
+        setStep("otp");
+      } catch {
+        setError("Failed to send OTP. Please try again.");
+      } finally {
+        setIsSendingOTP(false);
+      }
+    },
+    [email, mobile, validateEmail, validateMobile]
+  );
+
+  const handleResendOTP = useCallback(async () => {
+    if (!canResendOTP) return;
+
+    setIsSendingOTP(true);
     setError("");
-    setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/assessment");
+      // Simulate API call to resend OTP
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setOtpTimer(OTP_TIMER_DURATION);
+      setCanResendOTP(false);
+      setOtp(Array(OTP_LENGTH).fill(""));
+      setError("");
     } catch {
-      setError("Login failed. Please check your credentials and try again.");
+      setError("Failed to resend OTP. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSendingOTP(false);
     }
-  };
+  }, [canResendOTP]);
 
-  const handleForgotPassword = async (e: FormEvent) => {
-    e.preventDefault();
-    setForgotPasswordLoading(true);
-    setForgotPasswordSuccess(false);
+  const handleOtpChange = useCallback((index: number, value: string) => {
+    if (value.length > 1) return;
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const digit = value.replace(/\D/g, "");
+    if (!digit && value) return;
 
-    setForgotPasswordSuccess(true);
-    setForgotPasswordLoading(false);
+    setOtp((prev) => {
+      const newOtp = [...prev];
+      newOtp[index] = digit;
+      return newOtp;
+    });
 
-    // Auto-close after 2 seconds
-    setTimeout(() => {
-      setShowForgotPassword(false);
-      setForgotPasswordEmail("");
-      setForgotPasswordSuccess(false);
-    }, 2000);
-  };
+    // Auto-focus next input
+    if (digit && index < OTP_LENGTH - 1) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  }, []);
+
+  const handleOtpKeyDown = useCallback(
+    (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Backspace" && !otp[index] && index > 0) {
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    },
+    [otp]
+  );
+
+  const handleOtpPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
+      const digits = pastedData.slice(0, OTP_LENGTH).split("");
+
+      setOtp((prev) => {
+        const newOtp = [...prev];
+        digits.forEach((digit, i) => {
+          if (i < OTP_LENGTH) newOtp[i] = digit;
+        });
+        return newOtp;
+      });
+
+      const nextIndex = Math.min(OTP_LENGTH - 1, digits.length - 1);
+      otpInputRefs.current[nextIndex]?.focus();
+    },
+    []
+  );
+
+  const handleVerifyOTP = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setError("");
+
+      const otpString = otp.join("");
+      if (otpString.length !== OTP_LENGTH) {
+        setError(`Please enter the complete ${OTP_LENGTH}-digit OTP`);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        // Simulate OTP verification
+        await new Promise((resolve) => setTimeout(resolve, OTP_VERIFY_DELAY));
+
+        // Login user with OTP
+        await loginWithOTP(email, mobile);
+        setStep("success");
+
+        // Redirect to assessment page after showing success message
+        setTimeout(() => {
+          navigate("/assessment");
+        }, REDIRECT_DELAY);
+      } catch {
+        setError("OTP verification failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [otp, email, mobile, loginWithOTP, navigate]
+  );
+
+  const handleBackToCredentials = useCallback(() => {
+    setStep("credentials");
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setOtpTimer(0);
+    setCanResendOTP(false);
+    setError("");
+  }, []);
+
+  // Memoized step titles and descriptions
+  const stepConfig = useMemo(
+    () => ({
+      credentials: {
+        title: "Welcome Back",
+        description: "Enter your email and mobile to receive OTP",
+      },
+      otp: {
+        title: "Verify OTP",
+        description: `OTP sent to ${email} and ${mobile}`,
+      },
+      success: {
+        title: "Login Successful",
+        description: "Redirecting to assessment...",
+      },
+    }),
+    [email, mobile]
+  );
 
   return (
     <div className="relative flex h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
@@ -140,284 +296,289 @@ const Login = () => {
           variant="elevated"
           className="backdrop-blur-sm bg-white/95 shadow-2xl"
         >
-          <CardHeader className="text-center pb-3">
-            <CardTitle className="text-xl mb-1">Welcome Back</CardTitle>
-            <CardDescription className="text-xs text-gray-500">
-              Sign in to access your dashboard
-            </CardDescription>
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl font-bold mb-2">
+              {stepConfig[step].title}
+            </CardTitle>
+            {step === "otp" && (
+              <div className="space-y-2">
+                <CardDescription className="text-sm text-gray-600">
+                  Enter the 6-digit code sent to
+                </CardDescription>
+                <div className="flex items-center justify-center gap-3 text-xs">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+                    <Mail className="h-3.5 w-3.5 text-brand-teal" />
+                    <span className="font-medium text-gray-700">{email}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+                    <Phone className="h-3.5 w-3.5 text-brand-teal" />
+                    <span className="font-medium text-gray-700">{mobile}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {step === "credentials" && (
+              <CardDescription className="text-sm text-gray-600">
+                {stepConfig[step].description}
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent className="space-y-4 px-6 pb-5">
-            {/* Login Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-3"
-              autoComplete="off"
-            >
-              {/* Email Input */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="off"
-                    name="email"
-                    id="email-input"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="off"
-                    name="password"
-                    id="password-input"
-                    className="pl-10 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                    title={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <Eye className="h-5 w-5" />
-                    ) : (
-                      <EyeOff className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="cursor-pointer text-sm font-medium text-brand-teal hover:text-brand-teal/80 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              </div>
-
-              {/* Error Message */}
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Sign In Button added*/}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  type="submit"
-                  className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
-                  size="lg"
-                  isLoading={isLoading}
+            <AnimatePresence mode="wait">
+              {step === "credentials" && (
+                <motion.form
+                  key="credentials"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onSubmit={handleSendOTP}
+                  className="space-y-4"
+                  autoComplete="off"
                 >
-                  {!isLoading && <ArrowRight className="mr-2 h-5 w-5" />}
-                  Sign In
-                </Button>
-              </motion.div>
-            </form>
+                  {/* Email Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        autoComplete="off"
+                        name="email"
+                        id="email-input"
+                        className="pl-10"
+                        disabled={isSendingOTP}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mobile Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Mobile Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        type="tel"
+                        placeholder="1234567890"
+                        value={mobile}
+                        onChange={(e) =>
+                          setMobile(formatMobile(e.target.value))
+                        }
+                        required
+                        autoComplete="off"
+                        name="mobile"
+                        id="mobile-input"
+                        className="pl-10"
+                        maxLength={10}
+                        disabled={isSendingOTP}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Enter 10-digit mobile number
+                    </p>
+                  </div>
+
+                  {/* Error Message */}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Send OTP Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="submit"
+                      className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      size="lg"
+                      isLoading={isSendingOTP}
+                    >
+                      {!isSendingOTP && <ArrowRight className="mr-2 h-5 w-5" />}
+                      Send OTP
+                    </Button>
+                  </motion.div>
+
+                  {/* Security Note - Simplified */}
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <Shield className="h-3 w-3" />
+                    <span>OTP sent to email & mobile</span>
+                  </div>
+                </motion.form>
+              )}
+
+              {step === "otp" && (
+                <motion.form
+                  key="otp"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onSubmit={handleVerifyOTP}
+                  className="space-y-5"
+                  autoComplete="off"
+                >
+                  {/* OTP Input - Professional Design */}
+                  <div className="space-y-5">
+                    <div className="flex justify-center gap-2.5">
+                      {otp.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => {
+                            otpInputRefs.current[index] = el;
+                          }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          onPaste={handleOtpPaste}
+                          className="h-14 w-14 text-center text-2xl font-semibold rounded-xl border-2 bg-white border-gray-300 text-gray-900 focus:border-brand-teal focus:ring-4 focus:ring-brand-teal/10 focus:shadow-md transition-all shadow-sm hover:border-gray-400 hover:shadow-md"
+                          disabled={isLoading}
+                          autoFocus={index === 0}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Resend OTP Section - Professional Timer */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      {otpTimer > 0 ? (
+                        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <RefreshCw className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">
+                              Didn't receive code?
+                            </span>
+                          </div>
+                          <div className="h-6 w-px bg-gray-300" />
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-brand-teal/10">
+                              <span className="text-lg font-bold text-brand-teal">
+                                {otpTimer}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                              seconds
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleResendOTP}
+                          disabled={isSendingOTP}
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-teal/10 hover:bg-brand-teal/20 border border-brand-teal/30 text-brand-teal font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-sm"
+                        >
+                          <RefreshCw
+                            className={`h-4 w-4 ${
+                              isSendingOTP ? "animate-spin" : ""
+                            }`}
+                          />
+                          {isSendingOTP ? "Sending..." : "Resend OTP"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Back Link */}
+                    <div className="text-center pt-1">
+                      <button
+                        type="button"
+                        onClick={handleBackToCredentials}
+                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        ← Change email or mobile number
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Error Message */}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Verify OTP Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="submit"
+                      className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      size="lg"
+                      isLoading={isLoading}
+                    >
+                      {!isLoading && <ArrowRight className="mr-2 h-5 w-5" />}
+                      Verify OTP
+                    </Button>
+                  </motion.div>
+                </motion.form>
+              )}
+
+              {step === "success" && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-8 text-center"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.2 }}
+                    className="mb-6 flex justify-center"
+                  >
+                    <div className="relative">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
+                        <CheckCircle2 className="h-10 w-10 text-green-600" />
+                      </div>
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-4 border-green-200"
+                        animate={{ scale: [1, 1.3, 1], opacity: [1, 0, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </div>
+                  </motion.div>
+                  <h3 className="mb-2 text-2xl font-semibold text-gray-900">
+                    Login Successful!
+                  </h3>
+                  <p className="text-base text-gray-600">
+                    Redirecting to assessment...
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Forgot Password Modal Implemented*/}
-      <AnimatePresence>
-        {showForgotPassword && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-            onClick={() =>
-              !forgotPasswordSuccess && setShowForgotPassword(false)
-            }
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header Section with Gradient */}
-              <div className="bg-gradient-to-r from-brand-teal to-brand-navy p-6 pb-8 relative">
-                {!forgotPasswordSuccess && (
-                  <button
-                    onClick={() => setShowForgotPassword(false)}
-                    className="absolute right-4 top-4 cursor-pointer rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
-                <div className="flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                    <KeyRound className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      Reset Password
-                    </h2>
-                    <p className="text-sm text-white/90 mt-1">
-                      We'll help you get back into your account
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-8">
-                {!forgotPasswordSuccess ? (
-                  <>
-                    <div className="mb-6 text-center">
-                      <div className="flex justify-center mb-4">
-                        <div className="relative">
-                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                            <Mail className="h-12 w-12 text-brand-teal" />
-                          </div>
-                          <motion.div
-                            className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white"
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          />
-                        </div>
-                      </div>
-                      <p className="text-base leading-relaxed text-gray-600">
-                        No worries! Enter your email address and we'll send you
-                        a secure link to reset your password.
-                      </p>
-                    </div>
-
-                    <form
-                      onSubmit={handleForgotPassword}
-                      className="space-y-6"
-                      autoComplete="off"
-                    >
-                      <Input
-                        label="Email Address"
-                        type="email"
-                        placeholder="your.email@example.com"
-                        value={forgotPasswordEmail}
-                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                        required
-                        autoComplete="off"
-                      />
-                      <div className="flex gap-3 pt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex-1 cursor-pointer"
-                          onClick={() => setShowForgotPassword(false)}
-                          disabled={forgotPasswordLoading}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="flex-1 cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
-                          isLoading={forgotPasswordLoading}
-                        >
-                          {!forgotPasswordLoading && (
-                            <Send className="mr-2 h-4 w-4" />
-                          )}
-                          Send Reset Link
-                        </Button>
-                      </div>
-                    </form>
-
-                    <div className="mt-6 rounded-lg bg-blue-50 p-4 border border-blue-100">
-                      <div className="flex items-start gap-3">
-                        <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-blue-900 mb-1">
-                            Secure & Private
-                          </p>
-                          <p className="text-xs text-blue-700">
-                            Your email will only be used to send the password
-                            reset link. We never share your information.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="py-4 text-center"
-                  >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", delay: 0.2 }}
-                      className="mb-6 flex justify-center"
-                    >
-                      <div className="relative">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
-                          <CheckCircle2 className="h-10 w-10 text-green-600" />
-                        </div>
-                        <motion.div
-                          className="absolute inset-0 rounded-full border-4 border-green-200"
-                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0, 1] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      </div>
-                    </motion.div>
-                    <h3 className="mb-3 text-2xl font-semibold text-gray-900">
-                      Check your email
-                    </h3>
-                    <p className="text-base leading-relaxed text-gray-600 mb-4">
-                      We've sent a password reset link to
-                    </p>
-                    <div className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-4 py-2 border border-gray-200">
-                      <Mail className="h-4 w-4 text-brand-teal" />
-                      <span className="font-medium text-gray-900">
-                        {forgotPasswordEmail}
-                      </span>
-                    </div>
-                    <p className="mt-6 text-sm text-gray-500">
-                      Didn't receive the email? Check your spam folder or try
-                      again.
-                    </p>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

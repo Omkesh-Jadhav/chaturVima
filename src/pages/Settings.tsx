@@ -44,7 +44,7 @@ const SETTINGS_OPTIONS: SettingsOption[] = [
   {
     id: "security",
     title: "Security",
-    description: "Change password and manage security settings",
+    description: "Manage security settings and OTP preferences",
     icon: <Shield className="h-5 w-5" />,
     path: "/settings/security",
     color: "from-red-500 to-red-600",
