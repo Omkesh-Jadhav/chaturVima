@@ -129,7 +129,6 @@ const Login = () => {
     if (value.length > 1) return;
 
     const digit = value.replace(/\D/g, "");
-    if (!digit && value) return;
 
     setOtp((prev) => {
       const newOtp = [...prev];
@@ -137,7 +136,7 @@ const Login = () => {
       return newOtp;
     });
 
-    // Auto-focus next input
+    // Auto-focus next input when digit is entered
     if (digit && index < OTP_LENGTH - 1) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -145,8 +144,33 @@ const Login = () => {
 
   const handleOtpKeyDown = useCallback(
     (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Backspace" && !otp[index] && index > 0) {
-        otpInputRefs.current[index - 1]?.focus();
+      if (e.key === "Backspace") {
+        // If current box has a value, clear it and move to previous box
+        if (otp[index] && index > 0) {
+          e.preventDefault();
+          setOtp((prev) => {
+            const newOtp = [...prev];
+            newOtp[index] = "";
+            return newOtp;
+          });
+          // Move to previous box immediately
+          setTimeout(() => {
+            otpInputRefs.current[index - 1]?.focus();
+          }, 0);
+        }
+        // If current box is empty and not the first box, move to previous and clear it
+        else if (!otp[index] && index > 0) {
+          e.preventDefault();
+          setOtp((prev) => {
+            const newOtp = [...prev];
+            newOtp[index - 1] = "";
+            return newOtp;
+          });
+          // Small delay to ensure the value is cleared before focusing
+          setTimeout(() => {
+            otpInputRefs.current[index - 1]?.focus();
+          }, 0);
+        }
       }
     },
     [otp]
