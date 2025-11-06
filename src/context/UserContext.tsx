@@ -92,12 +92,21 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));
   };
 
+  const updateProfile = (profileData: Partial<User>) => {
+    if (!user) return;
+    const updatedUser = { ...user, ...profileData };
+    setUser(updatedUser);
+    setIsAuthenticated(true);
+    localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));
+  };
+
   const value: UserContextType = {
     user,
     isAuthenticated,
     login,
     logout,
     switchRole,
+    updateProfile,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

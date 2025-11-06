@@ -17,7 +17,7 @@ import {
   AreaChart,
 } from "recharts";
 import { ResponsiveRadar } from "@nivo/radar";
-import assessmentData from "../../data/assessmentReportData.json";
+import assessmentData from "../../../data/assessmentReportData.json";
 
 interface CategoryScore {
   category: string;

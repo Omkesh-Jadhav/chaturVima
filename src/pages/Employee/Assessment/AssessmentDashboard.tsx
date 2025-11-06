@@ -28,7 +28,7 @@ import {
   TrendingUp,
   Calendar,
 } from "lucide-react";
-import { colors } from "../../utils/colors";
+import { colors } from "../../../utils/colors";
 
 type Priority = "High" | "Medium" | "Low";
 

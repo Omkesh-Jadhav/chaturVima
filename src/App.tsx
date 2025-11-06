@@ -8,16 +8,17 @@ import { AssessmentProvider } from "./context/AssessmentContext";
 import { SidebarProvider } from "./context/SidebarContext";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Assessment/AssessmentDashboard";
-import Assessment from "./pages/Assessment/Assessment";
-import AssessmentQuestions from "./pages/Assessment/AssessmentQuestions";
+import Dashboard from "./pages/Employee/Assessment/AssessmentDashboard";
+import Assessment from "./pages/Employee/Assessment/Assessment";
+import AssessmentQuestions from "./pages/Employee/Assessment/AssessmentQuestions";
 import Analytics from "./pages/Analytics";
-import AssessmentReport from "./pages/Assessment/AssessmentReport";
-import OrganizationSetup from "./pages/superAdmin/Organization/OrganizationSetup";
-import EmployeeSetup from "./pages/superAdmin/Employee/EmployeeSetup";
-import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
-import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
-
+import AssessmentReport from "./pages/Employee/Assessment/AssessmentReport";
+import OrganizationSetup from "./pages/superAdmin/OrganizationSetup";
+import EmployeeSetup from "./pages/superAdmin/EmployeeSetup";
+import DepartmentSetup from "./pages/superAdmin/DepartmentSetup";
+import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+import Settings from "./pages/Settings";
+import EditProfile from "./pages/Settings/EditProfile";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -53,13 +54,6 @@ const JourneyPage = () => (
   </div>
 );
 
-const SettingsPage = () => (
-  <div>
-    <h1 className="text-3xl font-bold">Settings</h1>
-    <p className="mt-4 text-gray-600">Settings page coming soon...</p>
-  </div>
-);
-
 function AppRoutes() {
   return (
     <Routes>
@@ -86,11 +80,15 @@ function AppRoutes() {
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/journey" element={<JourneyPage />} />
         <Route path="/assessment-report" element={<AssessmentReport />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/edit-profile" element={<EditProfile />} />
         <Route path="/organization-setup" element={<OrganizationSetup />} />
         <Route path="/employee-setup" element={<EmployeeSetup />} />
         <Route path="/department-setup" element={<DepartmentSetup />} />
-        <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+        <Route
+          path="/super-admin-dashboard"
+          element={<SuperAdminDashboard />}
+        />
       </Route>
 
       {/* Redirect root to dashboard or login */}

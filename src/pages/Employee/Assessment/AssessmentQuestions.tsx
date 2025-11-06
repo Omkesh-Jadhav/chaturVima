@@ -12,9 +12,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAssessment } from "../../context/AssessmentContext";
-import { useUser } from "../../context/UserContext";
-import { Button, Card, CardContent } from "../../components/ui";
+import { useAssessment } from "../../../context/AssessmentContext";
+import { useUser } from "../../../context/UserContext";
+import { Button, Card, CardContent } from "../../../components/ui";
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,7 +28,7 @@ import {
   Target,
   ArrowLeft,
 } from "lucide-react";
-import { cn } from "../../utils/cn";
+import { cn } from "../../../utils/cn";
 
 // Success Modal Component
 const SuccessModal = ({
@@ -256,8 +256,14 @@ const SuccessModal = ({
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
-  const { progress, questions, answers, answerQuestion, submitAssessment } =
-    useAssessment();
+  const {
+    progress,
+    questions,
+    answers,
+    answerQuestion,
+    submitAssessment,
+    isComplete,
+  } = useAssessment();
 
   const { user } = useUser();
 
@@ -266,6 +272,13 @@ const AssessmentQuestions = () => {
     if (!user) return "chaturvima_assessment_page_anonymous";
     const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
     return `chaturvima_assessment_page_${emailKey}`;
+  }, [user]);
+
+  // Helper function to get user-specific submission status storage key
+  const getSubmissionStorageKey = useCallback(() => {
+    if (!user) return "chaturvima_assessment_submitted_anonymous";
+    const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    return `chaturvima_assessment_submitted_${emailKey}`;
   }, [user]);
 
   // Optimize for 80+ questions: show 5 questions per page
@@ -281,13 +294,28 @@ const AssessmentQuestions = () => {
     }
   }, [getPageStorageKey]);
 
+  // Load saved submission status
+  const loadSavedSubmissionStatus = useCallback(() => {
+    try {
+      const storageKey = getSubmissionStorageKey();
+      const savedStatus = localStorage.getItem(storageKey);
+      return savedStatus === "true";
+    } catch {
+      return false;
+    }
+  }, [getSubmissionStorageKey]);
+
   const [currentPage, setCurrentPage] = useState(loadSavedPage);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(() => {
+    // Check if assessment was already submitted (from localStorage or context)
+    return loadSavedSubmissionStatus() || false;
+  });
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const questionsContainerRef = useRef<HTMLDivElement>(null);
   const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Ensure page position is restored on mount and when user changes
+  // Ensure page position and submission status are restored on mount and when user changes
   useEffect(() => {
     try {
       const storageKey = getPageStorageKey();
@@ -300,10 +328,24 @@ const AssessmentQuestions = () => {
           setCurrentPage(pageNum);
         }
       }
+
+      // Restore submission status from localStorage or context
+      const submissionKey = getSubmissionStorageKey();
+      const savedSubmissionStatus = localStorage.getItem(submissionKey);
+      if ((savedSubmissionStatus === "true" || isComplete) && !isSubmitted) {
+        setIsSubmitted(true);
+      }
     } catch (error) {
-      console.error("Error restoring saved page:", error);
+      console.error("Error restoring saved state:", error);
     }
-  }, [getPageStorageKey, totalPages, currentPage]);
+  }, [
+    getPageStorageKey,
+    getSubmissionStorageKey,
+    totalPages,
+    currentPage,
+    isSubmitted,
+    isComplete,
+  ]);
 
   // Get questions for current page
   const currentPageQuestions = useMemo(() => {
@@ -316,6 +358,9 @@ const AssessmentQuestions = () => {
   const answeredCount = Object.keys(answers).length;
 
   const handleAnswerChange = (questionId: string, optionIndex: number) => {
+    // Prevent editing after submission
+    if (isSubmitted) return;
+
     answerQuestion(questionId, optionIndex);
 
     // Auto-advance to next question after answering
@@ -399,15 +444,21 @@ const AssessmentQuestions = () => {
   };
 
   const handleSubmit = () => {
-    if (allAnswered) {
+    if (allAnswered && !isSubmitted) {
       submitAssessment();
+      setIsSubmitted(true);
       setShowSuccessModal(true);
-      // Clear saved state after submission
+
+      // Save submission status to localStorage
       try {
+        const submissionKey = getSubmissionStorageKey();
+        localStorage.setItem(submissionKey, "true");
+
+        // Clear saved page state after submission
         const storageKey = getPageStorageKey();
         localStorage.removeItem(storageKey);
       } catch (error) {
-        console.error("Error clearing localStorage:", error);
+        console.error("Error saving submission status:", error);
       }
     }
   };
@@ -649,16 +700,26 @@ const AssessmentQuestions = () => {
                                           optionIndex
                                         )
                                       }
-                                      whileHover={{
-                                        scale: 1.02,
-                                        x: 4,
-                                        boxShadow: isSelected
-                                          ? "0 4px 12px rgba(43, 198, 180, 0.2)"
-                                          : "0 4px 12px rgba(0, 0, 0, 0.08)",
-                                      }}
-                                      whileTap={{ scale: 0.98 }}
+                                      disabled={isSubmitted}
+                                      whileHover={
+                                        isSubmitted
+                                          ? {}
+                                          : {
+                                              scale: 1.02,
+                                              x: 4,
+                                              boxShadow: isSelected
+                                                ? "0 4px 12px rgba(43, 198, 180, 0.2)"
+                                                : "0 4px 12px rgba(0, 0, 0, 0.08)",
+                                            }
+                                      }
+                                      whileTap={
+                                        isSubmitted ? {} : { scale: 0.98 }
+                                      }
                                       className={cn(
-                                        "cursor-pointer w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm overflow-x-hidden",
+                                        "w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm overflow-x-hidden",
+                                        isSubmitted
+                                          ? "cursor-not-allowed opacity-60"
+                                          : "cursor-pointer",
                                         isSelected
                                           ? "border-brand-teal bg-brand-teal/10 shadow-sm"
                                           : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
@@ -746,8 +807,13 @@ const AssessmentQuestions = () => {
                 <Button
                   variant="outline"
                   onClick={handlePreviousPage}
-                  disabled={currentPage === 0}
-                  className="cursor-pointer text-xs py-1.5 h-auto"
+                  disabled={currentPage === 0 || isSubmitted}
+                  className={cn(
+                    "text-xs py-1.5 h-auto",
+                    isSubmitted
+                      ? "cursor-not-allowed opacity-60"
+                      : "cursor-pointer"
+                  )}
                   size="sm"
                 >
                   <ChevronLeft className="mr-1.5 h-3.5 w-3.5" />
@@ -776,6 +842,7 @@ const AssessmentQuestions = () => {
                       <motion.button
                         key={pageIdx}
                         onClick={() => {
+                          if (isSubmitted) return;
                           setCurrentPage(pageIdx);
                           // Auto-save current page
                           try {
@@ -791,13 +858,21 @@ const AssessmentQuestions = () => {
                             );
                           }
                         }}
-                        whileHover={{
-                          scale: 1.15,
-                          y: -2,
-                        }}
-                        whileTap={{ scale: 0.9 }}
+                        disabled={isSubmitted}
+                        whileHover={
+                          isSubmitted
+                            ? {}
+                            : {
+                                scale: 1.15,
+                                y: -2,
+                              }
+                        }
+                        whileTap={isSubmitted ? {} : { scale: 0.9 }}
                         className={cn(
-                          "cursor-pointer w-8 h-8 rounded-lg text-xs font-medium transition-all relative",
+                          "w-8 h-8 rounded-lg text-xs font-medium transition-all relative",
+                          isSubmitted
+                            ? "cursor-not-allowed opacity-60"
+                            : "cursor-pointer",
                           isCurrentPage
                             ? "bg-brand-teal text-white shadow-md"
                             : "bg-gray-200 text-gray-600 hover:bg-gray-300"
@@ -825,16 +900,23 @@ const AssessmentQuestions = () => {
                 {currentPage === totalPages - 1 ? (
                   <Button
                     onClick={handleSubmit}
-                    disabled={!allAnswered}
+                    disabled={!allAnswered || isSubmitted}
                     className={cn(
-                      "cursor-pointer text-xs py-1.5 h-auto",
-                      allAnswered
-                        ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white"
+                      "text-xs py-1.5 h-auto",
+                      isSubmitted
+                        ? "bg-green-500 text-white cursor-not-allowed"
+                        : allAnswered
+                        ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer"
                         : "bg-gray-200 border border-gray-300 text-gray-700 cursor-not-allowed"
                     )}
                     size="sm"
                   >
-                    {allAnswered ? (
+                    {isSubmitted ? (
+                      <>
+                        <Check className="mr-1.5 h-3.5 w-3.5" />
+                        Submitted
+                      </>
+                    ) : allAnswered ? (
                       <>
                         <Send className="mr-1.5 h-3.5 w-3.5" />
                         Submit Assessment
@@ -849,8 +931,13 @@ const AssessmentQuestions = () => {
                 ) : (
                   <Button
                     onClick={handleNextPage}
-                    disabled={currentPage === totalPages - 1}
-                    className="cursor-pointer text-xs py-1.5 h-auto"
+                    disabled={currentPage === totalPages - 1 || isSubmitted}
+                    className={cn(
+                      "text-xs py-1.5 h-auto",
+                      isSubmitted
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    )}
                     size="sm"
                   >
                     Next
@@ -960,6 +1047,7 @@ const AssessmentQuestions = () => {
                             <button
                               key={question.id}
                               onClick={() => {
+                                if (isSubmitted) return;
                                 const targetPage = Math.floor(
                                   idx / questionsPerPage
                                 );
@@ -978,8 +1066,12 @@ const AssessmentQuestions = () => {
                                   );
                                 }
                               }}
+                              disabled={isSubmitted}
                               className={cn(
-                                "cursor-pointer w-full h-10 rounded border-2 transition-all flex items-center justify-center text-xs font-medium",
+                                "w-full h-10 rounded border-2 transition-all flex items-center justify-center text-xs font-medium",
+                                isSubmitted
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer",
                                 isAnswered
                                   ? "border-green-500 bg-green-500 text-white"
                                   : isCurrent
