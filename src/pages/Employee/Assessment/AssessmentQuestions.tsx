@@ -90,16 +90,19 @@ const ConfirmationModal = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
-              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-orange-50 border-2 border-orange-300">
+              <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-blue-900 mb-1">
-                  Please Note
+                <p className="text-sm font-semibold text-orange-900 mb-1">
+                  ⚠️ Warning: Final Submission
                 </p>
-                <p className="text-sm text-blue-800 leading-relaxed">
+                <p className="text-sm text-orange-800 leading-relaxed">
                   Once you submit, your answers will be locked and{" "}
-                  <span className="font-medium">cannot be changed</span>. Please
-                  double-check that all your responses are correct.
+                  <span className="font-bold text-orange-900">
+                    cannot be changed
+                  </span>
+                  . Please double-check that all your responses are correct
+                  before proceeding.
                 </p>
               </div>
             </div>
@@ -430,6 +433,8 @@ const AssessmentQuestions = () => {
   const [currentPage, setCurrentPage] = useState(loadSavedPage);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(() => {
     // Check if assessment was already submitted (from localStorage or context)
     return loadSavedSubmissionStatus() || false;
@@ -485,6 +490,12 @@ const AssessmentQuestions = () => {
     if (isSubmitted) return;
 
     answerQuestion(questionId, optionIndex);
+
+    // Reset saved status if answer changes after saving (user needs to save again)
+    if (isSaved) {
+      setIsSaved(false);
+      setShowSavedToast(false);
+    }
 
     // Auto-advance to next question after answering
     const currentQuestionIndex = questions.findIndex(
@@ -567,23 +578,34 @@ const AssessmentQuestions = () => {
   };
 
   const handleSave = () => {
-    // If all questions are answered, show confirmation modal for submission
-    if (allAnswered && !isSubmitted) {
-      setShowConfirmationModal(true);
-    } else {
-      // Otherwise, just save progress to localStorage
-      try {
-        const storageKey = getPageStorageKey();
-        localStorage.setItem(storageKey, currentPage.toString());
+    // Save progress to localStorage
+    try {
+      const storageKey = getPageStorageKey();
+      localStorage.setItem(storageKey, currentPage.toString());
 
-        // Save answers to localStorage
-        const answersKey = `chaturvima_assessment_answers_${
-          user?.email.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous"
-        }`;
-        localStorage.setItem(answersKey, JSON.stringify(answers));
-      } catch (error) {
-        console.error("Error saving progress:", error);
-      }
+      // Save answers to localStorage
+      const answersKey = `chaturvima_assessment_answers_${
+        user?.email.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous"
+      }`;
+      localStorage.setItem(answersKey, JSON.stringify(answers));
+
+      // Mark as saved and show toast
+      setIsSaved(true);
+      setShowSavedToast(true);
+
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        setShowSavedToast(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
+  };
+
+  const handleSubmit = () => {
+    // Only allow submit if all questions are answered and assessment is saved
+    if (allAnswered && isSaved && !isSubmitted) {
+      setShowConfirmationModal(true);
     }
   };
 
@@ -1041,36 +1063,73 @@ const AssessmentQuestions = () => {
                 </div>
 
                 {currentPage === totalPages - 1 ? (
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSubmitted}
-                    className={cn(
-                      "text-xs py-1.5 h-auto",
-                      isSubmitted
-                        ? "bg-green-500 text-white cursor-not-allowed"
-                        : allAnswered
-                        ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer"
-                        : "bg-gray-200 border border-gray-300 text-gray-700 cursor-pointer"
-                    )}
-                    size="sm"
-                  >
+                  <div className="relative flex items-center gap-2">
                     {isSubmitted ? (
-                      <>
+                      <Button
+                        disabled
+                        className="bg-green-500 text-white cursor-not-allowed text-xs py-1.5 h-auto"
+                        size="sm"
+                      >
                         <Check className="mr-1.5 h-3.5 w-3.5" />
                         Submitted
-                      </>
-                    ) : allAnswered ? (
-                      <>
-                        <Send className="mr-1.5 h-3.5 w-3.5" />
-                        Save & Submit
-                      </>
-                    ) : (
-                      <>
+                      </Button>
+                    ) : !isSaved ? (
+                      <Button
+                        onClick={handleSave}
+                        className="bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer text-xs py-1.5 h-auto"
+                        size="sm"
+                      >
                         <Save className="mr-1.5 h-3.5 w-3.5" />
                         Save Progress
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={handleSubmit}
+                          disabled={!allAnswered}
+                          className={cn(
+                            "text-xs py-1.5 h-auto",
+                            allAnswered
+                              ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer"
+                              : "bg-gray-200 border border-gray-300 text-gray-700 cursor-not-allowed"
+                          )}
+                          size="sm"
+                        >
+                          <Send className="mr-1.5 h-3.5 w-3.5" />
+                          Submit Assessment
+                        </Button>
+                        {/* Saved Toast Tooltip */}
+                        <AnimatePresence>
+                          {showSavedToast && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8, y: 5 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.8, y: 5 }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 300,
+                                damping: 20,
+                              }}
+                              className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-green-500 text-white text-xs font-semibold shadow-xl whitespace-nowrap z-50 flex items-center gap-2"
+                            >
+                              <motion.div
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ delay: 0.1, type: "spring" }}
+                              >
+                                <Check className="h-4 w-4" />
+                              </motion.div>
+                              <span>Saved!</span>
+                              {/* Arrow pointer pointing down */}
+                              <div className="absolute top-full left-1/2 -translate-x-1/2">
+                                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-green-500"></div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </>
                     )}
-                  </Button>
+                  </div>
                 ) : (
                   <Button
                     onClick={handleNextPage}
