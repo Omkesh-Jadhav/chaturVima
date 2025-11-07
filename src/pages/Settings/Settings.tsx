@@ -13,7 +13,7 @@ import {
   KeyRound,
   ChevronRight,
 } from "lucide-react";
-import { Card, CardContent } from "../components/ui";
+import { Card, CardContent } from "../../components/ui";
 
 interface SettingsOption {
   id: string;
