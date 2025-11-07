@@ -42,11 +42,14 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const loginWithOTP = async (
     email: string,
-    // mobile: string,
+    _mobile: string,
     name?: string
   ): Promise<void> => {
     // Simulate API call delay for OTP verification
     await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Note: _mobile parameter is kept for API compatibility but not used in mock implementation
+    // In production, this would be used for OTP verification
 
     // Try to find existing user by email
     let foundUser = getUserByEmail(email);
