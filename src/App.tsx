@@ -17,7 +17,7 @@ import OrganizationSetup from "./pages/superAdmin/Organization/OrganizationSetup
 import EmployeeSetup from "./pages/superAdmin/Employee/EmployeeSetup";
 import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
 import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
-import Settings from "./pages/Settings";
+import Settings from "./pages/Settings/Settings";
 import EditProfile from "./pages/Settings/EditProfile";
 
 // Protected Route Component

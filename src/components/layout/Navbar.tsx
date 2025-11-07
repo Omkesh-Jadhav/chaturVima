@@ -65,7 +65,13 @@ const Navbar = () => {
   const currentRoleConfig = ROLE_CONFIG[user.role];
 
   // Get all available roles that the user can switch to
-  const allRoles: UserRole[] = ["employee", "manager", "hr-admin", "department-head", "super-admin"];
+  const allRoles: UserRole[] = [
+    "employee",
+    "manager",
+    "hr-admin",
+    "department-head",
+    "super-admin",
+  ];
   const availableRoles = allRoles.filter((role) => role !== user.role);
 
   const handleRoleSwitch = (newRole: UserRole) => {
@@ -210,6 +216,7 @@ const Navbar = () => {
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                     className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg"
                   >
                     <div className="p-4">
@@ -279,6 +286,7 @@ const Navbar = () => {
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                     className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg"
                   >
                     <div className="p-2">
@@ -326,7 +334,7 @@ const Navbar = () => {
                           className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
                         >
                           <LogOut className="h-4 w-4" />
-                          Sign Out
+                          Logout
                         </button>
                       </div>
                     </div>

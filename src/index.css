@@ -143,3 +143,28 @@
 .scale-in {
   animation: scaleIn 0.3s ease-out;
 }
+
+/* Custom select dropdown styling */
+select option {
+  background-color: white;
+  color: #1f2937;
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background: linear-gradient(
+    to right,
+    var(--color-brand-teal),
+    var(--color-brand-navy)
+  );
+  background-color: var(--color-brand-teal);
+  color: white;
+}
+
+/* For better browser support */
+select option:checked {
+  background-color: var(--color-brand-teal);
+  color: white;
+}

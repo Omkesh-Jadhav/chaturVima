@@ -40,8 +40,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  const login = async (email: string, _password: string): Promise<void> => {
-    // Simulate API call delay
+  const loginWithOTP = async (
+    email: string,
+    // mobile: string,
+    name?: string
+  ): Promise<void> => {
+    // Simulate API call delay for OTP verification
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Try to find existing user by email
@@ -49,26 +53,33 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
     // If user doesn't exist, create a new user dynamically
     if (!foundUser) {
-      // Extract name from email (e.g., "john.doe@example.com" -> "John Doe")
-      const nameFromEmail = email
-        .split("@")[0]
-        .split(/[._-]/)
-        .map(
-          (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-        )
-        .join(" ");
+      // Use provided name, or extract from email, or use "User" as fallback
+      let userName = name;
+      if (!userName || userName.trim() === "") {
+        // Extract name from email (e.g., "john.doe@example.com" -> "John Doe")
+        userName = email
+          .split("@")[0]
+          .split(/[._-]/)
+          .map(
+            (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+          )
+          .join(" ");
+      }
 
       // Generate avatar based on email
       const avatarSeed = email.toLowerCase().replace(/[^a-z0-9]/g, "");
 
       foundUser = {
         id: `user-${Date.now()}`,
-        name: nameFromEmail || "User",
+        name: userName || "User",
         email: email.toLowerCase(),
         role: "employee", // Default role
         department: "General",
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
       };
+    } else if (name && name.trim() !== "" && foundUser.name !== name) {
+      // Update name if provided and different
+      foundUser = { ...foundUser, name: name.trim() };
     }
 
     setUser(foundUser);
@@ -103,7 +114,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   const value: UserContextType = {
     user,
     isAuthenticated,
-    login,
+    loginWithOTP,
     logout,
     switchRole,
     updateProfile,

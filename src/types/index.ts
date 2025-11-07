@@ -119,7 +119,7 @@ export interface User {
 export interface UserContext {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  loginWithOTP: (email: string, mobile: string, name?: string) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
   updateProfile: (profileData: Partial<User>) => void;

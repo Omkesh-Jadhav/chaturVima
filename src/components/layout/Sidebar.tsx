@@ -7,10 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
 import {
   FileText,
-  Settings,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   User,
   UserCog,
   Shield,
@@ -122,14 +120,14 @@ const ROLE_CONFIG: Record<
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const location = useLocation();
-  const { user, logout } = useUser();
+  const { user } = useUser();
 
   const currentRoleConfig = user ? ROLE_CONFIG[user.role] : null;
 
   // Filter navigation items based on user role
   const getVisibleNavItems = () => {
     if (!user) return [];
-    return NAV_ITEMS.filter(item => item.roles.includes(user.role));
+    return NAV_ITEMS.filter((item) => item.roles.includes(user.role));
   };
 
   const visibleNavItems = getVisibleNavItems();
@@ -255,56 +253,6 @@ const Sidebar = () => {
           );
         })}
       </nav>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 space-y-1">
-        <Link
-          to="/settings"
-          className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-          )}
-          title={isCollapsed ? "Settings" : undefined}
-        >
-          <Settings className="h-5 w-5 flex-shrink-0" />
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.span
-                key="settings-label"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-sm font-medium"
-              >
-                Settings
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </Link>
-        <button
-          onClick={logout}
-          className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-          )}
-          title={isCollapsed ? "Logout" : undefined}
-        >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.span
-                key="logout-label"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-sm font-medium"
-              >
-                Logout
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </button>
-      </div>
     </motion.aside>
   );
 };

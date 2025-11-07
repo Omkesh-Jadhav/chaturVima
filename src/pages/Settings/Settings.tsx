@@ -4,16 +4,8 @@
  */
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  User,
-  Bell,
-  Shield,
-  Palette,
-  Globe,
-  KeyRound,
-  ChevronRight,
-} from "lucide-react";
-import { Card, CardContent } from "../components/ui";
+import { User, Shield, ChevronRight } from "lucide-react";
+import { Card, CardContent } from "../../components/ui";
 
 interface SettingsOption {
   id: string;
@@ -34,44 +26,12 @@ const SETTINGS_OPTIONS: SettingsOption[] = [
     color: "from-blue-500 to-blue-600",
   },
   {
-    id: "notifications",
-    title: "Notifications",
-    description: "Manage your notification preferences",
-    icon: <Bell className="h-5 w-5" />,
-    path: "/settings/notifications",
-    color: "from-purple-500 to-purple-600",
-  },
-  {
     id: "security",
     title: "Security",
-    description: "Change password and manage security settings",
+    description: "Manage security settings and OTP preferences",
     icon: <Shield className="h-5 w-5" />,
     path: "/settings/security",
     color: "from-red-500 to-red-600",
-  },
-  {
-    id: "appearance",
-    title: "Appearance",
-    description: "Customize theme and display preferences",
-    icon: <Palette className="h-5 w-5" />,
-    path: "/settings/appearance",
-    color: "from-pink-500 to-pink-600",
-  },
-  {
-    id: "language",
-    title: "Language & Region",
-    description: "Set your language and regional preferences",
-    icon: <Globe className="h-5 w-5" />,
-    path: "/settings/language",
-    color: "from-green-500 to-green-600",
-  },
-  {
-    id: "privacy",
-    title: "Privacy",
-    description: "Control your privacy and data settings",
-    icon: <KeyRound className="h-5 w-5" />,
-    path: "/settings/privacy",
-    color: "from-indigo-500 to-indigo-600",
   },
 ];
 
@@ -100,7 +60,7 @@ const Settings = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="grid gap-3 md:grid-cols-2 lg:grid-cols-3"
+        className="grid gap-3 md:grid-cols-2 max-w-2xl"
       >
         {SETTINGS_OPTIONS.map((option, index) => (
           <motion.div
