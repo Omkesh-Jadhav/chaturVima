@@ -3,6 +3,7 @@
  * Routes and authentication wrapper
  */
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import { UserProvider, useUser } from "./context/UserContext";
 import { AssessmentProvider } from "./context/AssessmentContext";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -19,13 +20,34 @@ import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
 import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
 import Settings from "./pages/Settings/Settings";
 import EditProfile from "./pages/Settings/EditProfile";
+import type { UserRole } from "./types";
+import { getDefaultRouteForRole } from "./config/roleRoutes";
 
 // Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useUser();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const RoleRoute = ({
+  allowedRoles,
+  children,
+}: {
+  allowedRoles: UserRole[];
+  children: ReactNode;
+}) => {
+  const { user } = useUser();
+  if (!user) {
+    return null;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
   }
 
   return <>{children}</>;
@@ -55,6 +77,8 @@ const JourneyPage = () => (
 );
 
 function AppRoutes() {
+  const { user, isAuthenticated } = useUser();
+
   return (
     <Routes>
       {/* Public route */}
@@ -72,35 +96,107 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/assessment-dashboard" element={<Dashboard />} />
-        <Route path="/assessment" element={<Assessment />} />
-        <Route path="/assessment/questions" element={<AssessmentQuestions />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route
+          path="/assessment-dashboard"
+          element={
+            <RoleRoute allowedRoles={["employee"]}>
+              <Dashboard />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/assessment"
+          element={
+            <RoleRoute allowedRoles={["employee"]}>
+              <Assessment />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/assessment/questions"
+          element={
+            <RoleRoute allowedRoles={["employee"]}>
+              <AssessmentQuestions />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <RoleRoute allowedRoles={["employee"]}>
+              <Analytics />
+            </RoleRoute>
+          }
+        />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/journey" element={<JourneyPage />} />
-        <Route path="/assessment-report" element={<AssessmentReport />} />
+        <Route
+          path="/assessment-report"
+          element={
+            <RoleRoute allowedRoles={["employee"]}>
+              <AssessmentReport />
+            </RoleRoute>
+          }
+        />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/edit-profile" element={<EditProfile />} />
-        <Route path="/organization-setup" element={<OrganizationSetup />} />
-        <Route path="/employee-setup" element={<EmployeeSetup />} />
-        <Route path="/department-setup" element={<DepartmentSetup />} />
+        <Route
+          path="/organization-setup"
+          element={
+            <RoleRoute allowedRoles={["super-admin"]}>
+              <OrganizationSetup />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/employee-setup"
+          element={
+            <RoleRoute allowedRoles={["super-admin"]}>
+              <EmployeeSetup />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/department-setup"
+          element={
+            <RoleRoute allowedRoles={["super-admin"]}>
+              <DepartmentSetup />
+            </RoleRoute>
+          }
+        />
         <Route
           path="/super-admin-dashboard"
-          element={<SuperAdminDashboard />}
+          element={
+            <RoleRoute allowedRoles={["super-admin"]}>
+              <SuperAdminDashboard />
+            </RoleRoute>
+          }
         />
       </Route>
 
       {/* Redirect root to dashboard or login */}
       <Route
         path="/"
-        element={<Navigate to="/assessment-dashboard" replace />}
+        element={
+          isAuthenticated ? (
+            <Navigate to={getDefaultRouteForRole(user?.role)} replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
 
       {/* 404 fallback */}
       <Route
         path="*"
-        element={<Navigate to="/assessment-dashboard" replace />}
+        element={
+          isAuthenticated ? (
+            <Navigate to={getDefaultRouteForRole(user?.role)} replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
     </Routes>
   );

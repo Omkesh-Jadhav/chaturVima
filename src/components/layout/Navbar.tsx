@@ -1,8 +1,7 @@
 /**
  * Navbar Component
- * Top navigation bar with role switching and user menu
+ * Top navigation bar with notifications and user menu
  */
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,41 +9,23 @@ import {
   User,
   LogOut,
   Settings,
-  ChevronDown,
-  ChevronUp,
-  Shield,
-  UserCog,
   Crown,
   X,
-  Check,
+  ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
 import { useUser } from "../../context/UserContext";
-import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
+import type { UserRole } from "../../types";
 
 const ROLE_CONFIG: Record<
   UserRole,
-  { label: string; icon: React.ReactNode; color: string }
+  { label: string; icon: JSX.Element; color: string }
 > = {
   employee: {
     label: "Employee",
     icon: <User className="h-4 w-4" />,
     color: "text-blue-600 bg-blue-50",
-  },
-  manager: {
-    label: "Manager",
-    icon: <UserCog className="h-4 w-4" />,
-    color: "text-purple-600 bg-purple-50",
-  },
-  "hr-admin": {
-    label: "HR Admin",
-    icon: <Shield className="h-4 w-4" />,
-    color: "text-green-600 bg-green-50",
-  },
-  "department-head": {
-    label: "Department Head",
-    icon: <UserCog className="h-4 w-4" />,
-    color: "text-orange-600 bg-orange-50",
   },
   "super-admin": {
     label: "Super Admin",
@@ -54,31 +35,14 @@ const ROLE_CONFIG: Record<
 };
 
 const Navbar = () => {
-  const { user, logout, switchRole } = useUser();
+  const { user, logout } = useUser();
   const navigate = useNavigate();
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   if (!user) return null;
 
   const currentRoleConfig = ROLE_CONFIG[user.role];
-
-  // Get all available roles that the user can switch to
-  const allRoles: UserRole[] = [
-    "employee",
-    "manager",
-    "hr-admin",
-    "department-head",
-    "super-admin",
-  ];
-  const availableRoles = allRoles.filter((role) => role !== user.role);
-
-  const handleRoleSwitch = (newRole: UserRole) => {
-    switchRole(newRole);
-    setShowRoleMenu(false);
-    navigate("/assessment");
-  };
 
   const handleLogout = () => {
     logout();
@@ -93,109 +57,11 @@ const Navbar = () => {
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-2">
-          {/* Role Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowRoleMenu(!showRoleMenu);
-                setShowUserMenu(false);
-              }}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium transition-all hover:border-brand-teal hover:bg-gray-50"
-            >
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 rounded px-2 py-0.5",
-                  currentRoleConfig.color
-                )}
-              >
-                {currentRoleConfig.icon}
-                <span className="hidden sm:inline">
-                  {currentRoleConfig.label}
-                </span>
-              </div>
-              {showRoleMenu ? (
-                <ChevronUp className="h-4 w-4 text-gray-500" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              )}
-            </button>
-
-            {/* Role Menu Dropdown */}
-            <AnimatePresence>
-              {showRoleMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowRoleMenu(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg"
-                  >
-                    <div className="p-2">
-                      <div className="mb-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                        Switch Role
-                      </div>
-                      <div className="space-y-1">
-                        {availableRoles.map((role) => {
-                          const roleCfg = ROLE_CONFIG[role];
-                          return (
-                            <button
-                              key={role}
-                              onClick={() => handleRoleSwitch(role)}
-                              className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-gray-50"
-                            >
-                              <div
-                                className={cn(
-                                  "flex items-center justify-center rounded-lg p-2",
-                                  roleCfg.color
-                                )}
-                              >
-                                {roleCfg.icon}
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {roleCfg.label}
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="mt-2 border-t border-gray-100 pt-2">
-                        <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2">
-                          <div
-                            className={cn(
-                              "flex items-center justify-center rounded-lg p-1.5",
-                              currentRoleConfig.color
-                            )}
-                          >
-                            {currentRoleConfig.icon}
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-xs font-medium text-gray-900">
-                              Current: {currentRoleConfig.label}
-                            </div>
-                          </div>
-                          <Check className="h-4 w-4 text-brand-teal" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-
           {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => {
                 setShowNotifications(!showNotifications);
-                setShowRoleMenu(false);
                 setShowUserMenu(false);
               }}
               className="relative flex cursor-pointer items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -261,7 +127,6 @@ const Navbar = () => {
             <button
               onClick={() => {
                 setShowUserMenu(!showUserMenu);
-                setShowRoleMenu(false);
                 setShowNotifications(false);
               }}
               className="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-gray-100"

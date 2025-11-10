@@ -4,7 +4,7 @@
  */
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { User, UserContext as UserContextType, UserRole } from "../types";
+import type { User, UserContext as UserContextType } from "../types";
 import { getUserByEmail } from "../data/mockUsers";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -44,66 +44,31 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     email: string,
     _mobile: string,
     name?: string
-  ): Promise<void> => {
-    // Simulate API call delay for OTP verification
+  ): Promise<User> => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Note: _mobile parameter is kept for API compatibility but not used in mock implementation
-    // In production, this would be used for OTP verification
+    const existingUser = getUserByEmail(email);
 
-    // Try to find existing user by email
-    let foundUser = getUserByEmail(email);
-
-    // If user doesn't exist, create a new user dynamically
-    if (!foundUser) {
-      // Use provided name, or extract from email, or use "User" as fallback
-      let userName = name;
-      if (!userName || userName.trim() === "") {
-        // Extract name from email (e.g., "john.doe@example.com" -> "John Doe")
-        userName = email
-          .split("@")[0]
-          .split(/[._-]/)
-          .map(
-            (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-          )
-          .join(" ");
-      }
-
-      // Generate avatar based on email
-      const avatarSeed = email.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-      foundUser = {
-        id: `user-${Date.now()}`,
-        name: userName || "User",
-        email: email.toLowerCase(),
-        role: "employee", // Default role
-        department: "General",
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
-      };
-    } else if (name && name.trim() !== "" && foundUser.name !== name) {
-      // Update name if provided and different
-      foundUser = { ...foundUser, name: name.trim() };
+    if (!existingUser) {
+      throw new Error("Invalid credentials");
     }
 
-    setUser(foundUser);
-    setIsAuthenticated(true);
+    const normalizedName = name?.trim();
+    const authenticatedUser = normalizedName
+      ? { ...existingUser, name: normalizedName }
+      : existingUser;
 
-    // Persist user to localStorage
-    localStorage.setItem("chaturvima_user", JSON.stringify(foundUser));
+    setUser(authenticatedUser);
+    setIsAuthenticated(true);
+    localStorage.setItem("chaturvima_user", JSON.stringify(authenticatedUser));
+
+    return authenticatedUser;
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("chaturvima_user");
-  };
-
-  const switchRole = (newRole: UserRole) => {
-    if (!user) return;
-    const updatedUser = { ...user, role: newRole };
-    setUser(updatedUser);
-    setIsAuthenticated(true);
-    localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));
   };
 
   const updateProfile = (profileData: Partial<User>) => {
@@ -119,7 +84,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     isAuthenticated,
     loginWithOTP,
     logout,
-    switchRole,
     updateProfile,
   };
 

@@ -27,6 +27,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
+import { getDefaultRouteForRole } from "../config/roleRoutes";
 
 type LoginStep = "credentials" | "otp" | "success";
 
@@ -36,14 +37,7 @@ const OTP_SEND_DELAY = 1500;
 const OTP_VERIFY_DELAY = 1500;
 const REDIRECT_DELAY = 1500;
 
-// Dummy credentials for validation - Multiple test emails supported
-const VALID_EMAILS = [
-  "user@example.com",
-  "admin@example.com",
-  "hr@example.com",
-  "manager@example.com",
-  "super-admin@example.com",
-];
+const VALID_EMAILS = ["employee@demo.com", "superadmin@demo.com"];
 const VALID_COUNTRY_CODE = "+91";
 const VALID_PHONE_NUMBER = "9876543210"; // Format: [country code][phone number] - Must start with 6, 7, 8, or 9
 
@@ -88,7 +82,6 @@ const Login = () => {
   const countryCodeDropdownRef = useRef<HTMLDivElement>(null);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -105,7 +98,6 @@ const Login = () => {
     };
   }, []);
 
-  // Update phone number format when country code changes
   useEffect(() => {
     if (phoneNumber) {
       const formatted = formatPhoneNumber(phoneNumber, countryCode);
@@ -114,9 +106,8 @@ const Login = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countryCode]); // Only run when country code changes
+  }, [countryCode]);
 
-  // OTP timer countdown
   useEffect(() => {
     if (otpTimer > 0) {
       const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
@@ -126,50 +117,42 @@ const Login = () => {
     }
   }, [otpTimer, step]);
 
-  // Validation helpers
-  const validateName = useCallback((name: string) => {
-    return name.trim().length >= 2 && name.trim().length <= 50;
+  const validateName = useCallback((value: string) => {
+    return value.trim().length >= 2 && value.trim().length <= 50;
   }, []);
 
-  const validateEmail = useCallback((email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = useCallback((value: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }, []);
 
   const validatePhoneNumber = useCallback(
-    (phone: string, countryCode: string) => {
+    (phone: string, selectedCountryCode: string) => {
       const digitsOnly = phone.replace(/\D/g, "");
 
-      // India specific validation (+91)
-      if (countryCode === "+91") {
+      if (selectedCountryCode === "+91") {
         if (digitsOnly.length !== 10) {
           return false;
         }
-        // Indian mobile numbers must start with 6, 7, 8, or 9
         return /^[6-9]\d{9}$/.test(digitsOnly);
       }
 
-      // For other countries
-      // Minimum 7 digits, maximum 15 digits (E.164 standard)
       return digitsOnly.length >= 7 && digitsOnly.length <= 15;
     },
     []
   );
 
   const formatPhoneNumber = useCallback(
-    (value: string, countryCode: string) => {
-      // Remove all non-digit characters
+    (value: string, selectedCountryCode: string) => {
       const digitsOnly = value.replace(/\D/g, "");
 
-      if (countryCode === "+91") {
-        // For Indian numbers: limit to 10 digits and format with space
+      if (selectedCountryCode === "+91") {
         const limitedDigits = digitsOnly.slice(0, 10);
         return limitedDigits.length > 5
           ? `${limitedDigits.slice(0, 5)} ${limitedDigits.slice(5)}`
           : limitedDigits;
-      } else {
-        // For other countries: just digits, no formatting
-        return digitsOnly.slice(0, 15);
       }
+
+      return digitsOnly.slice(0, 15);
     },
     []
   );
@@ -200,11 +183,9 @@ const Login = () => {
         return;
       }
 
-      // Validate credentials against hardcoded values
       const normalizedEmail = email.toLowerCase().trim();
       const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
 
-      // Check if email is in the list of valid emails
       const isValidEmail = VALID_EMAILS.some(
         (validEmail) => validEmail.toLowerCase() === normalizedEmail
       );
@@ -214,7 +195,6 @@ const Login = () => {
         return;
       }
 
-      // Compare country code and phone number
       if (countryCode !== VALID_COUNTRY_CODE) {
         setError("Invalid mobile number. Please check your credentials.");
         return;
@@ -228,7 +208,6 @@ const Login = () => {
       setIsSendingOTP(true);
 
       try {
-        // Simulate API call to send OTP
         await new Promise((resolve) => setTimeout(resolve, OTP_SEND_DELAY));
 
         setOtpTimer(OTP_TIMER_DURATION);
@@ -258,7 +237,6 @@ const Login = () => {
     setError("");
 
     try {
-      // Simulate API call to resend OTP
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setOtpTimer(OTP_TIMER_DURATION);
@@ -283,7 +261,6 @@ const Login = () => {
       return newOtp;
     });
 
-    // Auto-focus next input when digit is entered
     if (digit && index < OTP_LENGTH - 1) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -292,7 +269,6 @@ const Login = () => {
   const handleOtpKeyDown = useCallback(
     (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Backspace") {
-        // If current box has a value, clear it and move to previous box
         if (otp[index] && index > 0) {
           e.preventDefault();
           setOtp((prev) => {
@@ -300,20 +276,16 @@ const Login = () => {
             newOtp[index] = "";
             return newOtp;
           });
-          // Move to previous box immediately
           setTimeout(() => {
             otpInputRefs.current[index - 1]?.focus();
           }, 0);
-        }
-        // If current box is empty and not the first box, move to previous and clear it
-        else if (!otp[index] && index > 0) {
+        } else if (!otp[index] && index > 0) {
           e.preventDefault();
           setOtp((prev) => {
             const newOtp = [...prev];
             newOtp[index - 1] = "";
             return newOtp;
           });
-          // Small delay to ensure the value is cleared before focusing
           setTimeout(() => {
             otpInputRefs.current[index - 1]?.focus();
           }, 0);
@@ -357,20 +329,25 @@ const Login = () => {
       setIsLoading(true);
 
       try {
-        // Simulate OTP verification
         await new Promise((resolve) => setTimeout(resolve, OTP_VERIFY_DELAY));
 
-        // Login user with OTP
         const fullMobile = `${countryCode}${phoneNumber.replace(/\D/g, "")}`;
-        await loginWithOTP(email, fullMobile, name.trim());
+        const authenticatedUser = await loginWithOTP(
+          email,
+          fullMobile,
+          name.trim()
+        );
         setStep("success");
 
-        // Redirect to assessment page after showing success message
         setTimeout(() => {
-          navigate("/assessment");
+          navigate(getDefaultRouteForRole(authenticatedUser.role));
         }, REDIRECT_DELAY);
-      } catch {
-        setError("OTP verification failed. Please try again.");
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "OTP verification failed. Please try again."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -378,7 +355,6 @@ const Login = () => {
     [otp, email, countryCode, phoneNumber, name, loginWithOTP, navigate]
   );
 
-  // Memoized step titles and descriptions
   const stepConfig = useMemo(
     () => ({
       credentials: {
@@ -394,7 +370,7 @@ const Login = () => {
       },
       success: {
         title: "Login Successful",
-        description: "Redirecting to assessment...",
+        description: "Redirecting to your dashboard...",
       },
     }),
     [email, countryCode, phoneNumber]
@@ -402,7 +378,6 @@ const Login = () => {
 
   return (
     <div className="relative flex h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-gradient-to-br from-blue-200/30 to-purple-200/30 blur-3xl"
@@ -438,7 +413,6 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-md"
       >
-        {/* Logo and Title */}
         <div className="mb-4 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -458,7 +432,6 @@ const Login = () => {
           </motion.div>
         </div>
 
-        {/* Login Card */}
         <Card
           variant="elevated"
           className="backdrop-blur-sm bg-white/95 shadow-2xl"
@@ -505,7 +478,6 @@ const Login = () => {
                   className="space-y-4"
                   autoComplete="off"
                 >
-                  {/* Name Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       Full Name
@@ -529,7 +501,6 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* Email Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       Email Address
@@ -551,13 +522,11 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* Mobile Input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
                       Mobile Number
                     </label>
                     <div className="flex gap-2">
-                      {/* Country Code Dropdown */}
                       <div className="relative" ref={countryCodeDropdownRef}>
                         <button
                           type="button"
@@ -620,7 +589,6 @@ const Login = () => {
                           )}
                         </AnimatePresence>
                       </div>
-                      {/* Phone Number Input */}
                       <div className="relative flex-1">
                         <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         <Input
@@ -637,7 +605,6 @@ const Login = () => {
                             )
                           }
                           onKeyDown={(e) => {
-                            // Prevent non-digit keys except backspace, delete, tab, arrow keys
                             if (
                               !/[0-9]/.test(e.key) &&
                               ![
@@ -651,7 +618,7 @@ const Login = () => {
                                 "Home",
                                 "End",
                               ].includes(e.key) &&
-                              !(e.ctrlKey || e.metaKey) // Allow Ctrl/Cmd + A, C, V, X
+                              !(e.ctrlKey || e.metaKey)
                             ) {
                               e.preventDefault();
                             }
@@ -661,7 +628,7 @@ const Login = () => {
                           name="phoneNumber"
                           id="phoneNumber-input"
                           className="pl-10 h-11"
-                          maxLength={countryCode === "+91" ? 11 : 15} // 10 digits + 1 space for Indian
+                          maxLength={countryCode === "+91" ? 11 : 15}
                           disabled={isSendingOTP}
                         />
                       </div>
@@ -673,7 +640,6 @@ const Login = () => {
                     </p>
                   </div>
 
-                  {/* Error Message */}
                   <AnimatePresence>
                     {error && (
                       <motion.div
@@ -687,7 +653,6 @@ const Login = () => {
                     )}
                   </AnimatePresence>
 
-                  {/* Send OTP Button */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -703,7 +668,6 @@ const Login = () => {
                     </Button>
                   </motion.div>
 
-                  {/* Security Note - Simplified */}
                   <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                     <Shield className="h-3 w-3" />
                     <span>OTP sent to email & mobile</span>
@@ -721,7 +685,6 @@ const Login = () => {
                   className="space-y-5"
                   autoComplete="off"
                 >
-                  {/* OTP Input - Professional Design */}
                   <div className="space-y-5">
                     <div className="flex justify-center gap-2.5">
                       {otp.map((digit, index) => (
@@ -747,7 +710,6 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* Resend OTP Section - Professional Timer */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-center gap-3">
                       {otpTimer > 0 ? (
@@ -788,7 +750,6 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* Error Message */}
                   <AnimatePresence>
                     {error && (
                       <motion.div
@@ -802,7 +763,6 @@ const Login = () => {
                     )}
                   </AnimatePresence>
 
-                  {/* Verify OTP Button */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -848,7 +808,7 @@ const Login = () => {
                     Login Successful!
                   </h3>
                   <p className="text-base text-gray-600">
-                    Redirecting to assessment...
+                    Redirecting to your dashboard...
                   </p>
                 </motion.div>
               )}

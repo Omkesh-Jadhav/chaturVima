@@ -6,14 +6,14 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";
 import {
+  ClipboardList,
   FileText,
   ChevronLeft,
   ChevronRight,
   User,
-  UserCog,
-  Shield,
   Crown,
   LayoutDashboard,
+  Users,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -29,60 +29,60 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    id: "super-admin-dashboard",
-    label: "Dashboard",
-    path: "/super-admin-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["super-admin"],
-  },
-  {
-    id: "assessment-dashboard",
+    id: "employee-dashboard",
     label: "Dashboard",
     path: "/assessment-dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
     roles: ["employee"],
   },
   {
-    id: "manager-dashboard",
-    label: "Dashboard",
-    path: "/manager-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["manager"],
-  },
-  {
-    id: "assessment",
+    id: "employee-assessment",
     label: "Assessment",
     path: "/assessment",
     icon: <FileText className="h-5 w-5" />,
     roles: ["employee"],
   },
   {
-    id: "organization-setup",
+    id: "employee-report",
+    label: "Assessment Report",
+    path: "/assessment-report",
+    icon: <ClipboardList className="h-5 w-5" />,
+    roles: ["employee"],
+  },
+  {
+    id: "employee-analytics",
+    label: "Analytics",
+    path: "/analytics",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["employee"],
+  },
+  {
+    id: "super-admin-dashboard",
+    label: "Overview",
+    path: "/super-admin-dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["super-admin"],
+  },
+  {
+    id: "super-admin-organization",
     label: "Organization Setup",
     path: "/organization-setup",
     icon: <FileText className="h-5 w-5" />,
     roles: ["super-admin"],
   },
   {
-    id: "hr-dashboard",
-    label: "HR Dashboard",
-    path: "/hr-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["hr-admin"],
-  },
-  {
-    id: "employee-setup",
-    label: "Employee Setup",
-    path: "/employee-setup",
-    icon: <FileText className="h-5 w-5" />,
-    roles: ["hr-admin", "super-admin"],
-  },
-  {
-    id: "deaprtment-setup",
+    id: "super-admin-department",
     label: "Department Setup",
     path: "/department-setup",
-    icon: <FileText className="h-5 w-5" />,
-    roles: ["department-head", "hr-admin", "super-admin"],
+    icon: <Users className="h-5 w-5" />,
+    roles: ["super-admin"],
+  },
+  {
+    id: "super-admin-employee",
+    label: "Employee Setup",
+    path: "/employee-setup",
+    icon: <ClipboardList className="h-5 w-5" />,
+    roles: ["super-admin"],
   },
 ];
 
@@ -94,21 +94,6 @@ const ROLE_CONFIG: Record<
     label: "Employee",
     icon: <User className="h-3 w-3" />,
     color: "text-blue-600 bg-blue-50",
-  },
-  manager: {
-    label: "Manager",
-    icon: <UserCog className="h-3 w-3" />,
-    color: "text-purple-600 bg-purple-50",
-  },
-  "hr-admin": {
-    label: "HR Admin",
-    icon: <Shield className="h-3 w-3" />,
-    color: "text-green-600 bg-green-50",
-  },
-  "department-head": {
-    label: "Department Head",
-    icon: <UserCog className="h-3 w-3" />,
-    color: "text-orange-600 bg-orange-50",
   },
   "super-admin": {
     label: "Super Admin",
