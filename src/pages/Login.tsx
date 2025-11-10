@@ -424,11 +424,9 @@ const Login = () => {
               <TrendingUp className="h-8 w-8 text-white" />
             </div>
             <h1 className="mb-1 bg-gradient-to-r from-brand-navy to-brand-teal bg-clip-text text-3xl font-bold text-transparent">
-              ChaturVima
+              IT Due Diligence
             </h1>
-            <p className="text-sm font-medium text-gray-600">
-              Organizational Health Diagnostics
-            </p>
+            <p className="text-sm font-medium text-gray-600">Dashboard</p>
           </motion.div>
         </div>
 
