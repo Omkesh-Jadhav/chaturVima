@@ -13,7 +13,7 @@
  * - Subsection Headings: text-base font-medium
  * - Card Labels: text-sm font-medium
  */
-import { useMemo, useState, memo, useRef } from "react";
+import { useMemo, useState, memo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ResponsiveLine } from "@nivo/line";
 import { ResponsivePie } from "@nivo/pie";
@@ -25,7 +25,6 @@ import {
   ChevronDown,
   CheckCircle,
   FileText,
-  TrendingUp,
   Calendar,
 } from "lucide-react";
 import { colors } from "../../../utils/colors";
@@ -69,52 +68,35 @@ const brand = {
 const SummaryCard = ({
   label,
   value,
-  subText,
   icon: Icon,
   gradient,
 }: {
   label: string;
   value: string | number;
-  subText?: string;
   icon?: React.ComponentType<{ className?: string }>;
   gradient?: string;
 }) => (
   <motion.div
-    whileHover={{ y: -4, scale: 1.02 }}
-    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-    className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+    whileHover={{ y: -1, scale: 1.005 }}
+    transition={{ type: "spring", stiffness: 240, damping: 22 }}
+    className="group rounded-2xl border border-gray-100 bg-white/95 px-3 py-3 shadow-sm ring-1 ring-transparent transition-all hover:shadow-md"
   >
-    {/* Background gradient on hover */}
-    <div
-      className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-5 ${
-        gradient || "bg-gradient-to-br from-brand-teal to-brand-navy"
-      }`}
-    />
-
-    <div className="relative">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <div className="mt-3 flex items-baseline gap-2">
-            <div className="text-3xl font-bold text-gray-900">{value}</div>
-          </div>
-          {subText && (
-            <div className="mt-2 text-xs font-medium text-gray-500">
-              {subText}
-            </div>
-          )}
-        </div>
-        {Icon && (
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-sm ${
-              gradient || "bg-gradient-to-br from-brand-teal to-brand-navy"
-            }`}
-          >
-            <Icon className="h-6 w-6 text-white" />
-          </motion.div>
-        )}
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+          {label}
+        </p>
+        <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
       </div>
+      {Icon && (
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
+            gradient || "bg-linear-to-br from-brand-teal to-brand-navy"
+          }`}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
+      )}
     </div>
   </motion.div>
 );
@@ -128,6 +110,8 @@ const getPriorityStyles = (priority: Priority): string => {
   };
   return styles[priority];
 };
+
+type StageDatum = { id: string; label: string; value: number };
 
 const AssessmentDashboard = () => {
   // Mock data
@@ -323,13 +307,12 @@ const AssessmentDashboard = () => {
 
   StrengthRing.displayName = "StrengthRing";
 
-  const categoryDistribution = useMemo(
+  const categoryDistribution = useMemo<StageDatum[]>(
     () => [
-      { id: "Leadership", label: "Leadership", value: 6 },
-      { id: "Communication", label: "Communication", value: 8 },
-      { id: "Analytics", label: "Analytics", value: 4 },
-      { id: "Cognitive", label: "Cognitive", value: 5 },
-      { id: "Productivity", label: "Productivity", value: 7 },
+      { id: "Self-Reflection", label: "Self-Reflection", value: 25 },
+      { id: "Soul-Searching", label: "Soul-Searching", value: 42 },
+      { id: "Steady State", label: "Steady State", value: 18 },
+      { id: "Honeymoon", label: "Honeymoon", value: 15 },
     ],
     []
   );
@@ -372,12 +355,22 @@ const AssessmentDashboard = () => {
   }, [range, scoreTrendAll]);
 
   // Summary values
+  const formatReadableDate = useCallback((value: string) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, []);
+
   const totalCompleted = completed.length;
   const totalPending = pending.length;
-  const averageScore = Math.round(
-    completed.reduce((s, c) => s + c.score, 0) / Math.max(1, completed.length)
-  );
   const lastCompleted = completed[completed.length - 1]?.date ?? "—";
+  const lastCompletedLabel =
+    lastCompleted !== "—" ? formatReadableDate(lastCompleted) : "—";
 
   // Category filtering removed: use strengths as-is
   // Memoize to prevent new array reference on each render
@@ -393,7 +386,7 @@ const AssessmentDashboard = () => {
           value={s.score}
         />
       )),
-    [filteredStrengths]
+    [StrengthRing, filteredStrengths]
   );
 
   // Pending assessments filter
@@ -430,7 +423,7 @@ const AssessmentDashboard = () => {
   } as const;
 
   const header = (
-    <div className="mb-6">
+    <div className="mb-4">
       <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
         Assessment Dashboard
       </h1>
@@ -469,34 +462,24 @@ const AssessmentDashboard = () => {
       <div className="relative z-10">{header}</div>
 
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <SummaryCard
           label="Assessments Completed"
           value={totalCompleted}
-          subText="All time"
           icon={CheckCircle}
-          gradient="bg-gradient-to-b from-brand-teal to-brand-navy"
+          gradient="bg-linear-to-b from-brand-teal to-brand-navy"
         />
         <SummaryCard
           label="Pending Assessments"
           value={totalPending}
-          subText="Awaiting action"
           icon={FileText}
-          gradient="bg-gradient-to-b from-amber-500 to-orange-600"
-        />
-        <SummaryCard
-          label="Average Score"
-          value={`${averageScore}`}
-          subText="Across completed"
-          icon={TrendingUp}
-          gradient="bg-gradient-to-b from-purple-500 to-indigo-600"
+          gradient="bg-linear-to-b from-amber-500 to-orange-600"
         />
         <SummaryCard
           label="Last Completed"
-          value={lastCompleted}
-          subText="Most recent test"
+          value={lastCompletedLabel}
           icon={Calendar}
-          gradient="bg-gradient-to-b from-sky-500 to-blue-600"
+          gradient="bg-linear-to-b from-sky-500 to-blue-600"
         />
       </div>
 
@@ -525,8 +508,8 @@ const AssessmentDashboard = () => {
                   whileTap={{ scale: 0.95 }}
                   className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     range === r
-                      ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white border-transparent shadow-md"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 hover:border-brand-teal/30"
+                      ? "bg-linear-to-r from-brand-teal to-brand-navy text-white border-transparent shadow-md"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-linear-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 hover:border-brand-teal/30"
                   }`}
                 >
                   {r}
@@ -569,7 +552,7 @@ const AssessmentDashboard = () => {
           </div>
         </motion.div>
 
-        {/* Category Distribution - Pie Chart with Priority Colors */}
+        {/* Stage Distribution - Pie Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -579,9 +562,11 @@ const AssessmentDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                Category Distribution
+                Stage Distribution
               </h2>
-              <p className="text-sm text-gray-500">Tests taken by category</p>
+              <p className="text-sm text-gray-500">
+                Current sentiment spread across stages
+              </p>
             </div>
           </div>
           <div className="mt-4 h-72">
@@ -592,69 +577,62 @@ const AssessmentDashboard = () => {
               padAngle={2}
               cornerRadius={6}
               activeOuterRadiusOffset={10}
-              colors={(d: { label: string }) => {
-                // Lighter priority colors - base colors for gradients (unique for each)
-                const gradients: Record<string, string> = {
-                  Leadership: "#EF4444", // Red
-                  Communication: "#F59E0B", // Amber
-                  Analytics: "#22C55E", // Green
-                  Cognitive: "#F97316", // Orange (distinct from amber)
-                  Productivity: "#EC4899", // Rose/Pink (distinct from red)
+              colors={(d: StageDatum) => {
+                const palette: Record<string, string> = {
+                  "Self-Reflection": "#3B82F6",
+                  "Soul-Searching": "#F59E0B",
+                  "Steady State": "#8B5CF6",
+                  Honeymoon: "#10B981",
                 };
-                return gradients[d.label] || "#94A3B8";
+                return palette[d.label] || "#CBD5F5";
               }}
               enableArcLinkLabels={false}
               arcLabelsSkipAngle={10}
-              arcLabelsTextColor="#fff"
+              arcLabel={(d: StageDatum) => `${d.value}%`}
+              arcLabelsTextColor={{
+                from: "color",
+                modifiers: [["darker", 2.2]],
+              }}
               arcLabelsRadiusOffset={0.55}
               defs={[
                 {
-                  id: "gradientRed",
+                  id: "gradSelf",
                   type: "linearGradient",
                   colors: [
-                    { offset: 0, color: "#FCA5A5" },
-                    { offset: 100, color: "#DC2626" },
+                    { offset: 0, color: "#93C5FD" },
+                    { offset: 100, color: "#2563EB" },
                   ],
                 },
                 {
-                  id: "gradientAmber",
+                  id: "gradSoul",
                   type: "linearGradient",
                   colors: [
-                    { offset: 0, color: "#FDE047" },
-                    { offset: 100, color: "#F59E0B" },
+                    { offset: 0, color: "#FCD34D" },
+                    { offset: 100, color: "#EA580C" },
                   ],
                 },
                 {
-                  id: "gradientGreen",
+                  id: "gradSteady",
                   type: "linearGradient",
                   colors: [
-                    { offset: 0, color: "#86EFAC" },
-                    { offset: 100, color: "#16A34A" },
+                    { offset: 0, color: "#DDD6FE" },
+                    { offset: 100, color: "#7C3AED" },
                   ],
                 },
                 {
-                  id: "gradientOrange",
+                  id: "gradHoney",
                   type: "linearGradient",
                   colors: [
-                    { offset: 0, color: "#FDBA74" },
-                    { offset: 100, color: "#F97316" },
-                  ],
-                },
-                {
-                  id: "gradientRose",
-                  type: "linearGradient",
-                  colors: [
-                    { offset: 0, color: "#FBCFE8" },
-                    { offset: 100, color: "#EC4899" },
+                    { offset: 0, color: "#A7F3D0" },
+                    { offset: 100, color: "#059669" },
                   ],
                 },
               ]}
               fill={[
-                { match: { id: "Leadership" }, id: "gradientRed" },
-                { match: { id: "Communication" }, id: "gradientAmber" },
-                { match: { id: "Analytics" }, id: "gradientGreen" },
-                { match: { id: "Cognitive" }, id: "gradientOrange" },
-                { match: { id: "Productivity" }, id: "gradientRose" },
+                { match: { id: "Self-Reflection" }, id: "gradSelf" },
+                { match: { id: "Soul-Searching" }, id: "gradSoul" },
+                { match: { id: "Steady State" }, id: "gradSteady" },
+                { match: { id: "Honeymoon" }, id: "gradHoney" },
               ]}
               theme={{
                 text: { fontSize: 12, fill: brand.slate700, fontWeight: 600 },
@@ -718,16 +696,16 @@ const AssessmentDashboard = () => {
               const isActive = priorityFilter === p;
               const buttonStyles = {
                 All: isActive
-                  ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white border-transparent shadow-md font-semibold"
+                  ? "bg-linear-to-r from-gray-600 to-gray-700 text-white border-transparent shadow-md font-semibold"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm",
                 High: isActive
-                  ? "bg-gradient-to-r from-red-500 to-red-600 text-white border-transparent shadow-md font-semibold"
+                  ? "bg-linear-to-r from-red-500 to-red-600 text-white border-transparent shadow-md font-semibold"
                   : "bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 hover:shadow-sm hover:text-red-700",
                 Medium: isActive
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white border-transparent shadow-md font-semibold"
+                  ? "bg-linear-to-r from-amber-500 to-amber-600 text-white border-transparent shadow-md font-semibold"
                   : "bg-white text-amber-600 border-amber-300 hover:bg-amber-50 hover:border-amber-400 hover:shadow-sm hover:text-amber-700",
                 Low: isActive
-                  ? "bg-gradient-to-r from-green-500 to-green-600 text-white border-transparent shadow-md font-semibold"
+                  ? "bg-linear-to-r from-green-500 to-green-600 text-white border-transparent shadow-md font-semibold"
                   : "bg-white text-green-600 border-green-300 hover:bg-green-50 hover:border-green-400 hover:shadow-sm hover:text-green-700",
               };
               return (
@@ -788,7 +766,7 @@ const AssessmentDashboard = () => {
                   <div className="flex shrink-0 items-center gap-3">
                     <motion.button
                       whileTap={{ scale: 0.97 }}
-                      className="cursor-pointer relative inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-teal to-brand-navy px-3 py-2 text-sm font-medium text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg overflow-hidden"
+                      className="cursor-pointer relative inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-3 py-2 text-sm font-medium text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg overflow-hidden"
                     >
                       <span
                         className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
@@ -833,7 +811,7 @@ const AssessmentDashboard = () => {
             <div className="relative">
               <button
                 onClick={() => setSortMenuOpen((o) => !o)}
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand-teal/30 bg-white px-3 text-sm text-gray-700 shadow-sm hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand-teal/30 bg-white px-3 text-sm text-gray-700 shadow-sm hover:bg-linear-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
               >
                 {sortLabel[historySort]}
                 <ChevronDown
@@ -864,8 +842,8 @@ const AssessmentDashboard = () => {
                       }}
                       className={`block w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors ${
                         historySort === key
-                          ? "bg-gradient-to-r from-brand-teal/15 to-brand-navy/15 text-brand-navy font-medium"
-                          : "text-gray-700 hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5"
+                          ? "bg-linear-to-r from-brand-teal/15 to-brand-navy/15 text-brand-navy font-medium"
+                          : "text-gray-700 hover:bg-linear-to-r hover:from-brand-teal/5 hover:to-brand-navy/5"
                       }`}
                     >
                       {sortLabel[key]}
@@ -921,7 +899,7 @@ const AssessmentDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5 transition-all cursor-pointer group"
+                    className="hover:bg-linear-to-r hover:from-brand-teal/5 hover:to-brand-navy/5 transition-all cursor-pointer group"
                   >
                     <td className="px-4 py-4 font-semibold text-gray-900 group-hover:text-brand-navy transition-colors">
                       {row.title}
@@ -954,11 +932,11 @@ const AssessmentDashboard = () => {
                         }}
                         whileHover={{ scale: 1.08, x: -3 }}
                         whileTap={{ scale: 0.95 }}
-                        className="cursor-pointer group relative inline-flex items-center gap-1.5 overflow-hidden rounded-md border border-brand-teal/30 bg-gradient-to-r from-brand-teal/10 to-brand-navy/10 px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md transition-all hover:border-brand-teal/50 hover:from-brand-teal/15 hover:to-brand-navy/15 hover:shadow-lg"
+                        className="cursor-pointer group relative inline-flex items-center gap-1.5 overflow-hidden rounded-md border border-brand-teal/30 bg-linear-to-r from-brand-teal/10 to-brand-navy/10 px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md transition-all hover:border-brand-teal/50 hover:from-brand-teal/15 hover:to-brand-navy/15 hover:shadow-lg"
                       >
                         {/* Shine effect on hover */}
                         <motion.span
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
                           initial={{ x: "-100%" }}
                           whileHover={{ x: "100%" }}
                           transition={{
