@@ -25,8 +25,9 @@ import {
   Shield,
   RefreshCw,
   User,
-  ChevronDown,
 } from "lucide-react";
+import PhoneInput, { type CountryData } from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 type LoginStep = "credentials" | "otp" | "success";
 
@@ -47,29 +48,6 @@ const VALID_EMAILS = [
 const VALID_COUNTRY_CODE = "+91";
 const VALID_PHONE_NUMBER = "9876543210"; // Format: [country code][phone number] - Must start with 6, 7, 8, or 9
 
-const countryCodes = [
-  { code: "+1", country: "US", flag: "🇺🇸" },
-  { code: "+91", country: "IN", flag: "🇮🇳" },
-  { code: "+44", country: "GB", flag: "🇬🇧" },
-  { code: "+61", country: "AU", flag: "🇦🇺" },
-  { code: "+86", country: "CN", flag: "🇨🇳" },
-  { code: "+81", country: "JP", flag: "🇯🇵" },
-  { code: "+49", country: "DE", flag: "🇩🇪" },
-  { code: "+33", country: "FR", flag: "🇫🇷" },
-  { code: "+39", country: "IT", flag: "🇮🇹" },
-  { code: "+34", country: "ES", flag: "🇪🇸" },
-  { code: "+7", country: "RU", flag: "🇷🇺" },
-  { code: "+82", country: "KR", flag: "🇰🇷" },
-  { code: "+55", country: "BR", flag: "🇧🇷" },
-  { code: "+52", country: "MX", flag: "🇲🇽" },
-  { code: "+27", country: "ZA", flag: "🇿🇦" },
-  { code: "+971", country: "AE", flag: "🇦🇪" },
-  { code: "+65", country: "SG", flag: "🇸🇬" },
-  { code: "+60", country: "MY", flag: "🇲🇾" },
-  { code: "+66", country: "TH", flag: "🇹🇭" },
-  { code: "+84", country: "VN", flag: "🇻🇳" },
-];
-
 const Login = () => {
   const navigate = useNavigate();
   const { loginWithOTP } = useUser();
@@ -78,43 +56,16 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneValue, setPhoneValue] = useState(
+    VALID_COUNTRY_CODE.replace("+", "")
+  );
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOTP, setIsSendingOTP] = useState(false);
   const [error, setError] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
   const [canResendOTP, setCanResendOTP] = useState(false);
-  const [countryCodeDropdownOpen, setCountryCodeDropdownOpen] = useState(false);
-  const countryCodeDropdownRef = useRef<HTMLDivElement>(null);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        countryCodeDropdownRef.current &&
-        !countryCodeDropdownRef.current.contains(event.target as Node)
-      ) {
-        setCountryCodeDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // Update phone number format when country code changes
-  useEffect(() => {
-    if (phoneNumber) {
-      const formatted = formatPhoneNumber(phoneNumber, countryCode);
-      if (formatted !== phoneNumber) {
-        setPhoneNumber(formatted);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countryCode]); // Only run when country code changes
 
   // OTP timer countdown
   useEffect(() => {
@@ -155,24 +106,17 @@ const Login = () => {
     []
   );
 
-  const formatPhoneNumber = useCallback(
-    (value: string, countryCode: string) => {
-      // Remove all non-digit characters
-      const digitsOnly = value.replace(/\D/g, "");
-
-      if (countryCode === "+91") {
-        // For Indian numbers: limit to 10 digits and format with space
-        const limitedDigits = digitsOnly.slice(0, 10);
-        return limitedDigits.length > 5
-          ? `${limitedDigits.slice(0, 5)} ${limitedDigits.slice(5)}`
-          : limitedDigits;
-      } else {
-        // For other countries: just digits, no formatting
-        return digitsOnly.slice(0, 15);
-      }
-    },
-    []
-  );
+  const handlePhoneChange = useCallback((value: string, data: CountryData) => {
+    const digitsOnly = value.replace(/\D/g, "");
+    const dialCode = data?.dialCode?.replace(/\D/g, "") ?? "";
+    const nationalNumber = digitsOnly.slice(
+      dialCode.length,
+      dialCode.length + 15
+    );
+    setCountryCode(dialCode ? `+${dialCode}` : "+");
+    setPhoneNumber(nationalNumber);
+    setPhoneValue(`${dialCode}${nationalNumber}`);
+  }, []);
 
   const handleSendOTP = useCallback(
     async (e: FormEvent) => {
@@ -556,116 +500,26 @@ const Login = () => {
                     <label className="text-sm font-medium text-gray-700">
                       Mobile Number
                     </label>
-                    <div className="flex gap-2">
-                      {/* Country Code Dropdown */}
-                      <div className="relative" ref={countryCodeDropdownRef}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCountryCodeDropdownOpen(!countryCodeDropdownOpen)
-                          }
-                          disabled={isSendingOTP}
-                          className="inline-flex h-11 min-w-[80px] items-center justify-between rounded-lg border border-brand-teal/30 bg-white px-2.5 py-1.5 text-sm text-gray-700 shadow-sm transition-all hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-brand-teal/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <span className="text-base">
-                              {
-                                countryCodes.find(
-                                  (cc) => cc.code === countryCode
-                                )?.flag
-                              }
-                            </span>
-                            <span className="font-medium">{countryCode}</span>
-                          </span>
-                          <ChevronDown
-                            className={`h-3.5 w-3.5 text-gray-500 transition-transform ${
-                              countryCodeDropdownOpen
-                                ? "rotate-180"
-                                : "rotate-0"
-                            }`}
-                          />
-                        </button>
-                        <AnimatePresence>
-                          {countryCodeDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 6 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 6 }}
-                              className="absolute left-0 z-10 mt-2 max-h-60 w-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg custom-scrollbar"
-                            >
-                              {countryCodes.map((item) => (
-                                <button
-                                  key={item.code}
-                                  type="button"
-                                  onClick={() => {
-                                    setCountryCode(item.code);
-                                    setCountryCodeDropdownOpen(false);
-                                  }}
-                                  className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
-                                    countryCode === item.code
-                                      ? "bg-gradient-to-r from-brand-teal/15 to-brand-navy/15 text-brand-navy font-medium"
-                                      : "text-gray-700 hover:bg-gradient-to-r hover:from-brand-teal/5 hover:to-brand-navy/5"
-                                  }`}
-                                >
-                                  <span className="text-base">{item.flag}</span>
-                                  <span className="flex-1 font-medium">
-                                    {item.code}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {item.country}
-                                  </span>
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                      {/* Phone Number Input */}
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        <Input
-                          type="tel"
-                          placeholder={
-                            countryCode === "+91"
-                              ? "98765 43210"
-                              : "Enter phone number"
-                          }
-                          value={phoneNumber}
-                          onChange={(e) =>
-                            setPhoneNumber(
-                              formatPhoneNumber(e.target.value, countryCode)
-                            )
-                          }
-                          onKeyDown={(e) => {
-                            // Prevent non-digit keys except backspace, delete, tab, arrow keys
-                            if (
-                              !/[0-9]/.test(e.key) &&
-                              ![
-                                "Backspace",
-                                "Delete",
-                                "Tab",
-                                "ArrowLeft",
-                                "ArrowRight",
-                                "ArrowUp",
-                                "ArrowDown",
-                                "Home",
-                                "End",
-                              ].includes(e.key) &&
-                              !(e.ctrlKey || e.metaKey) // Allow Ctrl/Cmd + A, C, V, X
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          required
-                          autoComplete="off"
-                          name="phoneNumber"
-                          id="phoneNumber-input"
-                          className="pl-10 h-11"
-                          maxLength={countryCode === "+91" ? 11 : 15} // 10 digits + 1 space for Indian
-                          disabled={isSendingOTP}
-                        />
-                      </div>
-                    </div>
+                    <PhoneInput
+                      country="in"
+                      value={phoneValue}
+                      onChange={handlePhoneChange}
+                      enableSearch
+                      searchPlaceholder="Search country"
+                      disableCountryGuess={false}
+                      inputProps={{
+                        name: "phoneNumber",
+                        required: true,
+                        autoComplete: "off",
+                        id: "phoneNumber-input",
+                        disabled: isSendingOTP,
+                      }}
+                      specialLabel=""
+                      containerClass="!w-full"
+                      inputClass="!w-full !h-11 !pl-12 !pr-4 !text-base !font-medium !text-gray-900 !rounded-lg !border !border-brand-teal/30 focus:!border-brand-teal focus:!shadow-[0_0_0_3px_rgba(16,185,129,0.25)] disabled:!bg-gray-100 disabled:!cursor-not-allowed"
+                      buttonClass="!border !border-brand-teal/30 !bg-white !rounded-l-lg hover:!bg-brand-teal/5 focus:!ring-2 focus:!ring-brand-teal/40"
+                      dropdownClass="!shadow-lg !border !border-gray-200 !rounded-xl !text-sm"
+                    />
                     <p className="text-xs text-gray-500">
                       {countryCode === "+91"
                         ? "Enter 10-digit mobile number"
