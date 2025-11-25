@@ -13,7 +13,7 @@
  * - Subsection Headings: text-base font-medium
  * - Card Labels: text-sm font-medium
  */
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import {
@@ -24,7 +24,7 @@ import {
   ChevronDown,
   CheckCircle,
   FileText,
-  Calendar,
+  TrendingUp,
   XCircle,
   Lightbulb,
   ShieldAlert,
@@ -148,6 +148,16 @@ type SubStage = {
   value: number;
 };
 
+const formatDisplayDate = (value: string): string => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const day = date.getDate();
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const year = date.getFullYear();
+  return `${day} ${month}, ${year}`;
+};
+
 const AssessmentDashboard = () => {
   // Mock data
   const pending: PendingAssessment[] = useMemo(
@@ -180,174 +190,36 @@ const AssessmentDashboard = () => {
   const completed: CompletedAssessment[] = useMemo(
     () => [
       {
-        id: "c1",
-        title: "Problem Solving",
-        category: "Cognitive",
-        date: "2025-10-08",
-        score: 82,
+        id: "HX-204",
+        title: "Honeymoon Calibration Pulse",
+        category: "Honeymoon",
+        date: "2025-11-08",
+        score: 92,
+        percentile: 95,
+      },
+      {
+        id: "SI-187",
+        title: "Self-Introspection Depth Scan",
+        category: "Self-Introspection",
+        date: "2025-10-28",
+        score: 85,
         percentile: 88,
       },
       {
-        id: "c2",
-        title: "Team Collaboration",
-        category: "Collaboration",
-        date: "2025-10-20",
-        score: 76,
-        percentile: 80,
+        id: "SS-164",
+        title: "Soul-Searching Diagnostics",
+        category: "Soul-Searching",
+        date: "2025-10-18",
+        score: 78,
+        percentile: 81,
       },
       {
-        id: "c3",
-        title: "Time Management",
-        category: "Productivity",
-        date: "2025-10-29",
-        score: 90,
-        percentile: 94,
-      },
-      {
-        id: "c4",
-        title: "Strategic Thinking",
-        category: "Leadership",
-        date: "2025-11-01",
-        score: 84,
-        percentile: 89,
-      },
-    ],
-    []
-  );
-
-  const swotData = useMemo<SWOTQuadrant[]>(
-    () => [
-      {
-        type: "Strengths",
-        items: [
-          {
-            id: "s1",
-            title: "Core Stability & Adaptability",
-            description:
-              "Ability to maintain core stability while adapting to change.",
-            rating: "HIGH",
-          },
-          {
-            id: "s2",
-            title: "Goal Alignment",
-            description:
-              "Strong alignment with organizational goals ensures focus during transitions.",
-            rating: "HIGH",
-          },
-          {
-            id: "s3",
-            title: "Collaborative Mindset",
-            description:
-              "Collaborative mindset fosters effective communication and teamwork.",
-            rating: "MEDIUM",
-          },
-          {
-            id: "s4",
-            title: "Process Foundation",
-            description:
-              "Established processes and frameworks provide strong foundation for dynamic decision-making.",
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Weaknesses",
-        items: [
-          {
-            id: "w1",
-            title: "Prioritization Challenges",
-            description:
-              "Struggles to prioritize initiatives in dynamic environments.",
-            rating: "HIGH",
-          },
-          {
-            id: "w2",
-            title: "Momentum Loss Risk",
-            description:
-              "Risk of losing momentum if balance shifts toward complacency or overreaction.",
-            rating: "HIGH",
-          },
-          {
-            id: "w3",
-            title: "Change Resistance",
-            description:
-              "Resistance to change may hinder adaptability in rapidly evolving situations.",
-            rating: "MEDIUM",
-          },
-          {
-            id: "w4",
-            title: "Goal Balance Tension",
-            description:
-              "May struggle to balance long-term goals with short-term adaptations.",
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Opportunities",
-        items: [
-          {
-            id: "o1",
-            title: "Agility Enhancement",
-            description:
-              "Opportunity to enhance agility and resilience during transitions.",
-            rating: "HIGH",
-          },
-          {
-            id: "o2",
-            title: "Innovation Stability",
-            description:
-              "Ability to create innovative solutions while maintaining operational stability.",
-            rating: "HIGH",
-          },
-          {
-            id: "o3",
-            title: "Model Organization",
-            description:
-              "Opportunity to position as a model of flexibility and stability.",
-            rating: "MEDIUM",
-          },
-          {
-            id: "o4",
-            title: "Leadership Example",
-            description:
-              "Potential to lead by example in navigating complex transitions.",
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Threats",
-        items: [
-          {
-            id: "t1",
-            title: "Burnout Risk",
-            description:
-              "Overextension may lead to burnout or resource depletion.",
-            rating: "CRITICAL",
-          },
-          {
-            id: "t2",
-            title: "External Disruptions",
-            description:
-              "External disruptions can amplify misalignment during shifts.",
-            rating: "HIGH",
-          },
-          {
-            id: "t3",
-            title: "Stakeholder Confidence",
-            description:
-              "Miscommunication during shifts may erode stakeholder confidence.",
-            rating: "HIGH",
-          },
-          {
-            id: "t4",
-            title: "Innovation Barriers",
-            description:
-              "Over-reliance on existing structures may hinder innovative thinking.",
-            rating: "MEDIUM",
-          },
-        ],
+        id: "ST-139",
+        title: "Steady-State Resilience Audit",
+        category: "Steady-State",
+        date: "2025-10-05",
+        score: 74,
+        percentile: 76,
       },
     ],
     []
@@ -362,6 +234,136 @@ const AssessmentDashboard = () => {
     ],
     []
   );
+
+  const totalCompleted = completed.length;
+  const totalPending = pending.length;
+  const totalAssessments = totalCompleted + totalPending;
+  const completionRate = totalAssessments
+    ? Math.round((totalCompleted / totalAssessments) * 100)
+    : 0;
+
+  const swotData = useMemo<SWOTQuadrant[]>(() => {
+    const stageMap = categoryDistribution.reduce<Record<string, number>>(
+      (acc, stage) => {
+        acc[stage.label] = stage.value;
+        return acc;
+      },
+      {}
+    );
+    const dominantStage = categoryDistribution.reduce((prev, curr) =>
+      curr.value > prev.value ? curr : prev
+    );
+    const highPriorityPending = pending.filter(
+      (item) => item.priority === "High"
+    ).length;
+
+    return [
+      {
+        type: "Strengths",
+        items: [
+          {
+            id: "s1",
+            title: `${dominantStage.label} momentum`,
+            description: `${dominantStage.value}% of assessments sit in ${dominantStage.label}, keeping optimism and onboarding energy high.`,
+            rating: "HIGH",
+          },
+          {
+            id: "s2",
+            title: "Completion discipline",
+            description: `${completionRate}% of scheduled assessments are already completed, showing dependable follow-through.`,
+            rating: "HIGH",
+          },
+          {
+            id: "s3",
+            title: "Introspection depth",
+            description: `${
+              stageMap["Self-Introspection"] ?? 0
+            }% coverage in the reflective stage is feeding actionable insights for coaches.`,
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Weaknesses",
+        items: [
+          {
+            id: "w1",
+            title: "High-priority backlog",
+            description: `${highPriorityPending} critical assessments remain pending, creating pressure on the next sprint.`,
+            rating: "HIGH",
+          },
+          {
+            id: "w2",
+            title: "Steady-State underexposed",
+            description: `Only ${
+              stageMap["Steady-State"] ?? 0
+            }% of data reflects steady-state maturity, leaving resilience signals thin.`,
+            rating: "MEDIUM",
+          },
+          {
+            id: "w3",
+            title: "Soul-Searching fatigue",
+            description: `${
+              stageMap["Soul-Searching"] ?? 0
+            }% share without fresh movement risks stagnation in deeper transition work.`,
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Opportunities",
+        items: [
+          {
+            id: "o1",
+            title: "Introspection coaching pods",
+            description: `Channel the ${
+              stageMap["Self-Introspection"] ?? 0
+            }% cohort into guided pods to accelerate clarity.`,
+            rating: "HIGH",
+          },
+          {
+            id: "o2",
+            title: "Steady-State playbooks",
+            description: `Boost the ${
+              stageMap["Steady-State"] ?? 0
+            }% group with routines and rituals to expand institutional calm.`,
+            rating: "MEDIUM",
+          },
+          {
+            id: "o3",
+            title: "Soul-Searching diagnostics",
+            description: `Use the ${
+              stageMap["Soul-Searching"] ?? 0
+            }% signal to design micro-interventions before energy dips.`,
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Threats",
+        items: [
+          {
+            id: "t1",
+            title: "Honeymoon burnout risk",
+            description: `If the ${dominantStage.label} cohort stays at ${dominantStage.value}% without rotation, fatigue can hit fast.`,
+            rating: "CRITICAL",
+          },
+          {
+            id: "t2",
+            title: "Momentum stall",
+            description: `Completion rate below 100% plus outstanding critical tests can slow rollout decisions.`,
+            rating: "HIGH",
+          },
+          {
+            id: "t3",
+            title: "Signal imbalance",
+            description: `Limited steady-state readings make it harder to benchmark long-term balance zones.`,
+            rating: "MEDIUM",
+          },
+        ],
+      },
+    ];
+  }, [categoryDistribution, completionRate, pending]);
 
   const emotionalIntensityHeatmap = useMemo<EmotionalIntensityRow[]>(
     () => [
@@ -439,6 +441,37 @@ const AssessmentDashboard = () => {
     []
   );
 
+  const historyCategoryPalette = useMemo(
+    () => ({
+      Honeymoon: {
+        from: "#d1fae5",
+        to: "#a7f3d0",
+        accent: "#047857",
+      },
+      "Self-Introspection": {
+        from: "#dbeafe",
+        to: "#bfdbfe",
+        accent: "#1d4ed8",
+      },
+      "Soul-Searching": {
+        from: "#fee2e2",
+        to: "#fecdd3",
+        accent: "#b91c1c",
+      },
+      "Steady-State": {
+        from: "#ede9fe",
+        to: "#ddd6fe",
+        accent: "#6d28d9",
+      },
+      default: {
+        from: "#f1f5f9",
+        to: "#e2e8f0",
+        accent: "#475569",
+      },
+    }),
+    []
+  );
+
   const maxScore = useMemo(
     () => Math.max(...emotionalStageAssessment.map((s) => s.score)),
     [emotionalStageAssessment]
@@ -462,22 +495,6 @@ const AssessmentDashboard = () => {
   );
 
   // Summary values
-  const formatReadableDate = useCallback((value: string) => {
-    if (!value) return "—";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  }, []);
-
-  const totalCompleted = completed.length;
-  const totalPending = pending.length;
-  const lastCompleted = completed[completed.length - 1]?.date ?? "—";
-  const lastCompletedLabel =
-    lastCompleted !== "—" ? formatReadableDate(lastCompleted) : "—";
 
   // Pending assessments filter
   const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
@@ -566,10 +583,10 @@ const AssessmentDashboard = () => {
           gradient="bg-linear-to-b from-amber-500 to-orange-600"
         />
         <SummaryCard
-          label="Last Completed"
-          value={lastCompletedLabel}
-          icon={Calendar}
-          gradient="bg-linear-to-b from-sky-500 to-blue-600"
+          label="Completion Rate"
+          value={`${completionRate}%`}
+          icon={TrendingUp}
+          gradient="bg-linear-to-b from-purple-500 to-indigo-600"
         />
       </div>
 
@@ -827,7 +844,7 @@ const AssessmentDashboard = () => {
                         }}
                         className="h-full rounded-full"
                         style={{
-                          background: dominantStage.color,
+                          background: `linear-gradient(90deg, ${brand.teal}, ${brand.tealDark})`,
                         }}
                       />
                     </div>
@@ -836,7 +853,7 @@ const AssessmentDashboard = () => {
                   <div className="flex items-center justify-between">
                     <span
                       className="text-lg font-bold"
-                      style={{ color: dominantStage.color }}
+                      style={{ color: brand.tealBrand }}
                     >
                       {percentage.toFixed(0)}%
                     </span>
@@ -1095,6 +1112,11 @@ const AssessmentDashboard = () => {
             }[quadrant.type];
 
             const Icon = config.icon;
+            const ratingColors = {
+              HIGH: "bg-green-500 text-white",
+              MEDIUM: "bg-yellow-500 text-white",
+              CRITICAL: "bg-red-600 text-white",
+            } as const;
 
             return (
               <motion.div
@@ -1114,12 +1136,6 @@ const AssessmentDashboard = () => {
                 </div>
                 <div className="p-3 space-y-2">
                   {quadrant.items.map((item, idx) => {
-                    const ratingColors = {
-                      HIGH: "bg-green-500 text-white",
-                      MEDIUM: "bg-yellow-500 text-white",
-                      CRITICAL: "bg-red-600 text-white",
-                    }[item.rating];
-
                     return (
                       <motion.div
                         key={item.id}
@@ -1129,7 +1145,7 @@ const AssessmentDashboard = () => {
                         whileHover={{ scale: 1.01, y: -1 }}
                         className={`rounded-lg border ${config.border} ${config.itemBg} p-2.5 shadow-sm`}
                       >
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <h4 className="text-xs font-bold text-gray-900 mb-1">
                               {item.title}
@@ -1139,7 +1155,9 @@ const AssessmentDashboard = () => {
                             </p>
                           </div>
                           <span
-                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${ratingColors}`}
+                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                              ratingColors[item.rating]
+                            }`}
                           >
                             {item.rating}
                           </span>
@@ -1333,41 +1351,32 @@ const AssessmentDashboard = () => {
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
-              <tr className="border-b-2 border-gray-200">
-                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Title
+              <tr className="border-b border-gray-200 bg-linear-to-r from-brand-teal/5 via-white to-brand-navy/5">
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Assessment
                 </th>
-                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Category
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Dominant Stage
                 </th>
-                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Completed On
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Completed
                 </th>
-                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Score
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Performance
                 </th>
-                <th className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Percentile
-                </th>
-                <th className="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Actions
+                <th className="whitespace-nowrap px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Action
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {visibleHistory.map((row, idx) => {
-                const scoreColor =
-                  row.score >= 85
-                    ? "border-brand-teal/50 bg-brand-teal/5 text-brand-navy"
-                    : row.score >= 70
-                    ? "border-amber-300 bg-amber-50 text-amber-700"
-                    : "border-red-300 bg-red-50 text-red-700";
-                const percentileColor =
-                  row.percentile >= 85
-                    ? "border-purple-300 bg-purple-50 text-purple-700"
-                    : row.percentile >= 70
-                    ? "border-blue-300 bg-blue-50 text-blue-700"
-                    : "border-gray-300 bg-gray-50 text-gray-700";
+                const palette =
+                  historyCategoryPalette[
+                    row.category as keyof typeof historyCategoryPalette
+                  ] ?? historyCategoryPalette.default;
+                const scoreProgress = Math.min(100, row.score);
+                const percentileProgress = Math.min(100, row.percentile);
 
                 return (
                   <motion.tr
@@ -1375,61 +1384,74 @@ const AssessmentDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="hover:bg-linear-to-r hover:from-brand-teal/5 hover:to-brand-navy/5 transition-all cursor-pointer group"
+                    className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
                   >
-                    <td className="px-4 py-4 font-semibold text-gray-900 group-hover:text-brand-navy transition-colors">
-                      {row.title}
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-gray-900">
+                        {row.title}
+                      </div>
                     </td>
-                    <td className="px-4 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    <td className="px-4 py-3">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                        style={{
+                          borderColor: `${palette.accent}33`,
+                          color: palette.accent,
+                          background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
+                        }}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
                         {row.category}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-gray-600">{row.date}</td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={`inline-flex items-center justify-center w-12 h-8 rounded-md border font-bold text-sm shadow-sm ${scoreColor}`}
-                      >
-                        {row.score}
-                      </span>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <div className="font-semibold text-gray-900">
+                        {formatDisplayDate(row.date)}
+                      </div>
                     </td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={`inline-flex items-center justify-center px-2.5 py-1 rounded-md border font-semibold text-xs shadow-sm ${percentileColor}`}
-                      >
-                        {row.percentile}%
-                      </span>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-900">
+                          <span>{row.score}</span>
+                          <span className="text-xs font-medium text-gray-500">
+                            Score
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-gray-300" />
+                          <span>{row.percentile}%</span>
+                          <span className="text-xs font-medium text-gray-500">
+                            Percentile
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${Math.max(
+                                scoreProgress,
+                                percentileProgress
+                              )}%`,
+                              background: `linear-gradient(90deg, ${palette.from}, ${palette.accent})`,
+                            }}
+                          />
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-4 py-3 text-right">
                       <motion.button
                         onClick={(e) => {
                           e.preventDefault();
-                          // Placeholder - no navigation for now
                         }}
-                        whileHover={{ scale: 1.08, x: -3 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="cursor-pointer group relative inline-flex items-center gap-1.5 overflow-hidden rounded-md border border-brand-teal/30 bg-linear-to-r from-brand-teal/10 to-brand-navy/10 px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md transition-all hover:border-brand-teal/50 hover:from-brand-teal/15 hover:to-brand-navy/15 hover:shadow-lg"
+                        whileTap={{ scale: 0.97 }}
+                        className="group cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-4 py-2 text-xs font-semibold text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-md transition-all overflow-hidden"
                       >
-                        {/* Shine effect on hover */}
-                        <motion.span
-                          className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
-                          initial={{ x: "-100%" }}
-                          whileHover={{ x: "100%" }}
-                          transition={{
-                            duration: 0.6,
-                            repeat: Infinity,
-                            repeatDelay: 2,
+                        <span
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{
+                            background:
+                              "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2), transparent 50%)",
                           }}
                         />
                         <span className="relative">View Report</span>
-                        <motion.span
-                          initial={{ x: 0 }}
-                          whileHover={{ x: 3 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                          className="relative inline-block"
-                        >
-                          →
-                        </motion.span>
                       </motion.button>
                     </td>
                   </motion.tr>
