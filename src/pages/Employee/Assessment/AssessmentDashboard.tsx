@@ -23,7 +23,6 @@ import {
   CheckCircle2,
   ChevronDown,
   CheckCircle,
-  FileText,
   TrendingUp,
   XCircle,
   Lightbulb,
@@ -242,6 +241,11 @@ const AssessmentDashboard = () => {
     ? Math.round((totalCompleted / totalAssessments) * 100)
     : 0;
 
+  const highPriorityPending = useMemo(
+    () => pending.filter((item) => item.priority === "High").length,
+    [pending]
+  );
+
   const swotData = useMemo<SWOTQuadrant[]>(() => {
     const stageMap = categoryDistribution.reduce<Record<string, number>>(
       (acc, stage) => {
@@ -253,9 +257,6 @@ const AssessmentDashboard = () => {
     const dominantStage = categoryDistribution.reduce((prev, curr) =>
       curr.value > prev.value ? curr : prev
     );
-    const highPriorityPending = pending.filter(
-      (item) => item.priority === "High"
-    ).length;
 
     return [
       {
@@ -363,7 +364,7 @@ const AssessmentDashboard = () => {
         ],
       },
     ];
-  }, [categoryDistribution, completionRate, pending]);
+  }, [categoryDistribution, completionRate, highPriorityPending]);
 
   const emotionalIntensityHeatmap = useMemo<EmotionalIntensityRow[]>(
     () => [
@@ -577,9 +578,9 @@ const AssessmentDashboard = () => {
           gradient="bg-linear-to-b from-brand-teal to-brand-navy"
         />
         <SummaryCard
-          label="Pending Assessments"
-          value={totalPending}
-          icon={FileText}
+          label="Critical Pending"
+          value={highPriorityPending}
+          icon={AlertTriangle}
           gradient="bg-linear-to-b from-amber-500 to-orange-600"
         />
         <SummaryCard
