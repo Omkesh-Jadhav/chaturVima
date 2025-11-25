@@ -15,7 +15,6 @@
  */
 import { useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import {
   Play,
@@ -136,6 +135,17 @@ type EmotionalIntensityRow = {
     Realism: number;
     Stability: number;
   };
+};
+type EmotionalStageAssessment = {
+  stage: string;
+  score: number;
+  color: string;
+  status?: "Dominant" | "Secondary" | "Transitional";
+};
+type SubStage = {
+  id: string;
+  label: string;
+  value: number;
 };
 
 const AssessmentDashboard = () => {
@@ -345,10 +355,10 @@ const AssessmentDashboard = () => {
 
   const categoryDistribution = useMemo<StageDatum[]>(
     () => [
-      { id: "Self-Reflection", label: "Self-Reflection", value: 25 },
-      { id: "Soul-Searching", label: "Soul-Searching", value: 42 },
-      { id: "Steady State", label: "Steady State", value: 18 },
-      { id: "Honeymoon", label: "Honeymoon", value: 15 },
+      { id: "Honeymoon", label: "Honeymoon", value: 42 },
+      { id: "Self-Introspection", label: "Self-Introspection", value: 25 },
+      { id: "Soul-Searching", label: "Soul-Searching", value: 20 },
+      { id: "Steady-State", label: "Steady-State", value: 13 },
     ],
     []
   );
@@ -400,12 +410,53 @@ const AssessmentDashboard = () => {
     []
   );
 
-  const dynamicBalanceZones = useMemo<StageDatum[]>(
+  const emotionalStageAssessment = useMemo<EmotionalStageAssessment[]>(
     () => [
-      { id: "Stability", label: "Stability", value: 28 },
-      { id: "Adaptability", label: "Adaptability", value: 32 },
-      { id: "Innovation", label: "Innovation", value: 22 },
-      { id: "Efficiency", label: "Efficiency", value: 18 },
+      {
+        stage: "Honeymoon",
+        score: 153.73,
+        color: "#10b981", // Green
+        status: "Dominant",
+      },
+      {
+        stage: "Self-Introspection",
+        score: 122.47,
+        color: "#3b82f6", // Blue
+        status: "Secondary",
+      },
+      {
+        stage: "Soul-Searching",
+        score: 121.07,
+        color: "#f97316", // Orange
+        status: "Transitional",
+      },
+      {
+        stage: "Steady-State",
+        score: 118.73,
+        color: "#a855f7", // Purple
+      },
+    ],
+    []
+  );
+
+  const maxScore = useMemo(
+    () => Math.max(...emotionalStageAssessment.map((s) => s.score)),
+    [emotionalStageAssessment]
+  );
+
+  // Get dominant stage and its sub-stages
+  const dominantStage = useMemo(
+    () => emotionalStageAssessment.find((s) => s.status === "Dominant"),
+    [emotionalStageAssessment]
+  );
+
+  const honeymoonSubStages = useMemo<SubStage[]>(
+    () => [
+      { id: "excitement", label: "Excitement & Optimism", value: 26 },
+      { id: "reality", label: "Initial Reality Check", value: 25 },
+      { id: "confidence", label: "Sustained Confidence", value: 15 },
+      { id: "over-reliance", label: "Confidence & Over-Reliance", value: 16 },
+      { id: "complacency", label: "Subtle Complacency", value: 8 },
     ],
     []
   );
@@ -524,137 +575,92 @@ const AssessmentDashboard = () => {
 
       {/* Visual Analytics */}
       <div className="relative z-10 grid gap-6 xl:grid-cols-3">
-        {/* Dynamic Balance Zones - Donut Chart */}
+        {/* Employee Emotional Stage Assessment */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md xl:col-span-2"
         >
-          <div className="mb-4">
+          <div className="mb-3">
             <h2 className="text-lg font-semibold text-gray-900">
-              Dynamic Balance Zones
+              Emotional Stage Assessment
             </h2>
             <p className="text-xs text-gray-500">
-              Your organizational equilibrium metrics
+              Current emotional state distribution
             </p>
           </div>
-          <div className="h-72">
-            <ResponsiveBar
-              data={dynamicBalanceZones.map((zone) => ({
-                zone: zone.label,
-                value: zone.value,
-              }))}
-              keys={["value"]}
-              indexBy="zone"
-              margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
-              padding={0.5}
-              valueScale={{ type: "linear", min: 0, max: 40 }}
-              indexScale={{ type: "band", round: true }}
-              colors={({ data }: { data: { zone: string; value: number } }) => {
-                const palette: Record<string, string> = {
-                  Stability: brand.navyBrand,
-                  Adaptability: brand.tealBrand,
-                  Innovation: brand.teal,
-                  Efficiency: brand.sky,
+
+          {/* Stage Cards */}
+          <div className="space-y-1.5">
+            {emotionalStageAssessment.map((stage, idx) => {
+              const percentage = (stage.score / maxScore) * 100;
+              const statusStyles: Record<string, { bg: string; text: string }> =
+                {
+                  Dominant: { bg: "bg-green-50", text: "text-green-700" },
+                  Secondary: { bg: "bg-blue-50", text: "text-blue-700" },
+                  Transitional: { bg: "bg-orange-50", text: "text-orange-700" },
                 };
-                return palette[data.zone] || brand.slate500;
-              }}
-              borderRadius={8}
-              axisTop={null}
-              axisRight={null}
-              axisBottom={{
-                tickSize: 0,
-                tickPadding: 10,
-                tickRotation: 0,
-                legend: "",
-                legendPosition: "middle",
-                legendOffset: 40,
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 10,
-                tickValues: [0, 10, 20, 30, 40],
-                format: (value: number) => `${value}%`,
-              }}
-              enableGridY={true}
-              gridYValues={[0, 10, 20, 30, 40]}
-              enableLabel={true}
-              label={(d: { value: number }) => `${d.value}%`}
-              labelSkipWidth={12}
-              labelSkipHeight={12}
-              labelTextColor="#fff"
-              labelTextStyle={{
-                fontSize: 12,
-                fontWeight: 700,
-                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-              }}
-              theme={{
-                text: {
-                  fontSize: 12,
-                  fill: brand.slate700,
-                  fontWeight: 600,
-                },
-                axis: {
-                  ticks: {
-                    text: { fill: brand.slate700, fontSize: 11 },
-                    line: { stroke: brand.slate200, strokeWidth: 1 },
-                  },
-                  domain: { line: { stroke: brand.slate200, strokeWidth: 1 } },
-                },
-                grid: {
-                  line: {
-                    stroke: brand.slate200,
-                    strokeWidth: 1,
-                    strokeDasharray: "3 3",
-                    opacity: 0.6,
-                  },
-                },
-                tooltip: {
-                  container: {
-                    background: "#fff",
-                    padding: "10px 14px",
-                    borderRadius: "10px",
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-                    fontSize: "13px",
-                    border: "1px solid #e5e7eb",
-                  },
-                },
-              }}
-              tooltip={({
-                value,
-                indexValue,
-              }: {
-                value: number;
-                indexValue: string;
-              }) => {
-                const colorMap: Record<string, string> = {
-                  Stability: brand.navyBrand,
-                  Adaptability: brand.tealBrand,
-                  Innovation: brand.teal,
-                  Efficiency: brand.sky,
-                };
-                return (
-                  <div className="rounded-lg bg-white px-4 py-3 text-sm shadow-xl border border-gray-200 min-w-[160px]">
-                    <div className="font-bold text-gray-900 mb-1">
-                      {indexValue}
+
+              const statusStyle = stage.status
+                ? statusStyles[stage.status]
+                : null;
+
+              return (
+                <motion.div
+                  key={stage.stage}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`group rounded-lg border p-3 transition-all ${
+                    statusStyle
+                      ? `${statusStyle.bg} border-gray-200`
+                      : "bg-white border-gray-200"
+                  } hover:shadow-sm`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        {stage.stage}
+                      </h3>
+                      <div
+                        className="text-lg font-bold leading-none mt-0.5"
+                        style={{ color: stage.color }}
+                      >
+                        {stage.score.toFixed(2)}
+                      </div>
                     </div>
-                    <div
-                      className="text-2xl font-bold"
-                      style={{ color: colorMap[indexValue] || brand.navyBrand }}
-                    >
-                      {value}%
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {stage.status && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                            statusStyle
+                              ? `${statusStyle.text} ${statusStyle.bg}`
+                              : ""
+                          }`}
+                        >
+                          {stage.status}
+                        </span>
+                      )}
+                      <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{
+                            duration: 0.6,
+                            delay: idx * 0.1 + 0.2,
+                            ease: "easeOut",
+                          }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: stage.color }}
+                        />
+                      </div>
                     </div>
                   </div>
-                );
-              }}
-              animate={true}
-              motionConfig={{
-                stiffness: 90,
-                damping: 15,
-              }}
-              isInteractive={true}
-            />
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -670,7 +676,7 @@ const AssessmentDashboard = () => {
               <h2 className="text-lg font-semibold text-gray-900">
                 Stage Distribution
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 Current sentiment spread across stages
               </p>
             </div>
@@ -685,9 +691,9 @@ const AssessmentDashboard = () => {
               activeOuterRadiusOffset={10}
               colors={(d: StageDatum) => {
                 const palette: Record<string, string> = {
-                  "Self-Reflection": "#3B82F6",
+                  "Self-Introspection": "#3B82F6",
                   "Soul-Searching": "#F59E0B",
-                  "Steady State": "#8B5CF6",
+                  "Steady-State": "#8B5CF6",
                   Honeymoon: "#10B981",
                 };
                 return palette[d.label] || "#CBD5F5";
@@ -735,9 +741,9 @@ const AssessmentDashboard = () => {
                 },
               ]}
               fill={[
-                { match: { id: "Self-Reflection" }, id: "gradSelf" },
+                { match: { id: "Self-Introspection" }, id: "gradSelf" },
                 { match: { id: "Soul-Searching" }, id: "gradSoul" },
-                { match: { id: "Steady State" }, id: "gradSteady" },
+                { match: { id: "Steady-State" }, id: "gradSteady" },
                 { match: { id: "Honeymoon" }, id: "gradHoney" },
               ]}
               theme={{
@@ -757,6 +763,101 @@ const AssessmentDashboard = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Sub-Stages for Dominant Stage */}
+      {dominantStage && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+        >
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {dominantStage.stage} Sub-Stages
+            </h2>
+            <p className="text-xs text-gray-500">
+              Detailed breakdown of sub-stage performance
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
+            {honeymoonSubStages.map((subStage, idx) => {
+              const maxSubValue = Math.max(
+                ...honeymoonSubStages.map((s) => s.value)
+              );
+              const percentage = (subStage.value / maxSubValue) * 100;
+              const intensity =
+                subStage.value >= 20
+                  ? "high"
+                  : subStage.value >= 10
+                  ? "medium"
+                  : "low";
+
+              return (
+                <motion.div
+                  key={subStage.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    delay: idx * 0.08,
+                    type: "spring",
+                    stiffness: 200,
+                  }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  className="group relative rounded-lg border border-gray-200 bg-linear-to-br from-white to-gray-50/50 p-3.5 transition-all hover:shadow-md hover:border-gray-300"
+                >
+                  <div className="flex items-start justify-between mb-2.5">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xs font-semibold text-gray-900 mb-1.5 leading-tight line-clamp-2">
+                        {subStage.label}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="mb-2.5">
+                    <div className="relative h-2 rounded-full bg-gray-200 overflow-hidden mb-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{
+                          duration: 0.8,
+                          delay: idx * 0.1 + 0.3,
+                          ease: "easeOut",
+                        }}
+                        className="h-full rounded-full"
+                        style={{
+                          background: dominantStage.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="text-lg font-bold"
+                      style={{ color: dominantStage.color }}
+                    >
+                      {percentage.toFixed(0)}%
+                    </span>
+                    <span
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                        intensity === "high"
+                          ? "bg-green-100 text-green-700"
+                          : intensity === "medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {intensity.toUpperCase()}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Emotional Intensity Heatmap */}
       <motion.div
@@ -1058,41 +1159,41 @@ const AssessmentDashboard = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
       >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               Pending Assessments
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-gray-500">
               Upcoming tests and due dates
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {(["All", "High", "Medium", "Low"] as const).map((p) => {
               const isActive = priorityFilter === p;
-              const buttonStyles = {
+              const buttonColors = {
                 All: isActive
-                  ? "bg-linear-to-r from-gray-600 to-gray-700 text-white border-transparent shadow-md font-semibold"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm",
+                  ? "bg-gray-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
                 High: isActive
-                  ? "bg-linear-to-r from-red-500 to-red-600 text-white border-transparent shadow-md font-semibold"
-                  : "bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 hover:shadow-sm hover:text-red-700",
+                  ? "bg-red-600 text-white"
+                  : "bg-red-50 text-red-700 hover:bg-red-100",
                 Medium: isActive
-                  ? "bg-linear-to-r from-amber-500 to-amber-600 text-white border-transparent shadow-md font-semibold"
-                  : "bg-white text-amber-600 border-amber-300 hover:bg-amber-50 hover:border-amber-400 hover:shadow-sm hover:text-amber-700",
+                  ? "bg-yellow-500 text-white"
+                  : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100",
                 Low: isActive
-                  ? "bg-linear-to-r from-green-500 to-green-600 text-white border-transparent shadow-md font-semibold"
-                  : "bg-white text-green-600 border-green-300 hover:bg-green-50 hover:border-green-400 hover:shadow-sm hover:text-green-700",
+                  ? "bg-green-500 text-white"
+                  : "bg-green-50 text-green-700 hover:bg-green-100",
               };
               return (
                 <motion.button
                   key={p}
                   onClick={() => setPriorityFilter(p)}
-                  whileHover={{ scale: 1.08, y: -1 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`cursor-pointer px-4 py-2 text-xs font-medium rounded-lg border transition-all ${buttonStyles[p]}`}
+                  className={`cursor-pointer px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${buttonColors[p]}`}
                 >
                   {p}
                 </motion.button>
@@ -1100,9 +1201,9 @@ const AssessmentDashboard = () => {
             })}
           </div>
         </div>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-2">
           {filteredPending.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-sm">
+            <div className="text-center py-12 text-gray-500 text-sm">
               No {priorityFilter !== "All" ? priorityFilter : ""} priority
               assessments found.
             </div>
@@ -1110,47 +1211,44 @@ const AssessmentDashboard = () => {
             filteredPending.map((item, idx) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                whileHover={{ scale: 1.01, y: -2 }}
-                className="relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+                whileHover={{ scale: 1.005, y: -1 }}
+                className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${getPriorityStyles(
-                          item.priority
-                        )}`}
-                      >
-                        {item.priority === "High" ? (
-                          <AlertTriangle className="h-3.5 w-3.5" />
-                        ) : item.priority === "Medium" ? (
-                          <Clock className="h-3.5 w-3.5" />
-                        ) : (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        )}{" "}
-                        {item.priority}
-                      </span>
-                      <span className="truncate text-sm font-semibold text-gray-900">
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shrink-0 ${getPriorityStyles(
+                        item.priority
+                      )}`}
+                    >
+                      {item.priority === "High" ? (
+                        <AlertTriangle className="h-3 w-3" />
+                      ) : item.priority === "Medium" ? (
+                        <Clock className="h-3 w-3" />
+                      ) : (
+                        <CheckCircle2 className="h-3 w-3" />
+                      )}
+                      {item.priority}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-gray-900 truncate">
                         {item.title}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      Category: {item.category} • Due by {item.dueDate}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex shrink-0 items-center">
                     <motion.button
                       whileTap={{ scale: 0.97 }}
-                      className="cursor-pointer relative inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-3 py-2 text-sm font-medium text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg overflow-hidden"
+                      className="cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-4 py-2 text-xs font-semibold text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-md transition-all overflow-hidden"
                     >
                       <span
-                        className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         style={{
                           background:
-                            "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.25), transparent 40%)",
+                            "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2), transparent 50%)",
                         }}
                       />
                       <Play className="h-4 w-4" /> Start Test
@@ -1175,7 +1273,7 @@ const AssessmentDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-900">
               Test History
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-gray-500">
               Completed assessments and results
             </p>
           </div>
