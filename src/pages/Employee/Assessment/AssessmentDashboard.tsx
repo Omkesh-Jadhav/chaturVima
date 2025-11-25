@@ -13,9 +13,9 @@
  * - Subsection Headings: text-base font-medium
  * - Card Labels: text-sm font-medium
  */
-import { useMemo, useState, memo, useRef, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ResponsiveLine } from "@nivo/line";
+import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import {
   Play,
@@ -26,10 +26,26 @@ import {
   CheckCircle,
   FileText,
   Calendar,
+  XCircle,
+  Lightbulb,
+  ShieldAlert,
 } from "lucide-react";
 import { colors } from "../../../utils/colors";
 
 type Priority = "High" | "Medium" | "Low";
+type SWOTRating = "HIGH" | "MEDIUM" | "CRITICAL";
+
+type SWOTItem = {
+  id: string;
+  title: string;
+  description: string;
+  rating: SWOTRating;
+};
+
+type SWOTQuadrant = {
+  type: "Strengths" | "Weaknesses" | "Opportunities" | "Threats";
+  items: SWOTItem[];
+};
 
 type PendingAssessment = {
   id: string;
@@ -112,6 +128,15 @@ const getPriorityStyles = (priority: Priority): string => {
 };
 
 type StageDatum = { id: string; label: string; value: number };
+type EmotionalIntensityRow = {
+  state: string;
+  values: {
+    Optimism: number;
+    Energy: number;
+    Realism: number;
+    Stability: number;
+  };
+};
 
 const AssessmentDashboard = () => {
   // Mock data
@@ -180,132 +205,143 @@ const AssessmentDashboard = () => {
     []
   );
 
-  const strengths = useMemo(
+  const swotData = useMemo<SWOTQuadrant[]>(
     () => [
-      { name: "Analysis", score: 88 },
-      { name: "Communication", score: 81 },
-      { name: "Planning", score: 74 },
-      { name: "Leadership", score: 85 },
-      { name: "Creativity", score: 69 },
+      {
+        type: "Strengths",
+        items: [
+          {
+            id: "s1",
+            title: "Core Stability & Adaptability",
+            description:
+              "Ability to maintain core stability while adapting to change.",
+            rating: "HIGH",
+          },
+          {
+            id: "s2",
+            title: "Goal Alignment",
+            description:
+              "Strong alignment with organizational goals ensures focus during transitions.",
+            rating: "HIGH",
+          },
+          {
+            id: "s3",
+            title: "Collaborative Mindset",
+            description:
+              "Collaborative mindset fosters effective communication and teamwork.",
+            rating: "MEDIUM",
+          },
+          {
+            id: "s4",
+            title: "Process Foundation",
+            description:
+              "Established processes and frameworks provide strong foundation for dynamic decision-making.",
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Weaknesses",
+        items: [
+          {
+            id: "w1",
+            title: "Prioritization Challenges",
+            description:
+              "Struggles to prioritize initiatives in dynamic environments.",
+            rating: "HIGH",
+          },
+          {
+            id: "w2",
+            title: "Momentum Loss Risk",
+            description:
+              "Risk of losing momentum if balance shifts toward complacency or overreaction.",
+            rating: "HIGH",
+          },
+          {
+            id: "w3",
+            title: "Change Resistance",
+            description:
+              "Resistance to change may hinder adaptability in rapidly evolving situations.",
+            rating: "MEDIUM",
+          },
+          {
+            id: "w4",
+            title: "Goal Balance Tension",
+            description:
+              "May struggle to balance long-term goals with short-term adaptations.",
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Opportunities",
+        items: [
+          {
+            id: "o1",
+            title: "Agility Enhancement",
+            description:
+              "Opportunity to enhance agility and resilience during transitions.",
+            rating: "HIGH",
+          },
+          {
+            id: "o2",
+            title: "Innovation Stability",
+            description:
+              "Ability to create innovative solutions while maintaining operational stability.",
+            rating: "HIGH",
+          },
+          {
+            id: "o3",
+            title: "Model Organization",
+            description:
+              "Opportunity to position as a model of flexibility and stability.",
+            rating: "MEDIUM",
+          },
+          {
+            id: "o4",
+            title: "Leadership Example",
+            description:
+              "Potential to lead by example in navigating complex transitions.",
+            rating: "MEDIUM",
+          },
+        ],
+      },
+      {
+        type: "Threats",
+        items: [
+          {
+            id: "t1",
+            title: "Burnout Risk",
+            description:
+              "Overextension may lead to burnout or resource depletion.",
+            rating: "CRITICAL",
+          },
+          {
+            id: "t2",
+            title: "External Disruptions",
+            description:
+              "External disruptions can amplify misalignment during shifts.",
+            rating: "HIGH",
+          },
+          {
+            id: "t3",
+            title: "Stakeholder Confidence",
+            description:
+              "Miscommunication during shifts may erode stakeholder confidence.",
+            rating: "HIGH",
+          },
+          {
+            id: "t4",
+            title: "Innovation Barriers",
+            description:
+              "Over-reliance on existing structures may hinder innovative thinking.",
+            rating: "MEDIUM",
+          },
+        ],
+      },
     ],
     []
   );
-
-  // no target overlay for strengths
-
-  // Animated strength rings component (pure SVG, no library)
-  // Track animation state globally to prevent re-animation on parent re-renders
-  const animationCompletedRef = useRef<Set<string>>(new Set());
-
-  const StrengthRing = memo(
-    ({ label, value }: { label: string; value: number }) => {
-      const size = 120;
-      const stroke = 10;
-      const radius = (size - stroke) / 2;
-      const circumference = 2 * Math.PI * radius;
-      const progress = Math.max(0, Math.min(100, value)) / 100;
-      const ringId = `${label}-${value}`;
-      const hasAnimated = animationCompletedRef.current.has(ringId);
-
-      return (
-        <motion.div
-          whileHover={{ scale: 1.05, y: -2 }}
-          className="flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-100 bg-white shadow-sm"
-        >
-          <div className="relative" style={{ width: size, height: size }}>
-            <svg width={size} height={size}>
-              <defs>
-                <linearGradient
-                  id={`grad-${label}`}
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={brand.tealBrand}
-                    stopOpacity="1"
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor={brand.navyBrand}
-                    stopOpacity="1"
-                  />
-                </linearGradient>
-              </defs>
-              <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke={brand.slate200}
-                strokeWidth={stroke}
-                fill="none"
-              />
-              {/* target overlay removed */}
-              {hasAnimated ? (
-                <circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke={`url(#grad-${label})`}
-                  strokeWidth={stroke}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference * (1 - progress)}
-                  strokeLinecap="round"
-                  fill="none"
-                  style={{
-                    transform: "rotate(-90deg)",
-                    transformOrigin: "50% 50%",
-                  }}
-                />
-              ) : (
-                <motion.circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke={`url(#grad-${label})`}
-                  strokeWidth={stroke}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference}
-                  strokeLinecap="round"
-                  fill="none"
-                  style={{
-                    transform: "rotate(-90deg)",
-                    transformOrigin: "50% 50%",
-                  }}
-                  animate={{ strokeDashoffset: circumference * (1 - progress) }}
-                  onAnimationComplete={() => {
-                    animationCompletedRef.current.add(ringId);
-                  }}
-                  transition={{ type: "spring", stiffness: 120, damping: 18 }}
-                />
-              )}
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">{value}</div>
-                <div className="text-[10px] uppercase tracking-wide text-gray-500">
-                  Score
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="text-sm font-medium text-gray-800">{label}</div>
-          {/* no target label */}
-        </motion.div>
-      );
-    },
-    (prevProps, nextProps) => {
-      // Only re-render if label or value actually changes
-      return (
-        prevProps.label === nextProps.label &&
-        prevProps.value === nextProps.value
-      );
-    }
-  );
-
-  StrengthRing.displayName = "StrengthRing";
 
   const categoryDistribution = useMemo<StageDatum[]>(
     () => [
@@ -317,42 +353,62 @@ const AssessmentDashboard = () => {
     []
   );
 
-  const scoreTrendAll = useMemo(
+  const emotionalIntensityHeatmap = useMemo<EmotionalIntensityRow[]>(
     () => [
-      { x: "Jan", y: 64 },
-      { x: "Feb", y: 67 },
-      { x: "Mar", y: 70 },
-      { x: "Apr", y: 71 },
-      { x: "May", y: 74 },
-      { x: "Jun", y: 72 },
-      { x: "Jul", y: 72 },
-      { x: "Aug", y: 78 },
-      { x: "Sep", y: 75 },
-      { x: "Oct", y: 83 },
-      { x: "Nov", y: 86 },
-      { x: "Dec", y: 88 },
+      {
+        state: "Honeymoon",
+        values: {
+          Optimism: 90,
+          Energy: 85,
+          Realism: 65,
+          Stability: 45,
+        },
+      },
+      {
+        state: "Self-Introspection",
+        values: {
+          Optimism: 60,
+          Energy: 70,
+          Realism: 85,
+          Stability: 55,
+        },
+      },
+      {
+        state: "Soul-Searching",
+        values: {
+          Optimism: 40,
+          Energy: 50,
+          Realism: 90,
+          Stability: 35,
+        },
+      },
+      {
+        state: "Steady-State",
+        values: {
+          Optimism: 70,
+          Energy: 75,
+          Realism: 80,
+          Stability: 95,
+        },
+      },
     ],
     []
   );
 
-  type Range = "3M" | "6M" | "1Y";
-  const [range, setRange] = useState<Range>("6M");
+  const emotionalDimensions = useMemo(
+    () => ["Optimism", "Energy", "Realism", "Stability"],
+    []
+  );
 
-  const scoreTrend = useMemo(() => {
-    const sliceByRange = (data: { x: string; y: number }[]) => {
-      if (range === "1Y") return data.slice(-12);
-      if (range === "6M") return data.slice(-6);
-      if (range === "3M") return data.slice(-3);
-      return data;
-    };
-    return [
-      {
-        id: "Score",
-        color: brand.tealBrand,
-        data: sliceByRange(scoreTrendAll),
-      },
-    ];
-  }, [range, scoreTrendAll]);
+  const dynamicBalanceZones = useMemo<StageDatum[]>(
+    () => [
+      { id: "Stability", label: "Stability", value: 28 },
+      { id: "Adaptability", label: "Adaptability", value: 32 },
+      { id: "Innovation", label: "Innovation", value: 22 },
+      { id: "Efficiency", label: "Efficiency", value: 18 },
+    ],
+    []
+  );
 
   // Summary values
   const formatReadableDate = useCallback((value: string) => {
@@ -371,23 +427,6 @@ const AssessmentDashboard = () => {
   const lastCompleted = completed[completed.length - 1]?.date ?? "—";
   const lastCompletedLabel =
     lastCompleted !== "—" ? formatReadableDate(lastCompleted) : "—";
-
-  // Category filtering removed: use strengths as-is
-  // Memoize to prevent new array reference on each render
-  const filteredStrengths = useMemo(() => strengths, [strengths]);
-
-  // Memoize the strength rings list to prevent re-renders
-  const strengthRingsList = useMemo(
-    () =>
-      filteredStrengths.map((s) => (
-        <StrengthRing
-          key={`${s.name}-${s.score}`}
-          label={s.name}
-          value={s.score}
-        />
-      )),
-    [StrengthRing, filteredStrengths]
-  );
 
   // Pending assessments filter
   const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
@@ -485,69 +524,136 @@ const AssessmentDashboard = () => {
 
       {/* Visual Analytics */}
       <div className="relative z-10 grid gap-6 xl:grid-cols-3">
-        {/* Line Chart */}
+        {/* Dynamic Balance Zones - Donut Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md xl:col-span-2"
+          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md xl:col-span-2"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Score Progress
-              </h2>
-              <p className="text-sm text-gray-500">Performance over time</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {(["3M", "6M", "1Y"] as Range[]).map((r) => (
-                <motion.button
-                  key={r}
-                  onClick={() => setRange(r)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    range === r
-                      ? "bg-linear-to-r from-brand-teal to-brand-navy text-white border-transparent shadow-md"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-linear-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 hover:border-brand-teal/30"
-                  }`}
-                >
-                  {r}
-                </motion.button>
-              ))}
-            </div>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Dynamic Balance Zones
+            </h2>
+            <p className="text-xs text-gray-500">
+              Your organizational equilibrium metrics
+            </p>
           </div>
-          <div className="mt-4 h-72">
-            <ResponsiveLine
-              data={scoreTrend}
-              margin={{ top: 10, right: 20, bottom: 40, left: 50 }}
-              xScale={{ type: "point" }}
-              yScale={{
-                type: "linear",
-                min: 0,
-                max: 100,
-                stacked: false,
-                reverse: false,
+          <div className="h-72">
+            <ResponsiveBar
+              data={dynamicBalanceZones.map((zone) => ({
+                zone: zone.label,
+                value: zone.value,
+              }))}
+              keys={["value"]}
+              indexBy="zone"
+              margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
+              padding={0.5}
+              valueScale={{ type: "linear", min: 0, max: 40 }}
+              indexScale={{ type: "band", round: true }}
+              colors={({ data }: { data: { zone: string; value: number } }) => {
+                const palette: Record<string, string> = {
+                  Stability: brand.navyBrand,
+                  Adaptability: brand.tealBrand,
+                  Innovation: brand.teal,
+                  Efficiency: brand.sky,
+                };
+                return palette[data.zone] || brand.slate500;
               }}
+              borderRadius={8}
               axisTop={null}
               axisRight={null}
-              axisBottom={{ tickSize: 0, tickPadding: 10 }}
-              axisLeft={{ tickSize: 0, tickPadding: 10 }}
-              colors={[brand.tealBrand]}
-              lineWidth={3}
-              pointSize={8}
-              pointBorderWidth={2}
-              pointColor={{ theme: "background" }}
-              pointBorderColor={{ from: "serieColor" }}
-              enableGridX={false}
-              enableArea
-              areaOpacity={0.15}
-              theme={{
-                text: { fontSize: 12, fill: brand.slate700 },
-                axis: { ticks: { text: { fill: brand.slate700 } } },
-                grid: { line: { stroke: brand.slate200 } },
+              axisBottom={{
+                tickSize: 0,
+                tickPadding: 10,
+                tickRotation: 0,
+                legend: "",
+                legendPosition: "middle",
+                legendOffset: 40,
               }}
-              useMesh
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 10,
+                tickValues: [0, 10, 20, 30, 40],
+                format: (value: number) => `${value}%`,
+              }}
+              enableGridY={true}
+              gridYValues={[0, 10, 20, 30, 40]}
+              enableLabel={true}
+              label={(d: { value: number }) => `${d.value}%`}
+              labelSkipWidth={12}
+              labelSkipHeight={12}
+              labelTextColor="#fff"
+              labelTextStyle={{
+                fontSize: 12,
+                fontWeight: 700,
+                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+              }}
+              theme={{
+                text: {
+                  fontSize: 12,
+                  fill: brand.slate700,
+                  fontWeight: 600,
+                },
+                axis: {
+                  ticks: {
+                    text: { fill: brand.slate700, fontSize: 11 },
+                    line: { stroke: brand.slate200, strokeWidth: 1 },
+                  },
+                  domain: { line: { stroke: brand.slate200, strokeWidth: 1 } },
+                },
+                grid: {
+                  line: {
+                    stroke: brand.slate200,
+                    strokeWidth: 1,
+                    strokeDasharray: "3 3",
+                    opacity: 0.6,
+                  },
+                },
+                tooltip: {
+                  container: {
+                    background: "#fff",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
+                    fontSize: "13px",
+                    border: "1px solid #e5e7eb",
+                  },
+                },
+              }}
+              tooltip={({
+                value,
+                indexValue,
+              }: {
+                value: number;
+                indexValue: string;
+              }) => {
+                const colorMap: Record<string, string> = {
+                  Stability: brand.navyBrand,
+                  Adaptability: brand.tealBrand,
+                  Innovation: brand.teal,
+                  Efficiency: brand.sky,
+                };
+                return (
+                  <div className="rounded-lg bg-white px-4 py-3 text-sm shadow-xl border border-gray-200 min-w-[160px]">
+                    <div className="font-bold text-gray-900 mb-1">
+                      {indexValue}
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: colorMap[indexValue] || brand.navyBrand }}
+                    >
+                      {value}%
+                    </div>
+                  </div>
+                );
+              }}
+              animate={true}
+              motionConfig={{
+                stiffness: 90,
+                damping: 15,
+              }}
+              isInteractive={true}
             />
           </div>
         </motion.div>
@@ -652,26 +758,298 @@ const AssessmentDashboard = () => {
         </motion.div>
       </div>
 
-      {/* Strengths (Animated Rings only) */}
+      {/* Emotional Intensity Heatmap */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
-              Strengths Analysis
+              Emotional Intensity Heatmap
             </h2>
-            <p className="text-sm text-gray-500">
-              Animated rings — hover for emphasis.
+            <p className="text-xs text-gray-500">
+              Intensity levels across emotional dimensions and states
             </p>
           </div>
-          <div />
+          <div className="flex flex-wrap gap-1.5">
+            {emotionalDimensions.map((dimension) => {
+              const dimensionColors: Record<
+                string,
+                { from: string; to: string }
+              > = {
+                Optimism: { from: "#f97316", to: "#ea580c" }, // Orange
+                Energy: { from: "#ec4899", to: "#db2777" }, // Pink/Magenta
+                Realism: { from: "#3b82f6", to: "#2563eb" }, // Blue
+                Stability: { from: "#10b981", to: "#059669" }, // Teal/Green
+              };
+              const token = dimensionColors[dimension] || {
+                from: "#6b7280",
+                to: "#4b5563",
+              };
+              return (
+                <motion.span
+                  key={dimension}
+                  whileHover={{ scale: 1.05 }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md"
+                >
+                  <span
+                    className="h-2.5 w-2.5 rounded-full shadow-sm"
+                    style={{
+                      background: `linear-gradient(135deg, ${token.from}, ${token.to})`,
+                      boxShadow: `0 0 4px ${token.from}60`,
+                    }}
+                  />
+                  {dimension}
+                </motion.span>
+              );
+            })}
+          </div>
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {strengthRingsList}
+
+        <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
+          {emotionalIntensityHeatmap.map((row, rowIdx) => (
+            <motion.div
+              key={row.state}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: rowIdx * 0.05 }}
+              className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
+            >
+              <div className="grid gap-2 md:grid-cols-[120px_repeat(4,minmax(0,1fr))] items-center">
+                <div className="flex items-center justify-between md:block md:text-left">
+                  <span className="text-sm font-bold text-gray-900">
+                    {row.state}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gray-400 md:hidden">
+                    Mix
+                  </span>
+                </div>
+                {emotionalDimensions.map((dimension) => {
+                  const value =
+                    row.values[dimension as keyof typeof row.values];
+
+                  // Dimension-specific colors with intensity variations
+                  const getDimensionToken = (dim: string, val: number) => {
+                    const baseColors: Record<
+                      string,
+                      {
+                        high: { from: string; to: string };
+                        medium: { from: string; to: string };
+                        low: { from: string; to: string };
+                      }
+                    > = {
+                      Optimism: {
+                        high: { from: "#f97316", to: "#ea580c" },
+                        medium: { from: "#fb923c", to: "#f97316" },
+                        low: { from: "#fed7aa", to: "#fdba74" },
+                      },
+                      Energy: {
+                        high: { from: "#ec4899", to: "#db2777" },
+                        medium: { from: "#f472b6", to: "#ec4899" },
+                        low: { from: "#fbcfe8", to: "#f9a8d4" },
+                      },
+                      Realism: {
+                        high: { from: "#3b82f6", to: "#2563eb" },
+                        medium: { from: "#60a5fa", to: "#3b82f6" },
+                        low: { from: "#bfdbfe", to: "#93c5fd" },
+                      },
+                      Stability: {
+                        high: { from: "#10b981", to: "#059669" },
+                        medium: { from: "#34d399", to: "#10b981" },
+                        low: { from: "#a7f3d0", to: "#6ee7b7" },
+                      },
+                    };
+
+                    if (val >= 80)
+                      return (
+                        baseColors[dim]?.high || {
+                          from: "#6b7280",
+                          to: "#4b5563",
+                        }
+                      );
+                    if (val >= 50)
+                      return (
+                        baseColors[dim]?.medium || {
+                          from: "#6b7280",
+                          to: "#4b5563",
+                        }
+                      );
+                    return (
+                      baseColors[dim]?.low || { from: "#6b7280", to: "#4b5563" }
+                    );
+                  };
+
+                  const token = getDimensionToken(dimension, value);
+                  const isHigh = value >= 50;
+                  return (
+                    <motion.div
+                      key={`${row.state}-${dimension}`}
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all ${
+                        isHigh
+                          ? "border-opacity-30 bg-linear-to-br from-white to-gray-50/50"
+                          : "border-gray-200 bg-white"
+                      }`}
+                      style={{
+                        borderColor: isHigh ? `${token.from}33` : undefined,
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wide ${
+                            isHigh ? "text-gray-700" : "text-gray-500"
+                          }`}
+                        >
+                          {dimension}
+                        </span>
+                        <span
+                          className={`text-xs font-bold ${
+                            isHigh ? "text-gray-900" : "text-gray-600"
+                          }`}
+                        >
+                          {value}%
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, value)}%` }}
+                          transition={{
+                            duration: 0.8,
+                            delay: rowIdx * 0.1 + 0.2,
+                            ease: "easeOut",
+                          }}
+                          className="h-full rounded-full shadow-sm"
+                          style={{
+                            background: `linear-gradient(90deg, ${token.from}, ${token.to})`,
+                            boxShadow: `0 0 8px ${token.from}40`,
+                          }}
+                        />
+                      </div>
+                      {isHigh && (
+                        <div
+                          className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full opacity-60"
+                          style={{
+                            background: `radial-gradient(circle, ${token.from}, ${token.to})`,
+                            boxShadow: `0 0 6px ${token.from}`,
+                          }}
+                        />
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* SWOT Analysis */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+      >
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">SWOT Analysis</h2>
+          <p className="text-xs text-gray-500">
+            Strategic assessment across four key dimensions
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {swotData.map((quadrant, qIdx) => {
+            const config = {
+              Strengths: {
+                icon: CheckCircle,
+                headerBg: "bg-linear-to-br from-green-500 to-emerald-600",
+                itemBg: "bg-green-50/60",
+                border: "border-green-200",
+                text: "text-green-700",
+              },
+              Weaknesses: {
+                icon: XCircle,
+                headerBg: "bg-linear-to-br from-red-500 to-rose-600",
+                itemBg: "bg-red-50/60",
+                border: "border-red-200",
+                text: "text-red-700",
+              },
+              Opportunities: {
+                icon: Lightbulb,
+                headerBg: "bg-linear-to-br from-blue-500 to-cyan-600",
+                itemBg: "bg-blue-50/60",
+                border: "border-blue-200",
+                text: "text-blue-700",
+              },
+              Threats: {
+                icon: ShieldAlert,
+                headerBg: "bg-linear-to-br from-amber-500 to-orange-600",
+                itemBg: "bg-amber-50/60",
+                border: "border-amber-200",
+                text: "text-amber-700",
+              },
+            }[quadrant.type];
+
+            const Icon = config.icon;
+
+            return (
+              <motion.div
+                key={quadrant.type}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: qIdx * 0.1 }}
+                className="rounded-xl border border-gray-100 bg-white overflow-hidden"
+              >
+                <div
+                  className={`flex items-center gap-2 px-4 py-2.5 ${config.headerBg} text-white`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-wide">
+                    {quadrant.type}
+                  </h3>
+                </div>
+                <div className="p-3 space-y-2">
+                  {quadrant.items.map((item, idx) => {
+                    const ratingColors = {
+                      HIGH: "bg-green-500 text-white",
+                      MEDIUM: "bg-yellow-500 text-white",
+                      CRITICAL: "bg-red-600 text-white",
+                    }[item.rating];
+
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: qIdx * 0.1 + idx * 0.05 }}
+                        whileHover={{ scale: 1.01, y: -1 }}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2.5 shadow-sm`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-gray-900 mb-1">
+                              {item.title}
+                            </h4>
+                            <p className="text-[11px] text-gray-600 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${ratingColors}`}
+                          >
+                            {item.rating}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
 
