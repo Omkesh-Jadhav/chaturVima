@@ -22,19 +22,13 @@ import { useUser } from "../../context/UserContext";
 import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
 
-const ROLE_CONFIG: Record<
-  UserRole,
-  { label: string; icon: React.ReactNode; color: string }
+const ROLE_CONFIG: Partial<
+  Record<UserRole, { label: string; icon: React.ReactNode; color: string }>
 > = {
   employee: {
     label: "Employee",
     icon: <User className="h-4 w-4" />,
     color: "text-blue-600 bg-blue-50",
-  },
-  manager: {
-    label: "Manager",
-    icon: <UserCog className="h-4 w-4" />,
-    color: "text-purple-600 bg-purple-50",
   },
   "hr-admin": {
     label: "HR Admin",
@@ -62,17 +56,22 @@ const Navbar = () => {
 
   if (!user) return null;
 
-  const currentRoleConfig = ROLE_CONFIG[user.role];
+  const currentRoleConfig = ROLE_CONFIG[user.role] ?? {
+    label: user.role,
+    icon: <User className="h-4 w-4" />,
+    color: "text-gray-700 bg-gray-100",
+  };
 
   // Get all available roles that the user can switch to
   const allRoles: UserRole[] = [
     "employee",
-    "manager",
     "hr-admin",
     "department-head",
     "super-admin",
   ];
-  const availableRoles = allRoles.filter((role) => role !== user.role);
+  const availableRoles = allRoles.filter(
+    (role): role is UserRole => role !== user.role && Boolean(ROLE_CONFIG[role])
+  );
 
   const handleRoleSwitch = (newRole: UserRole) => {
     switchRole(newRole);
@@ -142,6 +141,7 @@ const Navbar = () => {
                       <div className="space-y-1">
                         {availableRoles.map((role) => {
                           const roleCfg = ROLE_CONFIG[role];
+                          if (!roleCfg) return null;
                           return (
                             <button
                               key={role}
@@ -290,7 +290,7 @@ const Navbar = () => {
                     className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg"
                   >
                     <div className="p-2">
-                      <div className="mb-2 rounded-lg bg-gradient-to-r from-brand-teal/10 to-brand-navy/10 p-3">
+                      <div className="mb-2 rounded-lg bg-linear-to-r from-brand-teal/10 to-brand-navy/10 p-3">
                         <div className="flex items-center gap-3">
                           <img
                             src={user.avatar}
