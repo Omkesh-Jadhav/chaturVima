@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import type { UserRole } from "../types";
 import {
   Button,
   Card,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import PhoneInput, { type CountryData } from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { getRoleLandingRoute } from "../utils/roleRoutes";
 
 type LoginStep = "credentials" | "otp" | "success";
 
@@ -311,7 +313,17 @@ const Login = () => {
 
         // Redirect to assessment page after showing success message
         setTimeout(() => {
-          navigate("/assessment");
+          let role: UserRole | undefined;
+          const storedUser = localStorage.getItem("chaturvima_user");
+          if (storedUser) {
+            try {
+              const parsed = JSON.parse(storedUser);
+              role = parsed.role as UserRole;
+            } catch {
+              role = undefined;
+            }
+          }
+          navigate(getRoleLandingRoute(role));
         }, REDIRECT_DELAY);
       } catch {
         setError("OTP verification failed. Please try again.");
@@ -345,11 +357,11 @@ const Login = () => {
   );
 
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-gradient-to-br from-blue-200/30 to-purple-200/30 blur-3xl"
+          className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-linear-to-br from-blue-200/30 to-purple-200/30 blur-3xl"
           animate={{
             x: [0, 100, 0],
             y: [0, 50, 0],
@@ -362,7 +374,7 @@ const Login = () => {
           }}
         />
         <motion.div
-          className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-gradient-to-tr from-indigo-200/30 to-pink-200/30 blur-3xl"
+          className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-linear-to-tr from-indigo-200/30 to-pink-200/30 blur-3xl"
           animate={{
             x: [0, -100, 0],
             y: [0, -50, 0],
@@ -390,10 +402,10 @@ const Login = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-col items-center"
           >
-            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-brand-teal to-brand-navy shadow-lg">
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-linear-to-br from-brand-teal to-brand-navy shadow-lg">
               <TrendingUp className="h-8 w-8 text-white" />
             </div>
-            <h1 className="mb-1 bg-gradient-to-r from-brand-navy to-brand-teal bg-clip-text text-3xl font-bold text-transparent">
+            <h1 className="mb-1 bg-linear-to-r from-brand-navy to-brand-teal bg-clip-text text-3xl font-bold text-transparent">
               ChaturVima
             </h1>
             <p className="text-sm font-medium text-gray-600">
@@ -548,7 +560,7 @@ const Login = () => {
                   >
                     <Button
                       type="submit"
-                      className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
                       size="lg"
                       isLoading={isSendingOTP}
                     >
@@ -605,7 +617,7 @@ const Login = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-center gap-3">
                       {otpTimer > 0 ? (
-                        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-200">
+                        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-linear-to-r from-gray-50 to-gray-100/50 border border-gray-200">
                           <div className="flex items-center gap-2">
                             <RefreshCw className="h-4 w-4 text-gray-400" />
                             <span className="text-sm text-gray-600">
@@ -663,7 +675,7 @@ const Login = () => {
                   >
                     <Button
                       type="submit"
-                      className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
                       size="lg"
                       isLoading={isLoading}
                     >
@@ -688,7 +700,7 @@ const Login = () => {
                     className="mb-6 flex justify-center"
                   >
                     <div className="relative">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-green-100 to-emerald-100">
                         <CheckCircle2 className="h-10 w-10 text-green-600" />
                       </div>
                       <motion.div

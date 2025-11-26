@@ -19,6 +19,8 @@ import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
 import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
 import Settings from "./pages/Settings/Settings";
 import EditProfile from "./pages/Settings/EditProfile";
+import HRAssessmentCycles from "./pages/hrAdmin/AssessmentCycles/AssessmentCycles";
+import DepartmentHeadAssessmentCycles from "./pages/departmentHead/AssessmentCycles/DepartmentAssessmentCycles";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -85,6 +87,11 @@ function AppRoutes() {
         <Route path="/organization-setup" element={<OrganizationSetup />} />
         <Route path="/employee-setup" element={<EmployeeSetup />} />
         <Route path="/department-setup" element={<DepartmentSetup />} />
+        <Route path="/hr/assessment-cycles" element={<HRAssessmentCycles />} />
+        <Route
+          path="/department-head/assessment-cycles"
+          element={<DepartmentHeadAssessmentCycles />}
+        />
         <Route
           path="/super-admin-dashboard"
           element={<SuperAdminDashboard />}

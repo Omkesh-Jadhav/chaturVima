@@ -14,6 +14,7 @@ import {
   Shield,
   Crown,
   LayoutDashboard,
+  CalendarDays,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -64,11 +65,18 @@ const NAV_ITEMS: NavItem[] = [
     roles: ["super-admin"],
   },
   {
-    id: "hr-dashboard",
-    label: "HR Dashboard",
-    path: "/hr-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    id: "hr-assessment-cycles",
+    label: "Assessment Cycles",
+    path: "/hr/assessment-cycles",
+    icon: <CalendarDays className="h-5 w-5" />,
     roles: ["hr-admin"],
+  },
+  {
+    id: "department-head-cycles",
+    label: "Assessment Cycles",
+    path: "/department-head/assessment-cycles",
+    icon: <CalendarDays className="h-5 w-5" />,
+    roles: ["department-head"],
   },
   {
     id: "employee-setup",
@@ -151,7 +159,7 @@ const Sidebar = () => {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-2"
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-brand-teal to-brand-navy text-white font-bold text-xl">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-brand-teal to-brand-navy text-white font-bold text-xl">
                 C
               </div>
               <div>
@@ -180,8 +188,8 @@ const Sidebar = () => {
       {user && (
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stages-self-reflection to-stages-steady-state flex items-center justify-center text-white font-semibold">
+            <div className="shrink-0">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-stages-self-reflection to-stages-steady-state flex items-center justify-center text-white font-semibold">
                 {user.name.charAt(0)}
               </div>
             </div>
@@ -234,7 +242,7 @@ const Sidebar = () => {
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <span className="flex-shrink-0">{item.icon}</span>
+              <span className="shrink-0">{item.icon}</span>
               <AnimatePresence mode="wait">
                 {!isCollapsed && (
                   <motion.span
