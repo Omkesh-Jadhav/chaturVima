@@ -21,12 +21,13 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
-  ChevronDown,
   CheckCircle,
   TrendingUp,
   XCircle,
   Lightbulb,
   ShieldAlert,
+  Search,
+  X,
 } from "lucide-react";
 import { colors } from "../../../utils/colors";
 
@@ -504,31 +505,21 @@ const AssessmentDashboard = () => {
     return pending.filter((item) => item.priority === priorityFilter);
   }, [pending, priorityFilter]);
 
-  // Test history: search and sort
+  // Test history: search (by dominant stage only)
   const [historySearch, setHistorySearch] = useState("");
-  const [historySort, setHistorySort] = useState<
-    "date" | "score" | "percentile"
-  >("date");
   const visibleHistory = useMemo(() => {
-    const q = historySearch.toLowerCase();
+    const q = historySearch.toLowerCase().trim();
+    if (!q) {
+      // If no search query, return all sorted by date
+      return [...completed].sort((a, b) => b.date.localeCompare(a.date));
+    }
     const filtered = completed.filter((r) =>
-      [r.title, r.category, r.date].some((f) => f.toLowerCase().includes(q))
+      r.category.toLowerCase().includes(q)
     );
-    const sorted = [...filtered].sort((a, b) => {
-      if (historySort === "date") return b.date.localeCompare(a.date);
-      if (historySort === "score") return b.score - a.score;
-      return b.percentile - a.percentile;
-    });
+    // Sort by date (newest first) by default
+    const sorted = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
     return sorted;
-  }, [completed, historySearch, historySort]);
-
-  // Custom sort menu UI state
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const sortLabel: Record<typeof historySort, string> = {
-    date: "Sort by Date",
-    score: "Sort by Score",
-    percentile: "Sort by Percentile",
-  } as const;
+  }, [completed, historySearch]);
 
   const header = (
     <div className="mb-4">
@@ -1297,56 +1288,45 @@ const AssessmentDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              value={historySearch}
-              onChange={(e) => setHistorySearch(e.target.value)}
-              placeholder="Search..."
-              className="h-9 w-40 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-brand-teal/50 transition-all"
-            />
-            <div className="relative">
-              <button
-                onClick={() => setSortMenuOpen((o) => !o)}
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-brand-teal/30 bg-white px-3 text-sm text-gray-700 shadow-sm hover:bg-linear-to-r hover:from-brand-teal/10 hover:to-brand-navy/10 focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
-              >
-                {sortLabel[historySort]}
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    sortMenuOpen ? "rotate-180" : "rotate-0"
-                  }`}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative group w-full sm:w-auto"
+            >
+              <div className="relative flex items-center">
+                <Search className="absolute left-3.5 h-4 w-4 text-gray-400 pointer-events-none transition-colors group-focus-within:text-brand-teal z-10" />
+                <input
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  placeholder="Search by dominant stage..."
+                  className="h-10 w-full sm:w-72 md:w-80 pl-10 pr-10 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal transition-all shadow-sm hover:shadow-md hover:border-gray-300"
                 />
-              </button>
-              {sortMenuOpen && (
+                {historySearch && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setHistorySearch("")}
+                    className="absolute right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </motion.button>
+                )}
+              </div>
+              {historySearch && (
                 <motion.div
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
-                  className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+                  className="absolute top-full left-0 mt-1.5 px-2 py-0.5 rounded-md bg-brand-teal/10 text-[10px] font-semibold text-brand-teal backdrop-blur-sm"
                 >
-                  {(
-                    ["date", "score", "percentile"] as (
-                      | "date"
-                      | "score"
-                      | "percentile"
-                    )[]
-                  ).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => {
-                        setHistorySort(key as "date" | "score" | "percentile");
-                        setSortMenuOpen(false);
-                      }}
-                      className={`block w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors ${
-                        historySort === key
-                          ? "bg-linear-to-r from-brand-teal/15 to-brand-navy/15 text-brand-navy font-medium"
-                          : "text-gray-700 hover:bg-linear-to-r hover:from-brand-teal/5 hover:to-brand-navy/5"
-                      }`}
-                    >
-                      {sortLabel[key]}
-                    </button>
-                  ))}
+                  {visibleHistory.length} result
+                  {visibleHistory.length !== 1 ? "s" : ""} found
                 </motion.div>
               )}
-            </div>
+            </motion.div>
           </div>
         </div>
         <div className="mt-4 overflow-x-auto">
