@@ -19,6 +19,7 @@ import {
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
 import type { UserRole } from "../../types";
+import logoImage from "../../assets/chaturvima-logo.png";
 
 interface NavItem {
   id: string;
@@ -150,26 +151,28 @@ const Sidebar = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.div
-              key="expanded-header"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center gap-2"
-            >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-brand-teal to-brand-navy text-white font-bold text-xl">
-                C
-              </div>
-              <div>
-                <h2 className="font-bold text-brand-navy text-lg">
-                  ChaturVima
-                </h2>
-                <p className="text-xs text-gray-500">Health Diagnostics</p>
-              </div>
-            </motion.div>
-          )}
+          <motion.div
+            key={isCollapsed ? "collapsed-header" : "expanded-header"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className={
+              isCollapsed
+                ? "flex items-center justify-center"
+                : "flex items-center"
+            }
+          >
+            <img
+              src={logoImage}
+              alt="ChaturVima Logo"
+              className={
+                isCollapsed
+                  ? "h-10 w-auto object-contain"
+                  : "h-12 w-auto object-contain"
+              }
+            />
+          </motion.div>
         </AnimatePresence>
         <button
           onClick={toggleSidebar}

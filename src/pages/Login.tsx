@@ -21,13 +21,13 @@ import {
   Mail,
   Phone,
   ArrowRight,
-  TrendingUp,
   CheckCircle2,
   Shield,
   RefreshCw,
   User,
 } from "lucide-react";
 import PhoneInput, { type CountryData } from "react-phone-input-2";
+import logoImage from "../assets/chaturvima-logo.png";
 import "react-phone-input-2/lib/style.css";
 import { getRoleLandingRoute } from "../utils/roleRoutes";
 
@@ -394,23 +394,19 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-md"
       >
-        {/* Logo and Title */}
-        <div className="mb-4 text-center">
+        {/* Logo */}
+        <div className="mb-6 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-col items-center"
           >
-            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-linear-to-br from-brand-teal to-brand-navy shadow-lg">
-              <TrendingUp className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="mb-1 bg-linear-to-r from-brand-navy to-brand-teal bg-clip-text text-3xl font-bold text-transparent">
-              ChaturVima
-            </h1>
-            <p className="text-sm font-medium text-gray-600">
-              Organizational Health Diagnostics
-            </p>
+            <img
+              src={logoImage}
+              alt="ChaturVima Logo"
+              className="h-20 w-auto object-contain"
+            />
           </motion.div>
         </div>
 
