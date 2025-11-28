@@ -19,8 +19,8 @@
   --color-stages-steady-state-dark: #134e4a;
 
   /* Brand Colors - Update these values to change colors project-wide */
-  --color-brand-navy: #1e3a5f;
-  --color-brand-teal: #2bc6b4;
+  --color-brand-navy: #ff6700;
+  --color-brand-teal: #4160f0;
 
   /* Custom animations */
   --animate-fade-in: fadeIn 0.3s ease-in-out;

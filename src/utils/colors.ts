@@ -5,11 +5,17 @@
 
 export const colors = {
   // Brand Colors
+  // brand: {
+  //   teal: "#2BC6B4",
+  //   navy: "#1E3A5F",
+  //   tealDark: "#0b8584",
+  //   tealLight: "#0ea5a4",
+  // },
   brand: {
-    teal: "#2BC6B4",
-    navy: "#1E3A5F",
-    tealDark: "#0b8584",
-    tealLight: "#0ea5a4",
+    teal: "#4160F0",
+    navy: "#FF6700",
+    tealDark: "#4160F0",
+    tealLight: "#FF6700",
   },
 
   // Stage Colors
