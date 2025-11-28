@@ -78,7 +78,7 @@ const CycleTable = ({
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex flex-wrap items-center gap-1">
-                    {cycle.departments.slice(0, 3).map((dept) => (
+                    {cycle.departments.slice(0, 4).map((dept) => (
                       <span
                         key={dept}
                         className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600"
