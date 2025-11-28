@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { validateEmail, validatePhone, validateWebsite } from './validationUtils';
+import { FilterSelect, Input } from '@/components/ui';
 
 interface OrganizationInfo {
     name: string;
@@ -71,12 +72,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Organization Name *
                     </label>
-                    <input
+                    <Input
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                            !formData.name.trim() ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                            !formData.name.trim() ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                         }`}
                         placeholder="Enter organization name"
                         required
@@ -90,70 +91,49 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Organization Type *
                     </label>
-                    <select
-                        value={formData.type}
-                        onChange={(e) => handleInputChange('type', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-                    >
-                        <option value="">Select type</option>
-                        <option value="Private Limited">Private Limited</option>
-                        <option value="Public Limited">Public Limited</option>
-                        <option value="Partnership">Partnership</option>
-                        <option value="Sole Proprietorship">Sole Proprietorship</option>
-                        <option value="Non-Profit">Non-Profit</option>
-                    </select>
+                    <FilterSelect
+                        value={formData.type || "Select type"}
+                        onChange={(value) => handleInputChange('type', value === "Select type" ? "" : value)}
+                        className="w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                        options={["Select type", "Private Limited", "Public Limited", "Partnership", "Sole Proprietorship", "Non-Profit"]}
+                    />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Organization Size *
                     </label>
-                    <select
-                        value={formData.size}
-                        onChange={(e) => handleInputChange('size', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-                    >
-                        <option value="">Select size</option>
-                        <option value="1-10">1-10 employees</option>
-                        <option value="11-50">11-50 employees</option>
-                        <option value="51-200">51-200 employees</option>
-                        <option value="201-500">201-500 employees</option>
-                        <option value="500+">500+ employees</option>
-                    </select>
+                    <FilterSelect
+                        value={formData.size || "Select size"}
+                        onChange={(value) => handleInputChange('size', value === "Select size" ? "" : value)}
+                        className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                        options={["Select size", "1-10 employees", "11-50 employees", "51-200 employees", "201-500 employees", "500+ employees"]}
+                    />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Industry *
                     </label>
-                    <select
-                        value={formData.industry}
-                        onChange={(e) => handleInputChange('industry', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-                    >
-                        <option value="">Select industry</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Education">Education</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Consulting">Consulting</option>
-                        <option value="Other">Other</option>
-                    </select>
+                    <FilterSelect
+                        value={formData.industry || "Select industry"}
+                        onChange={(value) => handleInputChange('industry', value === "Select industry" ? "" : value)}
+                        className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                        options={["Select industry", "Technology", "Healthcare", "Finance", "Education", "Manufacturing", "Retail", "Other"]}
+                    />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Website
                     </label>
-                    <input
+                    <Input
                         type="url"
                         value={formData.website}
                         onChange={(e) => handleInputChange('website', e.target.value)}
                         onBlur={(e) => validateField('website', e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                            fieldErrors.website ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                            fieldErrors.website ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                         }`}
                         placeholder="https://www.example.com"
                     />
@@ -166,13 +146,13 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email Address *
                     </label>
-                    <input
+                    <Input
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         onBlur={(e) => validateField('email', e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                            !formData.email.trim() || fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                            !formData.email.trim() || fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                         }`}
                         placeholder="contact@example.com"
                         required
@@ -189,13 +169,13 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Phone Number *
                     </label>
-                    <input
+                    <Input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         onBlur={(e) => validateField('phone', e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                            !formData.phone.trim() || fieldErrors.phone ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                            !formData.phone.trim() || fieldErrors.phone ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                         }`}
                         placeholder="+91 9876543210"
                         required
@@ -212,11 +192,11 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         City *
                     </label>
-                    <input
+                    <Input
                         type="text"
                         value={formData.city}
                         onChange={(e) => handleInputChange('city', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
                         placeholder="Enter city"
                     />
                 </div>
@@ -225,11 +205,11 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         State *
                     </label>
-                    <input
+                    <Input
                         type="text"
                         value={formData.state}
                         onChange={(e) => handleInputChange('state', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
                         placeholder="Enter state"
                     />
                 </div>
@@ -238,11 +218,11 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Country *
                     </label>
-                    <input
+                    <Input
                         type="text"
                         value={formData.country}
                         onChange={(e) => handleInputChange('country', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
                         placeholder="Enter country"
                     />
                 </div>

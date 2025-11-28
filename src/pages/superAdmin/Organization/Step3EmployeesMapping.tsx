@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Edit, Trash2, Plus, Upload, Download, AlertCircle } from 'lucide-react';
 import { validateEmail } from './validationUtils';
+import { Button, Input, FilterSelect } from '@/components/ui';
 
 interface Employee {
   id: string;
@@ -216,18 +217,18 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       
       <div className="mb-6">
         <div className="flex gap-4 mb-4">
-          <button
+          <Button
             onClick={() => setShowBulkUpload(false)}
-            className={`px-4 py-2 rounded-md ${!showBulkUpload ? 'bg-stages-self-reflection text-white' : 'bg-gray-200 text-gray-700'}`}
+            variant={!showBulkUpload ? 'primary' : 'outline'}
           >
             Manual Entry
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowBulkUpload(true)}
-            className={`px-4 py-2 rounded-md ${showBulkUpload ? 'bg-stages-self-reflection text-white' : 'bg-gray-200 text-gray-700'}`}
+            variant={showBulkUpload ? 'primary' : 'outline'}
           >
             Bulk Upload
-          </button>
+          </Button>
         </div>
 
         {showBulkUpload ? (
@@ -235,12 +236,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 mb-2">Drag & Drop Excel/CSV here or</p>
-              <button
+              <Button
                 onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Browse
-              </button>
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -250,13 +250,12 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               />
             </div>
             
-            <button
+            <Button
               onClick={downloadTemplate}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
             >
               <Download className="w-4 h-4" />
               Download Employee Data Template
-            </button>
+            </Button>
 
             {uploadErrors.length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -269,9 +268,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     <li key={index}>• {error}</li>
                   ))}
                 </ul>
-                <button className="text-red-800 hover:text-red-900 font-medium text-sm mt-2">
+                <Button className="text-red-800 hover:text-red-900 font-medium text-sm mt-2">
                   Download error log
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -281,13 +280,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Employee ID
               </label>
-              <input
+              <Input
                 type="text"
                 value={formData.employeeId}
                 onChange={(e) => handleInputChange('employeeId', e.target.value)}
                 onBlur={(e) => validateField('employeeId', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  fieldErrors.employeeId ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                  fieldErrors.employeeId ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                 }`}
                 placeholder="e.g., EMP001"
               />
@@ -300,11 +299,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
-              <input
+              <Input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 placeholder="e.g., John Doe"
               />
             </div>
@@ -313,13 +312,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
-              <input
+              <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 onBlur={(e) => validateField('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                  fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-brand-teal'
                 }`}
                 placeholder="e.g., john.doe@company.com"
               />
@@ -332,11 +331,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Designation
               </label>
-              <input
+              <Input
                 type="text"
                 value={formData.designation}
                 onChange={(e) => handleInputChange('designation', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 placeholder="e.g., Software Engineer"
               />
             </div>
@@ -345,50 +344,36 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Role
               </label>
-              <select
+              <FilterSelect
                 value={formData.role}
-                onChange={(e) => handleInputChange('role', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-              >
-                <option value="Employee">Employee</option>
-                <option value="Administration">Administration</option>
-              </select>
+                onChange={(value) => handleInputChange('role', value)}
+                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                options={["Employee", "Administration"]}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Department
               </label>
-              <select
-                value={formData.department}
-                onChange={(e) => handleInputChange('department', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-              >
-                <option value="">Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
+              <FilterSelect
+                value={formData.department || "Select Department"}
+                onChange={(value) => handleInputChange('department', value === "Select Department" ? "" : value)}
+                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                options={["Select Department", ...departments.map(dept => dept.name)]}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Boss
               </label>
-              <select
-                value={formData.boss}
-                onChange={(e) => handleInputChange('boss', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-              >
-                <option value="">Select Boss</option>
-                {getAvailableBosses().map((emp) => (
-                  <option key={emp.id} value={emp.name}>
-                    {emp.name}
-                  </option>
-                ))}
-              </select>
+              <FilterSelect
+                value={formData.boss || "Select Boss"}
+                onChange={(value) => handleInputChange('boss', value === "Select Boss" ? "" : value)}
+                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                options={["Select Boss", ...getAvailableBosses().map(emp => emp.name)]}
+              />
             </div>
           </div>
         )}
@@ -397,27 +382,26 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className="mb-6">
             {editingId ? (
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={handleUpdateEmployee}
                   className="flex items-center gap-2 px-4 py-2 bg-brand-teal text-white rounded-md hover:bg-stages-steady-state"
                 >
                   Update Employee
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={resetForm}
                   className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             ) : (
-              <button
+              <Button
                 onClick={handleAddEmployee}
-                className="flex items-center gap-2 px-4 py-2 bg-stages-self-reflection text-white rounded-md hover:bg-stages-self-reflection-dark"
               >
                 <Plus className="w-4 h-4" />
                 Add Employee
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -457,18 +441,18 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     <td className="px-4 py-4 text-sm text-gray-500">{employee.boss || '-'}</td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex gap-2">
-                        <button
+                        <Button
                           onClick={() => handleEditEmployee(employee.id)}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleDeleteEmployee(employee.id)}
                           className="text-red-600 hover:text-red-800"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

@@ -6,6 +6,7 @@ import Step3EmployeesMapping from './Step3EmployeesMapping';
 import ValidationStatus from './ValidationStatus';
 import { validateTabSpecific, validateOverallSetup } from './validationUtils';
 import type { ValidationResult } from './validationUtils';
+import { Button } from '@/components/ui';
 
 interface OrganizationInfo {
   name: string;
@@ -149,7 +150,7 @@ const OrganizationSetup = () => {
         </div>
         
         <div className="mt-8 flex justify-end">
-          <button
+          <Button
             onClick={handleSave}
             disabled={!validateOverallSetup(organizationInfo, departments, employees)}
             className={`px-6 py-2 rounded-md focus:outline-none focus:ring-2 ${
@@ -159,7 +160,7 @@ const OrganizationSetup = () => {
             }`}
           >
             Save Organization Setup
-          </button>
+          </Button>
         </div>
       </div>
     </div>
