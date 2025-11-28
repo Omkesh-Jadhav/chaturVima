@@ -26,9 +26,8 @@ import {
   XCircle,
   Lightbulb,
   ShieldAlert,
-  Search,
-  X,
 } from "lucide-react";
+import { SearchInput } from "@/components/ui";
 import { colors } from "../../../utils/colors";
 
 type Priority = "High" | "Medium" | "Low";
@@ -1288,45 +1287,13 @@ const AssessmentDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="relative group w-full sm:w-auto"
-            >
-              <div className="relative flex items-center">
-                <Search className="absolute left-3.5 h-4 w-4 text-gray-400 pointer-events-none transition-colors group-focus-within:text-brand-teal z-10" />
-                <input
-                  value={historySearch}
-                  onChange={(e) => setHistorySearch(e.target.value)}
-                  placeholder="Search by dominant stage..."
-                  className="h-10 w-full sm:w-72 md:w-80 pl-10 pr-10 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal transition-all shadow-sm hover:shadow-md hover:border-gray-300"
-                />
-                {historySearch && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setHistorySearch("")}
-                    className="absolute right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
-                    aria-label="Clear search"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </motion.button>
-                )}
-              </div>
-              {historySearch && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-full left-0 mt-1.5 px-2 py-0.5 rounded-md bg-brand-teal/10 text-[10px] font-semibold text-brand-teal backdrop-blur-sm"
-                >
-                  {visibleHistory.length} result
-                  {visibleHistory.length !== 1 ? "s" : ""} found
-                </motion.div>
-              )}
-            </motion.div>
+            <SearchInput
+              value={historySearch}
+              onChange={setHistorySearch}
+              placeholder="Search by dominant stage..."
+              resultCount={visibleHistory.length}
+              showResultCount={!!historySearch}
+            />
           </div>
         </div>
         <div className="mt-4 overflow-x-auto">

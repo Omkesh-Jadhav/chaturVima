@@ -21,6 +21,7 @@ import {
 import { useUser } from "../../context/UserContext";
 import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
+import { getRoleLandingRoute } from "../../utils/roleRoutes";
 
 const ROLE_CONFIG: Partial<
   Record<UserRole, { label: string; icon: React.ReactNode; color: string }>
@@ -76,7 +77,7 @@ const Navbar = () => {
   const handleRoleSwitch = (newRole: UserRole) => {
     switchRole(newRole);
     setShowRoleMenu(false);
-    navigate("/assessment");
+    navigate(getRoleLandingRoute(newRole));
   };
 
   const handleLogout = () => {
