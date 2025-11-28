@@ -18,6 +18,7 @@ export { SearchInput } from "./SearchInput";
 export { FilterSelect } from "./FilterSelect";
 export { CheckboxDropdown } from "./CheckboxDropdown";
 export { FilterBar } from "./FilterBar";
+export { CalendarInput } from "./CalendarInput";
 export { Tooltip } from "./Tooltip";
 
 export type { ButtonProps } from "./Button";
@@ -33,4 +34,5 @@ export type {
   FilterConfig,
   CheckboxFilterConfig,
 } from "./FilterBar";
+export type { CalendarInputProps } from "./CalendarInput";
 export type { TooltipProps } from "./Tooltip";

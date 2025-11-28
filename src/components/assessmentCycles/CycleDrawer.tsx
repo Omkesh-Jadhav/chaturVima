@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { FilterSelect } from "@/components/ui";
+import { CalendarInput, FilterSelect } from "@/components/ui";
 import type {
   AssessmentCycle,
   CycleFormPayload,
@@ -161,30 +161,19 @@ const CycleDrawer = ({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase text-gray-500">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={form.startDate}
-                    onChange={(e) => handleChange("startDate", e.target.value)}
-                    className={fieldClasses}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase text-gray-500">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={form.endDate}
-                    onChange={(e) => handleChange("endDate", e.target.value)}
-                    className={fieldClasses}
-                  />
-                </div>
+                <CalendarInput
+                  label="Start Date"
+                  required
+                  value={form.startDate}
+                  onChange={(next) => handleChange("startDate", next)}
+                />
+                <CalendarInput
+                  label="End Date"
+                  required
+                  value={form.endDate}
+                  onChange={(next) => handleChange("endDate", next)}
+                  min={form.startDate || undefined}
+                />
               </div>
 
               <div className="space-y-2">
