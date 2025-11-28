@@ -24,7 +24,7 @@ const defaultPayload: CycleFormPayload = {
   period: "Fiscal",
   startDate: "",
   endDate: "",
-  departments: departmentOptions,
+  departments: [],
   notes: "",
 };
 
