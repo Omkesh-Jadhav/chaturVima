@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
+import { Button, Input } from '@/components/ui';
 
 interface Department {
   id: string;
@@ -79,11 +80,10 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department Name
           </label>
-          <input
+          <Input
             type="text"
             value={departmentName}
             onChange={(e) => setDepartmentName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
             placeholder="e.g., Sales & Marketing"
           />
         </div>
@@ -92,11 +92,11 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department Code (Optional)
           </label>
-          <input
+          <Input
             type="text"
             value={departmentCode}
             onChange={(e) => setDepartmentCode(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+            // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
             placeholder="e.g., PROD, SALES"
           />
         </div>
@@ -105,27 +105,26 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
       <div className="mb-6">
         {editingId ? (
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleUpdateDepartment}
               className="px-4 py-2 bg-brand-teal text-white rounded-md hover:bg-stages-steady-state focus:outline-none focus:ring-2 focus:ring-brand-teal"
             >
               Update Department
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={cancelEdit}
               className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
-          <button
+          <Button
             onClick={handleAddDepartment}
-            className="flex items-center gap-2 px-4 py-2 bg-stages-self-reflection text-white rounded-md hover:bg-stages-self-reflection-dark focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
           >
             <Plus className="w-4 h-4" />
             Add Department
-          </button>
+          </Button>
         )}
       </div>
 
