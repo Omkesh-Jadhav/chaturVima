@@ -10,15 +10,11 @@ interface Department {
 interface Step2DepartmentsProps {
   departments: Department[];
   onUpdate: (departments: Department[]) => void;
-  onNext: () => void;
-  onBack: () => void;
 }
 
 const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   departments,
   onUpdate,
-  onNext,
-  onBack,
 }) => {
   const [departmentName, setDepartmentName] = useState('');
   const [departmentCode, setDepartmentCode] = useState('');
@@ -101,7 +97,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             value={departmentCode}
             onChange={(e) => setDepartmentCode(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-            placeholder="e.g., SMK"
+            placeholder="e.g., PROD, SALES"
           />
         </div>
       </div>
@@ -183,20 +179,6 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
         </div>
       )}
 
-      <div className="flex justify-between mt-8">
-        <button
-          onClick={onBack}
-          className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-        >
-          Back
-        </button>
-        <button
-          onClick={onNext}
-          className="px-6 py-2 bg-stages-self-reflection text-white rounded-md hover:bg-stages-self-reflection-dark focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-        >
-          Next: Employees & Boss Mapping
-        </button>
-      </div>
     </div>
   );
 };

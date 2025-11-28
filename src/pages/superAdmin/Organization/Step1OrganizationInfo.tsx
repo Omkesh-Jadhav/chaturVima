@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { validateEmail, validatePhone, validateWebsite } from './validationUtils';
 
 interface OrganizationInfo {
     name: string;
@@ -16,25 +17,50 @@ interface OrganizationInfo {
 interface Step1OrganizationInfoProps {
     data: OrganizationInfo;
     onUpdate: (data: OrganizationInfo) => void;
-    onNext: () => void;
 }
 
 const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     data,
     onUpdate,
-    onNext,
 }) => {
     const [formData, setFormData] = useState<OrganizationInfo>(data);
+    const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
 
     const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
         const updatedData = { ...formData, [field]: value };
         setFormData(updatedData);
         onUpdate(updatedData);
+        
+        // Clear field error when user starts typing
+        if (fieldErrors[field]) {
+            setFieldErrors(prev => ({ ...prev, [field]: '' }));
+        }
+    };
+    
+    const validateField = (field: keyof OrganizationInfo, value: string) => {
+        let error = '';
+        
+        switch (field) {
+            case 'email':
+                if (value && !validateEmail(value)) {
+                    error = 'Please enter a valid email address';
+                }
+                break;
+            case 'phone':
+                if (value && !validatePhone(value)) {
+                    error = 'Please enter a valid phone number';
+                }
+                break;
+            case 'website':
+                if (value && !validateWebsite(value)) {
+                    error = 'Please enter a valid website URL (e.g., https://example.com)';
+                }
+                break;
+        }
+        
+        setFieldErrors(prev => ({ ...prev, [field]: error }));
     };
 
-    const handleNext = () => {
-        onNext();
-    };
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -49,9 +75,15 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                            !formData.name.trim() ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                        }`}
                         placeholder="Enter organization name"
+                        required
                     />
+                    {!formData.name.trim() && (
+                        <p className="mt-1 text-sm text-red-600">Organization name is required</p>
+                    )}
                 </div>
 
                 <div>
@@ -119,9 +151,15 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         type="url"
                         value={formData.website}
                         onChange={(e) => handleInputChange('website', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        onBlur={(e) => validateField('website', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                            fieldErrors.website ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                        }`}
                         placeholder="https://www.example.com"
                     />
+                    {fieldErrors.website && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.website}</p>
+                    )}
                 </div>
 
                 <div>
@@ -132,9 +170,19 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        onBlur={(e) => validateField('email', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                            !formData.email.trim() || fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                        }`}
                         placeholder="contact@example.com"
+                        required
                     />
+                    {!formData.email.trim() && (
+                        <p className="mt-1 text-sm text-red-600">Email address is required</p>
+                    )}
+                    {formData.email.trim() && fieldErrors.email && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                    )}
                 </div>
 
                 <div>
@@ -145,9 +193,19 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+                        onBlur={(e) => validateField('phone', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                            !formData.phone.trim() || fieldErrors.phone ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-stages-self-reflection'
+                        }`}
                         placeholder="+91 9876543210"
+                        required
                     />
+                    {!formData.phone.trim() && (
+                        <p className="mt-1 text-sm text-red-600">Phone number is required</p>
+                    )}
+                    {formData.phone.trim() && fieldErrors.phone && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>
+                    )}
                 </div>
 
                 <div>
@@ -190,14 +248,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                 </div>
             </div>
 
-            <div className="flex justify-end mt-8">
-                <button
-                    onClick={handleNext}
-                    className="px-6 py-2 bg-stages-self-reflection text-white rounded-md hover:bg-stages-self-reflection-dark focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
-                >
-                    Next: Departments
-                </button>
-            </div>
         </div>
     );
 };

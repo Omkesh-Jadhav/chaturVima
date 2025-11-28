@@ -101,10 +101,10 @@ export interface AssessmentResult {
 
 export type UserRole =
   | "employee"
-  | "manager"
   | "hr-admin"
   | "department-head"
   | "super-admin";
+  // | "manager"
 
 export interface User {
   id: string;

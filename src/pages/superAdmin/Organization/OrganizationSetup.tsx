@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import StepIndicator from './StepIndicator';
+import { useState, useEffect } from 'react';
+import TabNavigation from './TabNavigation';
 import Step1OrganizationInfo from './Step1OrganizationInfo';
 import Step2Departments from './Step2Departments';
 import Step3EmployeesMapping from './Step3EmployeesMapping';
-import Step4ReviewSave from './Step4ReviewSave';
+import ValidationStatus from './ValidationStatus';
+import { validateTabSpecific, validateOverallSetup } from './validationUtils';
+import type { ValidationResult } from './validationUtils';
 
 interface OrganizationInfo {
   name: string;
@@ -32,10 +34,11 @@ interface Employee {
   designation: string;
   department: string;
   boss: string;
+  role: 'Employee' | 'Administration';
 }
 
 const OrganizationSetup = () => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [activeTab, setActiveTab] = useState('organization');
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     name: '',
     type: '',
@@ -50,27 +53,26 @@ const OrganizationSetup = () => {
   });
   const [departments, setDepartments] = useState<Department[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [tabValidations, setTabValidations] = useState<ValidationResult[]>([]);
 
-  const steps = [
-    'Organisation Info',
-    'Departments',
-    'Employees & Boss Mapping',
-    'Review & Save'
-  ];
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
   };
 
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  // Update validation whenever data changes or active tab changes
+  useEffect(() => {
+    const validations = validateTabSpecific(activeTab, organizationInfo, departments, employees);
+    setTabValidations(validations);
+  }, [activeTab, organizationInfo, departments, employees]);
 
   const handleSave = () => {
+    const allValid = validateOverallSetup(organizationInfo, departments, employees);
+    
+    if (!allValid) {
+      alert('Please fix all validation errors before saving.');
+      return;
+    }
+    
     // Handle final save logic here
     console.log('Saving organization setup:', {
       organizationInfo,
@@ -81,43 +83,41 @@ const OrganizationSetup = () => {
     alert('Organization setup saved successfully!');
   };
 
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 0:
+  const getTabDisplayName = (tab: string) => {
+    switch (tab) {
+      case 'organization':
+        return 'Organization Info';
+      case 'departments':
+        return 'Departments';
+      case 'employees':
+        return 'Employees';
+      default:
+        return '';
+    }
+  };
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'organization':
         return (
           <Step1OrganizationInfo
             data={organizationInfo}
             onUpdate={setOrganizationInfo}
-            onNext={handleNext}
           />
         );
-      case 1:
+      case 'departments':
         return (
           <Step2Departments
             departments={departments}
             onUpdate={setDepartments}
-            onNext={handleNext}
-            onBack={handleBack}
           />
         );
-      case 2:
+      case 'employees':
         return (
           <Step3EmployeesMapping
             employees={employees}
             departments={departments}
             onUpdate={setEmployees}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 3:
-        return (
-          <Step4ReviewSave
-            organizationInfo={organizationInfo}
-            departments={departments}
-            employees={employees}
-            onBack={handleBack}
-            onSave={handleSave}
           />
         );
       default:
@@ -133,10 +133,33 @@ const OrganizationSetup = () => {
           <p className="text-gray-600">Set up your organization structure, departments, and employee hierarchy</p>
         </div>
         
-        <StepIndicator currentStep={currentStep} steps={steps} />
+        <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         
-        <div className="mt-8">
-          {renderCurrentStep()}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            {renderActiveTab()}
+          </div>
+          
+          <div className="lg:col-span-1">
+            <ValidationStatus 
+              validationResults={tabValidations} 
+              tabName={getTabDisplayName(activeTab)}
+            />
+          </div>
+        </div>
+        
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={!validateOverallSetup(organizationInfo, departments, employees)}
+            className={`px-6 py-2 rounded-md focus:outline-none focus:ring-2 ${
+              validateOverallSetup(organizationInfo, departments, employees)
+                ? 'bg-brand-teal text-white hover:bg-brand-teal/90 focus:ring-brand-teal'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Save Organization Setup
+          </button>
         </div>
       </div>
     </div>
