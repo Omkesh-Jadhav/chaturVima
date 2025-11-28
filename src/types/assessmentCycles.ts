@@ -9,6 +9,9 @@ export interface AssessmentCycle {
   period: "Fiscal" | "Calendar";
   status: CycleStatus;
   departments: string[];
+  assessmentTypes: string[];
+  allowCustomUpload?: boolean;
+  customQuestionnaireName?: string;
   participants: number;
   owner: string;
   linkedTeams: number;
@@ -33,5 +36,8 @@ export interface CycleFormPayload {
   startDate: string;
   endDate: string;
   departments: string[];
+  assessmentTypes: string[];
+  allowCustomUpload: boolean;
+  customQuestionnaireName?: string;
   notes?: string;
 }
