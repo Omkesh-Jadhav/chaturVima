@@ -13,14 +13,14 @@ export const MOCK_USERS: User[] = [
     department: 'Engineering',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
   },
-  {
-    id: 'user-2',
-    name: 'Raj Patel',
-    email: 'raj.patel@example.com',
-    role: 'manager',
-    department: 'Engineering',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Raj',
-  },
+  // {
+  //   id: 'user-2',
+  //   name: 'Raj Patel',
+  //   email: 'raj.patel@example.com',
+  //   role: 'manager',
+  //   department: 'Engineering',
+  //   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Raj',
+  // },
   {
     id: 'user-3',
     name: 'Anita Desai',

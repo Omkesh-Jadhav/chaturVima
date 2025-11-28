@@ -43,13 +43,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
     roles: ["employee"],
   },
-  {
-    id: "manager-dashboard",
-    label: "Dashboard",
-    path: "/manager-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["manager"],
-  },
+  // {
+  //   id: "manager-dashboard",
+  //   label: "Dashboard",
+  //   path: "/manager-dashboard",
+  //   icon: <LayoutDashboard className="h-5 w-5" />,
+  //   roles: ["manager"],
+  // },
   {
     id: "assessment",
     label: "Assessment",
@@ -103,11 +103,11 @@ const ROLE_CONFIG: Record<
     icon: <User className="h-3 w-3" />,
     color: "text-blue-600 bg-blue-50",
   },
-  manager: {
-    label: "Manager",
-    icon: <UserCog className="h-3 w-3" />,
-    color: "text-purple-600 bg-purple-50",
-  },
+  // manager: {
+  //   label: "Manager",
+  //   icon: <UserCog className="h-3 w-3" />,
+  //   color: "text-purple-600 bg-purple-50",
+  // },
   "hr-admin": {
     label: "HR Admin",
     icon: <Shield className="h-3 w-3" />,
