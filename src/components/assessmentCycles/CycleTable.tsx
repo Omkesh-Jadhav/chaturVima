@@ -47,9 +47,13 @@ const CycleTable = ({
         <tbody className="divide-y divide-gray-100">
           {data.map((cycle, idx) => {
             const palette = statusColors[cycle.status];
-            const canSchedule = isDepartmentHead
+            const isCompleted = cycle.status === "Completed";
+            const canSchedule = isCompleted
+              ? false
+              : isDepartmentHead
               ? scheduleAccess[cycle.id]
               : true;
+            const canShare = !isCompleted;
 
             return (
               <motion.tr
@@ -137,8 +141,13 @@ const CycleTable = ({
                     </button>
                     {!isDepartmentHead && (
                       <button
-                        onClick={() => onShare?.(cycle)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                        onClick={() => canShare && onShare?.(cycle)}
+                        disabled={!canShare}
+                        className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${
+                          canShare
+                            ? "border-gray-200 text-gray-700 hover:bg-gray-50"
+                            : "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                        }`}
                       >
                         Share
                       </button>
