@@ -78,20 +78,20 @@ const NAV_ITEMS: NavItem[] = [
     icon: <CalendarDays className="h-5 w-5" />,
     roles: ["department-head"],
   },
-  {
-    id: "employee-setup",
-    label: "Employee Setup",
-    path: "/employee-setup",
-    icon: <FileText className="h-5 w-5" />,
-    roles: ["hr-admin", "super-admin"],
-  },
-  {
-    id: "deaprtment-setup",
-    label: "Department Setup",
-    path: "/department-setup",
-    icon: <FileText className="h-5 w-5" />,
-    roles: ["department-head", "hr-admin", "super-admin"],
-  },
+  // {
+  //   id: "employee-setup",
+  //   label: "Employee Setup",
+  //   path: "/employee-setup",
+  //   icon: <FileText className="h-5 w-5" />,
+  //   roles: ["hr-admin", "super-admin"],
+  // },
+  // {
+  //   id: "deaprtment-setup",
+  //   label: "Department Setup",
+  //   path: "/department-setup",
+  //   icon: <FileText className="h-5 w-5" />,
+  //   roles: ["department-head", "hr-admin", "super-admin"],
+  // },
 ];
 
 const ROLE_CONFIG: Record<
