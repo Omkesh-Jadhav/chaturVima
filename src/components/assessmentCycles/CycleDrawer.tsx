@@ -141,7 +141,9 @@ const CycleDrawer = ({
                   <FilterSelect
                     label="Type"
                     value={form.type}
-                    onChange={(value) => handleChange("type", value)}
+                    onChange={(value) =>
+                      handleChange("type", value as AssessmentCycle["type"])
+                    }
                     options={["Quarterly", "Annual", "Ad hoc"]}
                   />
                 </div>
@@ -152,7 +154,9 @@ const CycleDrawer = ({
                   <FilterSelect
                     label="Period"
                     value={form.period}
-                    onChange={(value) => handleChange("period", value)}
+                    onChange={(value) =>
+                      handleChange("period", value as AssessmentCycle["period"])
+                    }
                     options={["Fiscal", "Calendar"]}
                   />
                 </div>

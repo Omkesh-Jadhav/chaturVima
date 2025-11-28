@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check } from "lucide-react";
 
 export interface FilterSelectProps {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   options: string[];
@@ -10,7 +10,6 @@ export interface FilterSelectProps {
 }
 
 export const FilterSelect = ({
-  label,
   value,
   onChange,
   options,

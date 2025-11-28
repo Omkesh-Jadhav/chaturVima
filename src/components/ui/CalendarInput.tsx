@@ -12,6 +12,7 @@ export interface CalendarInputProps {
   min?: string;
   max?: string;
   error?: string;
+  required?: boolean;
 }
 
 type DayCell = {
