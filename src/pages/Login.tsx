@@ -54,14 +54,14 @@ const Login = () => {
   const navigate = useNavigate();
   const { loginWithOTP } = useUser();
   const [step, setStep] = useState<LoginStep>("credentials");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("Chaturvima");
+  const [email, setEmail] = useState("hr@example.com");
   const [countryCode, setCountryCode] = useState("+91");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneValue, setPhoneValue] = useState(
-    VALID_COUNTRY_CODE.replace("+", "")
+    VALID_COUNTRY_CODE.replace("+0", "")
   );
-  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill("1"));
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOTP, setIsSendingOTP] = useState(false);
   const [error, setError] = useState("");
