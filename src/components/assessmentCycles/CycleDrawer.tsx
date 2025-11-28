@@ -25,7 +25,6 @@ const defaultPayload: CycleFormPayload = {
   startDate: "",
   endDate: "",
   departments: departmentOptions,
-  questionnaires: 4,
   notes: "",
 };
 
@@ -50,7 +49,6 @@ const CycleDrawer = ({
         startDate: cycle.startDate,
         endDate: cycle.endDate,
         departments: cycle.departments,
-        questionnaires: cycle.questionnaires,
         notes: cycle.notes,
       });
     } else if (mode === "create") {
@@ -173,22 +171,6 @@ const CycleDrawer = ({
                   value={form.endDate}
                   onChange={(next) => handleChange("endDate", next)}
                   min={form.startDate || undefined}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase text-gray-500">
-                  Questionnaires
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={form.questionnaires}
-                  onChange={(e) =>
-                    handleChange("questionnaires", Number(e.target.value))
-                  }
-                  className={fieldClasses}
                 />
               </div>
 

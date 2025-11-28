@@ -40,7 +40,6 @@ const CycleTable = ({
             <th className="px-4 py-3 text-left">Cycle</th>
             <th className="px-4 py-3 text-left">Status</th>
             <th className="px-4 py-3 text-left">Departments</th>
-            <th className="px-4 py-3 text-left">Questionnaires</th>
             <th className="px-4 py-3 text-left">Progress</th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
@@ -111,9 +110,6 @@ const CycleTable = ({
                       </Tooltip>
                     )}
                   </div>
-                </td>
-                <td className="px-4 py-4 text-sm font-semibold text-gray-900">
-                  {cycle.questionnaires}
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm font-semibold text-gray-900">

@@ -40,8 +40,6 @@ const AssessmentCycles = () => {
     cycle?: AssessmentCycle | null;
   }>({ open: false, cycle: null });
 
-  const primaryCycle = cycles[0];
-
   const openCreateDrawer = () =>
     setDrawerState({ mode: "create", open: true, cycle: null });
   const openScheduleDrawer = (cycle: AssessmentCycle) =>
@@ -54,18 +52,6 @@ const AssessmentCycles = () => {
   const closeShareDrawer = () =>
     setShareDrawerState({ open: false, cycle: null });
 
-  const triggerQuickSchedule = () => {
-    if (primaryCycle) {
-      openScheduleDrawer(primaryCycle);
-    }
-  };
-
-  const triggerShare = () => {
-    if (primaryCycle) {
-      openShareDrawer(primaryCycle);
-    }
-  };
-
   const handleCreate = (payload: CycleFormPayload) => {
     const newCycle: AssessmentCycle = {
       id: `cycle-${Date.now()}`,
@@ -75,7 +61,6 @@ const AssessmentCycles = () => {
       type: payload.type,
       period: payload.period,
       status: "Draft",
-      questionnaires: payload.questionnaires,
       departments: payload.departments,
       participants: 0,
       owner: "HR Ops",

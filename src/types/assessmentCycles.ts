@@ -8,7 +8,6 @@ export interface AssessmentCycle {
   type: "Quarterly" | "Annual" | "Ad hoc";
   period: "Fiscal" | "Calendar";
   status: CycleStatus;
-  questionnaires: number;
   departments: string[];
   participants: number;
   owner: string;
@@ -33,7 +32,6 @@ export interface CycleFormPayload {
   period: AssessmentCycle["period"];
   startDate: string;
   endDate: string;
-  questionnaires: number;
   departments: string[];
   notes?: string;
 }
