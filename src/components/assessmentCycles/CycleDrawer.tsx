@@ -127,7 +127,7 @@ const CycleDrawer = ({
                     required
                     value={form.name}
                     onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder="e.g. Q1 2025 Growth Pulse"
+                    placeholder="e.g. Employee Self-Assessment"
                     className={fieldClasses}
                   />
                 </div>
