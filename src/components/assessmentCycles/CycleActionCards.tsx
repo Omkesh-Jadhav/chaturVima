@@ -47,12 +47,13 @@ const CycleActionCards = ({
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {cards.map((card, idx) => {
+      {cards.map((card) => {
         const Icon = card.icon;
+        const handler = handlers[card.id];
         return (
           <motion.button
             key={card.id}
-            onClick={handlers[card.id]}
+            onClick={handler}
             whileHover={{ y: -4, scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 220, damping: 20 }}
