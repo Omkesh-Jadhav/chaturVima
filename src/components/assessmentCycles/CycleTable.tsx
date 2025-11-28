@@ -37,11 +37,12 @@ const CycleTable = ({
       <table className="min-w-full divide-y divide-gray-100 text-sm">
         <thead>
           <tr className="bg-gray-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-            <th className="px-4 py-3 text-left">Cycle</th>
+            <th className="px-5 py-3 text-left">Cycle</th>
             <th className="px-4 py-3 text-left">Status</th>
             <th className="px-4 py-3 text-left">Departments</th>
+            <th className="px-4 py-3 text-left">Assessments</th>
             <th className="px-4 py-3 text-left">Progress</th>
-            <th className="px-4 py-3 text-right">Actions</th>
+            <th className="px-6 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -63,7 +64,7 @@ const CycleTable = ({
                 transition={{ delay: idx * 0.04 }}
                 className="hover:bg-brand-teal/5"
               >
-                <td className="px-4 py-4">
+                <td className="px-5 py-4 align-top">
                   <div className="font-semibold text-gray-900">
                     {cycle.name}
                   </div>
@@ -73,16 +74,16 @@ const CycleTable = ({
                   </p>
                   <p className="text-xs text-gray-500">{cycle.type}</p>
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-4 py-4 align-top">
                   <span
                     className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${palette.bg} ${palette.text}`}
                   >
                     {cycle.status}
                   </span>
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-4 py-4 align-top">
                   <div className="flex flex-wrap items-center gap-1">
-                    {cycle.departments.slice(0, 4).map((dept) => (
+                    {cycle.departments.slice(0, 2).map((dept) => (
                       <span
                         key={dept}
                         className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600"
@@ -90,7 +91,7 @@ const CycleTable = ({
                         {dept}
                       </span>
                     ))}
-                    {cycle.departments.length > 3 && (
+                    {cycle.departments.length > 2 && (
                       <Tooltip
                         content={
                           <div className="space-y-1">
@@ -98,7 +99,7 @@ const CycleTable = ({
                               Remaining departments:
                             </div>
                             <div className="space-y-1">
-                              {cycle.departments.slice(3).map((dept) => (
+                              {cycle.departments.slice(2).map((dept) => (
                                 <div key={dept} className="text-gray-700">
                                   {dept}
                                 </div>
@@ -108,14 +109,25 @@ const CycleTable = ({
                         }
                         position="right"
                       >
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-gray-200 bg-gray-50 text-gray-500 cursor-help hover:bg-gray-100 hover:border-gray-300 transition-colors">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100">
                           <MoreHorizontal className="h-3 w-3" />
                         </span>
                       </Tooltip>
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-4 py-4 align-top">
+                  {cycle.assessmentTypes?.length ? (
+                    <div className="text-sm font-semibold text-gray-900">
+                      {cycle.assessmentTypes.length} linked
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Select assessment types to plan coverage.
+                    </p>
+                  )}
+                </td>
+                <td className="px-4 py-4 align-top">
                   <div className="text-sm font-semibold text-gray-900">
                     {cycle.participants}%
                   </div>
@@ -126,8 +138,8 @@ const CycleTable = ({
                     />
                   </div>
                 </td>
-                <td className="px-4 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                <td className="px-6 py-4 text-right align-top">
+                  <div className="flex items-center justify-end gap-3">
                     <button
                       onClick={() => canSchedule && onSchedule?.(cycle)}
                       disabled={!canSchedule}
@@ -137,19 +149,19 @@ const CycleTable = ({
                           : "cursor-not-allowed bg-gray-100 text-gray-400"
                       }`}
                     >
-                      Schedule
+                      Schedule Cycle
                     </button>
                     {!isDepartmentHead && (
                       <button
                         onClick={() => canShare && onShare?.(cycle)}
                         disabled={!canShare}
-                        className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${
+                        className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                           canShare
-                            ? "border-gray-200 text-gray-700 hover:bg-gray-50"
-                            : "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                            ? "bg-brand-navy text-white shadow-sm hover:bg-brand-navy/90"
+                            : "cursor-not-allowed bg-gray-100 text-gray-400"
                         }`}
                       >
-                        Share
+                        Share to HOD's
                       </button>
                     )}
                   </div>

@@ -4,6 +4,13 @@ import type {
   ShareMatrix,
 } from "@/types/assessmentCycles";
 
+export const assessmentTypeOptions = [
+  "Employee Self Assessment",
+  "Manager Relationship Assessment",
+  "Department Assessment",
+  "Company Assessment",
+];
+
 export const SHARE_MATRIX_STORAGE_KEY = "cv_hr_share_matrix_v1";
 
 export const assessmentCyclesSeed: AssessmentCycle[] = [
@@ -16,6 +23,12 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     period: "Fiscal",
     status: "Active",
     departments: ["SAP", "IT", "Finance"],
+    assessmentTypes: [
+      "Employee Self Assessment",
+      "Manager Relationship Assessment",
+    ],
+    allowCustomUpload: true,
+    customQuestionnaireName: "self-reflection-template.pdf",
     participants: 87,
     owner: "HR Ops",
     linkedTeams: 6,
@@ -30,6 +43,11 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     period: "Calendar",
     status: "Upcoming",
     departments: ["Leadership", "Marketing"],
+    assessmentTypes: [
+      "Manager Relationship Assessment",
+      "Department Assessment",
+    ],
+    allowCustomUpload: false,
     participants: 0,
     owner: "People Center of Excellence",
     linkedTeams: 4,
@@ -44,6 +62,8 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     period: "Calendar",
     status: "Completed",
     departments: ["IT", "Engineering Ops"],
+    assessmentTypes: ["Department Assessment"],
+    allowCustomUpload: false,
     participants: 92,
     owner: "Engineering HRBP",
     linkedTeams: 3,
@@ -58,6 +78,13 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     period: "Fiscal",
     status: "Upcoming",
     departments: ["People Ops", "Talent"],
+    assessmentTypes: [
+      "Company Assessment",
+      "Employee Self Assessment",
+      "Department Assessment",
+    ],
+    allowCustomUpload: true,
+    customQuestionnaireName: "culture-health-check.xlsx",
     participants: 0,
     owner: "Talent Acquisition",
     linkedTeams: 2,

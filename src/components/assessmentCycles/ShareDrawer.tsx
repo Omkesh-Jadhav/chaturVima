@@ -28,11 +28,7 @@ const ShareDrawer = ({
   const [visibleDepartments, setVisibleDepartments] = useState<string[]>([]);
 
   useEffect(() => {
-    if (cycle) {
-      setVisibleDepartments(cycle.departments);
-    } else {
-      setVisibleDepartments([]);
-    }
+    setVisibleDepartments([]);
   }, [cycle, open]);
 
   const toggleDeptFilter = (dept: string) => {

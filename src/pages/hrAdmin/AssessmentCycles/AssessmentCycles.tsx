@@ -62,6 +62,9 @@ const AssessmentCycles = () => {
       period: payload.period,
       status: "Draft",
       departments: payload.departments,
+      assessmentTypes: payload.assessmentTypes,
+      allowCustomUpload: payload.allowCustomUpload,
+      customQuestionnaireName: payload.customQuestionnaireName,
       participants: 0,
       owner: "HR Ops",
       linkedTeams: 0,
@@ -81,6 +84,9 @@ const AssessmentCycles = () => {
               startDate: payload.startDate,
               endDate: payload.endDate,
               status: cycle.status === "Draft" ? "Upcoming" : cycle.status,
+              assessmentTypes: payload.assessmentTypes,
+              allowCustomUpload: payload.allowCustomUpload,
+              customQuestionnaireName: payload.customQuestionnaireName,
               notes: payload.notes,
             }
           : cycle

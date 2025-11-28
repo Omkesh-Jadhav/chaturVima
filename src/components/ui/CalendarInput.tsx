@@ -189,7 +189,10 @@ export const CalendarInput = ({
   };
 
   return (
-    <div className={cn("w-full space-y-1.5", className)} ref={containerRef}>
+    <div
+      className={cn("relative w-full space-y-1.5", className)}
+      ref={containerRef}
+    >
       {label && (
         <label className="block text-xs font-semibold uppercase text-gray-500">
           {label}
