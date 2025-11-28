@@ -165,20 +165,18 @@ const CycleDrawer = ({
             </div>
             <div className="custom-scrollbar flex-1 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4 px-6 py-6">
-                {mode === "create" && (
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-gray-500">
-                      Cycle Name
-                    </label>
-                    <input
-                      required
-                      value={form.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                      placeholder="e.g. Q1 2025 Performance Review"
-                      className={fieldClasses}
-                    />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase text-gray-500">
+                    Cycle Name
+                  </label>
+                  <input
+                    required
+                    value={form.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    placeholder="e.g. Q1 2025 Performance Review"
+                    className={fieldClasses}
+                  />
+                </div>
 
                 <div className="space-y-3">
                   <label className="text-xs font-semibold uppercase text-gray-500">
