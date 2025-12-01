@@ -79,6 +79,76 @@ const AssessmentDashboard = () => {
   const assessmentTypes = ASSESSMENT_TYPES;
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
 
+  // Generate logical outcomes based on heatmap data
+  const logicalOutcomes = useMemo(() => {
+    const outcomes: string[] = [];
+
+    // Find highest and lowest stages
+    const stageAverages = emotionalIntensityHeatmap.map((row) => ({
+      stage: row.stage,
+      avg:
+        Object.values(row.values).reduce((sum, val) => sum + val, 0) /
+        Object.values(row.values).length,
+    }));
+
+    const highestStage = stageAverages.reduce((max, stage) =>
+      stage.avg > max.avg ? stage : max
+    );
+    const lowestStage = stageAverages.reduce((min, stage) =>
+      stage.avg < min.avg ? stage : min
+    );
+
+    // Generate outcomes based on patterns
+    if (
+      highestStage.stage === "Steady-State" &&
+      lowestStage.stage === "Soul-Searching"
+    ) {
+      outcomes.push(
+        "Leadership disillusionment contrasts with optimistic employees in a stable organization."
+      );
+    }
+
+    // Check for unsupported employees pattern
+    const employeeValues = emotionalIntensityHeatmap.map(
+      (row) => row.values["Employee Self Assessment"]
+    );
+    const managerValues = emotionalIntensityHeatmap.map(
+      (row) => row.values["Manager Relationship Assessment"]
+    );
+    const hasSupportGap = employeeValues.some(
+      (emp, idx) => emp > 70 && managerValues[idx] < emp - 10
+    );
+    if (hasSupportGap) {
+      outcomes.push("Employees feel unsupported as challenges persist.");
+    }
+
+    // Check for departmental growth
+    const deptValues = emotionalIntensityHeatmap.map(
+      (row) => row.values["Department Assessment"]
+    );
+    const isDeptDeclining = deptValues.some(
+      (val, idx) => idx > 0 && val < deptValues[idx - 1] - 5
+    );
+    if (isDeptDeclining) {
+      outcomes.push("Departmental growth slows.");
+    }
+
+    // Add more generic outcomes if needed
+    if (outcomes.length === 0) {
+      outcomes.push(
+        "Emotional intensity varies significantly across organizational levels."
+      );
+      outcomes.push(
+        "Different stages show distinct patterns in assessment responses."
+      );
+      outcomes.push(
+        "Organizational alignment requires attention across multiple dimensions."
+      );
+    }
+
+    return outcomes;
+  }, [emotionalIntensityHeatmap]);
+
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
   const dominantStage = emotionalStageAssessment.find(
     (s) => s.status === "Dominant"
@@ -574,6 +644,36 @@ const AssessmentDashboard = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Logical Outcomes */}
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="rounded-lg bg-blue-50/50 border border-blue-100 p-3"
+          >
+            <h3 className="text-xs font-bold text-blue-900 mb-2.5">
+              Logical Outcomes
+            </h3>
+            <ol className="space-y-1.5">
+              {logicalOutcomes.map((outcome, idx) => (
+                <motion.li
+                  key={idx}
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.05 }}
+                  className="flex items-start gap-2 text-[11px] text-blue-800 leading-relaxed"
+                >
+                  <span className="shrink-0 text-blue-600 font-semibold mt-0.5">
+                    {idx + 1}.
+                  </span>
+                  <span>{outcome}</span>
+                </motion.li>
+              ))}
+            </ol>
+          </motion.div>
         </div>
       </motion.div>
 
