@@ -24,6 +24,7 @@ interface UserProviderProps {
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check for persisted user on mount
   useEffect(() => {
@@ -38,6 +39,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         localStorage.removeItem("chaturvima_user");
       }
     }
+    setIsLoading(false);
   }, []);
 
   const loginWithOTP = async (
@@ -117,6 +119,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   const value: UserContextType = {
     user,
     isAuthenticated,
+    isLoading,
     loginWithOTP,
     logout,
     switchRole,

@@ -104,7 +104,7 @@ export type UserRole =
   | "hr-admin"
   | "department-head"
   | "super-admin";
-  // | "manager"
+// | "manager"
 
 export interface User {
   id: string;
@@ -119,6 +119,7 @@ export interface User {
 export interface UserContext {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   loginWithOTP: (email: string, mobile: string, name?: string) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
