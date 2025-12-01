@@ -17,10 +17,10 @@ const statusColors: Record<
   AssessmentCycle["status"],
   { bg: string; text: string }
 > = {
-  Active: { bg: "bg-emerald-50", text: "text-emerald-700" },
-  Upcoming: { bg: "bg-amber-50", text: "text-amber-700" },
-  Completed: { bg: "bg-gray-100", text: "text-gray-600" },
-  Draft: { bg: "bg-blue-50", text: "text-blue-700" },
+  Active: { bg: "bg-emerald-100", text: "text-emerald-800" },
+  Upcoming: { bg: "bg-orange-100", text: "text-orange-800" },
+  Completed: { bg: "bg-slate-200", text: "text-slate-800" },
+  Draft: { bg: "bg-indigo-100", text: "text-indigo-800" },
 };
 
 const CycleTable = ({
