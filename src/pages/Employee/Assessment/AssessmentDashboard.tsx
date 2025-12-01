@@ -375,6 +375,76 @@ const AssessmentDashboard = () => {
         </motion.div>
       )}
 
+      {/* SWOT Analysis */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+      >
+        <SectionHeader
+          title="SWOT Analysis"
+          description="Strategic assessment across four key dimensions"
+        />
+        <div className="grid gap-3 md:grid-cols-2">
+          {swotData.map((quadrant, qIdx) => {
+            const config = SWOT_CONFIG[quadrant.type];
+            const Icon = config.icon;
+
+            return (
+              <motion.div
+                key={quadrant.type}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: qIdx * 0.1 }}
+                className="rounded-xl border border-gray-100 bg-white overflow-hidden"
+              >
+                <div
+                  className={`flex items-center gap-2 px-4 py-2.5 ${config.headerBg} text-white`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <h3 className="text-sm font-bold uppercase tracking-wide">
+                    {quadrant.type}
+                  </h3>
+                </div>
+                <div className="p-3 space-y-2">
+                  {quadrant.items.map((item, idx) => {
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: qIdx * 0.1 + idx * 0.05 }}
+                        whileHover={{ scale: 1.01, y: -1 }}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2.5 shadow-sm`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-gray-900 mb-1">
+                              {item.title}
+                            </h4>
+                            <p className="text-[11px] text-gray-600 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                              SWOT_RATING_COLORS[item.rating]
+                            }`}
+                          >
+                            {item.rating}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* Emotional Intensity Heatmap */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -504,76 +574,6 @@ const AssessmentDashboard = () => {
               </div>
             </motion.div>
           ))}
-        </div>
-      </motion.div>
-
-      {/* SWOT Analysis */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
-      >
-        <SectionHeader
-          title="SWOT Analysis"
-          description="Strategic assessment across four key dimensions"
-        />
-        <div className="grid gap-3 md:grid-cols-2">
-          {swotData.map((quadrant, qIdx) => {
-            const config = SWOT_CONFIG[quadrant.type];
-            const Icon = config.icon;
-
-            return (
-              <motion.div
-                key={quadrant.type}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: qIdx * 0.1 }}
-                className="rounded-xl border border-gray-100 bg-white overflow-hidden"
-              >
-                <div
-                  className={`flex items-center gap-2 px-4 py-2.5 ${config.headerBg} text-white`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <h3 className="text-sm font-bold uppercase tracking-wide">
-                    {quadrant.type}
-                  </h3>
-                </div>
-                <div className="p-3 space-y-2">
-                  {quadrant.items.map((item, idx) => {
-                    return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: qIdx * 0.1 + idx * 0.05 }}
-                        whileHover={{ scale: 1.01, y: -1 }}
-                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2.5 shadow-sm`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-gray-900 mb-1">
-                              {item.title}
-                            </h4>
-                            <p className="text-[11px] text-gray-600 leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-                          <span
-                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                              SWOT_RATING_COLORS[item.rating]
-                            }`}
-                          >
-                            {item.rating}
-                          </span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
         </div>
       </motion.div>
 
