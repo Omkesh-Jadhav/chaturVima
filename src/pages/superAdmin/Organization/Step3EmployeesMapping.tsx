@@ -213,7 +213,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const downloadTemplate = () => {
     // In a real implementation, this would download an actual CSV template
     const csvContent =
-      "Employee ID,Name,Email,Designation,Department,Boss\nEMP001,John Doe,john@example.com,Software Engineer,Engineering,Jane Smith";
+      "Employee ID,Name,Email,Designation,Department,Department Head\nEMP001,John Doe,john@example.com,Software Engineer,Engineering,Jane Smith";
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -414,19 +414,19 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Boss
+                Department Head
               </label>
               <FilterSelect
-                value={formData.boss || "Select Boss"}
+                value={formData.boss || "Select Department Head"}
                 onChange={(value) =>
                   handleInputChange(
                     "boss",
-                    value === "Select Boss" ? "" : value
+                    value === "Select Department Head" ? "" : value
                   )
                 }
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 options={[
-                  "Select Boss",
+                  "Select Department Head",
                   ...getAvailableBosses().map((emp) => emp.name),
                 ]}
               />
@@ -481,7 +481,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     Department
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Boss
+                    Department Head
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
