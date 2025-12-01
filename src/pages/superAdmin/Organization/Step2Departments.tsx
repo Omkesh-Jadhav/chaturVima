@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Edit, Trash2, Plus } from 'lucide-react';
-import { Button, Input } from '@/components/ui';
+import React, { useState } from "react";
+import { Edit, Trash2, Plus } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 
 interface Department {
   id: string;
@@ -17,8 +17,8 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   departments,
   onUpdate,
 }) => {
-  const [departmentName, setDepartmentName] = useState('');
-  const [departmentCode, setDepartmentCode] = useState('');
+  const [departmentName, setDepartmentName] = useState("");
+  const [departmentCode, setDepartmentCode] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleAddDepartment = () => {
@@ -32,12 +32,12 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
 
     const updatedDepartments = [...departments, newDepartment];
     onUpdate(updatedDepartments);
-    setDepartmentName('');
-    setDepartmentCode('');
+    setDepartmentName("");
+    setDepartmentCode("");
   };
 
   const handleEditDepartment = (id: string) => {
-    const department = departments.find(d => d.id === id);
+    const department = departments.find((d) => d.id === id);
     if (department) {
       setDepartmentName(department.name);
       setDepartmentCode(department.code);
@@ -48,33 +48,35 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const handleUpdateDepartment = () => {
     if (!departmentName.trim() || !editingId) return;
 
-    const updatedDepartments = departments.map(dept =>
+    const updatedDepartments = departments.map((dept) =>
       dept.id === editingId
         ? { ...dept, name: departmentName.trim(), code: departmentCode.trim() }
         : dept
     );
 
     onUpdate(updatedDepartments);
-    setDepartmentName('');
-    setDepartmentCode('');
+    setDepartmentName("");
+    setDepartmentCode("");
     setEditingId(null);
   };
 
   const handleDeleteDepartment = (id: string) => {
-    const updatedDepartments = departments.filter(dept => dept.id !== id);
+    const updatedDepartments = departments.filter((dept) => dept.id !== id);
     onUpdate(updatedDepartments);
   };
 
   const cancelEdit = () => {
-    setDepartmentName('');
-    setDepartmentCode('');
+    setDepartmentName("");
+    setDepartmentCode("");
     setEditingId(null);
   };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900">Department Setup</h2>
-      
+      <h2 className="text-2xl font-semibold mb-6 text-gray-900">
+        Department Setup
+      </h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -107,21 +109,17 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           <div className="flex gap-2">
             <Button
               onClick={handleUpdateDepartment}
-              className="px-4 py-2 bg-brand-teal text-white rounded-md hover:bg-stages-steady-state focus:outline-none focus:ring-2 focus:ring-brand-teal"
+              variant="gradient"
+              size="sm"
             >
               Update Department
             </Button>
-            <Button
-              onClick={cancelEdit}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
+            <Button onClick={cancelEdit} variant="outline" size="sm">
               Cancel
             </Button>
           </div>
         ) : (
-          <Button
-            onClick={handleAddDepartment}
-          >
+          <Button onClick={handleAddDepartment} variant="gradient" size="sm">
             <Plus className="w-4 h-4" />
             Add Department
           </Button>
@@ -152,22 +150,26 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                       {department.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {department.code || '-'}
+                      {department.code || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
-                        <button
+                        <Button
                           onClick={() => handleEditDepartment(department.id)}
-                          className="text-blue-600 hover:text-blue-800"
+                          variant="ghost"
+                          size="xs"
+                          className="text-blue-600 hover:text-blue-800 p-1"
                         >
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleDeleteDepartment(department.id)}
-                          className="text-red-600 hover:text-red-800"
+                          variant="ghost"
+                          size="xs"
+                          className="text-red-600 hover:text-red-800 p-1"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -177,7 +179,6 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };
