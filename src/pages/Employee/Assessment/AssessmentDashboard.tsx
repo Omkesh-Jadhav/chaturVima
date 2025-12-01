@@ -26,9 +26,9 @@ import {
 } from "@/utils/assessmentUtils";
 import { generateSWOTAnalysis, type SWOTQuadrant } from "@/utils/swotUtils";
 import {
-  EMOTIONAL_DIMENSIONS,
+  ASSESSMENT_TYPES,
   getCategoryPalette,
-  getDimensionColorToken,
+  getAssessmentTypeColorToken,
   getStagePieColor,
 } from "@/utils/assessmentConfig";
 
@@ -76,7 +76,7 @@ const AssessmentDashboard = () => {
   );
 
   const emotionalIntensityHeatmap = MOCK_EMOTIONAL_INTENSITY_HEATMAP;
-  const emotionalDimensions = EMOTIONAL_DIMENSIONS;
+  const assessmentTypes = ASSESSMENT_TYPES;
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
 
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
@@ -384,14 +384,14 @@ const AssessmentDashboard = () => {
       >
         <SectionHeader
           title="Emotional Intensity Heatmap"
-          description="Intensity levels across emotional dimensions and states"
+          description="Intensity levels across stages and assessment types"
           actions={
             <div className="flex flex-wrap gap-1.5">
-              {emotionalDimensions.map((dimension) => {
-                const token = getDimensionColorToken(dimension, 80);
+              {assessmentTypes.map((assessmentType) => {
+                const token = getAssessmentTypeColorToken(assessmentType, 80);
                 return (
                   <motion.span
-                    key={dimension}
+                    key={assessmentType}
                     whileHover={{ scale: 1.05 }}
                     className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md"
                   >
@@ -402,7 +402,7 @@ const AssessmentDashboard = () => {
                         boxShadow: `0 0 4px ${token.from}60`,
                       }}
                     />
-                    {dimension}
+                    {assessmentType}
                   </motion.span>
                 );
               })}
@@ -413,30 +413,33 @@ const AssessmentDashboard = () => {
         <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
           {emotionalIntensityHeatmap.map((row, rowIdx) => (
             <motion.div
-              key={row.state}
+              key={row.stage}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: rowIdx * 0.05 }}
               className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
             >
-              <div className="grid gap-2 md:grid-cols-[120px_repeat(4,minmax(0,1fr))] items-center">
+              <div className="grid gap-2 md:grid-cols-[140px_repeat(4,minmax(0,1fr))] items-center">
                 <div className="flex items-center justify-between md:block md:text-left">
                   <span className="text-sm font-bold text-gray-900">
-                    {row.state}
+                    {row.stage}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gray-400 md:hidden">
-                    Mix
+                    Types
                   </span>
                 </div>
-                {emotionalDimensions.map((dimension) => {
+                {assessmentTypes.map((assessmentType) => {
                   const value =
-                    row.values[dimension as keyof typeof row.values];
+                    row.values[assessmentType as keyof typeof row.values];
 
-                  const token = getDimensionColorToken(dimension, value);
+                  const token = getAssessmentTypeColorToken(
+                    assessmentType,
+                    value
+                  );
                   const isHigh = value >= 50;
                   return (
                     <motion.div
-                      key={`${row.state}-${dimension}`}
+                      key={`${row.stage}-${assessmentType}`}
                       whileHover={{ scale: 1.02, y: -1 }}
                       className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all ${
                         isHigh
@@ -447,14 +450,8 @@ const AssessmentDashboard = () => {
                         borderColor: isHigh ? `${token.from}33` : undefined,
                       }}
                     >
-                      <div className="flex items-center justify-between gap-1.5">
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wide ${
-                            isHigh ? "text-gray-700" : "text-gray-500"
-                          }`}
-                        >
-                          {dimension}
-                        </span>
+                      {/* Percentage in top right corner */}
+                      <div className="absolute top-1.5 right-2.5">
                         <span
                           className={`text-xs font-bold ${
                             isHigh ? "text-gray-900" : "text-gray-600"
@@ -463,6 +460,19 @@ const AssessmentDashboard = () => {
                           {value}%
                         </span>
                       </div>
+
+                      {/* Assessment Type Name */}
+                      <div className="pr-12 mb-1.5">
+                        <span
+                          className={`text-[10px] font-bold leading-tight ${
+                            isHigh ? "text-gray-900" : "text-gray-600"
+                          }`}
+                        >
+                          {assessmentType}
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
                       <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
                         <motion.div
                           initial={{ width: 0 }}

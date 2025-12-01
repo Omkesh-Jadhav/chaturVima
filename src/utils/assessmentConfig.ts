@@ -4,14 +4,63 @@
  */
 
 /**
- * Emotional dimensions used in the heatmap
+ * Assessment Types for Emotional Intensity Heatmap
  */
-export const EMOTIONAL_DIMENSIONS = [
-  "Optimism",
-  "Energy",
-  "Realism",
-  "Stability",
+export const ASSESSMENT_TYPES = [
+  "Employee Self Assessment",
+  "Manager Relationship Assessment",
+  "Department Assessment",
+  "Company Assessment",
 ] as const;
+
+/**
+ * Assessment Type Colors for heatmap
+ */
+export type AssessmentTypeColors = {
+  high: { from: string; to: string };
+  medium: { from: string; to: string };
+  low: { from: string; to: string };
+};
+
+export const ASSESSMENT_TYPE_COLORS: Record<string, AssessmentTypeColors> = {
+  "Employee Self Assessment": {
+    high: { from: "#3b82f6", to: "#2563eb" },
+    medium: { from: "#60a5fa", to: "#3b82f6" },
+    low: { from: "#bfdbfe", to: "#93c5fd" },
+  },
+  "Manager Relationship Assessment": {
+    high: { from: "#10b981", to: "#059669" },
+    medium: { from: "#34d399", to: "#10b981" },
+    low: { from: "#a7f3d0", to: "#6ee7b7" },
+  },
+  "Department Assessment": {
+    high: { from: "#f97316", to: "#ea580c" },
+    medium: { from: "#fb923c", to: "#f97316" },
+    low: { from: "#fed7aa", to: "#fdba74" },
+  },
+  "Company Assessment": {
+    high: { from: "#a855f7", to: "#9333ea" },
+    medium: { from: "#c084fc", to: "#a855f7" },
+    low: { from: "#e9d5ff", to: "#ddd6fe" },
+  },
+};
+
+/**
+ * Get assessment type color token based on value
+ */
+export const getAssessmentTypeColorToken = (
+  assessmentType: string,
+  value: number
+): { from: string; to: string } => {
+  const baseColors = ASSESSMENT_TYPE_COLORS[assessmentType];
+  if (!baseColors) {
+    return { from: "#6b7280", to: "#4b5563" };
+  }
+
+  if (value >= 80) return baseColors.high;
+  if (value >= 50) return baseColors.medium;
+  return baseColors.low;
+};
 
 /**
  * Category palette for history table

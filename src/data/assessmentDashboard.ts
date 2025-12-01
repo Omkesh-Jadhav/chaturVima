@@ -28,13 +28,19 @@ export type StageDatum = {
   value: number;
 };
 
+export type AssessmentType =
+  | "Employee Self Assessment"
+  | "Manager Relationship Assessment"
+  | "Department Assessment"
+  | "Company Assessment";
+
 export type EmotionalIntensityRow = {
-  state: string;
+  stage: string;
   values: {
-    Optimism: number;
-    Energy: number;
-    Realism: number;
-    Stability: number;
+    "Employee Self Assessment": number;
+    "Manager Relationship Assessment": number;
+    "Department Assessment": number;
+    "Company Assessment": number;
   };
 };
 
@@ -120,42 +126,50 @@ export const MOCK_CATEGORY_DISTRIBUTION: StageDatum[] = [
   { id: "Steady-State", label: "Steady-State", value: 13 },
 ];
 
-// Emotional Intensity Heatmap Data
+// Assessment Types
+export const ASSESSMENT_TYPES: AssessmentType[] = [
+  "Employee Self Assessment",
+  "Manager Relationship Assessment",
+  "Department Assessment",
+  "Company Assessment",
+];
+
+// Emotional Intensity Heatmap Data - Stages vs Assessment Types
 export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
   {
-    state: "Honeymoon",
+    stage: "Honeymoon",
     values: {
-      Optimism: 90,
-      Energy: 85,
-      Realism: 65,
-      Stability: 45,
+      "Employee Self Assessment": 85,
+      "Manager Relationship Assessment": 78,
+      "Department Assessment": 72,
+      "Company Assessment": 68,
     },
   },
   {
-    state: "Self-Introspection",
+    stage: "Self-Introspection",
     values: {
-      Optimism: 60,
-      Energy: 70,
-      Realism: 85,
-      Stability: 55,
+      "Employee Self Assessment": 82,
+      "Manager Relationship Assessment": 75,
+      "Department Assessment": 70,
+      "Company Assessment": 65,
     },
   },
   {
-    state: "Soul-Searching",
+    stage: "Soul-Searching",
     values: {
-      Optimism: 40,
-      Energy: 50,
-      Realism: 90,
-      Stability: 35,
+      "Employee Self Assessment": 68,
+      "Manager Relationship Assessment": 62,
+      "Department Assessment": 58,
+      "Company Assessment": 55,
     },
   },
   {
-    state: "Steady-State",
+    stage: "Steady-State",
     values: {
-      Optimism: 70,
-      Energy: 75,
-      Realism: 80,
-      Stability: 95,
+      "Employee Self Assessment": 90,
+      "Manager Relationship Assessment": 88,
+      "Department Assessment": 85,
+      "Company Assessment": 82,
     },
   },
 ];
