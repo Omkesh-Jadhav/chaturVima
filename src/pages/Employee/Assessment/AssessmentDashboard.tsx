@@ -786,7 +786,7 @@ const AssessmentDashboard = () => {
                   Completed
                 </th>
                 <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                  Performance
+                  Metrics
                 </th>
                 <th className="whitespace-nowrap px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                   Action
@@ -797,7 +797,6 @@ const AssessmentDashboard = () => {
               {visibleHistory.map((row, idx) => {
                 const palette = getCategoryPalette(row.category);
                 const scoreProgress = Math.min(100, row.score);
-                const percentileProgress = Math.min(100, row.percentile);
 
                 return (
                   <motion.tr
@@ -831,26 +830,20 @@ const AssessmentDashboard = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-900">
-                          <span>{row.score}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
                           <span className="text-xs font-medium text-gray-500">
-                            Score
+                            Score:
                           </span>
-                          <span className="h-1 w-1 rounded-full bg-gray-300" />
-                          <span>{row.percentile}%</span>
-                          <span className="text-xs font-medium text-gray-500">
-                            Percentile
+                          <span className="text-sm font-bold text-gray-900">
+                            {row.score}
                           </span>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-1.5 w-24 rounded-full bg-gray-100 overflow-hidden">
                           <div
                             className="h-full rounded-full"
                             style={{
-                              width: `${Math.max(
-                                scoreProgress,
-                                percentileProgress
-                              )}%`,
+                              width: `${scoreProgress}%`,
                               background: `linear-gradient(90deg, ${palette.from}, ${palette.accent})`,
                             }}
                           />
