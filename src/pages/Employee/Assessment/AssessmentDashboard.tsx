@@ -290,7 +290,14 @@ const AssessmentDashboard = () => {
         >
           <SectionHeader
             title={`${selectedStage.stage} Sub-Stages`}
-            description="Detailed breakdown of sub-stage performance (click any stage above to view)"
+            description={
+              <>
+                Detailed breakdown of sub-stage performance{" "}
+                <span className="font-bold text-gray-900">
+                  (click any stage above to view)
+                </span>
+              </>
+            }
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
