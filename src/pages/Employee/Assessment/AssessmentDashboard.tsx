@@ -43,7 +43,6 @@ import {
   PRIORITY_ICONS,
   STATUS_STYLES,
   SWOT_CONFIG,
-  INTENSITY_STYLES,
   ANIMATION_DELAYS,
   PIE_GRADIENTS,
   PIE_FILL,
@@ -378,12 +377,6 @@ const AssessmentDashboard = () => {
                 subStage.score,
                 maxSubScore
               );
-              const intensity =
-                subStage.score >= maxSubScore * 0.6
-                  ? "high"
-                  : subStage.score >= maxSubScore * 0.3
-                  ? "medium"
-                  : "low";
 
               return (
                 <motion.div
@@ -424,17 +417,12 @@ const AssessmentDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center">
                     <span
                       className="text-lg font-bold"
                       style={{ color: selectedStage.color }}
                     >
                       {subStage.score.toFixed(1)}
-                    </span>
-                    <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${INTENSITY_STYLES[intensity]}`}
-                    >
-                      {intensity.toUpperCase()}
                     </span>
                   </div>
                 </motion.div>
