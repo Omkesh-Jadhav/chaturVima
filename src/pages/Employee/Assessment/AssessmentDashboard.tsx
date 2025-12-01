@@ -1,18 +1,3 @@
-/**
- * Assessment Dashboard (custom build with Nivo)
- *
- * Features:
- * - Summary Cards (completed, pending, avg score, last completed)
- * - Visual Analytics: Score progress (Line), Category distribution (Pie), Strengths (Bar)
- * - Pending Assessments list with priorities and Start buttons
- * - Test History table with View Report
- *
- * Typography Standards:
- * - Page Title: text-2xl md:text-3xl font-bold
- * - Section Headings: text-lg font-semibold
- * - Subsection Headings: text-base font-medium
- * - Card Labels: text-sm font-medium
- */
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
@@ -30,37 +15,35 @@ import {
 import { SearchInput } from "@/components/ui";
 import { colors } from "../../../utils/colors";
 
-type Priority = "High" | "Medium" | "Low";
-type SWOTRating = "HIGH" | "MEDIUM" | "CRITICAL";
+// Data imports
+import {
+  MOCK_PENDING_ASSESSMENTS,
+  MOCK_COMPLETED_ASSESSMENTS,
+  MOCK_CATEGORY_DISTRIBUTION,
+  MOCK_EMOTIONAL_INTENSITY_HEATMAP,
+  MOCK_EMOTIONAL_STAGE_ASSESSMENT,
+  MOCK_HONEYMOON_SUB_STAGES,
+  type Priority,
+  type StageDatum,
+} from "@/data/assessmentDashboard";
 
-type SWOTItem = {
-  id: string;
-  title: string;
-  description: string;
-  rating: SWOTRating;
-};
-
-type SWOTQuadrant = {
-  type: "Strengths" | "Weaknesses" | "Opportunities" | "Threats";
-  items: SWOTItem[];
-};
-
-type PendingAssessment = {
-  id: string;
-  title: string;
-  category: string;
-  dueDate: string; // ISO or human
-  priority: Priority;
-};
-
-type CompletedAssessment = {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  score: number; // 0-100
-  percentile: number; // 0-100
-};
+// Utility imports
+import { formatDisplayDate } from "@/utils/dateUtils";
+import {
+  calculateCompletionRate,
+  getPriorityStyles,
+  filterByPriority,
+  countHighPriority,
+  calculatePercentage,
+  findMaxByKey,
+} from "@/utils/assessmentUtils";
+import { generateSWOTAnalysis, type SWOTQuadrant } from "@/utils/swotUtils";
+import {
+  EMOTIONAL_DIMENSIONS,
+  getCategoryPalette,
+  getDimensionColorToken,
+  getStagePieColor,
+} from "@/utils/assessmentConfig";
 
 // Brand colors - using centralized color system
 const brand = {
@@ -115,394 +98,47 @@ const SummaryCard = ({
   </motion.div>
 );
 
-// Priority styling - centralized for consistency
-const getPriorityStyles = (priority: Priority): string => {
-  const styles: Record<Priority, string> = {
-    High: "bg-red-50 text-red-700 border-red-200",
-    Medium: "bg-amber-50 text-amber-700 border-amber-200",
-    Low: "bg-green-50 text-green-700 border-green-200",
-  };
-  return styles[priority];
-};
-
-type StageDatum = { id: string; label: string; value: number };
-type EmotionalIntensityRow = {
-  state: string;
-  values: {
-    Optimism: number;
-    Energy: number;
-    Realism: number;
-    Stability: number;
-  };
-};
-type EmotionalStageAssessment = {
-  stage: string;
-  score: number;
-  color: string;
-  status?: "Dominant" | "Secondary" | "Transitional";
-};
-type SubStage = {
-  id: string;
-  label: string;
-  value: number;
-};
-
-const formatDisplayDate = (value: string): string => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const day = date.getDate();
-  const month = date.toLocaleString("en-US", { month: "short" });
-  const year = date.getFullYear();
-  return `${day} ${month}, ${year}`;
-};
-
 const AssessmentDashboard = () => {
-  // Mock data
-  const pending: PendingAssessment[] = useMemo(
-    () => [
-      {
-        id: "p1",
-        title: "Leadership Essentials",
-        category: "Leadership",
-        dueDate: "2025-11-15",
-        priority: "High",
-      },
-      {
-        id: "p2",
-        title: "Advanced Communication",
-        category: "Communication",
-        dueDate: "2025-11-20",
-        priority: "Medium",
-      },
-      {
-        id: "p3",
-        title: "Data Literacy",
-        category: "Analytics",
-        dueDate: "2025-11-28",
-        priority: "Low",
-      },
-    ],
-    []
-  );
-
-  const completed: CompletedAssessment[] = useMemo(
-    () => [
-      {
-        id: "HX-204",
-        title: "Honeymoon Calibration Pulse",
-        category: "Honeymoon",
-        date: "2025-11-08",
-        score: 92,
-        percentile: 95,
-      },
-      {
-        id: "SI-187",
-        title: "Self-Introspection Depth Scan",
-        category: "Self-Introspection",
-        date: "2025-10-28",
-        score: 85,
-        percentile: 88,
-      },
-      {
-        id: "SS-164",
-        title: "Soul-Searching Diagnostics",
-        category: "Soul-Searching",
-        date: "2025-10-18",
-        score: 78,
-        percentile: 81,
-      },
-      {
-        id: "ST-139",
-        title: "Steady-State Resilience Audit",
-        category: "Steady-State",
-        date: "2025-10-05",
-        score: 74,
-        percentile: 76,
-      },
-    ],
-    []
-  );
-
-  const categoryDistribution = useMemo<StageDatum[]>(
-    () => [
-      { id: "Honeymoon", label: "Honeymoon", value: 42 },
-      { id: "Self-Introspection", label: "Self-Introspection", value: 25 },
-      { id: "Soul-Searching", label: "Soul-Searching", value: 20 },
-      { id: "Steady-State", label: "Steady-State", value: 13 },
-    ],
-    []
-  );
+  // Data from centralized data file
+  const pending = MOCK_PENDING_ASSESSMENTS;
+  const completed = MOCK_COMPLETED_ASSESSMENTS;
+  const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
 
   const totalCompleted = completed.length;
-  const totalPending = pending.length;
-  const totalAssessments = totalCompleted + totalPending;
-  const completionRate = totalAssessments
-    ? Math.round((totalCompleted / totalAssessments) * 100)
-    : 0;
-
-  const highPriorityPending = useMemo(
-    () => pending.filter((item) => item.priority === "High").length,
-    [pending]
+  const highPriorityPending = countHighPriority(pending);
+  const completionRate = useMemo(
+    () => calculateCompletionRate(totalCompleted, highPriorityPending),
+    [totalCompleted, highPriorityPending]
   );
 
-  const swotData = useMemo<SWOTQuadrant[]>(() => {
-    const stageMap = categoryDistribution.reduce<Record<string, number>>(
-      (acc, stage) => {
-        acc[stage.label] = stage.value;
-        return acc;
-      },
-      {}
-    );
-    const dominantStage = categoryDistribution.reduce((prev, curr) =>
-      curr.value > prev.value ? curr : prev
-    );
-
-    return [
-      {
-        type: "Strengths",
-        items: [
-          {
-            id: "s1",
-            title: `${dominantStage.label} momentum`,
-            description: `${dominantStage.value}% of assessments sit in ${dominantStage.label}, keeping optimism and onboarding energy high.`,
-            rating: "HIGH",
-          },
-          {
-            id: "s2",
-            title: "Completion discipline",
-            description: `${completionRate}% of scheduled assessments are already completed, showing dependable follow-through.`,
-            rating: "HIGH",
-          },
-          {
-            id: "s3",
-            title: "Introspection depth",
-            description: `${
-              stageMap["Self-Introspection"] ?? 0
-            }% coverage in the reflective stage is feeding actionable insights for coaches.`,
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Weaknesses",
-        items: [
-          {
-            id: "w1",
-            title: "High-priority backlog",
-            description: `${highPriorityPending} critical assessments remain pending, creating pressure on the next sprint.`,
-            rating: "HIGH",
-          },
-          {
-            id: "w2",
-            title: "Steady-State underexposed",
-            description: `Only ${
-              stageMap["Steady-State"] ?? 0
-            }% of data reflects steady-state maturity, leaving resilience signals thin.`,
-            rating: "MEDIUM",
-          },
-          {
-            id: "w3",
-            title: "Soul-Searching fatigue",
-            description: `${
-              stageMap["Soul-Searching"] ?? 0
-            }% share without fresh movement risks stagnation in deeper transition work.`,
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Opportunities",
-        items: [
-          {
-            id: "o1",
-            title: "Introspection coaching pods",
-            description: `Channel the ${
-              stageMap["Self-Introspection"] ?? 0
-            }% cohort into guided pods to accelerate clarity.`,
-            rating: "HIGH",
-          },
-          {
-            id: "o2",
-            title: "Steady-State playbooks",
-            description: `Boost the ${
-              stageMap["Steady-State"] ?? 0
-            }% group with routines and rituals to expand institutional calm.`,
-            rating: "MEDIUM",
-          },
-          {
-            id: "o3",
-            title: "Soul-Searching diagnostics",
-            description: `Use the ${
-              stageMap["Soul-Searching"] ?? 0
-            }% signal to design micro-interventions before energy dips.`,
-            rating: "MEDIUM",
-          },
-        ],
-      },
-      {
-        type: "Threats",
-        items: [
-          {
-            id: "t1",
-            title: "Honeymoon burnout risk",
-            description: `If the ${dominantStage.label} cohort stays at ${dominantStage.value}% without rotation, fatigue can hit fast.`,
-            rating: "CRITICAL",
-          },
-          {
-            id: "t2",
-            title: "Momentum stall",
-            description: `Completion rate below 100% plus outstanding critical tests can slow rollout decisions.`,
-            rating: "HIGH",
-          },
-          {
-            id: "t3",
-            title: "Signal imbalance",
-            description: `Limited steady-state readings make it harder to benchmark long-term balance zones.`,
-            rating: "MEDIUM",
-          },
-        ],
-      },
-    ];
-  }, [categoryDistribution, completionRate, highPriorityPending]);
-
-  const emotionalIntensityHeatmap = useMemo<EmotionalIntensityRow[]>(
-    () => [
-      {
-        state: "Honeymoon",
-        values: {
-          Optimism: 90,
-          Energy: 85,
-          Realism: 65,
-          Stability: 45,
-        },
-      },
-      {
-        state: "Self-Introspection",
-        values: {
-          Optimism: 60,
-          Energy: 70,
-          Realism: 85,
-          Stability: 55,
-        },
-      },
-      {
-        state: "Soul-Searching",
-        values: {
-          Optimism: 40,
-          Energy: 50,
-          Realism: 90,
-          Stability: 35,
-        },
-      },
-      {
-        state: "Steady-State",
-        values: {
-          Optimism: 70,
-          Energy: 75,
-          Realism: 80,
-          Stability: 95,
-        },
-      },
-    ],
-    []
+  const swotData = useMemo<SWOTQuadrant[]>(
+    () =>
+      generateSWOTAnalysis(
+        categoryDistribution,
+        completionRate,
+        highPriorityPending
+      ),
+    [categoryDistribution, completionRate, highPriorityPending]
   );
 
-  const emotionalDimensions = useMemo(
-    () => ["Optimism", "Energy", "Realism", "Stability"],
-    []
-  );
+  const emotionalIntensityHeatmap = MOCK_EMOTIONAL_INTENSITY_HEATMAP;
+  const emotionalDimensions = EMOTIONAL_DIMENSIONS;
+  const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
 
-  const emotionalStageAssessment = useMemo<EmotionalStageAssessment[]>(
-    () => [
-      {
-        stage: "Honeymoon",
-        score: 153.73,
-        color: "#10b981", // Green
-        status: "Dominant",
-      },
-      {
-        stage: "Self-Introspection",
-        score: 122.47,
-        color: "#3b82f6", // Blue
-        status: "Secondary",
-      },
-      {
-        stage: "Soul-Searching",
-        score: 121.07,
-        color: "#f97316", // Orange
-        status: "Transitional",
-      },
-      {
-        stage: "Steady-State",
-        score: 118.73,
-        color: "#a855f7", // Purple
-      },
-    ],
-    []
+  const maxScore = findMaxByKey(emotionalStageAssessment, "score");
+  const dominantStage = emotionalStageAssessment.find(
+    (s) => s.status === "Dominant"
   );
-
-  const historyCategoryPalette = useMemo(
-    () => ({
-      Honeymoon: {
-        from: "#d1fae5",
-        to: "#a7f3d0",
-        accent: "#047857",
-      },
-      "Self-Introspection": {
-        from: "#dbeafe",
-        to: "#bfdbfe",
-        accent: "#1d4ed8",
-      },
-      "Soul-Searching": {
-        from: "#fee2e2",
-        to: "#fecdd3",
-        accent: "#b91c1c",
-      },
-      "Steady-State": {
-        from: "#ede9fe",
-        to: "#ddd6fe",
-        accent: "#6d28d9",
-      },
-      default: {
-        from: "#f1f5f9",
-        to: "#e2e8f0",
-        accent: "#475569",
-      },
-    }),
-    []
-  );
-
-  const maxScore = useMemo(
-    () => Math.max(...emotionalStageAssessment.map((s) => s.score)),
-    [emotionalStageAssessment]
-  );
-
-  // Get dominant stage and its sub-stages
-  const dominantStage = useMemo(
-    () => emotionalStageAssessment.find((s) => s.status === "Dominant"),
-    [emotionalStageAssessment]
-  );
-
-  const honeymoonSubStages = useMemo<SubStage[]>(
-    () => [
-      { id: "excitement", label: "Excitement & Optimism", value: 26 },
-      { id: "reality", label: "Initial Reality Check", value: 25 },
-      { id: "confidence", label: "Sustained Confidence", value: 15 },
-      { id: "over-reliance", label: "Confidence & Over-Reliance", value: 16 },
-      { id: "complacency", label: "Subtle Complacency", value: 8 },
-    ],
-    []
-  );
+  const honeymoonSubStages = MOCK_HONEYMOON_SUB_STAGES;
 
   // Summary values
 
   // Pending assessments filter
   const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
-  const filteredPending = useMemo(() => {
-    if (priorityFilter === "All") return pending;
-    return pending.filter((item) => item.priority === priorityFilter);
-  }, [pending, priorityFilter]);
+  const filteredPending = useMemo(
+    () => filterByPriority(pending, priorityFilter),
+    [pending, priorityFilter]
+  );
 
   // Test history: search (by dominant stage only)
   const [historySearch, setHistorySearch] = useState("");
@@ -602,7 +238,7 @@ const AssessmentDashboard = () => {
           {/* Stage Cards */}
           <div className="space-y-1.5">
             {emotionalStageAssessment.map((stage, idx) => {
-              const percentage = (stage.score / maxScore) * 100;
+              const percentage = calculatePercentage(stage.score, maxScore);
               const statusStyles: Record<string, { bg: string; text: string }> =
                 {
                   Dominant: { bg: "bg-green-50", text: "text-green-700" },
@@ -697,15 +333,7 @@ const AssessmentDashboard = () => {
               padAngle={2}
               cornerRadius={6}
               activeOuterRadiusOffset={10}
-              colors={(d: StageDatum) => {
-                const palette: Record<string, string> = {
-                  "Self-Introspection": "#3B82F6",
-                  "Soul-Searching": "#F59E0B",
-                  "Steady-State": "#8B5CF6",
-                  Honeymoon: "#10B981",
-                };
-                return palette[d.label] || "#CBD5F5";
-              }}
+              colors={(d: StageDatum) => getStagePieColor(d.label)}
               enableArcLinkLabels={false}
               arcLabelsSkipAngle={10}
               arcLabel={(d: StageDatum) => `${d.value}%`}
@@ -791,10 +419,11 @@ const AssessmentDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
             {honeymoonSubStages.map((subStage, idx) => {
-              const maxSubValue = Math.max(
-                ...honeymoonSubStages.map((s) => s.value)
+              const maxSubValue = findMaxByKey(honeymoonSubStages, "value");
+              const percentage = calculatePercentage(
+                subStage.value,
+                maxSubValue
               );
-              const percentage = (subStage.value / maxSubValue) * 100;
               const intensity =
                 subStage.value >= 20
                   ? "high"
@@ -885,19 +514,7 @@ const AssessmentDashboard = () => {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {emotionalDimensions.map((dimension) => {
-              const dimensionColors: Record<
-                string,
-                { from: string; to: string }
-              > = {
-                Optimism: { from: "#f97316", to: "#ea580c" }, // Orange
-                Energy: { from: "#ec4899", to: "#db2777" }, // Pink/Magenta
-                Realism: { from: "#3b82f6", to: "#2563eb" }, // Blue
-                Stability: { from: "#10b981", to: "#059669" }, // Teal/Green
-              };
-              const token = dimensionColors[dimension] || {
-                from: "#6b7280",
-                to: "#4b5563",
-              };
+              const token = getDimensionColorToken(dimension, 80);
               return (
                 <motion.span
                   key={dimension}
@@ -940,58 +557,7 @@ const AssessmentDashboard = () => {
                   const value =
                     row.values[dimension as keyof typeof row.values];
 
-                  // Dimension-specific colors with intensity variations
-                  const getDimensionToken = (dim: string, val: number) => {
-                    const baseColors: Record<
-                      string,
-                      {
-                        high: { from: string; to: string };
-                        medium: { from: string; to: string };
-                        low: { from: string; to: string };
-                      }
-                    > = {
-                      Optimism: {
-                        high: { from: "#f97316", to: "#ea580c" },
-                        medium: { from: "#fb923c", to: "#f97316" },
-                        low: { from: "#fed7aa", to: "#fdba74" },
-                      },
-                      Energy: {
-                        high: { from: "#ec4899", to: "#db2777" },
-                        medium: { from: "#f472b6", to: "#ec4899" },
-                        low: { from: "#fbcfe8", to: "#f9a8d4" },
-                      },
-                      Realism: {
-                        high: { from: "#3b82f6", to: "#2563eb" },
-                        medium: { from: "#60a5fa", to: "#3b82f6" },
-                        low: { from: "#bfdbfe", to: "#93c5fd" },
-                      },
-                      Stability: {
-                        high: { from: "#10b981", to: "#059669" },
-                        medium: { from: "#34d399", to: "#10b981" },
-                        low: { from: "#a7f3d0", to: "#6ee7b7" },
-                      },
-                    };
-
-                    if (val >= 80)
-                      return (
-                        baseColors[dim]?.high || {
-                          from: "#6b7280",
-                          to: "#4b5563",
-                        }
-                      );
-                    if (val >= 50)
-                      return (
-                        baseColors[dim]?.medium || {
-                          from: "#6b7280",
-                          to: "#4b5563",
-                        }
-                      );
-                    return (
-                      baseColors[dim]?.low || { from: "#6b7280", to: "#4b5563" }
-                    );
-                  };
-
-                  const token = getDimensionToken(dimension, value);
+                  const token = getDimensionColorToken(dimension, value);
                   const isHigh = value >= 50;
                   return (
                     <motion.div
@@ -1319,10 +885,7 @@ const AssessmentDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {visibleHistory.map((row, idx) => {
-                const palette =
-                  historyCategoryPalette[
-                    row.category as keyof typeof historyCategoryPalette
-                  ] ?? historyCategoryPalette.default;
+                const palette = getCategoryPalette(row.category);
                 const scoreProgress = Math.min(100, row.score);
                 const percentileProgress = Math.min(100, row.percentile);
 
