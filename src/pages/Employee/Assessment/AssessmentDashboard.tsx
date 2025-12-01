@@ -1,10 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { Play, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
 import { SearchInput } from "@/components/ui";
-import { colors } from "../../../utils/colors";
-
 // Data imports
 import {
   MOCK_PENDING_ASSESSMENTS,
@@ -12,8 +10,9 @@ import {
   MOCK_CATEGORY_DISTRIBUTION,
   MOCK_EMOTIONAL_INTENSITY_HEATMAP,
   MOCK_EMOTIONAL_STAGE_ASSESSMENT,
-  MOCK_HONEYMOON_SUB_STAGES,
+  getSubStagesForStage,
   type StageDatum,
+  type EmotionalStageAssessment,
 } from "@/data/assessmentDashboard";
 
 // Utility imports
@@ -53,15 +52,6 @@ import {
 } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
 
-// Brand colors
-const brand = {
-  teal: colors.brand.tealLight,
-  tealDark: colors.brand.tealDark,
-  tealBrand: colors.brand.teal,
-  navyBrand: colors.brand.navy,
-  slate700: colors.neutral.gray700,
-} as const;
-
 const AssessmentDashboard = () => {
   // Data from centralized data file
   const pending = MOCK_PENDING_ASSESSMENTS;
@@ -93,7 +83,25 @@ const AssessmentDashboard = () => {
   const dominantStage = emotionalStageAssessment.find(
     (s) => s.status === "Dominant"
   );
-  const honeymoonSubStages = MOCK_HONEYMOON_SUB_STAGES;
+
+  // Track selected stage for sub-stages display (default to dominant)
+  const [selectedStage, setSelectedStage] =
+    useState<EmotionalStageAssessment | null>(dominantStage || null);
+
+  // Get sub-stages for selected stage and calculate scores
+  const selectedSubStages = useMemo(() => {
+    if (!selectedStage) return [];
+    const subStages = getSubStagesForStage(selectedStage.stage);
+
+    // Calculate total weight
+    const totalWeight = subStages.reduce((sum, sub) => sum + sub.value, 0);
+
+    // Distribute the stage score proportionally across sub-stages
+    return subStages.map((subStage) => ({
+      ...subStage,
+      score: (subStage.value / totalWeight) * selectedStage.score,
+    }));
+  }, [selectedStage]);
 
   // Custom hooks for filtering and searching
   const {
@@ -169,17 +177,24 @@ const AssessmentDashboard = () => {
                 ? STATUS_STYLES[stage.status]
                 : null;
 
+              const isSelected = selectedStage?.stage === stage.stage;
+
               return (
                 <motion.div
                   key={stage.stage}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
-                  className={`group rounded-lg border p-3 transition-all ${
+                  onClick={() => setSelectedStage(stage)}
+                  className={`group rounded-lg border p-3 transition-all cursor-pointer ${
                     statusStyle
                       ? `${statusStyle.bg} border-gray-200`
                       : "bg-white border-gray-200"
-                  } hover:shadow-sm`}
+                  } ${
+                    isSelected
+                      ? "ring-2 ring-offset-2 ring-brand-teal shadow-md"
+                      : "hover:shadow-sm"
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -265,8 +280,8 @@ const AssessmentDashboard = () => {
         </motion.div>
       </div>
 
-      {/* Sub-Stages for Dominant Stage */}
-      {dominantStage && (
+      {/* Sub-Stages for Selected Stage */}
+      {selectedStage && selectedSubStages.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -274,21 +289,23 @@ const AssessmentDashboard = () => {
           className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
         >
           <SectionHeader
-            title={`${dominantStage.stage} Sub-Stages`}
-            description="Detailed breakdown of sub-stage performance"
+            title={`${selectedStage.stage} Sub-Stages`}
+            description="Detailed breakdown of sub-stage performance (click any stage above to view)"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
-            {honeymoonSubStages.map((subStage, idx) => {
-              const maxSubValue = findMaxByKey(honeymoonSubStages, "value");
-              const percentage = calculatePercentage(
-                subStage.value,
-                maxSubValue
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
+            {selectedSubStages.map((subStage, idx) => {
+              const maxSubScore = Math.max(
+                ...selectedSubStages.map((s) => s.score)
+              );
+              const scorePercentage = calculatePercentage(
+                subStage.score,
+                maxSubScore
               );
               const intensity =
-                subStage.value >= 20
+                subStage.score >= maxSubScore * 0.6
                   ? "high"
-                  : subStage.value >= 10
+                  : subStage.score >= maxSubScore * 0.3
                   ? "medium"
                   : "low";
 
@@ -317,7 +334,7 @@ const AssessmentDashboard = () => {
                     <div className="relative h-2 rounded-full bg-gray-200 overflow-hidden mb-2">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${percentage}%` }}
+                        animate={{ width: `${scorePercentage}%` }}
                         transition={{
                           duration: 0.8,
                           delay: idx * 0.1 + 0.3,
@@ -325,7 +342,7 @@ const AssessmentDashboard = () => {
                         }}
                         className="h-full rounded-full"
                         style={{
-                          background: `linear-gradient(90deg, ${brand.teal}, ${brand.tealDark})`,
+                          background: `linear-gradient(90deg, ${selectedStage.color}, ${selectedStage.color}dd)`,
                         }}
                       />
                     </div>
@@ -334,9 +351,9 @@ const AssessmentDashboard = () => {
                   <div className="flex items-center justify-between">
                     <span
                       className="text-lg font-bold"
-                      style={{ color: brand.tealBrand }}
+                      style={{ color: selectedStage.color }}
                     >
-                      {percentage.toFixed(0)}%
+                      {subStage.score.toFixed(1)}
                     </span>
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded ${INTENSITY_STYLES[intensity]}`}

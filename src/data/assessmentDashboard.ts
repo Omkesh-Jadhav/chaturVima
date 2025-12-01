@@ -187,11 +187,48 @@ export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
   },
 ];
 
-// Honeymoon Sub-Stages Data
-export const MOCK_HONEYMOON_SUB_STAGES: SubStage[] = [
-  { id: "excitement", label: "Excitement & Optimism", value: 26 },
-  { id: "reality", label: "Initial Reality Check", value: 25 },
-  { id: "confidence", label: "Sustained Confidence", value: 15 },
-  { id: "over-reliance", label: "Confidence & Over-Reliance", value: 16 },
-  { id: "complacency", label: "Subtle Complacency", value: 8 },
-];
+// Sub-Stages Data for All Stages
+// The value represents the weight/percentage distribution within that stage
+export const MOCK_SUB_STAGES: Record<string, SubStage[]> = {
+  Honeymoon: [
+    { id: "excitement", label: "Excitement & Optimism", value: 26 },
+    { id: "reality", label: "Initial Reality Check", value: 25 },
+    { id: "confidence", label: "Sustained Confidence", value: 15 },
+    { id: "over-reliance", label: "Confidence & Over-Reliance", value: 16 },
+    { id: "complacency", label: "Subtle Complacency", value: 8 },
+  ],
+  "Self-Introspection": [
+    {
+      id: "acknowledgment",
+      label: "Acknowledgment of Problems",
+      value: 35,
+    },
+    {
+      id: "analyzing",
+      label: "Analyzing Causes, Partial Acceptance of Responsibility",
+      value: 40,
+    },
+    {
+      id: "exploration",
+      label: "Exploration of Solutions",
+      value: 25,
+    },
+  ],
+  "Soul-Searching": [
+    { id: "frustration", label: "Deep Frustration", value: 30 },
+    { id: "questioning", label: "Questioning Fundamentals", value: 28 },
+    { id: "openness", label: "Openness to Change", value: 22 },
+    { id: "transformation", label: "Actionable Transformation", value: 20 },
+  ],
+  "Steady-State": [
+    { id: "stability", label: "Stability and Alignment", value: 30 },
+    { id: "predictability", label: "Operational Predictability", value: 28 },
+    { id: "challenges", label: "Emerging Challenges", value: 22 },
+    { id: "balance", label: "Dynamic Balance", value: 20 },
+  ],
+};
+
+// Helper function to get sub-stages for a stage
+export const getSubStagesForStage = (stageName: string): SubStage[] => {
+  return MOCK_SUB_STAGES[stageName] || [];
+};
