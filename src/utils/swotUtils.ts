@@ -31,44 +31,40 @@ export type StageDatum = {
  * @returns SWOT analysis quadrants
  */
 export const generateSWOTAnalysis = (
-  categoryDistribution: StageDatum[],
-  completionRate: number,
-  highPriorityPending: number
+  _categoryDistribution: StageDatum[],
+  _completionRate: number,
+  _highPriorityPending: number
 ): SWOTQuadrant[] => {
-  const stageMap = categoryDistribution.reduce<Record<string, number>>(
-    (acc, stage) => {
-      acc[stage.label] = stage.value;
-      return acc;
-    },
-    {}
-  );
-
-  const dominantStage = categoryDistribution.reduce((prev, curr) =>
-    curr.value > prev.value ? curr : prev
-  );
-
   return [
     {
       type: "Strengths",
       items: [
         {
           id: "s1",
-          title: `${dominantStage.label} momentum`,
-          description: `${dominantStage.value}% of assessments sit in ${dominantStage.label}, keeping optimism and onboarding energy high.`,
+          title: "High energy and enthusiasm",
+          description:
+            "High energy and enthusiasm drive motivation and engagement.",
           rating: "HIGH",
         },
         {
           id: "s2",
-          title: "Completion discipline",
-          description: `${completionRate}% of scheduled assessments are already completed, showing dependable follow-through.`,
+          title: "Confidence in impact",
+          description:
+            "Confidence in their ability to make a big impact fosters initiative and proactivity.",
           rating: "HIGH",
         },
         {
           id: "s3",
-          title: "Introspection depth",
-          description: `${
-            stageMap["Self-Introspection"] ?? 0
-          }% coverage in the reflective stage is feeding actionable insights for coaches.`,
+          title: "Risk-taking mindset",
+          description:
+            "Willingness to take risks and embrace new challenges with a positive mindset.",
+          rating: "HIGH",
+        },
+        {
+          id: "s4",
+          title: "Optimistic collaboration",
+          description:
+            "Optimism helps to foster a collaborative and positive work environment.",
           rating: "MEDIUM",
         },
       ],
@@ -78,24 +74,29 @@ export const generateSWOTAnalysis = (
       items: [
         {
           id: "w1",
-          title: "High-priority backlog",
-          description: `${highPriorityPending} critical assessments remain pending, creating pressure on the next sprint.`,
+          title: "Overconfidence risk",
+          description: "Overconfidence may lead to underestimating challenges.",
           rating: "HIGH",
         },
         {
           id: "w2",
-          title: "Steady-State underexposed",
-          description: `Only ${
-            stageMap["Steady-State"] ?? 0
-          }% of data reflects steady-state maturity, leaving resilience signals thin.`,
+          title: "Short-term focus",
+          description:
+            "Focus on short-term wins might overshadow long-term planning.",
           rating: "MEDIUM",
         },
         {
           id: "w3",
-          title: "Soul-Searching fatigue",
-          description: `${
-            stageMap["Soul-Searching"] ?? 0
-          }% share without fresh movement risks stagnation in deeper transition work.`,
+          title: "Past experience reliance",
+          description:
+            "Tendency to rely on past experiences instead of adapting to new dynamics.",
+          rating: "MEDIUM",
+        },
+        {
+          id: "w4",
+          title: "Warning sign recognition",
+          description:
+            "Difficulty in recognizing early warning signs of deeper challenges.",
           rating: "MEDIUM",
         },
       ],
@@ -105,26 +106,30 @@ export const generateSWOTAnalysis = (
       items: [
         {
           id: "o1",
-          title: "Introspection coaching pods",
-          description: `Channel the ${
-            stageMap["Self-Introspection"] ?? 0
-          }% cohort into guided pods to accelerate clarity.`,
+          title: "Fresh ideas and innovation",
+          description:
+            "Ability to bring fresh ideas and innovative approaches to tasks.",
           rating: "HIGH",
         },
         {
           id: "o2",
-          title: "Steady-State playbooks",
-          description: `Boost the ${
-            stageMap["Steady-State"] ?? 0
-          }% group with routines and rituals to expand institutional calm.`,
-          rating: "MEDIUM",
+          title: "Strong team relationships",
+          description:
+            "Building strong relationships with team members due to a positive outlook.",
+          rating: "HIGH",
         },
         {
           id: "o3",
-          title: "Soul-Searching diagnostics",
-          description: `Use the ${
-            stageMap["Soul-Searching"] ?? 0
-          }% signal to design micro-interventions before energy dips.`,
+          title: "Early credibility establishment",
+          description:
+            "Opportunity to create lasting impressions and establish credibility early.",
+          rating: "MEDIUM",
+        },
+        {
+          id: "o4",
+          title: "Cultural influence",
+          description:
+            "Driving cultural shifts or inspiring peers with their enthusiasm.",
           rating: "MEDIUM",
         },
       ],
@@ -134,20 +139,28 @@ export const generateSWOTAnalysis = (
       items: [
         {
           id: "t1",
-          title: "Honeymoon burnout risk",
-          description: `If the ${dominantStage.label} cohort stays at ${dominantStage.value}% without rotation, fatigue can hit fast.`,
+          title: "Burnout risk",
+          description:
+            "Risk of burnout if expectations are not met or challenges become overwhelming.",
           rating: "CRITICAL",
         },
         {
           id: "t2",
-          title: "Momentum stall",
-          description: `Completion rate below 100% plus outstanding critical tests can slow rollout decisions.`,
+          title: "Adaptability concerns",
+          description: "Lack of adaptability if initial strategies don't work.",
           rating: "HIGH",
         },
         {
           id: "t3",
-          title: "Signal imbalance",
-          description: `Limited steady-state readings make it harder to benchmark long-term balance zones.`,
+          title: "Unrealistic expectations",
+          description: "Unrealistic expectations may lead to disappointment.",
+          rating: "HIGH",
+        },
+        {
+          id: "t4",
+          title: "Team isolation risk",
+          description:
+            "Overemphasis on self-performance may isolate them from team dynamics.",
           rating: "MEDIUM",
         },
       ],

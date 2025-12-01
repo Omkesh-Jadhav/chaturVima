@@ -43,7 +43,6 @@ import {
   PRIORITY_ICONS,
   STATUS_STYLES,
   SWOT_CONFIG,
-  SWOT_RATING_COLORS,
   INTENSITY_STYLES,
   ANIMATION_DELAYS,
   PIE_GRADIENTS,
@@ -477,7 +476,7 @@ const AssessmentDashboard = () => {
                     {quadrant.type}
                   </h3>
                 </div>
-                <div className="p-3 space-y-2">
+                <div className="p-2 space-y-2">
                   {quadrant.items.map((item, idx) => {
                     return (
                       <motion.div
@@ -486,25 +485,11 @@ const AssessmentDashboard = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: qIdx * 0.1 + idx * 0.05 }}
                         whileHover={{ scale: 1.01, y: -1 }}
-                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2.5 shadow-sm`}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all`}
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-gray-900 mb-1">
-                              {item.title}
-                            </h4>
-                            <p className="text-[11px] text-gray-600 leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-                          <span
-                            className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                              SWOT_RATING_COLORS[item.rating]
-                            }`}
-                          >
-                            {item.rating}
-                          </span>
-                        </div>
+                        <p className="text-sm text-gray-800 leading-relaxed">
+                          {item.description}
+                        </p>
                       </motion.div>
                     );
                   })}
