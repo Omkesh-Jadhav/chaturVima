@@ -1,17 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
-import {
-  Play,
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  CheckCircle,
-  TrendingUp,
-  XCircle,
-  Lightbulb,
-  ShieldAlert,
-} from "lucide-react";
+import { Play, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
 import { SearchInput } from "@/components/ui";
 import { colors } from "../../../utils/colors";
 
@@ -23,7 +13,6 @@ import {
   MOCK_EMOTIONAL_INTENSITY_HEATMAP,
   MOCK_EMOTIONAL_STAGE_ASSESSMENT,
   MOCK_HONEYMOON_SUB_STAGES,
-  type Priority,
   type StageDatum,
 } from "@/data/assessmentDashboard";
 
@@ -32,7 +21,6 @@ import { formatDisplayDate } from "@/utils/dateUtils";
 import {
   calculateCompletionRate,
   getPriorityStyles,
-  filterByPriority,
   countHighPriority,
   calculatePercentage,
   findMaxByKey,
@@ -45,58 +33,34 @@ import {
   getStagePieColor,
 } from "@/utils/assessmentConfig";
 
-// Brand colors - using centralized color system
+// Component imports
+import {
+  SummaryCard,
+  AnimatedBackground,
+  SectionHeader,
+  usePriorityFilter,
+  useAssessmentSearch,
+  PRIORITY_BUTTON_COLORS,
+  PRIORITY_ICONS,
+  STATUS_STYLES,
+  SWOT_CONFIG,
+  SWOT_RATING_COLORS,
+  INTENSITY_STYLES,
+  ANIMATION_DELAYS,
+  PIE_GRADIENTS,
+  PIE_FILL,
+  BACKGROUND_COLORS,
+} from "@/components/assessmentDashboard";
+import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+
+// Brand colors
 const brand = {
   teal: colors.brand.tealLight,
   tealDark: colors.brand.tealDark,
   tealBrand: colors.brand.teal,
   navyBrand: colors.brand.navy,
-  purple: "#7c3aed",
-  purpleLight: "#a78bfa",
-  sky: colors.semantic.info,
   slate700: colors.neutral.gray700,
-  slate500: colors.neutral.gray500,
-  slate200: colors.neutral.gray200,
-  green: colors.semantic.success,
-  amber: colors.semantic.warning,
-  red: colors.semantic.error,
 } as const;
-
-const SummaryCard = ({
-  label,
-  value,
-  icon: Icon,
-  gradient,
-}: {
-  label: string;
-  value: string | number;
-  icon?: React.ComponentType<{ className?: string }>;
-  gradient?: string;
-}) => (
-  <motion.div
-    whileHover={{ y: -1, scale: 1.005 }}
-    transition={{ type: "spring", stiffness: 240, damping: 22 }}
-    className="group rounded-2xl border border-gray-100 bg-white/95 px-3 py-3 shadow-sm ring-1 ring-transparent transition-all hover:shadow-md"
-  >
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-          {label}
-        </p>
-        <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
-      </div>
-      {Icon && (
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
-            gradient || "bg-linear-to-br from-brand-teal to-brand-navy"
-          }`}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-      )}
-    </div>
-  </motion.div>
-);
 
 const AssessmentDashboard = () => {
   // Data from centralized data file
@@ -131,69 +95,31 @@ const AssessmentDashboard = () => {
   );
   const honeymoonSubStages = MOCK_HONEYMOON_SUB_STAGES;
 
-  // Summary values
-
-  // Pending assessments filter
-  const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All");
-  const filteredPending = useMemo(
-    () => filterByPriority(pending, priorityFilter),
-    [pending, priorityFilter]
-  );
-
-  // Test history: search (by dominant stage only)
-  const [historySearch, setHistorySearch] = useState("");
-  const visibleHistory = useMemo(() => {
-    const q = historySearch.toLowerCase().trim();
-    if (!q) {
-      // If no search query, return all sorted by date
-      return [...completed].sort((a, b) => b.date.localeCompare(a.date));
-    }
-    const filtered = completed.filter((r) =>
-      r.category.toLowerCase().includes(q)
-    );
-    // Sort by date (newest first) by default
-    const sorted = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
-    return sorted;
-  }, [completed, historySearch]);
-
-  const header = (
-    <div className="mb-4">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-        Assessment Dashboard
-      </h1>
-      <p className="mt-1 text-gray-600">
-        Your assessments, insights, and progress at a glance.
-      </p>
-    </div>
-  );
+  // Custom hooks for filtering and searching
+  const {
+    priorityFilter,
+    setPriorityFilter,
+    filteredItems: filteredPending,
+  } = usePriorityFilter(pending);
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredAssessments: visibleHistory,
+  } = useAssessmentSearch(completed);
 
   return (
     <div className="space-y-6 relative">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full opacity-20 blur-3xl"
-            style={{
-              width: 220 + i * 120,
-              height: 220 + i * 120,
-              background: `radial-gradient(circle, ${
-                [brand.teal, brand.purple, brand.sky][i]
-              } 0%, transparent 70%)`,
-              left: `${10 + i * 30}%`,
-              top: `${5 + i * 25}%`,
-            }}
-            animate={{ x: [0, 40, 0], y: [0, 25, 0], scale: [1, 1.15, 1] }}
-            transition={{
-              duration: 12 + i * 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
+      <AnimatedBackground colors={[...BACKGROUND_COLORS]} />
+      <div className="relative z-10">
+        <div className="mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Assessment Dashboard
+          </h1>
+          <p className="mt-1 text-gray-600">
+            Your assessments, insights, and progress at a glance.
+          </p>
+        </div>
       </div>
-      <div className="relative z-10">{header}</div>
 
       {/* Summary Cards */}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -239,15 +165,8 @@ const AssessmentDashboard = () => {
           <div className="space-y-1.5">
             {emotionalStageAssessment.map((stage, idx) => {
               const percentage = calculatePercentage(stage.score, maxScore);
-              const statusStyles: Record<string, { bg: string; text: string }> =
-                {
-                  Dominant: { bg: "bg-green-50", text: "text-green-700" },
-                  Secondary: { bg: "bg-blue-50", text: "text-blue-700" },
-                  Transitional: { bg: "bg-orange-50", text: "text-orange-700" },
-                };
-
               const statusStyle = stage.status
-                ? statusStyles[stage.status]
+                ? STATUS_STYLES[stage.status]
                 : null;
 
               return (
@@ -255,7 +174,7 @@ const AssessmentDashboard = () => {
                   key={stage.stage}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
+                  transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
                   className={`group rounded-lg border p-3 transition-all ${
                     statusStyle
                       ? `${statusStyle.bg} border-gray-200`
@@ -315,16 +234,10 @@ const AssessmentDashboard = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Stage Distribution
-              </h2>
-              <p className="text-xs text-gray-500">
-                Current sentiment spread across stages
-              </p>
-            </div>
-          </div>
+          <SectionHeader
+            title="Stage Distribution"
+            description="Current sentiment spread across stages"
+          />
           <div className="mt-4 h-72">
             <ResponsivePie
               data={categoryDistribution}
@@ -342,57 +255,9 @@ const AssessmentDashboard = () => {
                 modifiers: [["darker", 2.2]],
               }}
               arcLabelsRadiusOffset={0.55}
-              defs={[
-                {
-                  id: "gradSelf",
-                  type: "linearGradient",
-                  colors: [
-                    { offset: 0, color: "#93C5FD" },
-                    { offset: 100, color: "#2563EB" },
-                  ],
-                },
-                {
-                  id: "gradSoul",
-                  type: "linearGradient",
-                  colors: [
-                    { offset: 0, color: "#FCD34D" },
-                    { offset: 100, color: "#EA580C" },
-                  ],
-                },
-                {
-                  id: "gradSteady",
-                  type: "linearGradient",
-                  colors: [
-                    { offset: 0, color: "#DDD6FE" },
-                    { offset: 100, color: "#7C3AED" },
-                  ],
-                },
-                {
-                  id: "gradHoney",
-                  type: "linearGradient",
-                  colors: [
-                    { offset: 0, color: "#A7F3D0" },
-                    { offset: 100, color: "#059669" },
-                  ],
-                },
-              ]}
-              fill={[
-                { match: { id: "Self-Introspection" }, id: "gradSelf" },
-                { match: { id: "Soul-Searching" }, id: "gradSoul" },
-                { match: { id: "Steady-State" }, id: "gradSteady" },
-                { match: { id: "Honeymoon" }, id: "gradHoney" },
-              ]}
-              theme={{
-                text: { fontSize: 12, fill: brand.slate700, fontWeight: 600 },
-                tooltip: {
-                  container: {
-                    background: "#fff",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                  },
-                },
-              }}
+              defs={PIE_GRADIENTS}
+              fill={PIE_FILL}
+              theme={pieChartTheme}
               animate
               motionConfig="gentle"
             />
@@ -408,14 +273,10 @@ const AssessmentDashboard = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
         >
-          <div className="mb-3">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {dominantStage.stage} Sub-Stages
-            </h2>
-            <p className="text-xs text-gray-500">
-              Detailed breakdown of sub-stage performance
-            </p>
-          </div>
+          <SectionHeader
+            title={`${dominantStage.stage} Sub-Stages`}
+            description="Detailed breakdown of sub-stage performance"
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2.5">
             {honeymoonSubStages.map((subStage, idx) => {
@@ -478,13 +339,7 @@ const AssessmentDashboard = () => {
                       {percentage.toFixed(0)}%
                     </span>
                     <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                        intensity === "high"
-                          ? "bg-green-100 text-green-700"
-                          : intensity === "medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${INTENSITY_STYLES[intensity]}`}
                     >
                       {intensity.toUpperCase()}
                     </span>
@@ -503,37 +358,33 @@ const AssessmentDashboard = () => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Emotional Intensity Heatmap
-            </h2>
-            <p className="text-xs text-gray-500">
-              Intensity levels across emotional dimensions and states
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {emotionalDimensions.map((dimension) => {
-              const token = getDimensionColorToken(dimension, 80);
-              return (
-                <motion.span
-                  key={dimension}
-                  whileHover={{ scale: 1.05 }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md"
-                >
-                  <span
-                    className="h-2.5 w-2.5 rounded-full shadow-sm"
-                    style={{
-                      background: `linear-gradient(135deg, ${token.from}, ${token.to})`,
-                      boxShadow: `0 0 4px ${token.from}60`,
-                    }}
-                  />
-                  {dimension}
-                </motion.span>
-              );
-            })}
-          </div>
-        </div>
+        <SectionHeader
+          title="Emotional Intensity Heatmap"
+          description="Intensity levels across emotional dimensions and states"
+          actions={
+            <div className="flex flex-wrap gap-1.5">
+              {emotionalDimensions.map((dimension) => {
+                const token = getDimensionColorToken(dimension, 80);
+                return (
+                  <motion.span
+                    key={dimension}
+                    whileHover={{ scale: 1.05 }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 rounded-full shadow-sm"
+                      style={{
+                        background: `linear-gradient(135deg, ${token.from}, ${token.to})`,
+                        boxShadow: `0 0 4px ${token.from}60`,
+                      }}
+                    />
+                    {dimension}
+                  </motion.span>
+                );
+              })}
+            </div>
+          }
+        />
 
         <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
           {emotionalIntensityHeatmap.map((row, rowIdx) => (
@@ -629,51 +480,14 @@ const AssessmentDashboard = () => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
       >
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">SWOT Analysis</h2>
-          <p className="text-xs text-gray-500">
-            Strategic assessment across four key dimensions
-          </p>
-        </div>
+        <SectionHeader
+          title="SWOT Analysis"
+          description="Strategic assessment across four key dimensions"
+        />
         <div className="grid gap-3 md:grid-cols-2">
           {swotData.map((quadrant, qIdx) => {
-            const config = {
-              Strengths: {
-                icon: CheckCircle,
-                headerBg: "bg-linear-to-br from-green-500 to-emerald-600",
-                itemBg: "bg-green-50/60",
-                border: "border-green-200",
-                text: "text-green-700",
-              },
-              Weaknesses: {
-                icon: XCircle,
-                headerBg: "bg-linear-to-br from-red-500 to-rose-600",
-                itemBg: "bg-red-50/60",
-                border: "border-red-200",
-                text: "text-red-700",
-              },
-              Opportunities: {
-                icon: Lightbulb,
-                headerBg: "bg-linear-to-br from-blue-500 to-cyan-600",
-                itemBg: "bg-blue-50/60",
-                border: "border-blue-200",
-                text: "text-blue-700",
-              },
-              Threats: {
-                icon: ShieldAlert,
-                headerBg: "bg-linear-to-br from-amber-500 to-orange-600",
-                itemBg: "bg-amber-50/60",
-                border: "border-amber-200",
-                text: "text-amber-700",
-              },
-            }[quadrant.type];
-
+            const config = SWOT_CONFIG[quadrant.type];
             const Icon = config.icon;
-            const ratingColors = {
-              HIGH: "bg-green-500 text-white",
-              MEDIUM: "bg-yellow-500 text-white",
-              CRITICAL: "bg-red-600 text-white",
-            } as const;
 
             return (
               <motion.div
@@ -713,7 +527,7 @@ const AssessmentDashboard = () => {
                           </div>
                           <span
                             className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-                              ratingColors[item.rating]
+                              SWOT_RATING_COLORS[item.rating]
                             }`}
                           >
                             {item.rating}
@@ -748,27 +562,19 @@ const AssessmentDashboard = () => {
           <div className="flex items-center gap-1.5">
             {(["All", "High", "Medium", "Low"] as const).map((p) => {
               const isActive = priorityFilter === p;
-              const buttonColors = {
-                All: isActive
-                  ? "bg-gray-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-                High: isActive
-                  ? "bg-red-600 text-white"
-                  : "bg-red-50 text-red-700 hover:bg-red-100",
-                Medium: isActive
-                  ? "bg-yellow-500 text-white"
-                  : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100",
-                Low: isActive
-                  ? "bg-green-500 text-white"
-                  : "bg-green-50 text-green-700 hover:bg-green-100",
-              };
+              const colors =
+                PRIORITY_BUTTON_COLORS[
+                  p as keyof typeof PRIORITY_BUTTON_COLORS
+                ];
               return (
                 <motion.button
                   key={p}
                   onClick={() => setPriorityFilter(p)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`cursor-pointer px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${buttonColors[p]}`}
+                  className={`cursor-pointer px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${
+                    isActive ? colors.active : colors.inactive
+                  }`}
                 >
                   {p}
                 </motion.button>
@@ -788,7 +594,7 @@ const AssessmentDashboard = () => {
                 key={item.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
+                transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
                 whileHover={{ scale: 1.005, y: -1 }}
                 className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300"
               >
@@ -799,13 +605,10 @@ const AssessmentDashboard = () => {
                         item.priority
                       )}`}
                     >
-                      {item.priority === "High" ? (
-                        <AlertTriangle className="h-3 w-3" />
-                      ) : item.priority === "Medium" ? (
-                        <Clock className="h-3 w-3" />
-                      ) : (
-                        <CheckCircle2 className="h-3 w-3" />
-                      )}
+                      {(() => {
+                        const Icon = PRIORITY_ICONS[item.priority];
+                        return <Icon className="h-3 w-3" />;
+                      })()}
                       {item.priority}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -854,11 +657,11 @@ const AssessmentDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <SearchInput
-              value={historySearch}
-              onChange={setHistorySearch}
+              value={searchQuery}
+              onChange={setSearchQuery}
               placeholder="Search by dominant stage..."
               resultCount={visibleHistory.length}
-              showResultCount={!!historySearch}
+              showResultCount={!!searchQuery}
             />
           </div>
         </div>
@@ -894,7 +697,7 @@ const AssessmentDashboard = () => {
                     key={row.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
+                    transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
                     className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
                   >
                     <td className="px-4 py-3">
