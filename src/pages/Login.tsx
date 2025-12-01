@@ -556,8 +556,9 @@ const Login = () => {
                   >
                     <Button
                       type="submit"
-                      className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      variant="gradient"
                       size="lg"
+                      className="w-full"
                       isLoading={isSendingOTP}
                     >
                       {!isSendingOTP && <ArrowRight className="mr-2 h-5 w-5" />}
@@ -671,8 +672,9 @@ const Login = () => {
                   >
                     <Button
                       type="submit"
-                      className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg"
+                      variant="gradient"
                       size="lg"
+                      className="w-full"
                       isLoading={isLoading}
                     >
                       {!isLoading && <ArrowRight className="mr-2 h-5 w-5" />}

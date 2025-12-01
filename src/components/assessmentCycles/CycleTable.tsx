@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
-import { Tooltip } from "@/components/ui";
+import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
 
 type TableVariant = "hr" | "department-head";
@@ -140,29 +140,23 @@ const CycleTable = ({
                 </td>
                 <td className="px-6 py-4 text-right align-top">
                   <div className="flex items-center justify-end gap-3">
-                    <button
+                    <Button
                       onClick={() => canSchedule && onSchedule?.(cycle)}
                       disabled={!canSchedule}
-                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${
-                        canSchedule
-                          ? "bg-brand-teal text-white hover:bg-brand-teal/90"
-                          : "cursor-not-allowed bg-gray-100 text-gray-400"
-                      }`}
+                      variant="primary"
+                      size="xs"
                     >
                       Schedule Cycle
-                    </button>
+                    </Button>
                     {!isDepartmentHead && (
-                      <button
+                      <Button
                         onClick={() => canShare && onShare?.(cycle)}
                         disabled={!canShare}
-                        className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                          canShare
-                            ? "bg-brand-navy text-white shadow-sm hover:bg-brand-navy/90"
-                            : "cursor-not-allowed bg-gray-100 text-gray-400"
-                        }`}
+                        variant="secondary"
+                        size="xs"
                       >
                         Share to HOD's
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {isDepartmentHead && !canSchedule && (

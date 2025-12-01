@@ -1,14 +1,20 @@
 /**
  * Button Component
- * Reusable button with variants and sizes
+ * Reusable button with variants and sizes matching the design system
  */
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "../../utils/cn";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "danger"
+    | "gradient";
+  size?: "xs" | "sm" | "md" | "lg";
   isLoading?: boolean;
 }
 
@@ -26,24 +32,27 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer";
+      "inline-flex items-center justify-center font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer";
 
     const variants = {
       primary:
-        "bg-brand-teal text-white hover:bg-brand-teal/90 focus-visible:ring-brand-teal shadow-sm",
+        "bg-brand-teal text-white hover:bg-brand-teal/90 focus-visible:ring-brand-teal shadow-sm hover:shadow-md",
       secondary:
-        "bg-brand-navy text-white hover:bg-brand-navy/90 focus-visible:ring-brand-navy shadow-sm",
+        "bg-brand-navy text-white hover:bg-brand-navy/90 focus-visible:ring-brand-navy shadow-sm hover:shadow-md",
+      gradient:
+        "bg-gradient-to-r from-brand-teal to-brand-navy text-white hover:from-brand-teal/90 hover:to-brand-navy/90 focus-visible:ring-brand-teal shadow-md hover:shadow-lg",
       outline:
-        "border-2 border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-gray-300",
-      ghost: "hover:bg-gray-100 focus-visible:ring-gray-300",
+        "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus-visible:ring-gray-300",
+      ghost: "text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-300",
       danger:
-        "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600 shadow-sm",
+        "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600 shadow-sm hover:shadow-md",
     };
 
     const sizes = {
-      sm: "text-sm px-3 py-1.5 h-8",
-      md: "text-base px-4 py-2 h-10",
-      lg: "text-lg px-6 py-3 h-12",
+      xs: "text-xs px-3 py-1.5 rounded-lg",
+      sm: "text-sm px-3 py-1.5 h-8 rounded-lg",
+      md: "text-base px-4 py-2 h-10 rounded-xl",
+      lg: "text-lg px-6 py-3 h-12 rounded-2xl",
     };
 
     return (

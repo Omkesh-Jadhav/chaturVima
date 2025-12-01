@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui";
 import type {
   AssessmentCycle,
   DepartmentHeadAccess,
@@ -77,12 +78,14 @@ const ShareDrawer = ({
                     : "Select department heads for scheduling."}
                 </p>
               </div>
-              <button
+              <Button
                 onClick={onClose}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                variant="ghost"
+                size="sm"
+                className="rounded-full p-2 text-gray-500"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             <div className="space-y-4 px-6 py-6">
               {cycle && (
@@ -145,16 +148,18 @@ const ShareDrawer = ({
                         </p>
                       </div>
                     </div>
-                    <button
+                    <Button
                       onClick={() => onToggle(head.id, !hasAccess)}
-                      className={`rounded-full px-4 py-1 text-xs font-semibold transition-all ${
+                      variant={hasAccess ? "outline" : "ghost"}
+                      size="xs"
+                      className={`rounded-full ${
                         hasAccess
-                          ? "bg-brand-teal/10 text-brand-teal"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-brand-teal/10 text-brand-teal border-brand-teal/20"
+                          : "text-gray-600"
                       }`}
                     >
                       {hasAccess ? "Access granted" : "Give access"}
-                    </button>
+                    </Button>
                   </div>
                 );
               })}

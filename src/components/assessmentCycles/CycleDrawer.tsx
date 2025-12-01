@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { CalendarInput, CheckboxDropdown, FilterSelect } from "@/components/ui";
+import {
+  CalendarInput,
+  CheckboxDropdown,
+  FilterSelect,
+  Button,
+} from "@/components/ui";
 import type {
   AssessmentCycle,
   CycleFormPayload,
@@ -303,12 +308,14 @@ const CycleDrawer = ({
                 <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
                 <p className="text-sm text-gray-500">{description}</p>
               </div>
-              <button
+              <Button
                 onClick={onClose}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                variant="ghost"
+                size="sm"
+                className="rounded-full p-2 text-gray-500"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             <div className="custom-scrollbar flex-1 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4 px-6 py-6">
@@ -767,21 +774,16 @@ const CycleDrawer = ({
                     </div>
                   )}
 
-                <button
+                <Button
                   type="submit"
                   disabled={
                     enableManualSelection &&
                     (selectedDeptsForManual.length === 0 ||
                       selectedEmployees.length === 0)
                   }
-                  className={cn(
-                    "w-full rounded-xl bg-linear-to-r from-brand-teal to-brand-navy py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg",
-                    enableManualSelection &&
-                      (selectedDeptsForManual.length === 0 ||
-                        selectedEmployees.length === 0)
-                      ? "cursor-not-allowed opacity-50"
-                      : ""
-                  )}
+                  variant="gradient"
+                  size="md"
+                  className="w-full"
                 >
                   {mode === "create"
                     ? "Create Cycle"
@@ -792,7 +794,7 @@ const CycleDrawer = ({
                         selectedEmployees.length !== 1 ? "s" : ""
                       }`
                     : "Save Schedule"}
-                </button>
+                </Button>
               </form>
             </div>
           </motion.div>
