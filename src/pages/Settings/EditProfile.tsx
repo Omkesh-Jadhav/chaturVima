@@ -4,14 +4,13 @@
  */
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   User,
   ArrowLeft,
   Save,
   CheckCircle2,
   Camera,
-  ChevronDown,
   Hash,
   IdCard,
   UserCircle,
@@ -19,7 +18,14 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
-import { Button, Card, CardContent, Input } from "../../components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Select,
+  type SelectOption,
+} from "../../components/ui";
 import { useUser } from "../../context/UserContext";
 
 // Success Modal Component
@@ -50,7 +56,7 @@ const SuccessModal = ({
         className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-brand-teal to-brand-navy p-6 pb-8 relative">
+        <div className="bg-linear-to-r from-brand-teal to-brand-navy p-6 pb-8 relative">
           <div className="relative z-10 text-center">
             <motion.div
               initial={{ scale: 0 }}
@@ -86,7 +92,7 @@ const SuccessModal = ({
         <div className="p-6">
           <Button
             onClick={onDone}
-            className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
+            className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
           >
             Done
           </Button>
@@ -118,34 +124,47 @@ const EditProfile = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [salutationDropdownOpen, setSalutationDropdownOpen] = useState(false);
-  const salutationDropdownRef = useRef<HTMLDivElement>(null);
-  const countryCodeDropdownRef = useRef<HTMLDivElement>(null);
 
-  const salutations = ["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."];
+  // Salutation options
+  const salutationOptions: SelectOption[] = [
+    "Mr.",
+    "Mrs.",
+    "Ms.",
+    "Dr.",
+    "Prof.",
+  ].map((sal) => ({ value: sal, label: sal }));
 
+  // Country code options with flags
   const countryCodes = [
-    { code: "+1", country: "US", flag: "🇺🇸" },
-    { code: "+91", country: "IN", flag: "🇮🇳" },
-    { code: "+44", country: "GB", flag: "🇬🇧" },
-    { code: "+61", country: "AU", flag: "🇦🇺" },
-    { code: "+86", country: "CN", flag: "🇨🇳" },
-    { code: "+81", country: "JP", flag: "🇯🇵" },
-    { code: "+49", country: "DE", flag: "🇩🇪" },
-    { code: "+33", country: "FR", flag: "🇫🇷" },
-    { code: "+39", country: "IT", flag: "🇮🇹" },
-    { code: "+34", country: "ES", flag: "🇪🇸" },
-    { code: "+7", country: "RU", flag: "🇷🇺" },
-    { code: "+82", country: "KR", flag: "🇰🇷" },
-    { code: "+55", country: "BR", flag: "🇧🇷" },
-    { code: "+52", country: "MX", flag: "🇲🇽" },
-    { code: "+27", country: "ZA", flag: "🇿🇦" },
-    { code: "+971", country: "AE", flag: "🇦🇪" },
-    { code: "+65", country: "SG", flag: "🇸🇬" },
-    { code: "+60", country: "MY", flag: "🇲🇾" },
-    { code: "+66", country: "TH", flag: "🇹🇭" },
-    { code: "+84", country: "VN", flag: "🇻🇳" },
-  ];
+    ["+1", "US", "🇺🇸"],
+    ["+91", "IN", "🇮🇳"],
+    ["+44", "GB", "🇬🇧"],
+    ["+61", "AU", "🇦🇺"],
+    ["+86", "CN", "🇨🇳"],
+    ["+81", "JP", "🇯🇵"],
+    ["+49", "DE", "🇩🇪"],
+    ["+33", "FR", "🇫🇷"],
+    ["+39", "IT", "🇮🇹"],
+    ["+34", "ES", "🇪🇸"],
+    ["+7", "RU", "🇷🇺"],
+    ["+82", "KR", "🇰🇷"],
+    ["+55", "BR", "🇧🇷"],
+    ["+52", "MX", "🇲🇽"],
+    ["+27", "ZA", "🇿🇦"],
+    ["+971", "AE", "🇦🇪"],
+    ["+65", "SG", "🇸🇬"],
+    ["+60", "MY", "🇲🇾"],
+    ["+66", "TH", "🇹🇭"],
+    ["+84", "VN", "🇻🇳"],
+  ] as const;
+
+  const countryCodeOptions: SelectOption[] = countryCodes.map(
+    ([code, , flag]) => ({
+      value: code,
+      label: code, // Just show the dialing code, flag icon already represents country
+      icon: <span className="text-base">{flag}</span>,
+    })
+  );
 
   const [formData, setFormData] = useState<FormData>({
     profilePhoto: "",
@@ -176,23 +195,6 @@ const EditProfile = () => {
       }));
     }
   }, [user]);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        salutationDropdownRef.current &&
-        !salutationDropdownRef.current.contains(event.target as Node)
-      ) {
-        setSalutationDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const handleChange = (field: keyof FormData, value: string) => {
     // Only allow changes to editable fields: salutation and briefDescription
@@ -327,7 +329,7 @@ const EditProfile = () => {
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.2 }}
-                      className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-brand-teal/20 to-brand-navy/20 flex items-center justify-center ring-2 ring-brand-teal/20"
+                      className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-linear-to-br from-brand-teal/20 to-brand-navy/20 flex items-center justify-center ring-2 ring-brand-teal/20"
                     >
                       {formData.profilePhoto ? (
                         <img
@@ -418,7 +420,7 @@ const EditProfile = () => {
                     className="space-y-4"
                   >
                     <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-gradient-to-br from-brand-teal to-brand-navy p-2 text-white shadow-sm">
+                      <div className="rounded-lg bg-linear-to-br from-brand-teal to-brand-navy p-2 text-white shadow-sm">
                         <User className="h-4 w-4" />
                       </div>
                       <h3 className="text-base font-semibold text-gray-900">
@@ -435,52 +437,14 @@ const EditProfile = () => {
                             Editable
                           </span>
                         </label>
-                        <div className="relative" ref={salutationDropdownRef}>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSalutationDropdownOpen(!salutationDropdownOpen)
-                            }
-                            className="inline-flex h-10 w-full items-center justify-between rounded-xl border border-brand-teal/40 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition-colors focus:outline-none focus:ring-0 focus:border-brand-teal/40 cursor-pointer"
-                          >
-                            <span>{formData.salutation}</span>
-                            <ChevronDown
-                              className={`h-4 w-4 text-brand-teal transition-transform duration-200 ${
-                                salutationDropdownOpen
-                                  ? "rotate-180"
-                                  : "rotate-0"
-                              }`}
-                            />
-                          </button>
-                          <AnimatePresence>
-                            {salutationDropdownOpen && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                className="absolute right-0 z-10 mt-2 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl"
-                              >
-                                {salutations.map((salutation) => (
-                                  <button
-                                    key={salutation}
-                                    type="button"
-                                    onClick={() => {
-                                      handleChange("salutation", salutation);
-                                      setSalutationDropdownOpen(false);
-                                    }}
-                                    className={`block w-full cursor-pointer px-4 py-2.5 text-left text-sm font-medium transition-colors ${
-                                      formData.salutation === salutation
-                                        ? "bg-gradient-to-r from-brand-teal/20 to-brand-navy/20 text-brand-navy border-l-4 border-brand-teal"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }`}
-                                  >
-                                    {salutation}
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                        <Select
+                          value={formData.salutation}
+                          onChange={(value) =>
+                            handleChange("salutation", value)
+                          }
+                          options={salutationOptions}
+                          error={errors.salutation}
+                        />
                       </div>
 
                       {/* Name - Read Only */}
@@ -492,7 +456,6 @@ const EditProfile = () => {
                           type="text"
                           value={formData.name}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -506,7 +469,6 @@ const EditProfile = () => {
                           type="text"
                           value={formData.designation}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -520,7 +482,6 @@ const EditProfile = () => {
                           type="text"
                           value={formData.department}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -535,7 +496,7 @@ const EditProfile = () => {
                     className="space-y-4 pt-5 border-t-2 border-gray-100"
                   >
                     <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 p-2 text-white shadow-sm">
+                      <div className="rounded-lg bg-linear-to-br from-blue-500 to-cyan-500 p-2 text-white shadow-sm">
                         <Mail className="h-4 w-4" />
                       </div>
                       <h3 className="text-base font-semibold text-gray-900">
@@ -553,7 +514,6 @@ const EditProfile = () => {
                           type="email"
                           value={formData.emailAddress}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -565,30 +525,20 @@ const EditProfile = () => {
                         </label>
                         <div className="flex gap-2">
                           {/* Country Code Dropdown - Disabled */}
-                          <div ref={countryCodeDropdownRef}>
-                            <button
-                              type="button"
+                          <div className="w-[110px] shrink-0">
+                            <Select
+                              value={formData.countryCode}
+                              onChange={() => {}}
+                              options={countryCodeOptions}
                               disabled
-                              className="inline-flex h-10 min-w-[90px] items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-600 cursor-not-allowed"
-                            >
-                              <span className="flex items-center gap-1.5">
-                                <span className="text-base">
-                                  {
-                                    countryCodes.find(
-                                      (cc) => cc.code === formData.countryCode
-                                    )?.flag
-                                  }
-                                </span>
-                                <span>{formData.countryCode}</span>
-                              </span>
-                            </button>
+                            />
                           </div>
                           {/* Phone Number Input - Read Only */}
                           <Input
                             type="tel"
                             value={formData.phoneNumber}
                             disabled
-                            className="h-10 flex-1 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
+                            className="flex-1"
                             readOnly
                           />
                         </div>
@@ -604,7 +554,7 @@ const EditProfile = () => {
                     className="space-y-4 pt-5 border-t-2 border-gray-100"
                   >
                     <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-gradient-to-br from-orange-400 to-amber-400 p-2 text-white shadow-sm">
+                      <div className="rounded-lg bg-linear-to-br from-orange-400 to-amber-400 p-2 text-white shadow-sm">
                         <MapPin className="h-4 w-4" />
                       </div>
                       <h3 className="text-base font-semibold text-gray-900">
@@ -622,7 +572,6 @@ const EditProfile = () => {
                           type="text"
                           value={formData.city}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -636,7 +585,6 @@ const EditProfile = () => {
                           type="text"
                           value={formData.country}
                           disabled
-                          className="h-10 text-sm bg-gray-50 border border-gray-200 cursor-not-allowed"
                           readOnly
                         />
                       </div>
@@ -651,7 +599,7 @@ const EditProfile = () => {
                     className="space-y-4 pt-5 border-t-2 border-gray-100"
                   >
                     <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 p-2 text-white shadow-sm">
+                      <div className="rounded-lg bg-linear-to-br from-purple-500 to-pink-500 p-2 text-white shadow-sm">
                         <FileText className="h-4 w-4" />
                       </div>
                       <h3 className="text-base font-semibold text-gray-900">
@@ -728,7 +676,7 @@ const EditProfile = () => {
                       <Button
                         type="submit"
                         isLoading={isLoading}
-                        className="cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all font-semibold px-8 py-2.5 rounded-xl"
+                        className="cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all font-semibold px-8 py-2.5 rounded-xl"
                       >
                         {!isLoading && <Save className="mr-2 h-4 w-4" />}
                         Save Changes
