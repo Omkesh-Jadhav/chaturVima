@@ -451,12 +451,12 @@ const AssessmentReport: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div
                         className={`w-4 h-4 rounded-full ${index === 0
-                            ? "bg-indigo-500"
-                            : index === 1
-                              ? "bg-purple-500"
-                              : index === 2
-                                ? "bg-cyan-500"
-                                : "bg-green-500"
+                          ? "bg-indigo-500"
+                          : index === 1
+                            ? "bg-purple-500"
+                            : index === 2
+                              ? "bg-cyan-500"
+                              : "bg-green-500"
                           }`}
                       ></div>
                       <h4 className="font-semibold text-gray-800">{item.stage}</h4>
@@ -477,12 +477,12 @@ const AssessmentReport: React.FC = () => {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${index === 0
-                            ? "bg-indigo-500"
-                            : index === 1
-                              ? "bg-purple-500"
-                              : index === 2
-                                ? "bg-cyan-500"
-                                : "bg-green-500"
+                          ? "bg-indigo-500"
+                          : index === 1
+                            ? "bg-purple-500"
+                            : index === 2
+                              ? "bg-cyan-500"
+                              : "bg-green-500"
                           }`}
                         style={{ width: `${item.scorePercentage}%` }}
                       ></div>
@@ -842,9 +842,9 @@ const AssessmentReport: React.FC = () => {
           </p>
 
           {/* <div className="bg-white rounded-xl p-6 border border-indigo-200"> */}
-            <InteractiveMindMap 
-              sections={recommendations.sections}
-            />
+          <InteractiveMindMap
+            sections={recommendations.sections}
+          />
           {/* </div> */}
         </section>
 
@@ -854,7 +854,7 @@ const AssessmentReport: React.FC = () => {
             6. Action Plan
           </h2>
           <p className="text-gray-700 mb-1">
-            Interactive radar wheel showing progress across 5 key development areas. 
+            Interactive radar wheel showing progress across 5 key development areas.
             Click on any segment to view detailed action items and recommendations.
           </p>
 
@@ -887,20 +887,20 @@ const AssessmentReport: React.FC = () => {
                       <stop offset="100%" stopColor="#7c3aed" />
                     </linearGradient>
                   </defs>
-                  
+
                   {/* Radar Segments */}
                   {actionPlan.map((category, index) => {
                     const startAngle = (index * 72) - 90; // 360/5 = 72 degrees between segments
                     const endAngle = startAngle + 72;
-                    
+
                     const startRadian = (startAngle * Math.PI) / 180;
                     const endRadian = (endAngle * Math.PI) / 180;
-                    
+
                     const outerRadius = 200;
                     const innerRadius = 80;
                     const centerX = 250;
                     const centerY = 250;
-                    
+
                     // Calculate arc path
                     const x1 = centerX + Math.cos(startRadian) * innerRadius;
                     const y1 = centerY + Math.sin(startRadian) * innerRadius;
@@ -910,9 +910,9 @@ const AssessmentReport: React.FC = () => {
                     const y3 = centerY + Math.sin(endRadian) * outerRadius;
                     const x4 = centerX + Math.cos(endRadian) * innerRadius;
                     const y4 = centerY + Math.sin(endRadian) * innerRadius;
-                    
+
                     const largeArcFlag = 0; // Since each segment is 72 degrees (< 180)
-                    
+
                     const pathData = [
                       `M ${x1} ${y1}`, // Move to start point (inner)
                       `L ${x2} ${y2}`, // Line to start point (outer)
@@ -921,7 +921,7 @@ const AssessmentReport: React.FC = () => {
                       `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`, // Arc along inner edge
                       'Z' // Close path
                     ].join(' ');
-                    
+
                     return (
                       <path
                         key={category.id}
@@ -952,13 +952,13 @@ const AssessmentReport: React.FC = () => {
                   const textRadius = 140; // Position text in the middle of each segment
                   const x = Math.cos(radian) * textRadius + 250;
                   const y = Math.sin(radian) * textRadius + 250;
-                  
+
                   return (
                     <div
                       key={`text-${category.id}`}
                       className="absolute pointer-events-none"
-                      style={{ 
-                        left: x, 
+                      style={{
+                        left: x,
                         top: y,
                         transform: 'translate(-50%, -50%)'
                       }}
@@ -982,7 +982,7 @@ const AssessmentReport: React.FC = () => {
               </h3>
               {selectedSegment !== null && (
                 <div className="text-center mb-4">
-                  <button 
+                  <button
                     onClick={() => setSelectedSegment(null)}
                     className="text-sm text-green-600 hover:text-green-800 underline"
                   >
@@ -991,40 +991,50 @@ const AssessmentReport: React.FC = () => {
                 </div>
               )}
               <div className="grid gap-4">
-              
-              {(selectedSegment !== null ? [actionPlan[selectedSegment]] : actionPlan).map((category: any, index: number) => {
-                const actualIndex = selectedSegment !== null ? selectedSegment : index;
-                const colors = ['border-green-200 bg-green-50', 'border-blue-200 bg-blue-50', 'border-orange-200 bg-orange-50', 'border-red-200 bg-red-50', 'border-purple-200 bg-purple-50'];
-                const textColors = ['text-green-700', 'text-blue-700', 'text-orange-700', 'text-red-700', 'text-purple-700'];
-                
-                return (
-                  <div key={category.id} className={`border rounded-lg p-4 ${colors[actualIndex]}`}>
-                    <div className="mb-2">
-                      <h4 className={`font-semibold ${textColors[actualIndex]}`}>
-                        {category.id}. {category.title}
-                      </h4>
+
+                {(selectedSegment !== null ? [actionPlan[selectedSegment]] : actionPlan).map((category: any, index: number) => {
+                  const actualIndex = selectedSegment !== null ? selectedSegment : index;
+                  const colors = ['border-green-200 bg-green-50', 'border-blue-200 bg-blue-50', 'border-orange-200 bg-orange-50', 'border-red-200 bg-red-50', 'border-purple-200 bg-purple-50'];
+                  const textColors = ['text-green-700', 'text-blue-700', 'text-orange-700', 'text-red-700', 'text-purple-700'];
+
+                  return (
+                    <div key={category.id} className={`border rounded-lg p-4 ${colors[actualIndex]}`}>
+                      <div className="mb-2">
+                        <h4 className={`font-semibold ${textColors[actualIndex]}`}>
+                          {category.id}. {category.title}
+                        </h4>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {category.description}
+                      </p>
+                      <ul className="space-y-2">
+                        {category.actions.map((action, actionIndex) => (
+                          <li key={actionIndex} className="text-sm">
+                            <div className="font-medium text-gray-800">
+                              {actionIndex + 1}. {action.title}
+                            </div>
+                            <div className="text-gray-600 ml-4">
+                              {action.description}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {category.description}
-                    </p>
-                    <ul className="space-y-2">
-                      {category.actions.map((action, actionIndex) => (
-                        <li key={actionIndex} className="text-sm">
-                          <div className="font-medium text-gray-800">
-                            {actionIndex + 1}. {action.title}
-                          </div>
-                          <div className="text-gray-600 ml-4">
-                            {action.description}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Interpretation */}
+        <section className="p-6 bg-purple-100 rounded-2xl shadow-inner">
+          <h2 className="text-2xl font-semibold text-purple-800 mb-4">
+            7. Detailed Interpretation
+          </h2>
+          <p className="text-gray-700 leading-relaxed">
+            {assessmentData.detailedInterpretation.text}
+          </p>
         </section>
 
         {/* 7. Stage Relationships - Chord Diagram */}
@@ -1415,10 +1425,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 8. Stage Rankings Over Time - Area Bump Chart */}
+        {/* Stage Rankings Over Time - Area Bump Chart */}
         <section className="p-6 bg-emerald-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-emerald-700 mb-4">
-            8. Stage Rankings Over Time
+            10. Stage Rankings Over Time
           </h2>
           <p className="text-gray-700 mb-6">
             This area bump chart shows how different employee stages rank in
@@ -1512,10 +1522,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 13. Employee Flow Patterns - Stream Chart */}
+        {/* Employee Flow Patterns - Stream Chart */}
         <section className="p-6 bg-cyan-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-cyan-700 mb-4">
-            13. Employee Flow Patterns
+            11. Employee Flow Patterns
           </h2>
           <p className="text-gray-700 mb-6">
             This stream chart visualizes the continuous flow of employees across
@@ -1636,20 +1646,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 14. Interpretation */}
-        <section className="p-6 bg-purple-100 rounded-2xl shadow-inner">
-          <h2 className="text-2xl font-semibold text-purple-800 mb-4">
-            14. Detailed Interpretation
-          </h2>
-          <p className="text-gray-700 leading-relaxed">
-            {assessmentData.detailedInterpretation.text}
-          </p>
-        </section>
-
-        {/* 15. Department Distribution - SwarmPlot */}
+        {/* Department Distribution - SwarmPlot */}
         <section className="p-6 bg-orange-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-orange-700 mb-4">
-            15. Department Distribution
+            12. Department Distribution
           </h2>
           <p className="text-gray-700 mb-6">
             This swarm plot visualization shows individual employees grouped by
@@ -1753,10 +1753,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 16. Skill Hierarchies - Circle Packing */}
+        {/* Skill Hierarchies - Circle Packing */}
         <section className="p-6 bg-pink-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-pink-700 mb-4">
-            16. Skill Hierarchies
+            13. Skill Hierarchies
           </h2>
           <p className="text-gray-700 mb-6">
             This circle packing chart displays the hierarchical structure of
