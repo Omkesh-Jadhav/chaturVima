@@ -39,8 +39,7 @@ const AssessmentReport: React.FC = () => {
   const weaknesses = assessmentData.swot.weaknesses;
   const opportunities = assessmentData.swot.opportunities;
   const threats = assessmentData.swot.threats;
-  const actionPlan = assessmentData.actionPlan.items;
-  const actionPlanData = assessmentData.actionPlan.data;
+  const actionPlan = assessmentData.actionPlan.categories;
   const recommendations = assessmentData.recommendations;
 
   // Stage Transition Flow Data
@@ -848,10 +847,177 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 6. Stage Relationships - Chord Diagram */}
+        {/* Action Plan - Radar Wheel */}
+        <section className="p-6 bg-green-50 rounded-2xl shadow-inner">
+          <h2 className="text-2xl font-semibold text-green-700 mb-4">
+            6. Action Plan
+          </h2>
+          <p className="text-gray-700 mb-6">
+            Interactive radar wheel showing progress across 5 key development areas. 
+            Click on any segment to view detailed action items and recommendations.
+          </p>
+
+          <div className="space-y-6">
+            {/* Radar Wheel */}
+            <div className="flex flex-col items-center">
+              <div className="relative w-[500px] h-[500px] mb-4">
+                {/* Single SVG for all segments */}
+                <svg className="w-full h-full" viewBox="0 0 500 500">
+                  <defs>
+                    {/* Gradients for each segment */}
+                    <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#4ade80" />
+                      <stop offset="100%" stopColor="#16a34a" />
+                    </linearGradient>
+                    <linearGradient id="gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#60a5fa" />
+                      <stop offset="100%" stopColor="#2563eb" />
+                    </linearGradient>
+                    <linearGradient id="gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#ea580c" />
+                    </linearGradient>
+                    <linearGradient id="gradient-3" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f87171" />
+                      <stop offset="100%" stopColor="#dc2626" />
+                    </linearGradient>
+                    <linearGradient id="gradient-4" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Radar Segments */}
+                  {actionPlan.map((category, index) => {
+                    const startAngle = (index * 72) - 90; // 360/5 = 72 degrees between segments
+                    const endAngle = startAngle + 72;
+                    
+                    const startRadian = (startAngle * Math.PI) / 180;
+                    const endRadian = (endAngle * Math.PI) / 180;
+                    
+                    const outerRadius = 200;
+                    const innerRadius = 80;
+                    const centerX = 250;
+                    const centerY = 250;
+                    
+                    // Calculate arc path
+                    const x1 = centerX + Math.cos(startRadian) * innerRadius;
+                    const y1 = centerY + Math.sin(startRadian) * innerRadius;
+                    const x2 = centerX + Math.cos(startRadian) * outerRadius;
+                    const y2 = centerY + Math.sin(startRadian) * outerRadius;
+                    const x3 = centerX + Math.cos(endRadian) * outerRadius;
+                    const y3 = centerY + Math.sin(endRadian) * outerRadius;
+                    const x4 = centerX + Math.cos(endRadian) * innerRadius;
+                    const y4 = centerY + Math.sin(endRadian) * innerRadius;
+                    
+                    const largeArcFlag = 0; // Since each segment is 72 degrees (< 180)
+                    
+                    const pathData = [
+                      `M ${x1} ${y1}`, // Move to start point (inner)
+                      `L ${x2} ${y2}`, // Line to start point (outer)
+                      `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x3} ${y3}`, // Arc along outer edge
+                      `L ${x4} ${y4}`, // Line to end point (inner)
+                      `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`, // Arc along inner edge
+                      'Z' // Close path
+                    ].join(' ');
+                    
+                    return (
+                      <path
+                        key={category.id}
+                        d={pathData}
+                        fill={`url(#gradient-${index})`}
+                        stroke="white"
+                        strokeWidth="2"
+                        opacity="0.9"
+                        className="hover:opacity-100 transition-opacity cursor-pointer"
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Center Circle */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-full border-4 border-gray-200 flex items-center justify-center shadow-lg z-10">
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-gray-800">Action</div>
+                    <div className="text-xs font-bold text-gray-800">Plan</div>
+                  </div>
+                </div>
+
+                {/* Category Names Inside Segments */}
+                {actionPlan.map((category, index) => {
+                  const angle = (index * 72) - 90 + 36; // Center of each segment
+                  const radian = (angle * Math.PI) / 180;
+                  const textRadius = 140; // Position text in the middle of each segment
+                  const x = Math.cos(radian) * textRadius + 250;
+                  const y = Math.sin(radian) * textRadius + 250;
+                  
+                  return (
+                    <div
+                      key={`text-${category.id}`}
+                      className="absolute pointer-events-none"
+                      style={{ 
+                        left: x, 
+                        top: y,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    >
+                      <div className="text-center max-w-32">
+                        <div className="text-base font-bold text-white drop-shadow-lg leading-tight">
+                          {category.title}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+
+            {/* Detailed Action Items */}
+            <div className="w-full">
+              <h3 className="text-lg font-semibold text-green-700 mb-6 text-center">
+                Detailed Action Categories
+              </h3>
+              <div className="grid gap-4">
+              
+              {actionPlan.map((category: any, index: number) => {
+                const colors = ['border-green-200 bg-green-50', 'border-blue-200 bg-blue-50', 'border-orange-200 bg-orange-50', 'border-red-200 bg-red-50', 'border-purple-200 bg-purple-50'];
+                const textColors = ['text-green-700', 'text-blue-700', 'text-orange-700', 'text-red-700', 'text-purple-700'];
+                
+                return (
+                  <div key={category.id} className={`border rounded-lg p-4 ${colors[index]}`}>
+                    <div className="mb-2">
+                      <h4 className={`font-semibold ${textColors[index]}`}>
+                        {category.id}. {category.title}
+                      </h4>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {category.description}
+                    </p>
+                    <ul className="space-y-2">
+                      {category.actions.map((action, actionIndex) => (
+                        <li key={actionIndex} className="text-sm">
+                          <div className="font-medium text-gray-800">
+                            {actionIndex + 1}. {action.title}
+                          </div>
+                          <div className="text-gray-600 ml-4">
+                            {action.description}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. Stage Relationships - Chord Diagram */}
         <section className="p-6 bg-amber-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-amber-700 mb-4">
-            6. Stage Relationships & Interactions
+            7. Stage Relationships & Interactions
           </h2>
           <p className="text-gray-700 mb-6">
             This chord diagram visualizes the interconnections and transition
@@ -917,10 +1083,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 7. Stage Transition Flow */}
+        {/* 8. Stage Transition Flow */}
         <section className="p-6 bg-teal-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-teal-700 mb-4">
-            7. Stage Transition Flow
+            8. Stage Transition Flow
           </h2>
           <p className="text-gray-700 mb-6">
             This visualization shows how employees move between different stages
@@ -1049,11 +1215,11 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 8. Predictive Trends */}
+        {/* 9. Predictive Trends */}
         <section className="p-6 bg-violet-50 rounded-2xl shadow-inner">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold text-violet-700">
-              8. Predictive Trends (Next 90 Days)
+              9. Predictive Trends (Next 90 Days)
             </h2>
             <div className="flex items-center text-sm text-violet-600">
               <span className="mr-2">🔮</span>
@@ -1653,165 +1819,6 @@ const AssessmentReport: React.FC = () => {
                 <li>• Identify key skill development areas</li>
                 <li>• Plan targeted training programs</li>
               </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* 17. Action Plan */}
-        <section className="p-6 bg-green-50 rounded-2xl shadow-inner">
-          <h2 className="text-2xl font-semibold text-green-700 mb-4">
-            17. Action Plan – Recommended Next Steps
-          </h2>
-          <p className="text-gray-700 mb-6">
-            Interactive progress cards for recommended development actions. Each
-            card shows current progress with gradient bars, target markers, and
-            status indicators with timeline information.
-          </p>
-
-          {/* Action Plan Progress Cards */}
-          <div className="grid gap-6 mb-6">
-            {actionPlanData.map((item, index) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-xl p-6 border border-green-200 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${index === 0
-                        ? "bg-blue-500"
-                        : index === 1
-                          ? "bg-purple-500"
-                          : "bg-orange-500"
-                        }`}
-                    >
-                      {index === 0 ? "📚" : index === 1 ? "🤝" : "🎯"}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-gray-600">{item.subtitle}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">
-                      {item.measures[0]}%
-                    </div>
-                    <div className="text-xs text-gray-500">Progress</div>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Current Progress</span>
-                    <span>Target: {item.markers[0]}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 relative">
-                    <div
-                      className="bg-linear-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500 ease-out"
-                      style={{ width: `${item.measures[0]}%` }}
-                    ></div>
-                    {/* Target Marker */}
-                    <div
-                      className="absolute top-0 w-1 h-3 bg-red-500 rounded"
-                      style={{ left: `${item.markers[0]}%` }}
-                      title={`Target: ${item.markers[0]}%`}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Status and Timeline */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${item.measures[0] >= item.markers[0]
-                        ? "bg-green-500"
-                        : item.measures[0] >= 50
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
-                        }`}
-                    ></div>
-                    <span className="text-sm font-medium">
-                      {item.measures[0] >= item.markers[0]
-                        ? "On Track"
-                        : item.measures[0] >= 50
-                          ? "In Progress"
-                          : "Needs Attention"}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {index === 0
-                      ? "Q1 2024"
-                      : index === 1
-                        ? "Q2 2024"
-                        : "Q3 2024"}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Traditional Action Items */}
-          <div className="bg-emerald-50 p-4 rounded-xl mb-4">
-            <h3 className="text-lg font-semibold text-emerald-700 mb-3">
-              Detailed Action Items:
-            </h3>
-            <ul className="list-disc pl-5 text-gray-700 space-y-2">
-              {actionPlan.map((s, i) => (
-                <li key={i} className="leading-relaxed">
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Progress Legend */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white p-3 rounded-lg border border-green-200 text-center">
-              <div className="w-full h-2 bg-linear-to-r from-green-400 to-green-600 rounded mb-2"></div>
-              <div className="text-sm font-medium text-green-700">
-                Progress Bar
-              </div>
-              <div className="text-xs text-gray-600">
-                Current completion level
-              </div>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-green-200 text-center">
-              <div className="w-1 h-2 bg-red-500 rounded mx-auto mb-2"></div>
-              <div className="text-sm font-medium text-green-700">
-                Target Marker
-              </div>
-              <div className="text-xs text-gray-600">
-                Goal achievement point
-              </div>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-green-200 text-center">
-              <div className="flex justify-center space-x-1 mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              </div>
-              <div className="text-sm font-medium text-green-700">
-                Status Indicators
-              </div>
-              <div className="text-xs text-gray-600">
-                On Track / In Progress / Needs Attention
-              </div>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-green-200 text-center">
-              <div className="flex justify-center space-x-1 mb-2">
-                <span className="text-lg">📚</span>
-                <span className="text-lg">🤝</span>
-                <span className="text-lg">🎯</span>
-              </div>
-              <div className="text-sm font-medium text-green-700">
-                Action Icons
-              </div>
-              <div className="text-xs text-gray-600">
-                Training / Collaboration / Goals
-              </div>
             </div>
           </div>
         </section>

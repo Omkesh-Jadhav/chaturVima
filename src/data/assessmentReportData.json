@@ -350,52 +350,100 @@
     ]
   },
   "actionPlan": {
-    "items": [
-      "Enroll in project management or execution-focused training",
-      "Collaborate with structured thinkers to balance ideation and implementation",
-      "Engage in quarterly mentorship sessions focused on strategic alignment"
-    ],
-    "data": [
+    "categories": [
       {
-        "id": "Training",
-        "title": "Project Management Training",
-        "subtitle": "Execution-focused skills development",
-        "ranges": [
-          100
-        ],
-        "measures": [
-          75
-        ],
-        "markers": [
-          85
+        "id": "1",
+        "title": "Self-Development Actions",
+        "description": "Focus on personal growth and skill enhancement",
+        "actions": [
+          {
+            "title": "Conduct a personal skills and knowledge assessment",
+            "description": "Identify technical and behavioral areas requiring development."
+          },
+          {
+            "title": "Create a learning roadmap",
+            "description": "Include training, reading, mentors, and experiential learning opportunities."
+          },
+          {
+            "title": "Practice reflective thinking weekly",
+            "description": "Track what worked, what didn't, and what to adjust."
+          }
         ]
       },
       {
-        "id": "Collaboration",
-        "title": "Structured Collaboration",
-        "subtitle": "Balance ideation with implementation",
-        "ranges": [
-          100
-        ],
-        "measures": [
-          60
-        ],
-        "markers": [
-          70
+        "id": "2",
+        "title": "Relationship-Building Actions",
+        "description": "Strengthen professional connections and team dynamics",
+        "actions": [
+          {
+            "title": "Identify 2–3 potential mentors or senior colleagues",
+            "description": "Engage them for feedback and strategic perspective."
+          },
+          {
+            "title": "Schedule regular touchpoints with team members",
+            "description": "Use these to build trust and align expectations."
+          },
+          {
+            "title": "Participate actively in team discussions",
+            "description": "Share ideas while encouraging others to contribute."
+          }
         ]
       },
       {
-        "id": "Mentorship",
-        "title": "Strategic Mentorship",
-        "subtitle": "Quarterly alignment sessions",
-        "ranges": [
-          100
-        ],
-        "measures": [
-          45
-        ],
-        "markers": [
-          65
+        "id": "3",
+        "title": "Performance & Execution Actions",
+        "description": "Enhance productivity and goal achievement",
+        "actions": [
+          {
+            "title": "Set short-term milestones",
+            "description": "Break large goals into manageable tasks with deadlines."
+          },
+          {
+            "title": "Use data-driven decision-making",
+            "description": "Support your ideas with analysis, research, and evidence."
+          },
+          {
+            "title": "Document your achievements and lessons learned",
+            "description": "Helps build credibility and track progress objectively."
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "title": "Risk Management Actions",
+        "description": "Proactively manage challenges and prevent issues",
+        "actions": [
+          {
+            "title": "Create a personal stress and energy tracker",
+            "description": "Identify patterns of overload before burnout occurs."
+          },
+          {
+            "title": "Seek clarity when expectations are unclear",
+            "description": "Prevent misalignment early."
+          },
+          {
+            "title": "Plan contingencies for all major tasks",
+            "description": "Prepare for delays or obstacles with alternative approaches."
+          }
+        ]
+      },
+      {
+        "id": "5",
+        "title": "Feedback & Growth Actions",
+        "description": "Accelerate development through continuous improvement",
+        "actions": [
+          {
+            "title": "Request structured feedback biweekly",
+            "description": "Helps refine performance and strengthen relationships."
+          },
+          {
+            "title": "Demonstrate adaptability",
+            "description": "Show willingness to revise approaches when necessary."
+          },
+          {
+            "title": "Actively apply feedback into practice",
+            "description": "This accelerates professional growth and trust-building."
+          }
         ]
       }
     ]
