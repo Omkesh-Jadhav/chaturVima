@@ -294,8 +294,6 @@ const EditProfile = () => {
                       onClick={() => fileInputRef.current?.click()}
                       variant="primary"
                       size="sm"
-                      hoverScale={1.1}
-                      tapScale={0.95}
                       className="absolute bottom-0 right-0 rounded-full p-2.5 w-auto h-auto ring-2 ring-white"
                     >
                       <Camera className="h-4 w-4" />
@@ -511,8 +509,6 @@ const EditProfile = () => {
                       variant="gradient"
                       isLoading={isLoading}
                       size="lg"
-                      hoverScale={1.02}
-                      tapScale={0.98}
                       className="px-8"
                     >
                       {!isLoading && <Save className="mr-2 h-4 w-4" />}

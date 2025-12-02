@@ -1,6 +1,6 @@
 /**
  * Button Component
- * Reusable button with variants, sizes, and optional animations
+ * Reusable button with variants, sizes, and smooth animations
  */
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
@@ -17,8 +17,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | "gradient";
   size?: "xs" | "sm" | "md" | "lg";
   isLoading?: boolean;
-  hoverScale?: number;
-  tapScale?: number;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -30,8 +28,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       disabled,
       children,
-      hoverScale,
-      tapScale,
       ...props
     },
     ref
@@ -60,7 +56,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "text-lg px-6 py-3 h-12 rounded-2xl",
     };
 
-    const buttonElement = (
+    const buttonContent = (
       <button
         ref={ref}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
@@ -97,22 +93,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       </button>
     );
 
-    // If animation props are provided, wrap in motion.div
-    if (hoverScale !== undefined || tapScale !== undefined) {
-      return (
-        <motion.div
-          whileHover={
-            hoverScale !== undefined ? { scale: hoverScale } : undefined
-          }
-          whileTap={tapScale !== undefined ? { scale: tapScale } : undefined}
-          className="inline-block"
-        >
-          {buttonElement}
-        </motion.div>
-      );
-    }
-
-    return buttonElement;
+    // Wrap in motion.div for smooth animations (subtle scale on hover/tap)
+    return (
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="inline-block"
+      >
+        {buttonContent}
+      </motion.div>
+    );
   }
 );
 
