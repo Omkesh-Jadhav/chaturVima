@@ -19,7 +19,7 @@ import {
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
 import type { UserRole } from "../../types";
-import logoImage from "../../assets/chaturvima-logo.png";
+import logoImage from "../../assets/chaturvima-logo.svg";
 
 interface NavItem {
   id: string;
