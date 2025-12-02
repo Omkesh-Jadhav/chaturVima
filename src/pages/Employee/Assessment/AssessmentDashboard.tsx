@@ -631,14 +631,15 @@ const AssessmentDashboard = () => {
                         return (
                           <div
                             key={`${row.assessmentType}-${stage}`}
-                            className={`relative rounded-lg border transition-all hover:shadow-lg group ${
+                            className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${
                               isZero
-                                ? "border-gray-200 bg-white overflow-hidden"
-                                : "border-gray-200/40 bg-gray-50 overflow-visible"
+                                ? "border border-gray-200 bg-white"
+                                : "bg-gray-50"
                             }`}
                             style={
                               !isZero
                                 ? {
+                                    border: `1px solid ${shadowColor}30`,
                                     boxShadow: `0 2px 8px ${shadowColor}20`,
                                   }
                                 : {}
@@ -647,7 +648,7 @@ const AssessmentDashboard = () => {
                             {/* Water Fill Effect - Wavy water in box */}
                             {!isZero && (
                               <motion.div
-                                className="absolute bottom-0 left-0 right-0 rounded-b-lg"
+                                className="absolute bottom-0 left-0 right-0 rounded-b-lg overflow-hidden"
                                 style={{
                                   background: cellGradient,
                                   height: `${value}%`,
@@ -661,10 +662,10 @@ const AssessmentDashboard = () => {
                                 }}
                               >
                                 {/* Wavy water surface using SVG - creates wavy top edge */}
-                                <div className="absolute -top-3 left-0 right-0 h-6">
+                                <div className="absolute top-0 left-0 right-0 h-4 overflow-hidden">
                                   <svg
                                     className="absolute top-0 left-0 w-full h-full"
-                                    viewBox="0 0 200 30"
+                                    viewBox="0 0 200 20"
                                     preserveAspectRatio="none"
                                     style={{ height: "100%" }}
                                   >
@@ -694,19 +695,19 @@ const AssessmentDashboard = () => {
                                     </defs>
                                     {/* Main wave - creates wavy top edge */}
                                     <path
-                                      d="M0,15 Q25,5 50,15 T100,15 T150,15 T200,15 L200,30 L0,30 Z"
+                                      d="M0,10 Q25,2 50,10 T100,10 T150,10 T200,10 L200,20 L0,20 Z"
                                       fill={cellGradient}
                                       opacity="1"
                                     />
                                     {/* Secondary wave layer */}
                                     <path
-                                      d="M0,18 Q20,8 40,18 T80,18 T120,18 T160,18 T200,18 L200,30 L0,30 Z"
+                                      d="M0,12 Q20,4 40,12 T80,12 T120,12 T160,12 T200,12 L200,20 L0,20 Z"
                                       fill={shadowColor}
                                       opacity="0.6"
                                     />
                                     {/* Third wave layer for depth */}
                                     <path
-                                      d="M0,16 Q30,6 60,16 T120,16 T180,16 L200,16 L200,30 L0,30 Z"
+                                      d="M0,11 Q30,3 60,11 T120,11 T180,11 L200,11 L200,20 L0,20 Z"
                                       fill={shadowColor}
                                       opacity="0.5"
                                     />
@@ -715,11 +716,11 @@ const AssessmentDashboard = () => {
 
                                 {/* Water surface highlight on waves */}
                                 <div
-                                  className="absolute -top-3 left-0 right-0 h-0.5 opacity-70"
+                                  className="absolute top-0 left-0 right-0 h-0.5 opacity-70"
                                   style={{
                                     background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent)`,
                                     clipPath:
-                                      "polygon(0 0, 100% 0, 100% 20%, 95% 25%, 90% 20%, 85% 25%, 80% 20%, 75% 25%, 70% 20%, 65% 25%, 60% 20%, 55% 25%, 50% 20%, 45% 25%, 40% 20%, 35% 25%, 30% 20%, 25% 25%, 20% 20%, 15% 25%, 10% 20%, 5% 25%, 0% 20%)",
+                                      "polygon(0 0, 100% 0, 100% 30%, 95% 40%, 90% 30%, 85% 40%, 80% 30%, 75% 40%, 70% 30%, 65% 40%, 60% 30%, 55% 40%, 50% 30%, 45% 40%, 40% 30%, 35% 40%, 30% 30%, 25% 40%, 20% 30%, 15% 40%, 10% 30%, 5% 40%, 0% 30%)",
                                   }}
                                 />
 

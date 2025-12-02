@@ -139,7 +139,7 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
   {
     stage: "Honeymoon",
     values: {
-      "Employee Self Assessment": 92,
+      "Employee Self Assessment": 100,
       "Manager Relationship Assessment": 0,
       "Department Assessment": 88,
       "Company Assessment": 0,
@@ -160,7 +160,7 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
       "Employee Self Assessment": 0,
       "Manager Relationship Assessment": 86,
       "Department Assessment": 0,
-      "Company Assessment": 0,
+      "Company Assessment": 15,
     },
   },
   {
@@ -168,7 +168,7 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
     values: {
       "Employee Self Assessment": 90,
       "Manager Relationship Assessment": 0,
-      "Department Assessment": 0,
+      "Department Assessment": 30,
       "Company Assessment": 0,
     },
   },
