@@ -139,37 +139,37 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
   {
     stage: "Honeymoon",
     values: {
-      "Employee Self Assessment": 85,
-      "Manager Relationship Assessment": 78,
-      "Department Assessment": 72,
-      "Company Assessment": 68,
+      "Employee Self Assessment": 92,
+      "Manager Relationship Assessment": 0,
+      "Department Assessment": 88,
+      "Company Assessment": 0,
     },
   },
   {
     stage: "Self-Introspection",
     values: {
-      "Employee Self Assessment": 82,
+      "Employee Self Assessment": 0,
       "Manager Relationship Assessment": 75,
-      "Department Assessment": 70,
+      "Department Assessment": 0,
       "Company Assessment": 65,
     },
   },
   {
     stage: "Soul-Searching",
     values: {
-      "Employee Self Assessment": 68,
-      "Manager Relationship Assessment": 62,
-      "Department Assessment": 58,
-      "Company Assessment": 55,
+      "Employee Self Assessment": 0,
+      "Manager Relationship Assessment": 86,
+      "Department Assessment": 0,
+      "Company Assessment": 0,
     },
   },
   {
     stage: "Steady-State",
     values: {
       "Employee Self Assessment": 90,
-      "Manager Relationship Assessment": 88,
-      "Department Assessment": 85,
-      "Company Assessment": 82,
+      "Manager Relationship Assessment": 0,
+      "Department Assessment": 0,
+      "Company Assessment": 0,
     },
   },
 ];

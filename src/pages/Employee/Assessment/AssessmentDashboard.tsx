@@ -29,7 +29,6 @@ import { generateSWOTAnalysis, type SWOTQuadrant } from "@/utils/swotUtils";
 import {
   ASSESSMENT_TYPES,
   getCategoryPalette,
-  getAssessmentTypeColorToken,
   getStagePieColor,
 } from "@/utils/assessmentConfig";
 
@@ -80,6 +79,22 @@ const AssessmentDashboard = () => {
       ),
     [categoryDistribution, completionRate, highPriorityPending]
   );
+
+  // Transform heatmap data: Assessment Types as rows (Y-axis), Emotional Stages as columns (X-axis)
+  const transformedHeatmap = useMemo(() => {
+    const emotionalStages = emotionalIntensityHeatmap.map((row) => row.stage);
+    return assessmentTypes.map((assessmentType) => {
+      return {
+        assessmentType,
+        values: emotionalStages.reduce((acc, stage) => {
+          const row = emotionalIntensityHeatmap.find((r) => r.stage === stage);
+          const value = row?.values[assessmentType as keyof typeof row.values];
+          acc[stage] = value ?? 0; // Use 0 for missing values to show 0%
+          return acc;
+        }, {} as Record<string, number>),
+      };
+    });
+  }, [emotionalIntensityHeatmap, assessmentTypes]);
 
   // Generate logical outcomes based on heatmap data
   const logicalOutcomes = useMemo(() => {
@@ -477,124 +492,122 @@ const AssessmentDashboard = () => {
       >
         <SectionHeader
           title="Emotional Intensity Heatmap"
-          description="Intensity levels across stages and assessment types"
-          actions={
-            <div className="flex flex-wrap gap-1.5">
-              {assessmentTypes.map((assessmentType) => {
-                const token = getAssessmentTypeColorToken(assessmentType, 80);
-                return (
-                  <span
-                    key={assessmentType}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md hover:scale-105 cursor-pointer"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full shadow-sm"
-                      style={{
-                        background: `linear-gradient(135deg, ${token.from}, ${token.to})`,
-                        boxShadow: `0 0 4px ${token.from}60`,
-                      }}
-                    />
-                    {assessmentType}
-                  </span>
-                );
-              })}
-            </div>
-          }
+          description="Mapping stages across organizational dimensions"
         />
 
-        <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
-          {emotionalIntensityHeatmap.map((row, rowIdx) => (
-            <AnimatedContainer
-              key={row.stage}
-              animation="fadeInLeft"
-              transitionPreset="normal"
-              delay={rowIdx * 0.05}
-              className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
-            >
-              <div className="grid gap-2 md:grid-cols-[140px_repeat(4,minmax(0,1fr))] items-center">
-                <div className="flex items-center justify-between md:block md:text-left">
-                  <span className="text-sm font-bold text-gray-900">
-                    {row.stage}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gray-400 md:hidden">
-                    Types
-                  </span>
+        <div className="mt-4">
+          {/* Heatmap Grid */}
+          <div
+            className="overflow-x-auto overflow-y-visible scrollbar-hide"
+            style={{ paddingBottom: "4px" }}
+          >
+            <div className="inline-block min-w-full">
+              {/* Header Row - X-Axis Stages */}
+              <div
+                className="grid mb-2"
+                style={{
+                  gridTemplateColumns: "180px repeat(4, minmax(110px, 1fr))",
+                  gap: "8px",
+                }}
+              >
+                {/* Y-Axis Label Header */}
+                <div className="flex items-center justify-start pl-2">
+                  {/* <div className="px-3 py-1.5 rounded-md bg-linear-to-r from-gray-100 to-gray-50 border border-gray-200">
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Assessment Types
+                    </span>
+                  </div> */}
                 </div>
-                {assessmentTypes.map((assessmentType) => {
-                  const value =
-                    row.values[assessmentType as keyof typeof row.values];
-
-                  const token = getAssessmentTypeColorToken(
-                    assessmentType,
-                    value
-                  );
-                  const isHigh = value >= 50;
+                {/* X-Axis Stage Headers */}
+                {emotionalIntensityHeatmap.map((row) => {
+                  const palette = getCategoryPalette(row.stage);
                   return (
                     <div
-                      key={`${row.stage}-${assessmentType}`}
-                      className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all hover:scale-105 hover:-translate-y-0.5 ${
-                        isHigh
-                          ? "border-opacity-30 bg-linear-to-br from-white to-gray-50/50"
-                          : "border-gray-200 bg-white"
-                      }`}
+                      key={row.stage}
+                      className="flex flex-col items-center justify-center p-2.5 rounded-lg border-2 border-gray-200 bg-linear-to-br from-white to-gray-50/50 shadow-sm"
                       style={{
-                        borderColor: isHigh ? `${token.from}33` : undefined,
+                        borderColor: `${palette.accent}20`,
+                        backgroundColor: `${palette.accent}05`,
                       }}
                     >
-                      {/* Percentage in top right corner */}
-                      <div className="absolute top-1.5 right-2.5">
-                        <span
-                          className={`text-xs font-bold ${
-                            isHigh ? "text-gray-900" : "text-gray-600"
-                          }`}
-                        >
-                          {value}%
-                        </span>
-                      </div>
-
-                      {/* Assessment Type Name */}
-                      <div className="pr-12 mb-1.5">
-                        <span
-                          className={`text-[10px] font-bold leading-tight ${
-                            isHigh ? "text-gray-900" : "text-gray-600"
-                          }`}
-                        >
-                          {assessmentType}
-                        </span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(100, value)}%` }}
-                          transition={{
-                            duration: 0.8,
-                            delay: rowIdx * 0.1 + 0.2,
-                            ease: "easeOut",
-                          }}
-                          className="h-full rounded-full shadow-sm"
-                          style={{
-                            background: `linear-gradient(90deg, ${token.from}, ${token.to})`,
-                            boxShadow: `0 0 8px ${token.from}40`,
-                          }}
-                        />
-                      </div>
-                      {isHigh && (
-                        <div
-                          className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full opacity-60"
-                          style={{
-                            background: `radial-gradient(circle, ${token.from}, ${token.to})`,
-                            boxShadow: `0 0 6px ${token.from}`,
-                          }}
-                        />
-                      )}
+                      <span
+                        className="h-3 w-3 rounded-full mb-1.5 shadow-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
+                          boxShadow: `0 0 6px ${palette.accent}50, 0 0 10px ${palette.accent}30`,
+                        }}
+                      />
+                      <span className="text-xs font-bold text-gray-900 text-center leading-tight">
+                        {row.stage}
+                      </span>
                     </div>
                   );
                 })}
               </div>
-            </AnimatedContainer>
-          ))}
+
+              {/* Data Rows - Y-Axis Assessment Types */}
+              <div className="space-y-1.5">
+                {transformedHeatmap.map((row) => {
+                  const stages = emotionalIntensityHeatmap.map((r) => r.stage);
+                  return (
+                    <div
+                      key={row.assessmentType}
+                      className="grid items-center"
+                      style={{
+                        gridTemplateColumns:
+                          "180px repeat(4, minmax(110px, 1fr))",
+                        gap: "8px",
+                      }}
+                    >
+                      {/* Y-Axis Label - Assessment Type */}
+                      <div className="flex items-center p-2.5 rounded-lg border-2 border-gray-200 bg-linear-to-r from-gray-100 to-gray-50 shadow-sm">
+                        <span className="text-sm font-bold text-gray-900 leading-tight">
+                          {row.assessmentType}
+                        </span>
+                      </div>
+
+                      {/* Data Cells */}
+                      {stages.map((stage) => {
+                        const value = row.values[stage] ?? 0;
+                        const palette = getCategoryPalette(stage);
+                        const isZero = value === 0;
+
+                        return (
+                          <div
+                            key={`${row.assessmentType}-${stage}`}
+                            className={`relative rounded-lg border overflow-hidden ${
+                              isZero
+                                ? "border-gray-200 bg-white"
+                                : "border-transparent"
+                            }`}
+                            style={
+                              !isZero
+                                ? {
+                                    background: `linear-gradient(135deg, ${palette.from}, ${palette.accent})`,
+                                    boxShadow: `0 2px 8px ${palette.accent}25`,
+                                  }
+                                : {}
+                            }
+                          >
+                            {/* Content */}
+                            <div className="flex items-center justify-center min-h-[55px] px-3 py-2.5">
+                              <span
+                                className={`text-sm font-bold ${
+                                  isZero ? "text-gray-900" : "text-white"
+                                }`}
+                              >
+                                {value}%
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Logical Outcomes */}
