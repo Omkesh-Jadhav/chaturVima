@@ -1,27 +1,128 @@
 {
+  "employee": {
+    "name": "Omkesh Jadhav",
+    "department": "Software Development"
+  },
   "overview": {
-    "text": "This assessment analyzes the employee's behavioral patterns, work preferences, and interpersonal style based on a series of situational and self-reflective questions. The goal is to understand the employee's fitment to organizational culture and identify areas of growth for personal and professional development."
+    "text": [
+      "This assessment tool provides a structured and in-depth analysis of an employee’s behavioral patterns, work preferences, and interpersonal style. By leveraging a series of situational and self-reflective questions, the tool evaluates how individuals approach decision-making, collaboration, conflict, and everyday workplace challenges. This helps organizations gain a clearer understanding of an employee’s natural tendencies and cultural alignment.",
+      "Beyond behavioral insights, the tool consolidates multiple layers of emotional, cognitive, and performance-related data into a single integrated report. This unified view highlights the employee’s mindset, core strengths, and areas that may require attention or development. By identifying potential risks and growth opportunities early, the assessment supports more accurate talent mapping and role fitment decisions.",
+      "Overall, this assessment tool serves as a comprehensive framework for understanding an individual’s current capabilities and future potential. It empowers organizations to make informed decisions related to development planning, capability building, leadership readiness, and long-term performance enhancement."
+    ]
   },
   "interpretation": {
-    "text": "The scores represent the employee's tendency towards specific workplace behaviors and psychological traits. Higher scores in a given category indicate stronger alignment with that category's defining characteristics."
+    "text": [
+      "The data suggests that the employee is currently in a high-energy, forward-driven phase, characterized by confidence, optimism, and strong emotional momentum. This dominant Honeymoon presence often brings creativity, motivation, and a readiness to take initiative.",
+      "The balanced levels of Self-Introspection and Soul Searching indicate that, alongside this enthusiasm, the employee is actively processing experiences, seeking clarity, and working toward deeper alignment. This combination can be highly productive when supported effectively.",
+      "The lower Steady State percentage reflects that stable patterns, predictability, and long-term equilibrium are still developing, which is typical for individuals in early transitions, evolving roles, or dynamic environments. With continued guidance, structured support, and clear expectations, this distribution can mature into a more stable and sustainable state over time."
+    ],
+    "distribution": [
+      {
+        "stage": "Honeymoon",
+        "score": 153.73,
+        "scorePercentage": 42,
+        "level": "Dominant",
+        "text": "This is the most significant stage, suggesting a period of high enthusiasm and forward momentum."
+      },
+      {
+        "stage": "Self-Reflection",
+        "score": 122.73,
+        "scorePercentage": 23,
+        "level": "Secondary",
+        "text": "A meaningful portion of time is spent reflecting, analyzing situations, and understanding personal or professional dynamics."
+      },
+      {
+        "stage": "Soul-searching",
+        "score": 121.07,
+        "scorePercentage": 23,
+        "level": "Transitional",
+        "text": "This indicates ongoing exploration, questioning, and alignment efforts as the employee evaluates deeper motivations and direction."
+      },
+      {
+        "stage": "Steady State",
+        "score": 118.73,
+        "scorePercentage": 12,
+        "level": "Minor",
+        "text": "A smaller presence in this stage signals that long-term stability or routine has not yet fully solidified."
+      }
+    ]
   },
-  "employee": {
-    "name": "Jane Doe",
-    "department": "R&D"
+  "mainStage": {
+    "stage": "Honeymoon",
+    "score": 153.73,
+    "employeeStageDescription": [
+      "The employee is currently operating in the Honeymoon Stage, which is clearly the dominant emotional and behavioural state based on the dashboard data. This state is characterized by high enthusiasm, optimism, and elevated motivation—traits strongly reflected in the employee’s scores."
+    ],
+    "stageDescription": [
+      "The Honeymoon State represents the early phase of a transition—such as stepping into a new role, joining a new team, or achieving a major milestone—where individuals feel energized, confident, and deeply optimistic about what lies ahead. This psychological state is especially common among new employees, newly promoted leaders, or high-performing individuals who have recently experienced success.",
+      "During this phase, there is a sense of limitless possibility, where challenges seem manageable and opportunities appear abundant. Individuals rely on their past achievements, believing these successes will naturally extend into the new environment."
+    ]
   },
-  "categoryScores": [
-    { "category": "Honeymoon", "score": 82 },
-    { "category": "Self-Reflection", "score": 74 },
-    { "category": "Soul-searching", "score": 68 },
-    { "category": "Steady State", "score": 61 }
-  ],
-  "mainCategory": "Honeymoon",
-  "subCategoryScores": [
-    { "subCategory": "Enthusiasm", "score": 88 },
-    { "subCategory": "Optimism", "score": 80 },
-    { "subCategory": "Engagement", "score": 76 },
-    { "subCategory": "Learning Eagerness", "score": 70 }
-  ],
+  "subStageScores": {
+    "summary": [
+      "The employee displays a high-energy, motivated, and positively aligned Honeymoon profile. Their enthusiasm is complemented by emerging realism, moderate confidence, and minimal complacency.",
+      "While there is some risk of early overextension, the data shows a strong foundation for high performance, fast learning, and rapid adaptation - especially with the right support and expectations."
+    ],
+    "subStage": [
+      {
+        "subStage": "Excitement & Optimism",
+        "scorePercentage": 100,
+        "subStageIntro": "This is the employee’s strongest sub-stage, and a full score indicates a heightened state of enthusiasm and emotional uplift. At this level:",
+        "subStageDescription": [
+          "The employee is exceptionally motivated, eager to take initiative, and ready to contribute at full capacity.",
+          "Creativity is at its peak, leading to fresh ideas, innovative thinking, and rapid problem-solving approaches.",
+          "There is a strong internal belief in the positivity of the environment, the opportunities ahead, and their own ability to succeed."
+        ],
+        "subStageConclusion": "This aligns perfectly with the natural Honeymoon stage, where individuals enter a new role, phase, project, or environment with a sense of possibility, hopefulness, and momentum. It’s a powerful phase for early wins and uplifting team morale."
+      },
+      {
+        "subStage": "Initial Reality Check",
+        "scorePercentage": 96,
+        "subStageIntro": "Even with high optimism, the employee demonstrates early signs of awareness and grounding. This suggests they are:",
+        "subStageDescription": [
+          "Beginning to recognize real-world challenges",
+          "Understanding expectations",
+          "Processing feedback",
+          "Becoming aware of complexities in their role or environment"
+        ],
+        "subStageConclusion": "This combination of optimism with a touch of realism is a positive trait. It helps prevent the employee from falling into unchecked idealism and reduces the risk of emotional drop-off when early challenges emerge. It represents healthy self-awareness and sets the stage for balanced growth."
+      },
+      {
+        "subStage": "Sustained Confidence",
+        "scorePercentage": 58,
+        "subStageIntro": "This moderate score indicates that the employee is:",
+        "subStageDescription": [
+          "Confident in their abilities but still developing deeper self-assurance",
+          "Building long-term belief in how they fit within the system or organization",
+          "Open to guidance, direction, and feedback"
+        ],
+        "subStageConclusion": "This level of confidence is healthy: they are neither overconfident nor insecure. However, it also implies that structure, clarity, mentoring, or positive reinforcement will help solidify their long-term confidence."
+      },
+      {
+        "subStage": "Confidence & Over-Balance",
+        "scorePercentage": 62,
+        "subStageIntro": "A medium score here indicates that while the employee is confident, there is a moderate risk of imbalance, which may manifest as:",
+        "subStageDescription": [
+          "Slight overestimation of their capabilities",
+          "Taking on responsibilities too quickly",
+          "Diving into tasks without full understanding of organizational complexities",
+          "Relying heavily on initial enthusiasm instead of sustainable strategy"
+        ],
+        "subStageConclusion": "This is not a red flag; it simply highlights the natural tendency seen in highly motivated individuals. With guidance, priority-setting, and realistic expectation management, this can be easily balanced."
+      },
+      {
+        "subStage": "Subtle Complacency",
+        "scorePercentage": 31,
+        "subStageIntro": "A low score in complacency is a positive indicator. It means:",
+        "subStageDescription": [
+          "The employee is not becoming relaxed, passive, or disengaged",
+          "They remain alert, proactive, and committed",
+          "They continue to push themselves rather than settling into routine prematurely"
+        ],
+        "subStageConclusion": "This reinforces that the employee is still in an active growth phase and has not allowed comfort to reduce their drive."
+      }
+    ]
+  },
   "swot": {
     "strengths": [
       "Highly innovative and forward-thinking mindset",
@@ -52,25 +153,43 @@
         "id": "Training",
         "title": "Project Management Training",
         "subtitle": "Execution-focused skills development",
-        "ranges": [100],
-        "measures": [75],
-        "markers": [85]
+        "ranges": [
+          100
+        ],
+        "measures": [
+          75
+        ],
+        "markers": [
+          85
+        ]
       },
       {
         "id": "Collaboration",
         "title": "Structured Collaboration",
         "subtitle": "Balance ideation with implementation",
-        "ranges": [100],
-        "measures": [60],
-        "markers": [70]
+        "ranges": [
+          100
+        ],
+        "measures": [
+          60
+        ],
+        "markers": [
+          70
+        ]
       },
       {
         "id": "Mentorship",
         "title": "Strategic Mentorship",
         "subtitle": "Quarterly alignment sessions",
-        "ranges": [100],
-        "measures": [45],
-        "markers": [65]
+        "ranges": [
+          100
+        ],
+        "measures": [
+          45
+        ],
+        "markers": [
+          65
+        ]
       }
     ]
   },
@@ -80,36 +199,84 @@
         "stage": "Honeymoon",
         "stageColor": "#6366F1",
         "transitions": [
-          { "to": "Self-Reflection", "percentage": 46, "count": 12 },
-          { "to": "Soul-searching", "percentage": 31, "count": 8 },
-          { "to": "Steady State", "percentage": 23, "count": 6 }
+          {
+            "to": "Self-Reflection",
+            "percentage": 46,
+            "count": 12
+          },
+          {
+            "to": "Soul-searching",
+            "percentage": 31,
+            "count": 8
+          },
+          {
+            "to": "Steady State",
+            "percentage": 23,
+            "count": 6
+          }
         ]
       },
       {
         "stage": "Self-Reflection",
         "stageColor": "#8B5CF6",
         "transitions": [
-          { "to": "Honeymoon", "percentage": 12, "count": 5 },
-          { "to": "Soul-searching", "percentage": 35, "count": 15 },
-          { "to": "Steady State", "percentage": 27, "count": 11 }
+          {
+            "to": "Honeymoon",
+            "percentage": 12,
+            "count": 5
+          },
+          {
+            "to": "Soul-searching",
+            "percentage": 35,
+            "count": 15
+          },
+          {
+            "to": "Steady State",
+            "percentage": 27,
+            "count": 11
+          }
         ]
       },
       {
         "stage": "Soul-searching",
         "stageColor": "#06B6D4",
         "transitions": [
-          { "to": "Honeymoon", "percentage": 36, "count": 14 },
-          { "to": "Self-Reflection", "percentage": 33, "count": 13 },
-          { "to": "Steady State", "percentage": 26, "count": 10 }
+          {
+            "to": "Honeymoon",
+            "percentage": 36,
+            "count": 14
+          },
+          {
+            "to": "Self-Reflection",
+            "percentage": 33,
+            "count": 13
+          },
+          {
+            "to": "Steady State",
+            "percentage": 26,
+            "count": 10
+          }
         ]
       },
       {
         "stage": "Steady State",
         "stageColor": "#10B981",
         "transitions": [
-          { "to": "Honeymoon", "percentage": 17, "count": 7 },
-          { "to": "Self-Reflection", "percentage": 23, "count": 9 },
-          { "to": "Soul-searching", "percentage": 19, "count": 8 }
+          {
+            "to": "Honeymoon",
+            "percentage": 17,
+            "count": 7
+          },
+          {
+            "to": "Self-Reflection",
+            "percentage": 23,
+            "count": 9
+          },
+          {
+            "to": "Soul-searching",
+            "percentage": 19,
+            "count": 8
+          }
         ]
       }
     ],
@@ -131,96 +298,422 @@
   },
   "chord": {
     "data": [
-      [11, 58, 89, 28],
-      [51, 18, 64, 32],
-      [80, 145, 80, 45],
-      [103, 99, 40, 35]
+      [
+        11,
+        58,
+        89,
+        28
+      ],
+      [
+        51,
+        18,
+        64,
+        32
+      ],
+      [
+        80,
+        145,
+        80,
+        45
+      ],
+      [
+        103,
+        99,
+        40,
+        35
+      ]
     ],
-    "keys": ["Honeymoon", "Self-Reflection", "Soul-searching", "Steady State"]
+    "keys": [
+      "Honeymoon",
+      "Self-Reflection",
+      "Soul-searching",
+      "Steady State"
+    ]
   },
   "areaBump": {
     "data": [
       {
         "id": "Honeymoon",
         "data": [
-          { "x": "Q1", "y": 1 },
-          { "x": "Q2", "y": 2 },
-          { "x": "Q3", "y": 1 },
-          { "x": "Q4", "y": 1 }
+          {
+            "x": "Q1",
+            "y": 1
+          },
+          {
+            "x": "Q2",
+            "y": 2
+          },
+          {
+            "x": "Q3",
+            "y": 1
+          },
+          {
+            "x": "Q4",
+            "y": 1
+          }
         ]
       },
       {
         "id": "Self-Reflection",
         "data": [
-          { "x": "Q1", "y": 2 },
-          { "x": "Q2", "y": 1 },
-          { "x": "Q3", "y": 3 },
-          { "x": "Q4", "y": 2 }
+          {
+            "x": "Q1",
+            "y": 2
+          },
+          {
+            "x": "Q2",
+            "y": 1
+          },
+          {
+            "x": "Q3",
+            "y": 3
+          },
+          {
+            "x": "Q4",
+            "y": 2
+          }
         ]
       },
       {
         "id": "Soul-searching",
         "data": [
-          { "x": "Q1", "y": 3 },
-          { "x": "Q2", "y": 4 },
-          { "x": "Q3", "y": 2 },
-          { "x": "Q4", "y": 3 }
+          {
+            "x": "Q1",
+            "y": 3
+          },
+          {
+            "x": "Q2",
+            "y": 4
+          },
+          {
+            "x": "Q3",
+            "y": 2
+          },
+          {
+            "x": "Q4",
+            "y": 3
+          }
         ]
       },
       {
         "id": "Steady State",
         "data": [
-          { "x": "Q1", "y": 4 },
-          { "x": "Q2", "y": 3 },
-          { "x": "Q3", "y": 4 },
-          { "x": "Q4", "y": 4 }
+          {
+            "x": "Q1",
+            "y": 4
+          },
+          {
+            "x": "Q2",
+            "y": 3
+          },
+          {
+            "x": "Q3",
+            "y": 4
+          },
+          {
+            "x": "Q4",
+            "y": 4
+          }
         ]
       }
     ]
   },
   "stream": {
     "data": [
-      { "period": "Jan", "Honeymoon": 45, "Self-Reflection": 35, "Soul-searching": 25, "Steady State": 30 },
-      { "period": "Feb", "Honeymoon": 52, "Self-Reflection": 28, "Soul-searching": 32, "Steady State": 35 },
-      { "period": "Mar", "Honeymoon": 38, "Self-Reflection": 42, "Soul-searching": 28, "Steady State": 40 },
-      { "period": "Apr", "Honeymoon": 48, "Self-Reflection": 38, "Soul-searching": 35, "Steady State": 32 },
-      { "period": "May", "Honeymoon": 42, "Self-Reflection": 45, "Soul-searching": 30, "Steady State": 38 },
-      { "period": "Jun", "Honeymoon": 55, "Self-Reflection": 32, "Soul-searching": 38, "Steady State": 42 }
+      {
+        "period": "Jan",
+        "Honeymoon": 45,
+        "Self-Reflection": 35,
+        "Soul-searching": 25,
+        "Steady State": 30
+      },
+      {
+        "period": "Feb",
+        "Honeymoon": 52,
+        "Self-Reflection": 28,
+        "Soul-searching": 32,
+        "Steady State": 35
+      },
+      {
+        "period": "Mar",
+        "Honeymoon": 38,
+        "Self-Reflection": 42,
+        "Soul-searching": 28,
+        "Steady State": 40
+      },
+      {
+        "period": "Apr",
+        "Honeymoon": 48,
+        "Self-Reflection": 38,
+        "Soul-searching": 35,
+        "Steady State": 32
+      },
+      {
+        "period": "May",
+        "Honeymoon": 42,
+        "Self-Reflection": 45,
+        "Soul-searching": 30,
+        "Steady State": 38
+      },
+      {
+        "period": "Jun",
+        "Honeymoon": 55,
+        "Self-Reflection": 32,
+        "Soul-searching": 38,
+        "Steady State": 42
+      }
     ]
   },
   "swarmPlot": {
     "data": [
-      { "id": "Sarah Chen", "group": "Engineering", "value": 88, "team": "Frontend", "stage": "Honeymoon", "experience": 3.5 },
-      { "id": "Mike Rodriguez", "group": "Engineering", "value": 82, "team": "Frontend", "stage": "Honeymoon", "experience": 2.1 },
-      { "id": "Emily Davis", "group": "Engineering", "value": 75, "team": "Frontend", "stage": "Self-Reflection", "experience": 4.2 },
-      { "id": "Alex Kim", "group": "Engineering", "value": 90, "team": "Frontend", "stage": "Honeymoon", "experience": 1.8 },
-      { "id": "David Wilson", "group": "Engineering", "value": 72, "team": "Backend", "stage": "Self-Reflection", "experience": 5.1 },
-      { "id": "Lisa Zhang", "group": "Engineering", "value": 78, "team": "Backend", "stage": "Self-Reflection", "experience": 3.8 },
-      { "id": "James Brown", "group": "Engineering", "value": 68, "team": "Backend", "stage": "Soul-searching", "experience": 6.2 },
-      { "id": "Maria Garcia", "group": "Engineering", "value": 85, "team": "Backend", "stage": "Steady State", "experience": 4.5 },
-      { "id": "Ryan Johnson", "group": "Engineering", "value": 70, "team": "DevOps", "stage": "Steady State", "experience": 7.1 },
-      { "id": "Anna Lee", "group": "Engineering", "value": 65, "team": "DevOps", "stage": "Self-Reflection", "experience": 3.2 },
-      { "id": "Tom Anderson", "group": "Engineering", "value": 75, "team": "DevOps", "stage": "Steady State", "experience": 5.8 },
-      { "id": "Jessica Taylor", "group": "Product", "value": 80, "team": "Design", "stage": "Soul-searching", "experience": 4.1 },
-      { "id": "Kevin Wu", "group": "Product", "value": 72, "team": "Design", "stage": "Self-Reflection", "experience": 2.9 },
-      { "id": "Sophie Miller", "group": "Product", "value": 88, "team": "Design", "stage": "Honeymoon", "experience": 1.5 },
-      { "id": "Chris Evans", "group": "Product", "value": 74, "team": "Design", "stage": "Soul-searching", "experience": 3.7 },
-      { "id": "Rachel Green", "group": "Product", "value": 85, "team": "Management", "stage": "Steady State", "experience": 8.2 },
-      { "id": "Mark Thompson", "group": "Product", "value": 78, "team": "Management", "stage": "Self-Reflection", "experience": 6.5 },
-      { "id": "Linda Wang", "group": "Product", "value": 80, "team": "Management", "stage": "Steady State", "experience": 7.8 },
-      { "id": "Daniel Park", "group": "Product", "value": 82, "team": "Research", "stage": "Honeymoon", "experience": 2.3 },
-      { "id": "Amy Liu", "group": "Product", "value": 76, "team": "Research", "stage": "Self-Reflection", "experience": 4.6 },
-      { "id": "Robert Smith", "group": "Product", "value": 84, "team": "Research", "stage": "Honeymoon", "experience": 1.9 },
-      { "id": "Nicole Adams", "group": "Marketing", "value": 79, "team": "Digital", "stage": "Self-Reflection", "experience": 3.4 },
-      { "id": "Brian Clark", "group": "Marketing", "value": 71, "team": "Digital", "stage": "Soul-searching", "experience": 4.8 },
-      { "id": "Samantha Lee", "group": "Marketing", "value": 86, "team": "Digital", "stage": "Honeymoon", "experience": 2.1 },
-      { "id": "Jason Martinez", "group": "Marketing", "value": 74, "team": "Digital", "stage": "Self-Reflection", "experience": 5.2 },
-      { "id": "Emma Wilson", "group": "Marketing", "value": 70, "team": "Content", "stage": "Honeymoon", "experience": 1.7 },
-      { "id": "Tyler Davis", "group": "Marketing", "value": 77, "team": "Content", "stage": "Self-Reflection", "experience": 3.1 },
-      { "id": "Grace Kim", "group": "Marketing", "value": 73, "team": "Content", "stage": "Soul-searching", "experience": 4.3 },
-      { "id": "Andrew Chen", "group": "Marketing", "value": 81, "team": "Analytics", "stage": "Steady State", "experience": 6.7 },
-      { "id": "Olivia Brown", "group": "Marketing", "value": 75, "team": "Analytics", "stage": "Self-Reflection", "experience": 3.9 },
-      { "id": "Nathan Taylor", "group": "Marketing", "value": 72, "team": "Analytics", "stage": "Soul-searching", "experience": 4.1 }
+      {
+        "id": "Sarah Chen",
+        "group": "Engineering",
+        "value": 88,
+        "team": "Frontend",
+        "stage": "Honeymoon",
+        "experience": 3.5
+      },
+      {
+        "id": "Mike Rodriguez",
+        "group": "Engineering",
+        "value": 82,
+        "team": "Frontend",
+        "stage": "Honeymoon",
+        "experience": 2.1
+      },
+      {
+        "id": "Emily Davis",
+        "group": "Engineering",
+        "value": 75,
+        "team": "Frontend",
+        "stage": "Self-Reflection",
+        "experience": 4.2
+      },
+      {
+        "id": "Alex Kim",
+        "group": "Engineering",
+        "value": 90,
+        "team": "Frontend",
+        "stage": "Honeymoon",
+        "experience": 1.8
+      },
+      {
+        "id": "David Wilson",
+        "group": "Engineering",
+        "value": 72,
+        "team": "Backend",
+        "stage": "Self-Reflection",
+        "experience": 5.1
+      },
+      {
+        "id": "Lisa Zhang",
+        "group": "Engineering",
+        "value": 78,
+        "team": "Backend",
+        "stage": "Self-Reflection",
+        "experience": 3.8
+      },
+      {
+        "id": "James Brown",
+        "group": "Engineering",
+        "value": 68,
+        "team": "Backend",
+        "stage": "Soul-searching",
+        "experience": 6.2
+      },
+      {
+        "id": "Maria Garcia",
+        "group": "Engineering",
+        "value": 85,
+        "team": "Backend",
+        "stage": "Steady State",
+        "experience": 4.5
+      },
+      {
+        "id": "Ryan Johnson",
+        "group": "Engineering",
+        "value": 70,
+        "team": "DevOps",
+        "stage": "Steady State",
+        "experience": 7.1
+      },
+      {
+        "id": "Anna Lee",
+        "group": "Engineering",
+        "value": 65,
+        "team": "DevOps",
+        "stage": "Self-Reflection",
+        "experience": 3.2
+      },
+      {
+        "id": "Tom Anderson",
+        "group": "Engineering",
+        "value": 75,
+        "team": "DevOps",
+        "stage": "Steady State",
+        "experience": 5.8
+      },
+      {
+        "id": "Jessica Taylor",
+        "group": "Product",
+        "value": 80,
+        "team": "Design",
+        "stage": "Soul-searching",
+        "experience": 4.1
+      },
+      {
+        "id": "Kevin Wu",
+        "group": "Product",
+        "value": 72,
+        "team": "Design",
+        "stage": "Self-Reflection",
+        "experience": 2.9
+      },
+      {
+        "id": "Sophie Miller",
+        "group": "Product",
+        "value": 88,
+        "team": "Design",
+        "stage": "Honeymoon",
+        "experience": 1.5
+      },
+      {
+        "id": "Chris Evans",
+        "group": "Product",
+        "value": 74,
+        "team": "Design",
+        "stage": "Soul-searching",
+        "experience": 3.7
+      },
+      {
+        "id": "Rachel Green",
+        "group": "Product",
+        "value": 85,
+        "team": "Management",
+        "stage": "Steady State",
+        "experience": 8.2
+      },
+      {
+        "id": "Mark Thompson",
+        "group": "Product",
+        "value": 78,
+        "team": "Management",
+        "stage": "Self-Reflection",
+        "experience": 6.5
+      },
+      {
+        "id": "Linda Wang",
+        "group": "Product",
+        "value": 80,
+        "team": "Management",
+        "stage": "Steady State",
+        "experience": 7.8
+      },
+      {
+        "id": "Daniel Park",
+        "group": "Product",
+        "value": 82,
+        "team": "Research",
+        "stage": "Honeymoon",
+        "experience": 2.3
+      },
+      {
+        "id": "Amy Liu",
+        "group": "Product",
+        "value": 76,
+        "team": "Research",
+        "stage": "Self-Reflection",
+        "experience": 4.6
+      },
+      {
+        "id": "Robert Smith",
+        "group": "Product",
+        "value": 84,
+        "team": "Research",
+        "stage": "Honeymoon",
+        "experience": 1.9
+      },
+      {
+        "id": "Nicole Adams",
+        "group": "Marketing",
+        "value": 79,
+        "team": "Digital",
+        "stage": "Self-Reflection",
+        "experience": 3.4
+      },
+      {
+        "id": "Brian Clark",
+        "group": "Marketing",
+        "value": 71,
+        "team": "Digital",
+        "stage": "Soul-searching",
+        "experience": 4.8
+      },
+      {
+        "id": "Samantha Lee",
+        "group": "Marketing",
+        "value": 86,
+        "team": "Digital",
+        "stage": "Honeymoon",
+        "experience": 2.1
+      },
+      {
+        "id": "Jason Martinez",
+        "group": "Marketing",
+        "value": 74,
+        "team": "Digital",
+        "stage": "Self-Reflection",
+        "experience": 5.2
+      },
+      {
+        "id": "Emma Wilson",
+        "group": "Marketing",
+        "value": 70,
+        "team": "Content",
+        "stage": "Honeymoon",
+        "experience": 1.7
+      },
+      {
+        "id": "Tyler Davis",
+        "group": "Marketing",
+        "value": 77,
+        "team": "Content",
+        "stage": "Self-Reflection",
+        "experience": 3.1
+      },
+      {
+        "id": "Grace Kim",
+        "group": "Marketing",
+        "value": 73,
+        "team": "Content",
+        "stage": "Soul-searching",
+        "experience": 4.3
+      },
+      {
+        "id": "Andrew Chen",
+        "group": "Marketing",
+        "value": 81,
+        "team": "Analytics",
+        "stage": "Steady State",
+        "experience": 6.7
+      },
+      {
+        "id": "Olivia Brown",
+        "group": "Marketing",
+        "value": 75,
+        "team": "Analytics",
+        "stage": "Self-Reflection",
+        "experience": 3.9
+      },
+      {
+        "id": "Nathan Taylor",
+        "group": "Marketing",
+        "value": 72,
+        "team": "Analytics",
+        "stage": "Soul-searching",
+        "experience": 4.1
+      }
     ]
   },
   "circlePacking": {
@@ -230,25 +723,52 @@
         {
           "name": "Technical",
           "children": [
-            { "name": "Programming", "value": 120 },
-            { "name": "Architecture", "value": 85 },
-            { "name": "Testing", "value": 65 }
+            {
+              "name": "Programming",
+              "value": 120
+            },
+            {
+              "name": "Architecture",
+              "value": 85
+            },
+            {
+              "name": "Testing",
+              "value": 65
+            }
           ]
         },
         {
           "name": "Leadership",
           "children": [
-            { "name": "Communication", "value": 95 },
-            { "name": "Strategy", "value": 75 },
-            { "name": "Mentoring", "value": 55 }
+            {
+              "name": "Communication",
+              "value": 95
+            },
+            {
+              "name": "Strategy",
+              "value": 75
+            },
+            {
+              "name": "Mentoring",
+              "value": 55
+            }
           ]
         },
         {
           "name": "Creative",
           "children": [
-            { "name": "Innovation", "value": 88 },
-            { "name": "Problem Solving", "value": 72 },
-            { "name": "Design Thinking", "value": 48 }
+            {
+              "name": "Innovation",
+              "value": 88
+            },
+            {
+              "name": "Problem Solving",
+              "value": 72
+            },
+            {
+              "name": "Design Thinking",
+              "value": 48
+            }
           ]
         }
       ]

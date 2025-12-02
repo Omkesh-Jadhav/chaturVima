@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { Play, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
@@ -54,6 +55,8 @@ const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const AssessmentDashboard = () => {
+  const navigate = useNavigate();
+  
   const pending = MOCK_PENDING_ASSESSMENTS;
   const completed = MOCK_COMPLETED_ASSESSMENTS;
   const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
@@ -810,6 +813,7 @@ const AssessmentDashboard = () => {
                       <Button
                         onClick={(e) => {
                           e.preventDefault();
+                          navigate('/assessment-report');
                         }}
                         variant="gradient"
                         size="sm"
