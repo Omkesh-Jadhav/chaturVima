@@ -24,9 +24,12 @@ import {
   CardContent,
   Input,
   Select,
+  Textarea,
+  FormSection,
   type SelectOption,
 } from "../../components/ui";
 import { useUser } from "../../context/UserContext";
+import { COUNTRY_CODES, SALUTATIONS } from "../../utils/constants";
 
 // Success Modal Component
 const SuccessModal = ({
@@ -90,10 +93,7 @@ const SuccessModal = ({
           </div>
         </div>
         <div className="p-6">
-          <Button
-            onClick={onDone}
-            className="w-full cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
-          >
+          <Button onClick={onDone} variant="gradient" className="w-full">
             Done
           </Button>
         </div>
@@ -125,43 +125,16 @@ const EditProfile = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Salutation options
-  const salutationOptions: SelectOption[] = [
-    "Mr.",
-    "Mrs.",
-    "Ms.",
-    "Dr.",
-    "Prof.",
-  ].map((sal) => ({ value: sal, label: sal }));
+  // Generate options from constants
+  const salutationOptions: SelectOption[] = SALUTATIONS.map((sal) => ({
+    value: sal,
+    label: sal,
+  }));
 
-  // Country code options with flags
-  const countryCodes = [
-    ["+1", "US", "🇺🇸"],
-    ["+91", "IN", "🇮🇳"],
-    ["+44", "GB", "🇬🇧"],
-    ["+61", "AU", "🇦🇺"],
-    ["+86", "CN", "🇨🇳"],
-    ["+81", "JP", "🇯🇵"],
-    ["+49", "DE", "🇩🇪"],
-    ["+33", "FR", "🇫🇷"],
-    ["+39", "IT", "🇮🇹"],
-    ["+34", "ES", "🇪🇸"],
-    ["+7", "RU", "🇷🇺"],
-    ["+82", "KR", "🇰🇷"],
-    ["+55", "BR", "🇧🇷"],
-    ["+52", "MX", "🇲🇽"],
-    ["+27", "ZA", "🇿🇦"],
-    ["+971", "AE", "🇦🇪"],
-    ["+65", "SG", "🇸🇬"],
-    ["+60", "MY", "🇲🇾"],
-    ["+66", "TH", "🇹🇭"],
-    ["+84", "VN", "🇻🇳"],
-  ] as const;
-
-  const countryCodeOptions: SelectOption[] = countryCodes.map(
+  const countryCodeOptions: SelectOption[] = COUNTRY_CODES.map(
     ([code, , flag]) => ({
       value: code,
-      label: code, // Just show the dialing code, flag icon already represents country
+      label: code,
       icon: <span className="text-base">{flag}</span>,
     })
   );
@@ -296,7 +269,7 @@ const EditProfile = () => {
           variant="outline"
           onClick={() => navigate("/settings")}
           size="sm"
-          className="cursor-pointer text-xs py-1.5 h-auto shrink-0"
+          className="shrink-0"
         >
           <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
           Back
@@ -341,15 +314,21 @@ const EditProfile = () => {
                         <UserCircle className="h-16 w-16 text-gray-400" />
                       )}
                     </motion.div>
-                    <motion.button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
+                    <motion.div
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
-                      className="absolute bottom-0 right-0 p-2.5 rounded-full bg-brand-teal text-white shadow-lg hover:bg-brand-teal/90 transition-all ring-2 ring-white"
+                      className="absolute bottom-0 right-0"
                     >
-                      <Camera className="h-4 w-4" />
-                    </motion.button>
+                      <Button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        variant="primary"
+                        size="sm"
+                        className="rounded-full p-2.5 w-auto h-auto ring-2 ring-white"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -417,75 +396,48 @@ const EditProfile = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="space-y-4"
                   >
-                    <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-linear-to-br from-brand-teal to-brand-navy p-2 text-white shadow-sm">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Personal Information
-                      </h3>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {/* Salutation */}
-                      <div className="space-y-1.5">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <span>Salutation</span>
-                          <span className="ml-auto text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full">
-                            Editable
-                          </span>
-                        </label>
-                        <Select
-                          value={formData.salutation}
-                          onChange={(value) =>
-                            handleChange("salutation", value)
-                          }
-                          options={salutationOptions}
-                          error={errors.salutation}
-                        />
-                      </div>
-
-                      {/* Name - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Name
-                        </label>
+                    <FormSection icon={User} title="Personal Information">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <span>Salutation</span>
+                            <span className="ml-auto text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full">
+                              Editable
+                            </span>
+                          </label>
+                          <Select
+                            value={formData.salutation}
+                            onChange={(value) =>
+                              handleChange("salutation", value)
+                            }
+                            options={salutationOptions}
+                            error={errors.salutation}
+                          />
+                        </div>
                         <Input
+                          label="Name"
                           type="text"
                           value={formData.name}
                           disabled
                           readOnly
                         />
-                      </div>
-
-                      {/* Designation - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Designation
-                        </label>
                         <Input
+                          label="Designation"
                           type="text"
                           value={formData.designation}
                           disabled
                           readOnly
                         />
-                      </div>
-
-                      {/* Department - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Department
-                        </label>
                         <Input
+                          label="Department"
                           type="text"
                           value={formData.department}
                           disabled
                           readOnly
                         />
                       </div>
-                    </div>
+                    </FormSection>
                   </motion.div>
 
                   {/* Contact Information Section */}
@@ -493,57 +445,45 @@ const EditProfile = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="space-y-4 pt-5 border-t-2 border-gray-100"
+                    className="pt-5 border-t-2 border-gray-100"
                   >
-                    <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-linear-to-br from-blue-500 to-cyan-500 p-2 text-white shadow-sm">
-                        <Mail className="h-4 w-4" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Contact Information
-                      </h3>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {/* Email ID - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Email ID
-                        </label>
+                    <FormSection
+                      icon={Mail}
+                      title="Contact Information"
+                      iconColor="from-blue-500 to-cyan-500"
+                    >
+                      <div className="grid gap-3 md:grid-cols-2">
                         <Input
+                          label="Email ID"
                           type="email"
                           value={formData.emailAddress}
                           disabled
                           readOnly
                         />
-                      </div>
-
-                      {/* Phone Number - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Phone Number
-                        </label>
-                        <div className="flex gap-2">
-                          {/* Country Code Dropdown - Disabled */}
-                          <div className="w-[110px] shrink-0">
-                            <Select
-                              value={formData.countryCode}
-                              onChange={() => {}}
-                              options={countryCodeOptions}
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Phone Number
+                          </label>
+                          <div className="flex gap-2">
+                            <div className="w-[110px] shrink-0">
+                              <Select
+                                value={formData.countryCode}
+                                onChange={() => {}}
+                                options={countryCodeOptions}
+                                disabled
+                              />
+                            </div>
+                            <Input
+                              type="tel"
+                              value={formData.phoneNumber}
                               disabled
+                              className="flex-1"
+                              readOnly
                             />
                           </div>
-                          {/* Phone Number Input - Read Only */}
-                          <Input
-                            type="tel"
-                            value={formData.phoneNumber}
-                            disabled
-                            className="flex-1"
-                            readOnly
-                          />
                         </div>
                       </div>
-                    </div>
+                    </FormSection>
                   </motion.div>
 
                   {/* Location Information Section */}
@@ -551,44 +491,30 @@ const EditProfile = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="space-y-4 pt-5 border-t-2 border-gray-100"
+                    className="pt-5 border-t-2 border-gray-100"
                   >
-                    <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-linear-to-br from-orange-400 to-amber-400 p-2 text-white shadow-sm">
-                        <MapPin className="h-4 w-4" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Location Information
-                      </h3>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {/* City - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          City
-                        </label>
+                    <FormSection
+                      icon={MapPin}
+                      title="Location Information"
+                      iconColor="from-orange-400 to-amber-400"
+                    >
+                      <div className="grid gap-3 md:grid-cols-2">
                         <Input
+                          label="City"
                           type="text"
                           value={formData.city}
                           disabled
                           readOnly
                         />
-                      </div>
-
-                      {/* Country - Read Only */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Country
-                        </label>
                         <Input
+                          label="Country"
                           type="text"
                           value={formData.country}
                           disabled
                           readOnly
                         />
                       </div>
-                    </div>
+                    </FormSection>
                   </motion.div>
 
                   {/* Brief Description Section - Editable */}
@@ -596,22 +522,15 @@ const EditProfile = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="space-y-4 pt-5 border-t-2 border-gray-100"
+                    className="pt-5 border-t-2 border-gray-100"
                   >
-                    <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="rounded-lg bg-linear-to-br from-purple-500 to-pink-500 p-2 text-white shadow-sm">
-                        <FileText className="h-4 w-4" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">
-                        Brief Description
-                      </h3>
-                      <span className="ml-auto text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full">
-                        Editable
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <textarea
+                    <FormSection
+                      icon={FileText}
+                      title="Brief Description"
+                      editable
+                      iconColor="from-purple-500 to-pink-500"
+                    >
+                      <Textarea
                         placeholder="Tell us about yourself, your interests, or any additional information you'd like to share..."
                         value={formData.briefDescription}
                         onChange={(e) =>
@@ -619,24 +538,13 @@ const EditProfile = () => {
                         }
                         rows={5}
                         maxLength={500}
-                        className={`flex w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-medium transition-colors placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-0 focus:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50 resize-none shadow-sm ${
-                          errors.briefDescription
-                            ? "border-red-300 focus:ring-red-500 focus:border-red-400"
-                            : "border-gray-300"
-                        }`}
+                        error={errors.briefDescription}
+                        characterCount={{
+                          current: formData.briefDescription.length,
+                          max: 500,
+                        }}
                       />
-                      <div className="flex items-center justify-between px-1">
-                        {errors.briefDescription && (
-                          <p className="text-xs font-medium text-red-600 flex items-center gap-1">
-                            <span>⚠️</span>
-                            {errors.briefDescription}
-                          </p>
-                        )}
-                        <p className="ml-auto text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                          {formData.briefDescription.length}/500 characters
-                        </p>
-                      </div>
-                    </div>
+                    </FormSection>
                   </motion.div>
 
                   {/* Submit Error */}
@@ -665,7 +573,8 @@ const EditProfile = () => {
                       variant="outline"
                       onClick={() => navigate("/settings")}
                       disabled={isLoading}
-                      className="cursor-pointer border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-md"
+                      size="lg"
+                      className="px-6"
                     >
                       Cancel
                     </Button>
@@ -675,8 +584,10 @@ const EditProfile = () => {
                     >
                       <Button
                         type="submit"
+                        variant="gradient"
                         isLoading={isLoading}
-                        className="cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all font-semibold px-8 py-2.5 rounded-xl"
+                        size="lg"
+                        className="px-8"
                       >
                         {!isLoading && <Save className="mr-2 h-4 w-4" />}
                         Save Changes

@@ -21,6 +21,8 @@ export { FilterBar } from "./FilterBar";
 export { CalendarInput } from "./CalendarInput";
 export { Tooltip } from "./Tooltip";
 export { Select } from "./Select";
+export { default as Textarea } from "./Textarea";
+export { FormSection } from "./FormSection";
 
 export type { ButtonProps } from "./Button";
 export type { CardProps } from "./Card";
@@ -38,3 +40,4 @@ export type {
 export type { CalendarInputProps } from "./CalendarInput";
 export type { TooltipProps } from "./Tooltip";
 export type { SelectProps, SelectOption } from "./Select";
+export type { TextareaProps } from "./Textarea";
