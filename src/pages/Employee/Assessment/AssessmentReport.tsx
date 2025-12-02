@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { ResponsiveChord } from "@nivo/chord";
@@ -24,6 +24,7 @@ import InteractiveMindMap from "@/components/assessment/InteractiveMindMap";
 
 const AssessmentReport: React.FC = () => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
 
   // Assessment Data from JSON
   const overviewText = assessmentData.overview.text;
@@ -928,8 +929,9 @@ const AssessmentReport: React.FC = () => {
                         fill={`url(#gradient-${index})`}
                         stroke="white"
                         strokeWidth="2"
-                        opacity="0.9"
+                        opacity={selectedSegment === null || selectedSegment === index ? "0.9" : "0.4"}
                         className="hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={() => setSelectedSegment(selectedSegment === index ? null : index)}
                       />
                     );
                   })}
@@ -976,18 +978,29 @@ const AssessmentReport: React.FC = () => {
             {/* Detailed Action Items */}
             <div className="w-full">
               <h3 className="text-lg font-semibold text-green-700 mb-6 text-center">
-                Detailed Action Categories
+                {selectedSegment !== null ? `${actionPlan[selectedSegment].title}` : 'Detailed Action Categories'}
               </h3>
+              {selectedSegment !== null && (
+                <div className="text-center mb-4">
+                  <button 
+                    onClick={() => setSelectedSegment(null)}
+                    className="text-sm text-green-600 hover:text-green-800 underline"
+                  >
+                    ← Show All Categories
+                  </button>
+                </div>
+              )}
               <div className="grid gap-4">
               
-              {actionPlan.map((category: any, index: number) => {
+              {(selectedSegment !== null ? [actionPlan[selectedSegment]] : actionPlan).map((category: any, index: number) => {
+                const actualIndex = selectedSegment !== null ? selectedSegment : index;
                 const colors = ['border-green-200 bg-green-50', 'border-blue-200 bg-blue-50', 'border-orange-200 bg-orange-50', 'border-red-200 bg-red-50', 'border-purple-200 bg-purple-50'];
                 const textColors = ['text-green-700', 'text-blue-700', 'text-orange-700', 'text-red-700', 'text-purple-700'];
                 
                 return (
-                  <div key={category.id} className={`border rounded-lg p-4 ${colors[index]}`}>
+                  <div key={category.id} className={`border rounded-lg p-4 ${colors[actualIndex]}`}>
                     <div className="mb-2">
-                      <h4 className={`font-semibold ${textColors[index]}`}>
+                      <h4 className={`font-semibold ${textColors[actualIndex]}`}>
                         {category.id}. {category.title}
                       </h4>
                     </div>
