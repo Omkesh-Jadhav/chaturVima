@@ -208,7 +208,7 @@ const AssessmentDashboard = () => {
         {/* Employee Emotional Stage Assessment */}
         <AnimatedContainer
           animation="fadeInUp"
-          transition="slow"
+          transitionPreset="slow"
           className={`${CARD_BASE_CLASSES} xl:col-span-2`}
         >
           <div className="mb-3">
@@ -235,7 +235,7 @@ const AssessmentDashboard = () => {
                   key={stage.stage}
                   animation="fadeInUp"
                   delay={idx * ANIMATION_DELAYS.stageCard}
-                  transition="normal"
+                  transitionPreset="normal"
                   onClick={() => setSelectedStage(stage)}
                   className={`group rounded-lg border p-3 transition-all cursor-pointer ${
                     statusStyle
@@ -296,7 +296,7 @@ const AssessmentDashboard = () => {
         {/* Stage Distribution - Pie Chart */}
         <AnimatedContainer
           animation="fadeInUp"
-          transition="slow"
+          transitionPreset="slow"
           delay="xs"
           className={`${CARD_BASE_CLASSES} p-5`}
         >
@@ -335,7 +335,7 @@ const AssessmentDashboard = () => {
       {selectedStage && selectedSubStages.length > 0 && (
         <AnimatedContainer
           animation="fadeInUp"
-          transition="slow"
+          transitionPreset="slow"
           delay="sm"
           className={CARD_BASE_CLASSES}
         >
@@ -365,7 +365,7 @@ const AssessmentDashboard = () => {
                 <AnimatedContainer
                   key={subStage.id}
                   animation="scaleIn"
-                  transition="spring"
+                  transitionPreset="spring"
                   delay={idx * 0.08}
                   className="group relative rounded-lg border border-gray-200 bg-linear-to-br from-white to-gray-50/50 p-3.5 transition-all hover:shadow-md hover:border-gray-300 hover:scale-105 hover:-translate-y-0.5"
                 >
@@ -413,7 +413,7 @@ const AssessmentDashboard = () => {
       {/* SWOT Analysis */}
       <AnimatedContainer
         animation="fadeInUp"
-        transition="slow"
+        transitionPreset="slow"
         delay="sm"
         className={CARD_BASE_CLASSES}
       >
@@ -430,7 +430,7 @@ const AssessmentDashboard = () => {
               <AnimatedContainer
                 key={quadrant.type}
                 animation="scaleIn"
-                transition="normal"
+                transitionPreset="normal"
                 delay={qIdx * 0.1}
                 className="rounded-xl border border-gray-100 bg-white overflow-hidden"
               >
@@ -448,7 +448,7 @@ const AssessmentDashboard = () => {
                       <AnimatedContainer
                         key={item.id}
                         animation="fadeInLeft"
-                        transition="normal"
+                        transitionPreset="normal"
                         delay={qIdx * 0.1 + idx * 0.05}
                         className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all hover:scale-105 hover:-translate-y-0.5`}
                       >
@@ -468,7 +468,7 @@ const AssessmentDashboard = () => {
       {/* Emotional Intensity Heatmap */}
       <AnimatedContainer
         animation="fadeInUp"
-        transition="slow"
+        transitionPreset="slow"
         delay="sm"
         className={CARD_BASE_CLASSES}
       >
@@ -504,7 +504,7 @@ const AssessmentDashboard = () => {
             <AnimatedContainer
               key={row.stage}
               animation="fadeInLeft"
-              transition="normal"
+              transitionPreset="normal"
               delay={rowIdx * 0.05}
               className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
             >
@@ -620,7 +620,7 @@ const AssessmentDashboard = () => {
       {/* Pending Assessments */}
       <AnimatedContainer
         animation="fadeInUp"
-        transition="slow"
+        transitionPreset="slow"
         delay="md"
         className={CARD_BASE_CLASSES}
       >
@@ -658,7 +658,7 @@ const AssessmentDashboard = () => {
               <AnimatedContainer
                 key={item.id}
                 animation="fadeInLeft"
-                transition="normal"
+                transitionPreset="normal"
                 delay={idx * ANIMATION_DELAYS.stageCard}
                 className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300 hover:scale-[1.005] hover:-translate-y-0.5"
               >
@@ -708,7 +708,7 @@ const AssessmentDashboard = () => {
       {/* Test History */}
       <AnimatedContainer
         animation="fadeInUp"
-        transition="slow"
+        transitionPreset="slow"
         delay="lg"
         className={`${CARD_BASE_CLASSES} p-5`}
       >

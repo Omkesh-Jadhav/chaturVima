@@ -2,38 +2,36 @@
  * Animation variants and constants for consistent animations across the project
  */
 
-import { Variants } from "framer-motion";
-
-// Common animation variants
-export const fadeInUp: Variants = {
+// Common animation variants (compatible with framer-motion)
+export const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
-};
+} as const;
 
-export const fadeInDown: Variants = {
+export const fadeInDown = {
   hidden: { opacity: 0, y: -20 },
   visible: { opacity: 1, y: 0 },
-};
+} as const;
 
-export const fadeInLeft: Variants = {
+export const fadeInLeft = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0 },
-};
+} as const;
 
-export const fadeInRight: Variants = {
+export const fadeInRight = {
   hidden: { opacity: 0, x: 20 },
   visible: { opacity: 1, x: 0 },
-};
+} as const;
 
-export const scaleIn: Variants = {
+export const scaleIn = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: { opacity: 1, scale: 1 },
-};
+} as const;
 
-export const fadeIn: Variants = {
+export const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
-};
+} as const;
 
 // Transition presets
 export const transitions = {

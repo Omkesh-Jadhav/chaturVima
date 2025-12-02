@@ -51,7 +51,7 @@ const SuccessModal = ({
     >
       <AnimatedContainer
         animation="scaleIn"
-        transition="spring"
+        transitionPreset="spring"
         className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -59,7 +59,7 @@ const SuccessModal = ({
           <div className="relative z-10 text-center">
             <AnimatedContainer
               animation="scaleIn"
-              transition="spring"
+              transitionPreset="spring"
               delay="sm"
               className="mb-4 flex justify-center"
             >
@@ -269,7 +269,7 @@ const EditProfile = () => {
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Left Column - Profile Photo & Basic Info */}
         <div className="lg:col-span-1">
-          <AnimatedContainer animation="fadeInUp" transition="normal">
+          <AnimatedContainer animation="fadeInUp" transitionPreset="normal">
             <Card
               variant="elevated"
               className="overflow-hidden border border-gray-200"
@@ -349,7 +349,7 @@ const EditProfile = () => {
 
         {/* Right Column - Form Fields */}
         <div className="lg:col-span-2 space-y-4">
-          <AnimatedContainer animation="fadeInRight" transition="normal">
+          <AnimatedContainer animation="fadeInRight" transitionPreset="normal">
             <Card
               variant="elevated"
               className="border-2 border-gray-100 shadow-xl"

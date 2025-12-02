@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
+import type { ReactNode, ComponentType } from "react";
+import type { LucideProps } from "lucide-react";
 
 interface FormSectionProps {
-  icon: LucideIcon;
+  icon: ComponentType<LucideProps>;
   title: string;
   children: ReactNode;
   editable?: boolean;
