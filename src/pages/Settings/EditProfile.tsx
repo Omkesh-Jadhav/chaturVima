@@ -1,8 +1,7 @@
 /**
  * Edit Profile Page
- * Modern, professional profile editing interface
  */
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, useRef, useMemo, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -126,17 +125,19 @@ const EditProfile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Generate options from constants
-  const salutationOptions: SelectOption[] = SALUTATIONS.map((sal) => ({
-    value: sal,
-    label: sal,
-  }));
+  const salutationOptions = useMemo<SelectOption[]>(
+    () => SALUTATIONS.map((sal) => ({ value: sal, label: sal })),
+    []
+  );
 
-  const countryCodeOptions: SelectOption[] = COUNTRY_CODES.map(
-    ([code, , flag]) => ({
-      value: code,
-      label: code,
-      icon: <span className="text-base">{flag}</span>,
-    })
+  const countryCodeOptions = useMemo<SelectOption[]>(
+    () =>
+      COUNTRY_CODES.map(([code, , flag]) => ({
+        value: code,
+        label: code,
+        icon: <span className="text-base">{flag}</span>,
+      })),
+    []
   );
 
   const [formData, setFormData] = useState<FormData>({
@@ -157,31 +158,27 @@ const EditProfile = () => {
 
   // Prefill form data from user context
   useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        profilePhoto: user.avatar || prev.profilePhoto,
-        name: user.name || prev.name,
-        designation: user.role || prev.designation,
-        department: user.department || prev.department,
-        emailAddress: user.email || prev.emailAddress,
-      }));
-    }
+    if (!user) return;
+    setFormData((prev) => ({
+      ...prev,
+      ...(user.avatar && { profilePhoto: user.avatar }),
+      ...(user.name && { name: user.name }),
+      ...(user.role && { designation: user.role }),
+      ...(user.department && { department: user.department }),
+      ...(user.email && { emailAddress: user.email }),
+    }));
   }, [user]);
 
   const handleChange = (field: keyof FormData, value: string) => {
-    // Only allow changes to editable fields: salutation and briefDescription
-    if (field === "salutation" || field === "briefDescription") {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field !== "salutation" && field !== "briefDescription") return;
 
-      // Clear error when user starts typing
-      if (errors[field]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
     }
   };
 
@@ -202,17 +199,10 @@ const EditProfile = () => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Only validate editable fields: Salutation and Brief Description
-    // Salutation validation (optional, but if provided should be valid)
-    if (formData.salutation.trim() && formData.salutation.trim().length > 10) {
+    if (formData.salutation.trim().length > 10) {
       newErrors.salutation = "Salutation must be less than 10 characters";
     }
-
-    // Brief Description validation
-    if (
-      formData.briefDescription.trim() &&
-      formData.briefDescription.trim().length > 500
-    ) {
+    if (formData.briefDescription.trim().length > 500) {
       newErrors.briefDescription =
         "Brief Description must be less than 500 characters";
     }
@@ -231,18 +221,14 @@ const EditProfile = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Update profile via context - only update editable fields
-      if (updateProfile) {
-        updateProfile({
-          name: formData.name.trim(),
-          email: formData.emailAddress.trim(),
-          department: formData.department,
-          avatar: formData.profilePhoto,
-        });
-      }
+      updateProfile?.({
+        name: formData.name.trim(),
+        email: formData.emailAddress.trim(),
+        department: formData.department,
+        avatar: formData.profilePhoto,
+      });
 
       setShowSuccess(true);
     } catch (error) {
@@ -391,183 +377,144 @@ const EditProfile = () => {
             >
               <CardContent className="p-5 md:p-6">
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Personal Information Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <FormSection icon={User} title="Personal Information">
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <span>Salutation</span>
-                            <span className="ml-auto text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full">
-                              Editable
-                            </span>
-                          </label>
-                          <Select
-                            value={formData.salutation}
-                            onChange={(value) =>
-                              handleChange("salutation", value)
-                            }
-                            options={salutationOptions}
-                            error={errors.salutation}
-                          />
-                        </div>
-                        <Input
-                          label="Name"
-                          type="text"
-                          value={formData.name}
-                          disabled
-                          readOnly
-                        />
-                        <Input
-                          label="Designation"
-                          type="text"
-                          value={formData.designation}
-                          disabled
-                          readOnly
-                        />
-                        <Input
-                          label="Department"
-                          type="text"
-                          value={formData.department}
-                          disabled
-                          readOnly
+                  <FormSection icon={User} title="Personal Information">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <span>Salutation</span>
+                          <span className="ml-auto text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-0.5 rounded-full">
+                            Editable
+                          </span>
+                        </label>
+                        <Select
+                          value={formData.salutation}
+                          onChange={(value) =>
+                            handleChange("salutation", value)
+                          }
+                          options={salutationOptions}
+                          error={errors.salutation}
                         />
                       </div>
-                    </FormSection>
-                  </motion.div>
+                      <Input
+                        label="Name"
+                        type="text"
+                        value={formData.name}
+                        disabled
+                        readOnly
+                      />
+                      <Input
+                        label="Designation"
+                        type="text"
+                        value={formData.designation}
+                        disabled
+                        readOnly
+                      />
+                      <Input
+                        label="Department"
+                        type="text"
+                        value={formData.department}
+                        disabled
+                        readOnly
+                      />
+                    </div>
+                  </FormSection>
 
-                  {/* Contact Information Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                  <FormSection
+                    icon={Mail}
+                    title="Contact Information"
+                    iconColor="from-blue-500 to-cyan-500"
                     className="pt-5 border-t-2 border-gray-100"
                   >
-                    <FormSection
-                      icon={Mail}
-                      title="Contact Information"
-                      iconColor="from-blue-500 to-cyan-500"
-                    >
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <Input
-                          label="Email ID"
-                          type="email"
-                          value={formData.emailAddress}
-                          disabled
-                          readOnly
-                        />
-                        <div className="space-y-1.5">
-                          <label className="text-sm font-semibold text-gray-700">
-                            Phone Number
-                          </label>
-                          <div className="flex gap-2">
-                            <div className="w-[110px] shrink-0">
-                              <Select
-                                value={formData.countryCode}
-                                onChange={() => {}}
-                                options={countryCodeOptions}
-                                disabled
-                              />
-                            </div>
-                            <Input
-                              type="tel"
-                              value={formData.phoneNumber}
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        label="Email ID"
+                        type="email"
+                        value={formData.emailAddress}
+                        disabled
+                        readOnly
+                      />
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Phone Number
+                        </label>
+                        <div className="flex gap-2">
+                          <div className="w-[110px] shrink-0">
+                            <Select
+                              value={formData.countryCode}
+                              onChange={() => {}}
+                              options={countryCodeOptions}
                               disabled
-                              className="flex-1"
-                              readOnly
                             />
                           </div>
+                          <Input
+                            type="tel"
+                            value={formData.phoneNumber}
+                            disabled
+                            className="flex-1"
+                            readOnly
+                          />
                         </div>
                       </div>
-                    </FormSection>
-                  </motion.div>
+                    </div>
+                  </FormSection>
 
-                  {/* Location Information Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
+                  <FormSection
+                    icon={MapPin}
+                    title="Location Information"
+                    iconColor="from-orange-400 to-amber-400"
                     className="pt-5 border-t-2 border-gray-100"
                   >
-                    <FormSection
-                      icon={MapPin}
-                      title="Location Information"
-                      iconColor="from-orange-400 to-amber-400"
-                    >
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <Input
-                          label="City"
-                          type="text"
-                          value={formData.city}
-                          disabled
-                          readOnly
-                        />
-                        <Input
-                          label="Country"
-                          type="text"
-                          value={formData.country}
-                          disabled
-                          readOnly
-                        />
-                      </div>
-                    </FormSection>
-                  </motion.div>
-
-                  {/* Brief Description Section - Editable */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="pt-5 border-t-2 border-gray-100"
-                  >
-                    <FormSection
-                      icon={FileText}
-                      title="Brief Description"
-                      editable
-                      iconColor="from-purple-500 to-pink-500"
-                    >
-                      <Textarea
-                        placeholder="Tell us about yourself, your interests, or any additional information you'd like to share..."
-                        value={formData.briefDescription}
-                        onChange={(e) =>
-                          handleChange("briefDescription", e.target.value)
-                        }
-                        rows={5}
-                        maxLength={500}
-                        error={errors.briefDescription}
-                        characterCount={{
-                          current: formData.briefDescription.length,
-                          max: 500,
-                        }}
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        label="City"
+                        type="text"
+                        value={formData.city}
+                        disabled
+                        readOnly
                       />
-                    </FormSection>
-                  </motion.div>
+                      <Input
+                        label="Country"
+                        type="text"
+                        value={formData.country}
+                        disabled
+                        readOnly
+                      />
+                    </div>
+                  </FormSection>
 
-                  {/* Submit Error */}
+                  <FormSection
+                    icon={FileText}
+                    title="Brief Description"
+                    editable
+                    iconColor="from-purple-500 to-pink-500"
+                    className="pt-5 border-t-2 border-gray-100"
+                  >
+                    <Textarea
+                      placeholder="Tell us about yourself, your interests, or any additional information you'd like to share..."
+                      value={formData.briefDescription}
+                      onChange={(e) =>
+                        handleChange("briefDescription", e.target.value)
+                      }
+                      rows={5}
+                      maxLength={500}
+                      error={errors.briefDescription}
+                      characterCount={{
+                        current: formData.briefDescription.length,
+                        max: 500,
+                      }}
+                    />
+                  </FormSection>
+
                   {errors.submit && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="rounded-xl bg-red-50 border-2 border-red-200 p-4 shadow-sm"
-                    >
+                    <div className="rounded-xl bg-red-50 border-2 border-red-200 p-4 shadow-sm">
                       <p className="text-sm font-semibold text-red-700 flex items-center gap-2">
                         <span>⚠️</span>
                         {errors.submit}
                       </p>
-                    </motion.div>
+                    </div>
                   )}
 
-                  {/* Action Buttons */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="flex items-center justify-end gap-3 pt-6 border-t-2 border-gray-100 mt-5"
-                  >
+                  <div className="flex items-center justify-end gap-3 pt-6 border-t-2 border-gray-100 mt-5">
                     <Button
                       type="button"
                       variant="outline"
@@ -593,7 +540,7 @@ const EditProfile = () => {
                         Save Changes
                       </Button>
                     </motion.div>
-                  </motion.div>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -601,7 +548,6 @@ const EditProfile = () => {
         </div>
       </div>
 
-      {/* Success Modal */}
       <SuccessModal
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
