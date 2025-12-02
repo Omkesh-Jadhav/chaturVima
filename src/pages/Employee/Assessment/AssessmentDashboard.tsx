@@ -29,7 +29,6 @@ import { generateSWOTAnalysis, type SWOTQuadrant } from "@/utils/swotUtils";
 import {
   ASSESSMENT_TYPES,
   getCategoryPalette,
-  getAssessmentTypeColorToken,
   getStagePieColor,
 } from "@/utils/assessmentConfig";
 
@@ -56,7 +55,7 @@ const CARD_BASE_CLASSES =
 
 const AssessmentDashboard = () => {
   const navigate = useNavigate();
-  
+
   const pending = MOCK_PENDING_ASSESSMENTS;
   const completed = MOCK_COMPLETED_ASSESSMENTS;
   const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
@@ -80,6 +79,22 @@ const AssessmentDashboard = () => {
       ),
     [categoryDistribution, completionRate, highPriorityPending]
   );
+
+  // Transform heatmap data: Assessment Types as rows (Y-axis), Emotional Stages as columns (X-axis)
+  const transformedHeatmap = useMemo(() => {
+    const emotionalStages = emotionalIntensityHeatmap.map((row) => row.stage);
+    return assessmentTypes.map((assessmentType) => {
+      return {
+        assessmentType,
+        values: emotionalStages.reduce((acc, stage) => {
+          const row = emotionalIntensityHeatmap.find((r) => r.stage === stage);
+          const value = row?.values[assessmentType as keyof typeof row.values];
+          acc[stage] = value ?? 0; // Use 0 for missing values to show 0%
+          return acc;
+        }, {} as Record<string, number>),
+      };
+    });
+  }, [emotionalIntensityHeatmap, assessmentTypes]);
 
   // Generate logical outcomes based on heatmap data
   const logicalOutcomes = useMemo(() => {
@@ -453,7 +468,7 @@ const AssessmentDashboard = () => {
                         animation="fadeInLeft"
                         transitionPreset="normal"
                         delay={qIdx * 0.1 + idx * 0.05}
-                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all hover:scale-105 hover:-translate-y-0.5`}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm`}
                       >
                         <p className="text-sm text-gray-800 leading-relaxed">
                           {item.description}
@@ -477,145 +492,326 @@ const AssessmentDashboard = () => {
       >
         <SectionHeader
           title="Emotional Intensity Heatmap"
-          description="Intensity levels across stages and assessment types"
-          actions={
-            <div className="flex flex-wrap gap-1.5">
-              {assessmentTypes.map((assessmentType) => {
-                const token = getAssessmentTypeColorToken(assessmentType, 80);
-                return (
-                  <span
-                    key={assessmentType}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md hover:scale-105 cursor-pointer"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full shadow-sm"
-                      style={{
-                        background: `linear-gradient(135deg, ${token.from}, ${token.to})`,
-                        boxShadow: `0 0 4px ${token.from}60`,
-                      }}
-                    />
-                    {assessmentType}
-                  </span>
-                );
-              })}
-            </div>
-          }
+          description="Mapping stages across organizational dimensions"
         />
 
-        <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
-          {emotionalIntensityHeatmap.map((row, rowIdx) => (
-            <AnimatedContainer
-              key={row.stage}
-              animation="fadeInLeft"
-              transitionPreset="normal"
-              delay={rowIdx * 0.05}
-              className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
-            >
-              <div className="grid gap-2 md:grid-cols-[140px_repeat(4,minmax(0,1fr))] items-center">
-                <div className="flex items-center justify-between md:block md:text-left">
-                  <span className="text-sm font-bold text-gray-900">
-                    {row.stage}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.4em] text-gray-400 md:hidden">
-                    Types
-                  </span>
+        <div className="mt-4">
+          {/* Heatmap Grid */}
+          <div
+            className="overflow-x-auto overflow-y-visible scrollbar-hide"
+            style={{ paddingBottom: "4px" }}
+          >
+            <div className="inline-block min-w-full">
+              {/* Header Row - X-Axis Stages */}
+              <div
+                className="grid mb-2"
+                style={{
+                  gridTemplateColumns: "180px repeat(4, minmax(110px, 1fr))",
+                  gap: "8px",
+                }}
+              >
+                {/* Y-Axis Label Header */}
+                <div className="flex items-center justify-start pl-2">
+                  {/* <div className="px-3 py-1.5 rounded-md bg-linear-to-r from-gray-100 to-gray-50 border border-gray-200">
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Assessment Types
+                    </span>
+                  </div> */}
                 </div>
-                {assessmentTypes.map((assessmentType) => {
-                  const value =
-                    row.values[assessmentType as keyof typeof row.values];
+                {/* X-Axis Stage Headers */}
+                {emotionalIntensityHeatmap.map((row) => {
+                  // Enhanced vibrant colors for headers
+                  const headerColors: Record<
+                    string,
+                    { bg: string; border: string; dot: string }
+                  > = {
+                    Honeymoon: {
+                      bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
+                      border: "#10b981",
+                      dot: "linear-gradient(135deg, #10b981, #059669)",
+                    },
+                    "Self-Introspection": {
+                      bg: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+                      border: "#3b82f6",
+                      dot: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                    },
+                    "Soul-Searching": {
+                      bg: "linear-gradient(135deg, #fef2f2, #fee2e2)",
+                      border: "#ef4444",
+                      dot: "linear-gradient(135deg, #f97316, #ea580c)",
+                    },
+                    "Steady-State": {
+                      bg: "linear-gradient(135deg, #f5f3ff, #ede9fe)",
+                      border: "#8b5cf6",
+                      dot: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                    },
+                  };
+                  const headerColor = headerColors[row.stage] || {
+                    bg: "linear-gradient(135deg, #f9fafb, #f3f4f6)",
+                    border: "#6b7280",
+                    dot: "linear-gradient(135deg, #6b7280, #4b5563)",
+                  };
 
-                  const token = getAssessmentTypeColorToken(
-                    assessmentType,
-                    value
-                  );
-                  const isHigh = value >= 50;
                   return (
                     <div
-                      key={`${row.stage}-${assessmentType}`}
-                      className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all hover:scale-105 hover:-translate-y-0.5 ${
-                        isHigh
-                          ? "border-opacity-30 bg-linear-to-br from-white to-gray-50/50"
-                          : "border-gray-200 bg-white"
-                      }`}
+                      key={row.stage}
+                      className="flex flex-col items-center justify-center p-2.5 rounded-lg border-2 shadow-sm"
                       style={{
-                        borderColor: isHigh ? `${token.from}33` : undefined,
+                        borderColor: `${headerColor.border}30`,
+                        background: headerColor.bg,
                       }}
                     >
-                      {/* Percentage in top right corner */}
-                      <div className="absolute top-1.5 right-2.5">
-                        <span
-                          className={`text-xs font-bold ${
-                            isHigh ? "text-gray-900" : "text-gray-600"
-                          }`}
-                        >
-                          {value}%
-                        </span>
-                      </div>
-
-                      {/* Assessment Type Name */}
-                      <div className="pr-12 mb-1.5">
-                        <span
-                          className={`text-[10px] font-bold leading-tight ${
-                            isHigh ? "text-gray-900" : "text-gray-600"
-                          }`}
-                        >
-                          {assessmentType}
-                        </span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(100, value)}%` }}
-                          transition={{
-                            duration: 0.8,
-                            delay: rowIdx * 0.1 + 0.2,
-                            ease: "easeOut",
-                          }}
-                          className="h-full rounded-full shadow-sm"
-                          style={{
-                            background: `linear-gradient(90deg, ${token.from}, ${token.to})`,
-                            boxShadow: `0 0 8px ${token.from}40`,
-                          }}
-                        />
-                      </div>
-                      {isHigh && (
-                        <div
-                          className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full opacity-60"
-                          style={{
-                            background: `radial-gradient(circle, ${token.from}, ${token.to})`,
-                            boxShadow: `0 0 6px ${token.from}`,
-                          }}
-                        />
-                      )}
+                      <span
+                        className="h-3.5 w-3.5 rounded-full mb-1.5 shadow-md"
+                        style={{
+                          background: headerColor.dot,
+                          boxShadow: `0 0 8px ${headerColor.border}60, 0 0 12px ${headerColor.border}30`,
+                        }}
+                      />
+                      <span className="text-xs font-bold text-gray-900 text-center leading-tight">
+                        {row.stage}
+                      </span>
                     </div>
                   );
                 })}
               </div>
-            </AnimatedContainer>
-          ))}
+
+              {/* Data Rows - Y-Axis Assessment Types */}
+              <div className="space-y-1.5">
+                {transformedHeatmap.map((row, rowIdx) => {
+                  const stages = emotionalIntensityHeatmap.map((r) => r.stage);
+                  return (
+                    <div
+                      key={row.assessmentType}
+                      className="grid items-center"
+                      style={{
+                        gridTemplateColumns:
+                          "180px repeat(4, minmax(110px, 1fr))",
+                        gap: "8px",
+                      }}
+                    >
+                      {/* Y-Axis Label - Assessment Type */}
+                      <div className="flex items-center p-2.5 rounded-lg border-2 border-gray-200/60 bg-linear-to-r from-gray-50 via-white to-gray-50 shadow-sm">
+                        <span className="text-sm font-bold text-gray-800 leading-tight">
+                          {row.assessmentType}
+                        </span>
+                      </div>
+
+                      {/* Data Cells */}
+                      {stages.map((stage, cellIdx) => {
+                        const value = row.values[stage] ?? 0;
+                        const palette = getCategoryPalette(stage);
+                        const isZero = value === 0;
+
+                        // Enhanced vibrant gradient colors based on stage
+                        const cellGradients: Record<string, string> = {
+                          Honeymoon:
+                            "linear-gradient(135deg, #10b981, #059669, #047857)",
+                          "Self-Introspection":
+                            "linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8)",
+                          "Soul-Searching":
+                            "linear-gradient(135deg, #f97316, #ea580c, #dc2626)",
+                          "Steady-State":
+                            "linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9)",
+                        };
+                        const cellGradient =
+                          cellGradients[stage] ||
+                          `linear-gradient(135deg, ${palette.from}, ${palette.accent})`;
+
+                        // Enhanced shadow colors
+                        const shadowColors: Record<string, string> = {
+                          Honeymoon: "#10b981",
+                          "Self-Introspection": "#3b82f6",
+                          "Soul-Searching": "#f97316",
+                          "Steady-State": "#8b5cf6",
+                        };
+                        const shadowColor =
+                          shadowColors[stage] || palette.accent;
+
+                        return (
+                          <div
+                            key={`${row.assessmentType}-${stage}`}
+                            className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${
+                              isZero
+                                ? "border border-gray-200 bg-white"
+                                : "bg-gray-50"
+                            }`}
+                            style={
+                              !isZero
+                                ? {
+                                    border: `1px solid ${shadowColor}30`,
+                                    boxShadow: `0 2px 8px ${shadowColor}20`,
+                                  }
+                                : {}
+                            }
+                          >
+                            {/* Water Fill Effect - Wavy water in box */}
+                            {!isZero && (
+                              <motion.div
+                                className="absolute bottom-0 left-0 right-0 rounded-b-lg overflow-hidden"
+                                style={{
+                                  background: cellGradient,
+                                  height: `${value}%`,
+                                }}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${value}%` }}
+                                transition={{
+                                  duration: 0.6,
+                                  delay: rowIdx * 0.03 + cellIdx * 0.02,
+                                  ease: "easeOut",
+                                }}
+                              >
+                                {/* Wavy water surface using SVG - creates wavy top edge */}
+                                <div className="absolute top-0 left-0 right-0 h-4 overflow-hidden">
+                                  <svg
+                                    className="absolute top-0 left-0 w-full h-full"
+                                    viewBox="0 0 200 20"
+                                    preserveAspectRatio="none"
+                                    style={{ height: "100%" }}
+                                  >
+                                    <defs>
+                                      <linearGradient
+                                        id={`waveGradient-${rowIdx}-${cellIdx}`}
+                                        x1="0%"
+                                        y1="0%"
+                                        x2="0%"
+                                        y2="100%"
+                                      >
+                                        <stop
+                                          offset="0%"
+                                          style={{
+                                            stopColor: shadowColor,
+                                            stopOpacity: 0.7,
+                                          }}
+                                        />
+                                        <stop
+                                          offset="100%"
+                                          style={{
+                                            stopColor: shadowColor,
+                                            stopOpacity: 0.4,
+                                          }}
+                                        />
+                                      </linearGradient>
+                                    </defs>
+                                    {/* Main wave - creates wavy top edge */}
+                                    <path
+                                      d="M0,10 Q25,2 50,10 T100,10 T150,10 T200,10 L200,20 L0,20 Z"
+                                      fill={cellGradient}
+                                      opacity="1"
+                                    />
+                                    {/* Secondary wave layer */}
+                                    <path
+                                      d="M0,12 Q20,4 40,12 T80,12 T120,12 T160,12 T200,12 L200,20 L0,20 Z"
+                                      fill={shadowColor}
+                                      opacity="0.6"
+                                    />
+                                    {/* Third wave layer for depth */}
+                                    <path
+                                      d="M0,11 Q30,3 60,11 T120,11 T180,11 L200,11 L200,20 L0,20 Z"
+                                      fill={shadowColor}
+                                      opacity="0.5"
+                                    />
+                                  </svg>
+                                </div>
+
+                                {/* Water surface highlight on waves */}
+                                <div
+                                  className="absolute top-0 left-0 right-0 h-0.5 opacity-70"
+                                  style={{
+                                    background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent)`,
+                                    clipPath:
+                                      "polygon(0 0, 100% 0, 100% 30%, 95% 40%, 90% 30%, 85% 40%, 80% 30%, 75% 40%, 70% 30%, 65% 40%, 60% 30%, 55% 40%, 50% 30%, 45% 40%, 40% 30%, 35% 40%, 30% 30%, 25% 40%, 20% 30%, 15% 40%, 10% 30%, 5% 40%, 0% 30%)",
+                                  }}
+                                />
+
+                                {/* Subtle water texture/ripples */}
+                                <div
+                                  className="absolute inset-0 opacity-12"
+                                  style={{
+                                    backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                                                      radial-gradient(circle at 60% 50%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                                                      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 2px, transparent 2px)`,
+                                    backgroundSize:
+                                      "40px 40px, 50px 50px, 35px 35px",
+                                  }}
+                                />
+                              </motion.div>
+                            )}
+
+                            {/* Content - Percentage Text */}
+                            <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
+                              <span
+                                className={`text-sm font-bold ${
+                                  isZero
+                                    ? "text-gray-900"
+                                    : value > 50
+                                    ? "text-white drop-shadow-lg"
+                                    : "text-gray-900 drop-shadow-sm"
+                                }`}
+                                style={
+                                  !isZero && value > 50
+                                    ? {
+                                        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                                      }
+                                    : !isZero
+                                    ? {
+                                        textShadow:
+                                          "0 1px 2px rgba(255,255,255,0.8)",
+                                      }
+                                    : {}
+                                }
+                              >
+                                {value}%
+                              </span>
+                            </div>
+
+                            {/* Border highlight on hover */}
+                            {!isZero && (
+                              <div
+                                className="absolute inset-0 rounded-lg border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{
+                                  borderColor: shadowColor,
+                                  pointerEvents: "none",
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Logical Outcomes */}
-        <div className="mt-3 border-t border-gray-100 pt-3">
-          <div className="rounded-lg bg-blue-50/50 border border-blue-100 p-3">
-            <h3 className="text-xs font-bold text-blue-900 mb-2.5">
-              Logical Outcomes
-            </h3>
-            <ol className="space-y-1.5">
+        <div className="mt-4 border-t border-gray-200 pt-4">
+          <div className="rounded-xl bg-linear-to-br from-blue-50 via-indigo-50/30 to-purple-50/20 border-2 border-blue-100/60 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-1 w-8 bg-linear-to-r from-blue-500 to-indigo-500 rounded-full" />
+              <h3 className="text-sm font-bold text-gray-900">
+                Logical Outcomes
+              </h3>
+            </div>
+            <ul className="space-y-2.5">
               {logicalOutcomes.map((outcome, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-2 text-[11px] text-blue-800 leading-relaxed"
+                  className="flex items-start gap-3 p-2.5 rounded-lg bg-white/60 border border-gray-200/40 hover:bg-white hover:shadow-sm transition-all"
                 >
-                  <span className="shrink-0 text-blue-600 font-semibold mt-0.5">
-                    {idx + 1}.
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center mt-0.5 shadow-sm">
+                    <span className="text-[10px] font-bold text-white">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-800 leading-relaxed flex-1">
+                    {outcome}
                   </span>
-                  <span>{outcome}</span>
                 </li>
               ))}
-            </ol>
+            </ul>
           </div>
         </div>
       </AnimatedContainer>
@@ -813,7 +1009,7 @@ const AssessmentDashboard = () => {
                       <Button
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate('/assessment-report');
+                          navigate("/assessment-report");
                         }}
                         variant="gradient"
                         size="sm"
