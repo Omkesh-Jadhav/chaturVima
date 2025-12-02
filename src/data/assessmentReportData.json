@@ -229,6 +229,126 @@
       }
     ]
   },
+  "recommendations": {
+    "recommendationsIntro": "This section outlines the recommended strategies, mitigation plans, opportunities, and actionable steps to maximize effectiveness during this dominant emotional stage.",
+    "sections": [
+      {
+        "id": 1,
+        "title": "Leverage Your Strengths",
+        "description": "Your natural enthusiasm and energy are powerful drivers of early momentum. This stage is a strategic window where you can establish your identity, showcase commitment, and influence team morale.",
+        "recommendations": [
+          {
+            "title": "Use your enthusiasm to ignite progress",
+            "description": "Channel your motivation into initiating new tasks, generating creative ideas, and actively participating in discussions."
+          },
+          {
+            "title": "Demonstrate leadership through initiative",
+            "description": "Volunteer for challenging assignments, take ownership of tasks, and communicate your ambitions clearly."
+          },
+          {
+            "title": "Inspire your team",
+            "description": "Your positivity can uplift team dynamics—use it to encourage collaboration and bring people together."
+          },
+          {
+            "title": "Build early credibility",
+            "description": "Your strong start will shape how others perceive your potential."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Mitigate Weaknesses",
+        "description": "Although optimism is a strength, unchecked enthusiasm can create blind spots that impact long-term stability.",
+        "recommendations": [
+          {
+            "title": "Guard against overconfidence",
+            "description": "Avoid jumping to conclusions or underestimating task complexities. Adopt a structured, step-by-step approach."
+          },
+          {
+            "title": "Make effort to view challenges realistically",
+            "description": "Balance your optimism with critical thinking, risk awareness, and scenario planning."
+          },
+          {
+            "title": "Avoid relying solely on past experience",
+            "description": "Treat each new task as unique. Seek data, ask questions, and validate assumptions."
+          },
+          {
+            "title": "Build resilience early",
+            "description": "Not everything will succeed at first attempt—prepare mentally for adjustments and setbacks."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Seize Opportunities",
+        "description": "This stage provides exceptional potential for visibility, influence, and innovation. Your mindset positions you to make a lasting positive impact.",
+        "recommendations": [
+          {
+            "title": "Strengthen relationships with stakeholders",
+            "description": "Use your approachable attitude to build trust with peers, leaders, and cross-functional teams."
+          },
+          {
+            "title": "Seek continuous feedback",
+            "description": "Maintain open channels with mentors, supervisors, and colleagues to align your ideas with organizational goals."
+          },
+          {
+            "title": "Leverage your creativity",
+            "description": "Introduce new perspectives, challenge outdated processes, and propose fresh strategies."
+          },
+          {
+            "title": "Use momentum to establish your personal brand",
+            "description": "Consistency, curiosity, and initiative can solidify your reputation as a forward thinker."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Address Threats",
+        "description": "Optimism is beneficial—but without balance, it may lead to burnout, frustration, or misalignment with team expectations.",
+        "recommendations": [
+          {
+            "title": "Set realistic expectations",
+            "description": "Avoid pressuring yourself for immediate success. Normalize iterative improvement."
+          },
+          {
+            "title": "Protect yourself from burnout",
+            "description": "Monitor workload intensity, maintain boundaries, and prioritize recovery."
+          },
+          {
+            "title": "Avoid idealizing the environment",
+            "description": "Recognize that workplace challenges, conflicts, or delays are normal."
+          },
+          {
+            "title": "Be conscious of how others perceive you",
+            "description": "Excessive self-focus or rushing ahead may create disconnects with team dynamics."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Adopt a Balanced & Sustainable Approach",
+        "description": "Blending enthusiasm with thoughtful planning creates long-term stability and growth.",
+        "recommendations": [
+          {
+            "title": "Set SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)",
+            "description": "This ensures your motivation is channelled productively."
+          },
+          {
+            "title": "Celebrate wins responsibly",
+            "description": "Acknowledge progress without losing sight of continuous improvement."
+          },
+          {
+            "title": "Align your ambitions with organizational priorities",
+            "description": "Ensure your energy contributes meaningfully to long-term success."
+          },
+          {
+            "title": "Focus on sustained performance, not just quick wins",
+            "description": "Aim for consistent impact across months—not just immediate bursts of success."
+          }
+        ]
+      }
+    ]
+  },
   "actionPlan": {
     "items": [
       "Enroll in project management or execution-focused training",

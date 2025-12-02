@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { ResponsiveRadar } from "@nivo/radar";
 import assessmentData from "@/data/assessmentReportData.json";
+import InteractiveMindMap from "@/components/assessment/InteractiveMindMap";
 
 
 
@@ -40,6 +41,7 @@ const AssessmentReport: React.FC = () => {
   const threats = assessmentData.swot.threats;
   const actionPlan = assessmentData.actionPlan.items;
   const actionPlanData = assessmentData.actionPlan.data;
+  const recommendations = assessmentData.recommendations;
 
   // Stage Transition Flow Data
   const transitionFlowData = assessmentData.transitionFlow.data;
@@ -356,7 +358,7 @@ const AssessmentReport: React.FC = () => {
           </p>
         </header>
 
-        {/* 1. Overview */}
+        {/* Overview */}
         <section className="p-6 bg-indigo-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
             1. Overview
@@ -370,7 +372,7 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 2. Interpretation */}
+        {/* Interpretation */}
         <section className="p-6 bg-purple-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-purple-700 mb-4">
             2. Interpretation
@@ -492,7 +494,7 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 3. Main Category */}
+        {/* Main Stage */}
         <section className="p-6 bg-pink-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-pink-700 mb-4">
             3. Main Stage Analysis - {mainStage}
@@ -535,11 +537,9 @@ const AssessmentReport: React.FC = () => {
               ))}
             </div>
           </div>
-
-
         </section>
 
-        {/* 4. Sub-Stage Analysis */}
+        {/* Sub-Stage Analysis */}
         <section className="p-6 bg-rose-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-rose-700 mb-4">
             4. Sub-Stage Analysis within {mainStage}
@@ -832,10 +832,26 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 5. Stage Relationships - Chord Diagram */}
+        {/* Recommendations - Interactive Mind Map */}
+        <section className="p-6 bg-linear-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-inner">
+          <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
+            5. Recommendations
+          </h2>
+          <p className="text-gray-700 mb-6">
+            {recommendations.recommendationsIntro}
+          </p>
+
+          <div className="bg-white rounded-xl p-6 border border-indigo-200">
+            <InteractiveMindMap 
+              sections={recommendations.sections}
+            />
+          </div>
+        </section>
+
+        {/* 6. Stage Relationships - Chord Diagram */}
         <section className="p-6 bg-amber-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-amber-700 mb-4">
-            5. Stage Relationships & Interactions
+            6. Stage Relationships & Interactions
           </h2>
           <p className="text-gray-700 mb-6">
             This chord diagram visualizes the interconnections and transition
@@ -901,10 +917,10 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 6. Stage Transition Flow */}
+        {/* 7. Stage Transition Flow */}
         <section className="p-6 bg-teal-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-teal-700 mb-4">
-            6. Stage Transition Flow
+            7. Stage Transition Flow
           </h2>
           <p className="text-gray-700 mb-6">
             This visualization shows how employees move between different stages
@@ -1033,11 +1049,11 @@ const AssessmentReport: React.FC = () => {
           </div>
         </section>
 
-        {/* 7. Predictive Trends */}
+        {/* 8. Predictive Trends */}
         <section className="p-6 bg-violet-50 rounded-2xl shadow-inner">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold text-violet-700">
-              7. Predictive Trends (Next 90 Days)
+              8. Predictive Trends (Next 90 Days)
             </h2>
             <div className="flex items-center text-sm text-violet-600">
               <span className="mr-2">🔮</span>
