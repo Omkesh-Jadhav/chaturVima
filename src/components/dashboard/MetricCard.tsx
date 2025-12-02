@@ -1,6 +1,7 @@
 import { Card, CardContent } from "../../components/ui";
 import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
+import type { LucideProps } from "lucide-react";
 
 interface MetricCardProps {
   label: string;
@@ -9,7 +10,7 @@ interface MetricCardProps {
     value: string;
     isPositive: boolean;
   };
-  icon: LucideIcon;
+  icon: ComponentType<LucideProps>;
   iconColor: string;
   delay?: number;
 }

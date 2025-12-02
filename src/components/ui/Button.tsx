@@ -1,9 +1,10 @@
 /**
  * Button Component
- * Reusable button with variants and sizes matching the design system
+ * Reusable button with variants, sizes, and smooth animations
  */
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
+import { motion } from "framer-motion";
 import { cn } from "../../utils/cn";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -40,7 +41,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       secondary:
         "bg-brand-navy text-white hover:bg-brand-navy/90 focus-visible:ring-brand-navy shadow-sm hover:shadow-md",
       gradient:
-        "bg-gradient-to-r from-brand-teal to-brand-navy text-white hover:from-brand-teal/90 hover:to-brand-navy/90 focus-visible:ring-brand-teal shadow-md hover:shadow-lg",
+        "bg-linear-to-r from-brand-teal to-brand-navy text-white hover:from-brand-teal/90 hover:to-brand-navy/90 focus-visible:ring-brand-teal shadow-md hover:shadow-lg",
       outline:
         "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus-visible:ring-gray-300",
       ghost: "text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-300",
@@ -55,7 +56,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "text-lg px-6 py-3 h-12 rounded-2xl",
     };
 
-    return (
+    const buttonContent = (
       <button
         ref={ref}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
@@ -90,6 +91,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           children
         )}
       </button>
+    );
+
+    // Wrap in motion.div for smooth animations (subtle scale on hover/tap)
+    return (
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="inline-block"
+      >
+        {buttonContent}
+      </motion.div>
     );
   }
 );
