@@ -23,6 +23,7 @@ export { Tooltip } from "./Tooltip";
 export { Select } from "./Select";
 export { default as Textarea } from "./Textarea";
 export { FormSection } from "./FormSection";
+export { AnimatedContainer } from "./AnimatedContainer";
 
 export type { ButtonProps } from "./Button";
 export type { CardProps } from "./Card";

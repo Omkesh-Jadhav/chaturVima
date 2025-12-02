@@ -25,6 +25,7 @@ import {
   Select,
   Textarea,
   FormSection,
+  AnimatedContainer,
   type SelectOption,
 } from "../../components/ui";
 import { useUser } from "../../context/UserContext";
@@ -43,27 +44,23 @@ const SuccessModal = ({
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    <AnimatedContainer
+      animation="fadeIn"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        transition={{ type: "spring", duration: 0.3 }}
+      <AnimatedContainer
+        animation="scaleIn"
+        transition="spring"
         className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-linear-to-r from-brand-teal to-brand-navy p-6 pb-8 relative">
           <div className="relative z-10 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.2 }}
+            <AnimatedContainer
+              animation="scaleIn"
+              transition="spring"
+              delay="sm"
               className="mb-4 flex justify-center"
             >
               <div className="relative">
@@ -82,7 +79,7 @@ const SuccessModal = ({
                   }}
                 />
               </div>
-            </motion.div>
+            </AnimatedContainer>
             <h2 className="text-2xl font-bold text-white mb-2">
               Profile Updated! 🎉
             </h2>
@@ -96,8 +93,8 @@ const SuccessModal = ({
             Done
           </Button>
         </div>
-      </motion.div>
-    </motion.div>
+      </AnimatedContainer>
+    </AnimatedContainer>
   );
 };
 
@@ -272,11 +269,7 @@ const EditProfile = () => {
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Left Column - Profile Photo & Basic Info */}
         <div className="lg:col-span-1">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <AnimatedContainer animation="fadeInUp" transition="normal">
             <Card
               variant="elevated"
               className="overflow-hidden border border-gray-200"
@@ -285,11 +278,7 @@ const EditProfile = () => {
                 {/* Profile Photo Section */}
                 <div className="flex flex-col items-center space-y-4 mb-6 pb-6 border-b border-gray-200">
                   <div className="relative group">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-linear-to-br from-brand-teal/20 to-brand-navy/20 flex items-center justify-center ring-2 ring-brand-teal/20"
-                    >
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-linear-to-br from-brand-teal/20 to-brand-navy/20 flex items-center justify-center ring-2 ring-brand-teal/20">
                       {formData.profilePhoto ? (
                         <img
                           src={formData.profilePhoto}
@@ -299,22 +288,18 @@ const EditProfile = () => {
                       ) : (
                         <UserCircle className="h-16 w-16 text-gray-400" />
                       )}
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="absolute bottom-0 right-0"
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      variant="primary"
+                      size="sm"
+                      hoverScale={1.1}
+                      tapScale={0.95}
+                      className="absolute bottom-0 right-0 rounded-full p-2.5 w-auto h-auto ring-2 ring-white"
                     >
-                      <Button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        variant="primary"
-                        size="sm"
-                        className="rounded-full p-2.5 w-auto h-auto ring-2 ring-white"
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
+                      <Camera className="h-4 w-4" />
+                    </Button>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -361,16 +346,12 @@ const EditProfile = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimatedContainer>
         </div>
 
         {/* Right Column - Form Fields */}
         <div className="lg:col-span-2 space-y-4">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <AnimatedContainer animation="fadeInRight" transition="normal">
             <Card
               variant="elevated"
               className="border-2 border-gray-100 shadow-xl"
@@ -525,26 +506,23 @@ const EditProfile = () => {
                     >
                       Cancel
                     </Button>
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                    <Button
+                      type="submit"
+                      variant="gradient"
+                      isLoading={isLoading}
+                      size="lg"
+                      hoverScale={1.02}
+                      tapScale={0.98}
+                      className="px-8"
                     >
-                      <Button
-                        type="submit"
-                        variant="gradient"
-                        isLoading={isLoading}
-                        size="lg"
-                        className="px-8"
-                      >
-                        {!isLoading && <Save className="mr-2 h-4 w-4" />}
-                        Save Changes
-                      </Button>
-                    </motion.div>
+                      {!isLoading && <Save className="mr-2 h-4 w-4" />}
+                      Save Changes
+                    </Button>
                   </div>
                 </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimatedContainer>
         </div>
       </div>
 
