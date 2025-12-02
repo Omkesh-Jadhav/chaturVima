@@ -27,7 +27,7 @@ import {
   User,
 } from "lucide-react";
 import PhoneInput, { type CountryData } from "react-phone-input-2";
-import logoImage from "../assets/chaturvima-logo.png";
+import logoImage from "../assets/chaturvima-logo.svg";
 import "react-phone-input-2/lib/style.css";
 import { getRoleLandingRoute } from "../utils/roleRoutes";
 
