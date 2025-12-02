@@ -56,7 +56,7 @@ const CARD_BASE_CLASSES =
 
 const AssessmentDashboard = () => {
   const navigate = useNavigate();
-  
+
   const pending = MOCK_PENDING_ASSESSMENTS;
   const completed = MOCK_COMPLETED_ASSESSMENTS;
   const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
@@ -453,7 +453,7 @@ const AssessmentDashboard = () => {
                         animation="fadeInLeft"
                         transitionPreset="normal"
                         delay={qIdx * 0.1 + idx * 0.05}
-                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all hover:scale-105 hover:-translate-y-0.5`}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm`}
                       >
                         <p className="text-sm text-gray-800 leading-relaxed">
                           {item.description}
@@ -813,7 +813,7 @@ const AssessmentDashboard = () => {
                       <Button
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate('/assessment-report');
+                          navigate("/assessment-report");
                         }}
                         variant="gradient"
                         size="sm"
