@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { Play, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
-import { SearchInput } from "@/components/ui";
+import { SearchInput, Button, AnimatedContainer } from "@/components/ui";
 // Data imports
 import {
   MOCK_PENDING_ASSESSMENTS,
@@ -39,7 +39,6 @@ import {
   SectionHeader,
   usePriorityFilter,
   useAssessmentSearch,
-  PRIORITY_BUTTON_COLORS,
   PRIORITY_ICONS,
   STATUS_STYLES,
   SWOT_CONFIG,
@@ -50,11 +49,17 @@ import {
 } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
 
+// Common card styling
+const CARD_BASE_CLASSES =
+  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
+
 const AssessmentDashboard = () => {
-  // Data from centralized data file
   const pending = MOCK_PENDING_ASSESSMENTS;
   const completed = MOCK_COMPLETED_ASSESSMENTS;
   const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
+  const emotionalIntensityHeatmap = MOCK_EMOTIONAL_INTENSITY_HEATMAP;
+  const assessmentTypes = ASSESSMENT_TYPES;
+  const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
 
   const totalCompleted = completed.length;
   const highPriorityPending = countHighPriority(pending);
@@ -73,15 +78,10 @@ const AssessmentDashboard = () => {
     [categoryDistribution, completionRate, highPriorityPending]
   );
 
-  const emotionalIntensityHeatmap = MOCK_EMOTIONAL_INTENSITY_HEATMAP;
-  const assessmentTypes = ASSESSMENT_TYPES;
-  const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
-
   // Generate logical outcomes based on heatmap data
   const logicalOutcomes = useMemo(() => {
     const outcomes: string[] = [];
 
-    // Find highest and lowest stages
     const stageAverages = emotionalIntensityHeatmap.map((row) => ({
       stage: row.stage,
       avg:
@@ -96,7 +96,6 @@ const AssessmentDashboard = () => {
       stage.avg < min.avg ? stage : min
     );
 
-    // Generate outcomes based on patterns
     if (
       highestStage.stage === "Steady-State" &&
       lowestStage.stage === "Soul-Searching"
@@ -106,40 +105,33 @@ const AssessmentDashboard = () => {
       );
     }
 
-    // Check for unsupported employees pattern
     const employeeValues = emotionalIntensityHeatmap.map(
       (row) => row.values["Employee Self Assessment"]
     );
     const managerValues = emotionalIntensityHeatmap.map(
       (row) => row.values["Manager Relationship Assessment"]
     );
-    const hasSupportGap = employeeValues.some(
-      (emp, idx) => emp > 70 && managerValues[idx] < emp - 10
-    );
-    if (hasSupportGap) {
+    if (
+      employeeValues.some(
+        (emp, idx) => emp > 70 && managerValues[idx] < emp - 10
+      )
+    ) {
       outcomes.push("Employees feel unsupported as challenges persist.");
     }
 
-    // Check for departmental growth
     const deptValues = emotionalIntensityHeatmap.map(
       (row) => row.values["Department Assessment"]
     );
-    const isDeptDeclining = deptValues.some(
-      (val, idx) => idx > 0 && val < deptValues[idx - 1] - 5
-    );
-    if (isDeptDeclining) {
+    if (
+      deptValues.some((val, idx) => idx > 0 && val < deptValues[idx - 1] - 5)
+    ) {
       outcomes.push("Departmental growth slows.");
     }
 
-    // Add more generic outcomes if needed
     if (outcomes.length === 0) {
       outcomes.push(
-        "Emotional intensity varies significantly across organizational levels."
-      );
-      outcomes.push(
-        "Different stages show distinct patterns in assessment responses."
-      );
-      outcomes.push(
+        "Emotional intensity varies significantly across organizational levels.",
+        "Different stages show distinct patterns in assessment responses.",
         "Organizational alignment requires attention across multiple dimensions."
       );
     }
@@ -151,27 +143,19 @@ const AssessmentDashboard = () => {
   const dominantStage = emotionalStageAssessment.find(
     (s) => s.status === "Dominant"
   );
-
-  // Track selected stage for sub-stages display (default to dominant)
   const [selectedStage, setSelectedStage] =
     useState<EmotionalStageAssessment | null>(dominantStage || null);
 
-  // Get sub-stages for selected stage and calculate scores
   const selectedSubStages = useMemo(() => {
     if (!selectedStage) return [];
     const subStages = getSubStagesForStage(selectedStage.stage);
-
-    // Calculate total weight
     const totalWeight = subStages.reduce((sum, sub) => sum + sub.value, 0);
-
-    // Distribute the stage score proportionally across sub-stages
     return subStages.map((subStage) => ({
       ...subStage,
       score: (subStage.value / totalWeight) * selectedStage.score,
     }));
   }, [selectedStage]);
 
-  // Custom hooks for filtering and searching
   const {
     priorityFilter,
     setPriorityFilter,
@@ -222,11 +206,10 @@ const AssessmentDashboard = () => {
       {/* Visual Analytics */}
       <div className="relative z-10 grid gap-6 xl:grid-cols-3">
         {/* Employee Emotional Stage Assessment */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md xl:col-span-2"
+        <AnimatedContainer
+          animation="fadeInUp"
+          transition="slow"
+          className={`${CARD_BASE_CLASSES} xl:col-span-2`}
         >
           <div className="mb-3">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -248,11 +231,11 @@ const AssessmentDashboard = () => {
               const isSelected = selectedStage?.stage === stage.stage;
 
               return (
-                <motion.div
+                <AnimatedContainer
                   key={stage.stage}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
+                  animation="fadeInUp"
+                  delay={idx * ANIMATION_DELAYS.stageCard}
+                  transition="normal"
                   onClick={() => setSelectedStage(stage)}
                   className={`group rounded-lg border p-3 transition-all cursor-pointer ${
                     statusStyle
@@ -304,18 +287,18 @@ const AssessmentDashboard = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </AnimatedContainer>
               );
             })}
           </div>
-        </motion.div>
+        </AnimatedContainer>
 
         {/* Stage Distribution - Pie Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        <AnimatedContainer
+          animation="fadeInUp"
+          transition="slow"
+          delay="xs"
+          className={`${CARD_BASE_CLASSES} p-5`}
         >
           <SectionHeader
             title="Stage Distribution"
@@ -345,16 +328,16 @@ const AssessmentDashboard = () => {
               motionConfig="gentle"
             />
           </div>
-        </motion.div>
+        </AnimatedContainer>
       </div>
 
       {/* Sub-Stages for Selected Stage */}
       {selectedStage && selectedSubStages.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+        <AnimatedContainer
+          animation="fadeInUp"
+          transition="slow"
+          delay="sm"
+          className={CARD_BASE_CLASSES}
         >
           <SectionHeader
             title={`${selectedStage.stage} Sub-Stages`}
@@ -379,17 +362,12 @@ const AssessmentDashboard = () => {
               );
 
               return (
-                <motion.div
+                <AnimatedContainer
                   key={subStage.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{
-                    delay: idx * 0.08,
-                    type: "spring",
-                    stiffness: 200,
-                  }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  className="group relative rounded-lg border border-gray-200 bg-linear-to-br from-white to-gray-50/50 p-3.5 transition-all hover:shadow-md hover:border-gray-300"
+                  animation="scaleIn"
+                  transition="spring"
+                  delay={idx * 0.08}
+                  className="group relative rounded-lg border border-gray-200 bg-linear-to-br from-white to-gray-50/50 p-3.5 transition-all hover:shadow-md hover:border-gray-300 hover:scale-105 hover:-translate-y-0.5"
                 >
                   <div className="flex items-start justify-between mb-2.5">
                     <div className="flex-1 min-w-0">
@@ -425,19 +403,19 @@ const AssessmentDashboard = () => {
                       {subStage.score.toFixed(1)}
                     </span>
                   </div>
-                </motion.div>
+                </AnimatedContainer>
               );
             })}
           </div>
-        </motion.div>
+        </AnimatedContainer>
       )}
 
       {/* SWOT Analysis */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+      <AnimatedContainer
+        animation="fadeInUp"
+        transition="slow"
+        delay="sm"
+        className={CARD_BASE_CLASSES}
       >
         <SectionHeader
           title="SWOT Analysis"
@@ -449,11 +427,11 @@ const AssessmentDashboard = () => {
             const Icon = config.icon;
 
             return (
-              <motion.div
+              <AnimatedContainer
                 key={quadrant.type}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: qIdx * 0.1 }}
+                animation="scaleIn"
+                transition="normal"
+                delay={qIdx * 0.1}
                 className="rounded-xl border border-gray-100 bg-white overflow-hidden"
               >
                 <div
@@ -467,33 +445,32 @@ const AssessmentDashboard = () => {
                 <div className="p-2 space-y-2">
                   {quadrant.items.map((item, idx) => {
                     return (
-                      <motion.div
+                      <AnimatedContainer
                         key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: qIdx * 0.1 + idx * 0.05 }}
-                        whileHover={{ scale: 1.01, y: -1 }}
-                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all`}
+                        animation="fadeInLeft"
+                        transition="normal"
+                        delay={qIdx * 0.1 + idx * 0.05}
+                        className={`rounded-lg border ${config.border} ${config.itemBg} p-2 shadow-sm hover:shadow-md transition-all hover:scale-105 hover:-translate-y-0.5`}
                       >
                         <p className="text-sm text-gray-800 leading-relaxed">
                           {item.description}
                         </p>
-                      </motion.div>
+                      </AnimatedContainer>
                     );
                   })}
                 </div>
-              </motion.div>
+              </AnimatedContainer>
             );
           })}
         </div>
-      </motion.div>
+      </AnimatedContainer>
 
       {/* Emotional Intensity Heatmap */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+      <AnimatedContainer
+        animation="fadeInUp"
+        transition="slow"
+        delay="sm"
+        className={CARD_BASE_CLASSES}
       >
         <SectionHeader
           title="Emotional Intensity Heatmap"
@@ -503,10 +480,9 @@ const AssessmentDashboard = () => {
               {assessmentTypes.map((assessmentType) => {
                 const token = getAssessmentTypeColorToken(assessmentType, 80);
                 return (
-                  <motion.span
+                  <span
                     key={assessmentType}
-                    whileHover={{ scale: 1.05 }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 shadow-sm transition-all hover:shadow-md hover:scale-105 cursor-pointer"
                   >
                     <span
                       className="h-2.5 w-2.5 rounded-full shadow-sm"
@@ -516,7 +492,7 @@ const AssessmentDashboard = () => {
                       }}
                     />
                     {assessmentType}
-                  </motion.span>
+                  </span>
                 );
               })}
             </div>
@@ -525,11 +501,11 @@ const AssessmentDashboard = () => {
 
         <div className="mt-4 border-t border-gray-100 pt-3 space-y-2">
           {emotionalIntensityHeatmap.map((row, rowIdx) => (
-            <motion.div
+            <AnimatedContainer
               key={row.stage}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: rowIdx * 0.05 }}
+              animation="fadeInLeft"
+              transition="normal"
+              delay={rowIdx * 0.05}
               className="group rounded-xl border border-gray-100 bg-linear-to-r from-gray-50/80 to-white p-2.5 transition-all hover:border-gray-200 hover:shadow-sm"
             >
               <div className="grid gap-2 md:grid-cols-[140px_repeat(4,minmax(0,1fr))] items-center">
@@ -551,10 +527,9 @@ const AssessmentDashboard = () => {
                   );
                   const isHigh = value >= 50;
                   return (
-                    <motion.div
+                    <div
                       key={`${row.stage}-${assessmentType}`}
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all ${
+                      className={`relative rounded-lg border px-2.5 py-1.5 shadow-sm transition-all hover:scale-105 hover:-translate-y-0.5 ${
                         isHigh
                           ? "border-opacity-30 bg-linear-to-br from-white to-gray-50/50"
                           : "border-gray-200 bg-white"
@@ -611,51 +586,43 @@ const AssessmentDashboard = () => {
                           }}
                         />
                       )}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
-            </motion.div>
+            </AnimatedContainer>
           ))}
         </div>
 
         {/* Logical Outcomes */}
         <div className="mt-3 border-t border-gray-100 pt-3">
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="rounded-lg bg-blue-50/50 border border-blue-100 p-3"
-          >
+          <div className="rounded-lg bg-blue-50/50 border border-blue-100 p-3">
             <h3 className="text-xs font-bold text-blue-900 mb-2.5">
               Logical Outcomes
             </h3>
             <ol className="space-y-1.5">
               {logicalOutcomes.map((outcome, idx) => (
-                <motion.li
+                <li
                   key={idx}
-                  initial={{ opacity: 0, x: -5 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + idx * 0.05 }}
                   className="flex items-start gap-2 text-[11px] text-blue-800 leading-relaxed"
                 >
                   <span className="shrink-0 text-blue-600 font-semibold mt-0.5">
                     {idx + 1}.
                   </span>
                   <span>{outcome}</span>
-                </motion.li>
+                </li>
               ))}
             </ol>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </AnimatedContainer>
 
       {/* Pending Assessments */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+      <AnimatedContainer
+        animation="fadeInUp"
+        transition="slow"
+        delay="md"
+        className={CARD_BASE_CLASSES}
       >
         <div className="flex items-center justify-between">
           <div>
@@ -667,26 +634,17 @@ const AssessmentDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-1.5">
-            {(["All", "High", "Medium", "Low"] as const).map((p) => {
-              const isActive = priorityFilter === p;
-              const colors =
-                PRIORITY_BUTTON_COLORS[
-                  p as keyof typeof PRIORITY_BUTTON_COLORS
-                ];
-              return (
-                <motion.button
-                  key={p}
-                  onClick={() => setPriorityFilter(p)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`cursor-pointer px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${
-                    isActive ? colors.active : colors.inactive
-                  }`}
-                >
-                  {p}
-                </motion.button>
-              );
-            })}
+            {(["All", "High", "Medium", "Low"] as const).map((p) => (
+              <Button
+                key={p}
+                onClick={() => setPriorityFilter(p)}
+                variant={priorityFilter === p ? "primary" : "outline"}
+                size="xs"
+                className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
+              >
+                {p}
+              </Button>
+            ))}
           </div>
         </div>
         <div className="mt-4 space-y-2">
@@ -697,13 +655,12 @@ const AssessmentDashboard = () => {
             </div>
           ) : (
             filteredPending.map((item, idx) => (
-              <motion.div
+              <AnimatedContainer
                 key={item.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
-                whileHover={{ scale: 1.005, y: -1 }}
-                className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300"
+                animation="fadeInLeft"
+                transition="normal"
+                delay={idx * ANIMATION_DELAYS.stageCard}
+                className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300 hover:scale-[1.005] hover:-translate-y-0.5"
               >
                 <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -725,9 +682,10 @@ const AssessmentDashboard = () => {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center">
-                    <motion.button
-                      whileTap={{ scale: 0.97 }}
-                      className="cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-4 py-2 text-xs font-semibold text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-md transition-all overflow-hidden"
+                    <Button
+                      variant="gradient"
+                      size="sm"
+                      className="relative overflow-hidden"
                     >
                       <span
                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -736,22 +694,23 @@ const AssessmentDashboard = () => {
                             "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2), transparent 50%)",
                         }}
                       />
-                      <Play className="h-4 w-4" /> Start Test
-                    </motion.button>
+                      <Play className="h-4 w-4 mr-1.5" />
+                      Start Test
+                    </Button>
                   </div>
                 </div>
-              </motion.div>
+              </AnimatedContainer>
             ))
           )}
         </div>
-      </motion.div>
+      </AnimatedContainer>
 
       {/* Test History */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+      <AnimatedContainer
+        animation="fadeInUp"
+        transition="slow"
+        delay="lg"
+        className={`${CARD_BASE_CLASSES} p-5`}
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
@@ -794,16 +753,13 @@ const AssessmentDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {visibleHistory.map((row, idx) => {
+              {visibleHistory.map((row) => {
                 const palette = getCategoryPalette(row.category);
                 const scoreProgress = Math.min(100, row.score);
 
                 return (
-                  <motion.tr
+                  <tr
                     key={row.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * ANIMATION_DELAYS.stageCard }}
                     className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
                   >
                     <td className="px-4 py-3">
@@ -851,12 +807,13 @@ const AssessmentDashboard = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <motion.button
+                      <Button
                         onClick={(e) => {
                           e.preventDefault();
                         }}
-                        whileTap={{ scale: 0.97 }}
-                        className="group cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-4 py-2 text-xs font-semibold text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-md transition-all overflow-hidden"
+                        variant="gradient"
+                        size="sm"
+                        className="relative overflow-hidden"
                       >
                         <span
                           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -866,15 +823,15 @@ const AssessmentDashboard = () => {
                           }}
                         />
                         <span className="relative">View Report</span>
-                      </motion.button>
+                      </Button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </AnimatedContainer>
     </div>
   );
 };
