@@ -14,6 +14,7 @@
  * - Card Labels: text-sm font-medium
  */
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import {
@@ -158,6 +159,8 @@ const formatDisplayDate = (value: string): string => {
 };
 
 const AssessmentDashboard = () => {
+  const navigate = useNavigate();
+  
   // Mock data
   const pending: PendingAssessment[] = useMemo(
     () => [
@@ -1388,6 +1391,7 @@ const AssessmentDashboard = () => {
                       <motion.button
                         onClick={(e) => {
                           e.preventDefault();
+                          navigate('/assessment-report');
                         }}
                         whileTap={{ scale: 0.97 }}
                         className="group cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-brand-teal to-brand-navy px-4 py-2 text-xs font-semibold text-white hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-md transition-all overflow-hidden"

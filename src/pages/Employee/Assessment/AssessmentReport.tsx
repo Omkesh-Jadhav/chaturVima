@@ -17,17 +17,9 @@ import {
   AreaChart,
 } from "recharts";
 import { ResponsiveRadar } from "@nivo/radar";
-import assessmentData from "../../../data/assessmentReportData.json";
+import assessmentData from "@/data/assessmentReportData.json";
 
-interface CategoryScore {
-  category: string;
-  score: number;
-}
 
-interface SubCategoryScore {
-  subCategory: string;
-  score: number;
-}
 
 const AssessmentReport: React.FC = () => {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -35,10 +27,13 @@ const AssessmentReport: React.FC = () => {
   // Assessment Data from JSON
   const overviewText = assessmentData.overview.text;
   const interpretationText = assessmentData.interpretation.text;
-  const categoryScores: CategoryScore[] = assessmentData.categoryScores;
-  const mainCategory = assessmentData.mainCategory;
-  const subCategoryScores: SubCategoryScore[] =
-    assessmentData.subCategoryScores;
+  const distributionData = assessmentData.interpretation.distribution;
+  const mainStage = assessmentData.mainStage.stage;
+  const mainStageScore = assessmentData.mainStage.score;
+  const employeeStageDescription = assessmentData.mainStage.employeeStageDescription;
+  const stageDescription = assessmentData.mainStage.stageDescription;
+  const subStageScoresSummary = assessmentData.subStageScores.summary;
+  const subStageScoresData = assessmentData.subStageScores.subStage;
   const strengths = assessmentData.swot.strengths;
   const weaknesses = assessmentData.swot.weaknesses;
   const opportunities = assessmentData.swot.opportunities;
@@ -366,7 +361,13 @@ const AssessmentReport: React.FC = () => {
           <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
             1. Overview
           </h2>
-          <p className="text-gray-700 leading-relaxed">{overviewText}</p>
+          <div className="space-y-4">
+            {overviewText.map((paragraph, index) => (
+              <p key={index} className="text-gray-700 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
         </section>
 
         {/* 2. Interpretation */}
@@ -374,26 +375,19 @@ const AssessmentReport: React.FC = () => {
           <h2 className="text-2xl font-semibold text-purple-700 mb-4">
             2. Interpretation
           </h2>
-          <p className="text-gray-700 leading-relaxed">{interpretationText}</p>
-        </section>
-
-        {/* 3. Main Category */}
-        <section className="p-6 bg-pink-50 rounded-2xl shadow-inner">
-          <h2 className="text-2xl font-semibold text-pink-700 mb-4">
-            3. Main Category Placement
-          </h2>
-          <p className="text-gray-700 mb-4">
-            Based on overall assessment, the employee predominantly aligns with
-            the <strong>{mainCategory}</strong> stage. However, traits from
-            other categories are also evident, reflecting a well-balanced
-            personality mix.
-          </p>
+          <div className="space-y-4">
+            {interpretationText.map((paragraph, index) => (
+              <p className="text-gray-700 leading-relaxed" key={index}>
+                {paragraph}
+              </p>
+            ))}
+          </div>
 
           <div className="w-full h-96">
             <ResponsiveRadialBar
-              data={categoryScores.map((item) => ({
-                id: item.category,
-                data: [{ x: item.category, y: item.score }],
+              data={distributionData.map((item) => ({
+                id: item.stage,
+                data: [{ x: item.stage, y: item.score }],
               }))}
               valueFormat=">-.2f"
               padding={0.4}
@@ -441,47 +435,209 @@ const AssessmentReport: React.FC = () => {
               motionConfig="gentle"
             />
           </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold text-purple-700 mb-6">
+              Stage Distribution Analysis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {distributionData.map((item, index) => (
+                <div
+                  key={item.stage}
+                  className="bg-white rounded-lg p-4 shadow-sm border border-purple-100"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-4 h-4 rounded-full ${
+                          index === 0
+                            ? "bg-indigo-500"
+                            : index === 1
+                            ? "bg-purple-500"
+                            : index === 2
+                            ? "bg-cyan-500"
+                            : "bg-green-500"
+                        }`}
+                      ></div>
+                      <h4 className="font-semibold text-gray-800">{item.stage}</h4>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {item.scorePercentage}%
+                      </div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">
+                        {item.level}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {item.text}
+                  </p>
+                  <div className="mt-3">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          index === 0
+                            ? "bg-indigo-500"
+                            : index === 1
+                            ? "bg-purple-500"
+                            : index === 2
+                            ? "bg-cyan-500"
+                            : "bg-green-500"
+                        }`}
+                        style={{ width: `${item.scorePercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* 4. Subcategories */}
+        {/* 3. Main Category */}
+        <section className="p-6 bg-pink-50 rounded-2xl shadow-inner">
+          <h2 className="text-2xl font-semibold text-pink-700 mb-4">
+            3. Main Stage Analysis - {mainStage}
+          </h2>
+          
+          {/* Stage Score Display */}
+          <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-pink-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-pink-700">Current Stage</h3>
+                <p className="text-2xl font-bold text-pink-600">{mainStage}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Stage Score</p>
+                <p className="text-3xl font-bold text-pink-600">{mainStageScore}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Employee Stage Description */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-pink-700 mb-3">Employee Assessment</h3>
+            <div className="space-y-3">
+              {employeeStageDescription.map((paragraph, index) => (
+                <p key={index} className="text-gray-700 leading-relaxed bg-white p-4 rounded-lg shadow-sm border border-pink-100">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Stage Description */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-pink-700 mb-3">Understanding the {mainStage} Stage</h3>
+            <div className="space-y-4">
+              {stageDescription.map((paragraph, index) => (
+                <p key={index} className="text-gray-700 leading-relaxed">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          
+        </section>
+
+        {/* 4. Sub-Stage Analysis */}
         <section className="p-6 bg-rose-50 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-rose-700 mb-4">
-            4. Sub-Categories within {mainCategory}
+            4. Sub-Stage Analysis within {mainStage}
           </h2>
-          <p className="text-gray-700 mb-4">
-            The radar chart below depicts the employee’s performance across
-            various sub-traits that contribute to the {mainCategory} archetype.
-          </p>
+          
+          {/* Summary Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-rose-700 mb-4">Summary</h3>
+            <div className="space-y-3">
+              {subStageScoresSummary.map((paragraph, index) => (
+                <p key={index} className="text-gray-700 leading-relaxed bg-white p-4 rounded-lg shadow-sm border border-rose-100">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
 
-          <div className="w-full h-80">
-            <ResponsiveRadar
-              data={subCategoryScores.map((item) => ({
-                subCategory: item.subCategory,
-                score: item.score,
-              }))}
-              keys={["score"]}
-              indexBy="subCategory"
-              valueFormat=">-.2f"
-              margin={{ top: 70, right: 80, bottom: 40, left: 80 }}
-              borderColor={{ from: "color" }}
-              gridLevels={5}
-              gridShape="circular"
-              gridLabelOffset={36}
-              enableDots={true}
-              dotSize={10}
-              dotColor={{ theme: "background" }}
-              dotBorderWidth={2}
-              dotBorderColor={{ from: "color" }}
-              enableDotLabel={true}
-              dotLabel="value"
-              dotLabelYOffset={-12}
-              colors={{ scheme: "nivo" }}
-              fillOpacity={0.25}
-              blendMode="multiply"
-              animate={true}
-              motionConfig="wobbly"
-              isInteractive={true}
-            />
+          {/* Radar Chart */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-rose-700 mb-4">Performance Overview</h3>
+            <div className="w-full h-80">
+              <ResponsiveRadar
+                data={subStageScoresData.map((item) => ({
+                  subStage: item.subStage,
+                  score: item.scorePercentage,
+                }))}
+                keys={["score"]}
+                indexBy="subStage"
+                valueFormat=">-.2f"
+                margin={{ top: 70, right: 80, bottom: 40, left: 80 }}
+                borderColor={{ from: "color" }}
+                gridLevels={5}
+                gridShape="circular"
+                gridLabelOffset={36}
+                enableDots={true}
+                dotSize={10}
+                dotColor={{ theme: "background" }}
+                dotBorderWidth={2}
+                dotBorderColor={{ from: "color" }}
+                enableDotLabel={true}
+                dotLabel="value"
+                dotLabelYOffset={-12}
+                colors={{ scheme: "nivo" }}
+                fillOpacity={0.25}
+                blendMode="multiply"
+                animate={true}
+                motionConfig="wobbly"
+                isInteractive={true}
+              />
+            </div>
+          </div>
+
+          {/* Detailed Sub-Stage Analysis */}
+          <div>
+            <h3 className="text-lg font-semibold text-rose-700 mb-6">Detailed Analysis</h3>
+            <div className="space-y-6">
+              {subStageScoresData.map((item, index) => (
+                <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-rose-100">
+                  {/* Sub-Stage Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xl font-semibold text-rose-700">{item.subStage}</h4>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-rose-600">{item.scorePercentage}%</div>
+                      <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                        <div
+                          className="bg-rose-500 h-2 rounded-full"
+                          style={{ width: `${item.scorePercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sub-Stage Introduction */}
+                  <div className="mb-4">
+                    <p className="text-gray-700 leading-relaxed font-medium">{item.subStageIntro}</p>
+                  </div>
+
+                  {/* Sub-Stage Description */}
+                  <div className="mb-4">
+                    <ul className="space-y-2">
+                      {item.subStageDescription.map((desc, descIndex) => (
+                        <li key={descIndex} className="flex items-start space-x-2">
+                          <div className="w-2 h-2 bg-rose-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-gray-600 leading-relaxed">{desc}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Sub-Stage Conclusion */}
+                  <div className="bg-rose-50 p-4 rounded-lg border-l-4 border-rose-400">
+                    <p className="text-gray-700 leading-relaxed italic">{item.subStageConclusion}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -1361,13 +1517,12 @@ const AssessmentReport: React.FC = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                        index === 0
-                          ? "bg-blue-500"
-                          : index === 1
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${index === 0
+                        ? "bg-blue-500"
+                        : index === 1
                           ? "bg-purple-500"
                           : "bg-orange-500"
-                      }`}
+                        }`}
                     >
                       {index === 0 ? "📚" : index === 1 ? "🤝" : "🎯"}
                     </div>
@@ -1410,28 +1565,27 @@ const AssessmentReport: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div
-                      className={`w-3 h-3 rounded-full ${
-                        item.measures[0] >= item.markers[0]
-                          ? "bg-green-500"
-                          : item.measures[0] >= 50
+                      className={`w-3 h-3 rounded-full ${item.measures[0] >= item.markers[0]
+                        ? "bg-green-500"
+                        : item.measures[0] >= 50
                           ? "bg-yellow-500"
                           : "bg-red-500"
-                      }`}
+                        }`}
                     ></div>
                     <span className="text-sm font-medium">
                       {item.measures[0] >= item.markers[0]
                         ? "On Track"
                         : item.measures[0] >= 50
-                        ? "In Progress"
-                        : "Needs Attention"}
+                          ? "In Progress"
+                          : "Needs Attention"}
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">
                     {index === 0
                       ? "Q1 2024"
                       : index === 1
-                      ? "Q2 2024"
-                      : "Q3 2024"}
+                        ? "Q2 2024"
+                        : "Q3 2024"}
                   </div>
                 </div>
               </div>
