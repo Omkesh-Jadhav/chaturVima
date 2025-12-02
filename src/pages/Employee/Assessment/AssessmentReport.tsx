@@ -841,11 +841,11 @@ const AssessmentReport: React.FC = () => {
             {recommendations.recommendationsIntro}
           </p>
 
-          <div className="bg-white rounded-xl p-6 border border-indigo-200">
+          {/* <div className="bg-white rounded-xl p-6 border border-indigo-200"> */}
             <InteractiveMindMap 
               sections={recommendations.sections}
             />
-          </div>
+          {/* </div> */}
         </section>
 
         {/* Action Plan - Radar Wheel */}
