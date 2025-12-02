@@ -520,21 +520,52 @@ const AssessmentDashboard = () => {
                 </div>
                 {/* X-Axis Stage Headers */}
                 {emotionalIntensityHeatmap.map((row) => {
-                  const palette = getCategoryPalette(row.stage);
+                  // Enhanced vibrant colors for headers
+                  const headerColors: Record<
+                    string,
+                    { bg: string; border: string; dot: string }
+                  > = {
+                    Honeymoon: {
+                      bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
+                      border: "#10b981",
+                      dot: "linear-gradient(135deg, #10b981, #059669)",
+                    },
+                    "Self-Introspection": {
+                      bg: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+                      border: "#3b82f6",
+                      dot: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                    },
+                    "Soul-Searching": {
+                      bg: "linear-gradient(135deg, #fef2f2, #fee2e2)",
+                      border: "#ef4444",
+                      dot: "linear-gradient(135deg, #f97316, #ea580c)",
+                    },
+                    "Steady-State": {
+                      bg: "linear-gradient(135deg, #f5f3ff, #ede9fe)",
+                      border: "#8b5cf6",
+                      dot: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                    },
+                  };
+                  const headerColor = headerColors[row.stage] || {
+                    bg: "linear-gradient(135deg, #f9fafb, #f3f4f6)",
+                    border: "#6b7280",
+                    dot: "linear-gradient(135deg, #6b7280, #4b5563)",
+                  };
+
                   return (
                     <div
                       key={row.stage}
-                      className="flex flex-col items-center justify-center p-2.5 rounded-lg border-2 border-gray-200 bg-linear-to-br from-white to-gray-50/50 shadow-sm"
+                      className="flex flex-col items-center justify-center p-2.5 rounded-lg border-2 shadow-sm"
                       style={{
-                        borderColor: `${palette.accent}20`,
-                        backgroundColor: `${palette.accent}05`,
+                        borderColor: `${headerColor.border}30`,
+                        background: headerColor.bg,
                       }}
                     >
                       <span
-                        className="h-3 w-3 rounded-full mb-1.5 shadow-sm"
+                        className="h-3.5 w-3.5 rounded-full mb-1.5 shadow-md"
                         style={{
-                          background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
-                          boxShadow: `0 0 6px ${palette.accent}50, 0 0 10px ${palette.accent}30`,
+                          background: headerColor.dot,
+                          boxShadow: `0 0 8px ${headerColor.border}60, 0 0 12px ${headerColor.border}30`,
                         }}
                       />
                       <span className="text-xs font-bold text-gray-900 text-center leading-tight">
@@ -547,7 +578,7 @@ const AssessmentDashboard = () => {
 
               {/* Data Rows - Y-Axis Assessment Types */}
               <div className="space-y-1.5">
-                {transformedHeatmap.map((row) => {
+                {transformedHeatmap.map((row, rowIdx) => {
                   const stages = emotionalIntensityHeatmap.map((r) => r.stage);
                   return (
                     <div
@@ -560,45 +591,189 @@ const AssessmentDashboard = () => {
                       }}
                     >
                       {/* Y-Axis Label - Assessment Type */}
-                      <div className="flex items-center p-2.5 rounded-lg border-2 border-gray-200 bg-linear-to-r from-gray-100 to-gray-50 shadow-sm">
-                        <span className="text-sm font-bold text-gray-900 leading-tight">
+                      <div className="flex items-center p-2.5 rounded-lg border-2 border-gray-200/60 bg-linear-to-r from-gray-50 via-white to-gray-50 shadow-sm">
+                        <span className="text-sm font-bold text-gray-800 leading-tight">
                           {row.assessmentType}
                         </span>
                       </div>
 
                       {/* Data Cells */}
-                      {stages.map((stage) => {
+                      {stages.map((stage, cellIdx) => {
                         const value = row.values[stage] ?? 0;
                         const palette = getCategoryPalette(stage);
                         const isZero = value === 0;
 
+                        // Enhanced vibrant gradient colors based on stage
+                        const cellGradients: Record<string, string> = {
+                          Honeymoon:
+                            "linear-gradient(135deg, #10b981, #059669, #047857)",
+                          "Self-Introspection":
+                            "linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8)",
+                          "Soul-Searching":
+                            "linear-gradient(135deg, #f97316, #ea580c, #dc2626)",
+                          "Steady-State":
+                            "linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9)",
+                        };
+                        const cellGradient =
+                          cellGradients[stage] ||
+                          `linear-gradient(135deg, ${palette.from}, ${palette.accent})`;
+
+                        // Enhanced shadow colors
+                        const shadowColors: Record<string, string> = {
+                          Honeymoon: "#10b981",
+                          "Self-Introspection": "#3b82f6",
+                          "Soul-Searching": "#f97316",
+                          "Steady-State": "#8b5cf6",
+                        };
+                        const shadowColor =
+                          shadowColors[stage] || palette.accent;
+
                         return (
                           <div
                             key={`${row.assessmentType}-${stage}`}
-                            className={`relative rounded-lg border overflow-hidden ${
+                            className={`relative rounded-lg border transition-all hover:shadow-lg group ${
                               isZero
-                                ? "border-gray-200 bg-white"
-                                : "border-transparent"
+                                ? "border-gray-200 bg-white overflow-hidden"
+                                : "border-gray-200/40 bg-gray-50 overflow-visible"
                             }`}
                             style={
                               !isZero
                                 ? {
-                                    background: `linear-gradient(135deg, ${palette.from}, ${palette.accent})`,
-                                    boxShadow: `0 2px 8px ${palette.accent}25`,
+                                    boxShadow: `0 2px 8px ${shadowColor}20`,
                                   }
                                 : {}
                             }
                           >
-                            {/* Content */}
-                            <div className="flex items-center justify-center min-h-[55px] px-3 py-2.5">
+                            {/* Water Fill Effect - Wavy water in box */}
+                            {!isZero && (
+                              <motion.div
+                                className="absolute bottom-0 left-0 right-0 rounded-b-lg"
+                                style={{
+                                  background: cellGradient,
+                                  height: `${value}%`,
+                                }}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${value}%` }}
+                                transition={{
+                                  duration: 0.6,
+                                  delay: rowIdx * 0.03 + cellIdx * 0.02,
+                                  ease: "easeOut",
+                                }}
+                              >
+                                {/* Wavy water surface using SVG - creates wavy top edge */}
+                                <div className="absolute -top-3 left-0 right-0 h-6">
+                                  <svg
+                                    className="absolute top-0 left-0 w-full h-full"
+                                    viewBox="0 0 200 30"
+                                    preserveAspectRatio="none"
+                                    style={{ height: "100%" }}
+                                  >
+                                    <defs>
+                                      <linearGradient
+                                        id={`waveGradient-${rowIdx}-${cellIdx}`}
+                                        x1="0%"
+                                        y1="0%"
+                                        x2="0%"
+                                        y2="100%"
+                                      >
+                                        <stop
+                                          offset="0%"
+                                          style={{
+                                            stopColor: shadowColor,
+                                            stopOpacity: 0.7,
+                                          }}
+                                        />
+                                        <stop
+                                          offset="100%"
+                                          style={{
+                                            stopColor: shadowColor,
+                                            stopOpacity: 0.4,
+                                          }}
+                                        />
+                                      </linearGradient>
+                                    </defs>
+                                    {/* Main wave - creates wavy top edge */}
+                                    <path
+                                      d="M0,15 Q25,5 50,15 T100,15 T150,15 T200,15 L200,30 L0,30 Z"
+                                      fill={cellGradient}
+                                      opacity="1"
+                                    />
+                                    {/* Secondary wave layer */}
+                                    <path
+                                      d="M0,18 Q20,8 40,18 T80,18 T120,18 T160,18 T200,18 L200,30 L0,30 Z"
+                                      fill={shadowColor}
+                                      opacity="0.6"
+                                    />
+                                    {/* Third wave layer for depth */}
+                                    <path
+                                      d="M0,16 Q30,6 60,16 T120,16 T180,16 L200,16 L200,30 L0,30 Z"
+                                      fill={shadowColor}
+                                      opacity="0.5"
+                                    />
+                                  </svg>
+                                </div>
+
+                                {/* Water surface highlight on waves */}
+                                <div
+                                  className="absolute -top-3 left-0 right-0 h-0.5 opacity-70"
+                                  style={{
+                                    background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent)`,
+                                    clipPath:
+                                      "polygon(0 0, 100% 0, 100% 20%, 95% 25%, 90% 20%, 85% 25%, 80% 20%, 75% 25%, 70% 20%, 65% 25%, 60% 20%, 55% 25%, 50% 20%, 45% 25%, 40% 20%, 35% 25%, 30% 20%, 25% 25%, 20% 20%, 15% 25%, 10% 20%, 5% 25%, 0% 20%)",
+                                  }}
+                                />
+
+                                {/* Subtle water texture/ripples */}
+                                <div
+                                  className="absolute inset-0 opacity-12"
+                                  style={{
+                                    backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                                                      radial-gradient(circle at 60% 50%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                                                      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 2px, transparent 2px)`,
+                                    backgroundSize:
+                                      "40px 40px, 50px 50px, 35px 35px",
+                                  }}
+                                />
+                              </motion.div>
+                            )}
+
+                            {/* Content - Percentage Text */}
+                            <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
                               <span
                                 className={`text-sm font-bold ${
-                                  isZero ? "text-gray-900" : "text-white"
+                                  isZero
+                                    ? "text-gray-900"
+                                    : value > 50
+                                    ? "text-white drop-shadow-lg"
+                                    : "text-gray-900 drop-shadow-sm"
                                 }`}
+                                style={
+                                  !isZero && value > 50
+                                    ? {
+                                        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                                      }
+                                    : !isZero
+                                    ? {
+                                        textShadow:
+                                          "0 1px 2px rgba(255,255,255,0.8)",
+                                      }
+                                    : {}
+                                }
                               >
                                 {value}%
                               </span>
                             </div>
+
+                            {/* Border highlight on hover */}
+                            {!isZero && (
+                              <div
+                                className="absolute inset-0 rounded-lg border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{
+                                  borderColor: shadowColor,
+                                  pointerEvents: "none",
+                                }}
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -611,24 +786,31 @@ const AssessmentDashboard = () => {
         </div>
 
         {/* Logical Outcomes */}
-        <div className="mt-3 border-t border-gray-100 pt-3">
-          <div className="rounded-lg bg-blue-50/50 border border-blue-100 p-3">
-            <h3 className="text-xs font-bold text-blue-900 mb-2.5">
-              Logical Outcomes
-            </h3>
-            <ol className="space-y-1.5">
+        <div className="mt-4 border-t border-gray-200 pt-4">
+          <div className="rounded-xl bg-linear-to-br from-blue-50 via-indigo-50/30 to-purple-50/20 border-2 border-blue-100/60 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-1 w-8 bg-linear-to-r from-blue-500 to-indigo-500 rounded-full" />
+              <h3 className="text-sm font-bold text-gray-900">
+                Logical Outcomes
+              </h3>
+            </div>
+            <ul className="space-y-2.5">
               {logicalOutcomes.map((outcome, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-2 text-[11px] text-blue-800 leading-relaxed"
+                  className="flex items-start gap-3 p-2.5 rounded-lg bg-white/60 border border-gray-200/40 hover:bg-white hover:shadow-sm transition-all"
                 >
-                  <span className="shrink-0 text-blue-600 font-semibold mt-0.5">
-                    {idx + 1}.
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center mt-0.5 shadow-sm">
+                    <span className="text-[10px] font-bold text-white">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-800 leading-relaxed flex-1">
+                    {outcome}
                   </span>
-                  <span>{outcome}</span>
                 </li>
               ))}
-            </ol>
+            </ul>
           </div>
         </div>
       </AnimatedContainer>
