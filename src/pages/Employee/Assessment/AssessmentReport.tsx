@@ -853,15 +853,15 @@ const AssessmentReport: React.FC = () => {
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
             6. Action Plan
           </h2>
-          <p className="text-gray-700 mb-6">
+          <p className="text-gray-700 mb-1">
             Interactive radar wheel showing progress across 5 key development areas. 
             Click on any segment to view detailed action items and recommendations.
           </p>
 
-          <div className="space-y-6">
+          <div className="space-y-1">
             {/* Radar Wheel */}
             <div className="flex flex-col items-center">
-              <div className="relative w-[500px] h-[500px] mb-4">
+              <div className="relative w-[500px] h-[500px] mb-2">
                 {/* Single SVG for all segments */}
                 <svg className="w-full h-full" viewBox="0 0 500 500">
                   <defs>
