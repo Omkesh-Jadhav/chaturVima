@@ -125,21 +125,108 @@
   },
   "swot": {
     "strengths": [
-      "Highly innovative and forward-thinking mindset",
-      "Strong adaptability to change and ambiguity",
-      "Excellent ideation and problem-solving skills"
+      {
+        "title": "High energy and enthusiasm drive motivation and engagement",
+        "text": "The employee consistently demonstrates elevated levels of energy, which fuels momentum and proactive involvement in tasks. Their enthusiasm inspires others, increases team morale, and helps maintain momentum during new initiatives. This energy often translates into faster task execution, eagerness to participate, and the ability to inject positivity into challenging environments.",
+        "whyMatters": "High energy accelerates onboarding, boosts team collaboration, and supports a proactive work culture.",
+        "actionableInsight": "Assign roles requiring creativity, speed, or visible ownership. Their energy can help kickstart or revive stalled projects."
+      },
+      {
+        "title": "Confidence in their ability to make a big impact fosters initiative and proactivity",
+        "text": "The employee feels deeply capable, which propels them to take initiative without waiting for direction. This fosters independence, leadership tendencies, and the ability to identify opportunities before being instructed.",
+        "whyMatters": "Confident employees contribute more ideas, accept challenges willingly, and help drive organizational goals through self-starting behavior.",
+        "actionableInsight": "Place them in situations requiring quick problem-solving or early decision-making. Provide platforms to share ideas openly."
+      },
+      {
+        "title": "Willingness to take risks and embrace new challenges with a positive mindset",
+        "text": "A bold approach toward challenges enables the employee to try new methods, experiment, and challenge existing limitations. They are not easily intimidated by complexity or ambiguity.",
+        "whyMatters": "Risk-taking is essential for innovation, improvement, and leading change in rapidly evolving environments.",
+        "actionableInsight": "Involve them in experimental or pilot projects where fresh thinking and comfort with uncertainty are essential."
+      },
+      {
+        "title": "Optimism helps to foster a collaborative and positive work environment",
+        "text": "Their positive outlook enhances interpersonal relations, reduces friction, and encourages others to adopt solution-focused mindsets. Optimistic employees often diffuse negativity and motivate peers.",
+        "whyMatters": "Positivity is contagious and plays a key role in team stability, trust-building, and high group performance.",
+        "actionableInsight": "Encourage them to participate in cross-functional teamwork or culture-building activities. Their presence can uplift team dynamics."
+      }
     ],
     "weaknesses": [
-      "May lose interest in repetitive tasks",
-      "Occasionally overlooks finer details in pursuit of big ideas"
+      {
+        "title": "Overconfidence may lead to underestimating challenges",
+        "text": "Their strong self-belief can occasionally overshadow realistic analysis, leading to misjudgment of complexity or resource needs. This may cause delays, errors, or unanticipated obstacles.",
+        "whyMatters": "Overconfidence can impact planning accuracy, risk assessment, and alignment with organizational constraints.",
+        "actionableInsight": "Introduce structured planning tools, checkpoints, and feedback mechanisms to maintain balance between confidence and caution."
+      },
+      {
+        "title": "Focus on short-term wins might overshadow long-term planning",
+        "text": "The employee's drive for quick achievements may divert attention away from strategic thinking, future-proofing, or sustainable development.",
+        "whyMatters": "Short-termism can lead to inconsistent long-term progress, project rework, or missed strategic opportunities.",
+        "actionableInsight": "Pair them with a mentor or leader who reinforces strategic timelines. Encourage them to create medium- and long-term roadmaps for their projects."
+      },
+      {
+        "title": "Tendency to rely on past experiences instead of adapting to new dynamics",
+        "text": "Previous success can create a cognitive bias, causing the employee to generalize past solutions to new contexts—even when conditions differ.",
+        "whyMatters": "Rigid application of past methods can limit innovation and may cause misalignment with current organizational processes.",
+        "actionableInsight": "Promote a habit of asking contextual questions. Encourage evidence-based reasoning rather than assumption-driven action."
+      },
+      {
+        "title": "Difficulty in recognizing early warning signs of deeper challenges",
+        "text": "Their optimism may mask or downplay risks, preventing early detection of problems that require immediate attention.",
+        "whyMatters": "Ignoring early indicators can lead to larger issues, inefficiencies, or crisis situations.",
+        "actionableInsight": "Introduce risk-management frameworks, regular review cycles, and data-backed performance dashboards to enhance awareness."
+      }
     ],
     "opportunities": [
-      "Can drive innovation initiatives within the organization",
-      "Potential to lead R&D or creative strategy projects"
+      {
+        "title": "Ability to bring fresh ideas and innovative approaches to tasks",
+        "text": "Their newly energized perspective allows them to challenge old assumptions and propose creative improvements.",
+        "whyMatters": "Innovation drives competitive advantage, process efficiency, and organizational evolution.",
+        "actionableInsight": "Place them in brainstorming committees or innovation labs. Encourage idea submissions and prototype testing."
+      },
+      {
+        "title": "Building strong relationships with team members due to a positive outlook",
+        "text": "Their friendliness and enthusiasm accelerate trust-building and rapport, which can lead to more open communication and collaboration.",
+        "whyMatters": "Strong internal networks facilitate smoother workflows and help the employee integrate quickly within teams.",
+        "actionableInsight": "Encourage participation in cross-team meetings, social initiatives, or peer mentoring groups to expand their influence."
+      },
+      {
+        "title": "Opportunity to create lasting impressions and establish credibility early",
+        "text": "During the Honeymoon Stage, performance is highly visible. Delivering strong outcomes now can set a positive long-term reputation.",
+        "whyMatters": "Early perceptions often shape future opportunities, leadership consideration, and growth trajectory.",
+        "actionableInsight": "Assign strategic tasks that allow the employee to showcase strengths and build a credible success narrative."
+      },
+      {
+        "title": "Driving cultural shifts or inspiring peers with their enthusiasm",
+        "text": "Their mindset can act as a catalyst for team motivation during transitions or organizational changes.",
+        "whyMatters": "Positive culture drivers boost engagement, reduce resistance, and enhance unity.",
+        "actionableInsight": "Use them as champions for change initiatives, new engagement programs, or culture-strengthening activities."
+      }
     ],
     "threats": [
-      "Overemphasis on innovation may lead to underestimating executional challenges",
-      "May face friction in highly structured or bureaucratic environments"
+      {
+        "title": "Risk of burnout if expectations are not met or challenges become overwhelming",
+        "text": "High energy may fade if not balanced, potentially leading to fatigue, disengagement, or emotional strain.",
+        "whyMatters": "Burnout affects productivity, decision-making, and overall well-being.",
+        "actionableInsight": "Monitor workload balance and promote pacing strategies. Encourage regular reflection and breaks."
+      },
+      {
+        "title": "Lack of adaptability if initial strategies don't work",
+        "text": "Strong attachment to initial ideas may slow adjustments when circumstances change.",
+        "whyMatters": "Inflexibility can cause delays, inefficiencies, or frustration when dealing with complex, evolving tasks.",
+        "actionableInsight": "Introduce agile methodologies, iteration cycles, and post-review learning sessions."
+      },
+      {
+        "title": "Unrealistic expectations may lead to disappointment",
+        "text": "Their high optimism may not always align with organizational pacing, team constraints, or resource availability.",
+        "whyMatters": "Disappointment can reduce motivation and hinder long-term engagement.",
+        "actionableInsight": "Set clear expectations and realistic milestones. Offer calibration conversations early to maintain balance."
+      },
+      {
+        "title": "Overemphasis on self-performance may isolate them from team dynamics",
+        "text": "Focusing too much on individual achievements can unintentionally reduce collaboration or create competitive tension.",
+        "whyMatters": "Isolation affects team cohesion, information sharing, and cross-functional synergy.",
+        "actionableInsight": "Integrate them into team-based goals, encourage shared accomplishments, and create opportunities for collaborative success."
+      }
     ]
   },
   "actionPlan": {

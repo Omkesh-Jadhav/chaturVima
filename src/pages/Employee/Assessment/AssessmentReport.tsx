@@ -448,15 +448,14 @@ const AssessmentReport: React.FC = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-4 h-4 rounded-full ${
-                          index === 0
+                        className={`w-4 h-4 rounded-full ${index === 0
                             ? "bg-indigo-500"
                             : index === 1
-                            ? "bg-purple-500"
-                            : index === 2
-                            ? "bg-cyan-500"
-                            : "bg-green-500"
-                        }`}
+                              ? "bg-purple-500"
+                              : index === 2
+                                ? "bg-cyan-500"
+                                : "bg-green-500"
+                          }`}
                       ></div>
                       <h4 className="font-semibold text-gray-800">{item.stage}</h4>
                     </div>
@@ -475,15 +474,14 @@ const AssessmentReport: React.FC = () => {
                   <div className="mt-3">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          index === 0
+                        className={`h-2 rounded-full ${index === 0
                             ? "bg-indigo-500"
                             : index === 1
-                            ? "bg-purple-500"
-                            : index === 2
-                            ? "bg-cyan-500"
-                            : "bg-green-500"
-                        }`}
+                              ? "bg-purple-500"
+                              : index === 2
+                                ? "bg-cyan-500"
+                                : "bg-green-500"
+                          }`}
                         style={{ width: `${item.scorePercentage}%` }}
                       ></div>
                     </div>
@@ -499,7 +497,7 @@ const AssessmentReport: React.FC = () => {
           <h2 className="text-2xl font-semibold text-pink-700 mb-4">
             3. Main Stage Analysis - {mainStage}
           </h2>
-          
+
           {/* Stage Score Display */}
           <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-pink-100">
             <div className="flex items-center justify-between">
@@ -538,7 +536,7 @@ const AssessmentReport: React.FC = () => {
             </div>
           </div>
 
-          
+
         </section>
 
         {/* 4. Sub-Stage Analysis */}
@@ -546,7 +544,7 @@ const AssessmentReport: React.FC = () => {
           <h2 className="text-2xl font-semibold text-rose-700 mb-4">
             4. Sub-Stage Analysis within {mainStage}
           </h2>
-          
+
           {/* Summary Section */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-rose-700 mb-4">Summary</h3>
@@ -634,6 +632,117 @@ const AssessmentReport: React.FC = () => {
                   {/* Sub-Stage Conclusion */}
                   <div className="bg-rose-50 p-4 rounded-lg border-l-4 border-rose-400">
                     <p className="text-gray-700 leading-relaxed italic">{item.subStageConclusion}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SWOT Analysis */}
+        <section className="p-6 bg-indigo-100 rounded-2xl shadow-inner space-y-6">
+          <h2 className="text-2xl font-semibold text-indigo-800 mb-6">
+            5. SWOT Analysis
+          </h2>
+
+          {/* Strengths */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-green-700 mb-4 flex items-center">
+              <span className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">S</span>
+              Strengths
+            </h3>
+            <div className="space-y-4">
+              {strengths.map((item, i) => (
+                <div key={i} className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-green-500">
+                  <h4 className="font-semibold text-gray-900 mb-3">{i + 1}. {item.title}</h4>
+                  <p className="text-gray-700 leading-relaxed mb-3">{item.text}</p>
+                  <div className="bg-green-50 p-3 rounded-lg mb-3">
+                    <p className="text-sm text-green-800">
+                      <span className="font-semibold">Why this matters:</span> {item.whyMatters}
+                    </p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-lg">
+                    <p className="text-sm text-green-900">
+                      <span className="font-semibold">Actionable Insight:</span> {item.actionableInsight}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Weaknesses */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-red-700 mb-4 flex items-center">
+              <span className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">W</span>
+              Weaknesses
+            </h3>
+            <div className="space-y-4">
+              {weaknesses.map((item, i) => (
+                <div key={i} className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-red-500">
+                  <h4 className="font-semibold text-gray-900 mb-3">{i + 1}. {item.title}</h4>
+                  <p className="text-gray-700 leading-relaxed mb-3">{item.text}</p>
+                  <div className="bg-red-50 p-3 rounded-lg mb-3">
+                    <p className="text-sm text-red-800">
+                      <span className="font-semibold">Why this matters:</span> {item.whyMatters}
+                    </p>
+                  </div>
+                  <div className="bg-red-100 p-3 rounded-lg">
+                    <p className="text-sm text-red-900">
+                      <span className="font-semibold">Actionable Insight:</span> {item.actionableInsight}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Opportunities */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-blue-700 mb-4 flex items-center">
+              <span className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">O</span>
+              Opportunities
+            </h3>
+            <div className="space-y-4">
+              {opportunities.map((item, i) => (
+                <div key={i} className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-blue-500">
+                  <h4 className="font-semibold text-gray-900 mb-3">{i + 1}. {item.title}</h4>
+                  <p className="text-gray-700 leading-relaxed mb-3">{item.text}</p>
+                  <div className="bg-blue-50 p-3 rounded-lg mb-3">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-semibold">Why this matters:</span> {item.whyMatters}
+                    </p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                      <span className="font-semibold">Actionable Insight:</span> {item.actionableInsight}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Threats */}
+          <div>
+            <h3 className="text-xl font-bold text-yellow-700 mb-4 flex items-center">
+              <span className="w-8 h-8 bg-yellow-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">T</span>
+              Threats
+            </h3>
+            <div className="space-y-4">
+              {threats.map((item, i) => (
+                <div key={i} className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-yellow-500">
+                  <h4 className="font-semibold text-gray-900 mb-3">{i + 1}. {item.title}</h4>
+                  <p className="text-gray-700 leading-relaxed mb-3">{item.text}</p>
+                  <div className="bg-yellow-50 p-3 rounded-lg mb-3">
+                    <p className="text-sm text-yellow-800">
+                      <span className="font-semibold">Why this matters:</span> {item.whyMatters}
+                    </p>
+                  </div>
+                  <div className="bg-yellow-100 p-3 rounded-lg">
+                    <p className="text-sm text-yellow-900">
+                      <span className="font-semibold">Actionable Insight:</span> {item.actionableInsight}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -1121,52 +1230,6 @@ const AssessmentReport: React.FC = () => {
               <ul className="text-sm text-gray-700 space-y-1">
                 <li>• Track stage dominance changes over time</li>
                 <li>• Identify seasonal organizational patterns</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* 9-12 SWOT */}
-        <section className="p-6 bg-indigo-100 rounded-2xl shadow-inner space-y-6">
-          <h2 className="text-2xl font-semibold text-indigo-800 mb-2">
-            9–12. SWOT Analysis
-          </h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-green-100 p-4 rounded-xl shadow">
-              <h3 className="text-green-700 font-semibold mb-2">Strengths</h3>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                {strengths.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-red-100 p-4 rounded-xl shadow">
-              <h3 className="text-red-700 font-semibold mb-2">Weaknesses</h3>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                {weaknesses.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-blue-100 p-4 rounded-xl shadow">
-              <h3 className="text-blue-700 font-semibold mb-2">
-                Opportunities
-              </h3>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                {opportunities.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-yellow-100 p-4 rounded-xl shadow">
-              <h3 className="text-yellow-700 font-semibold mb-2">Threats</h3>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                {threats.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
               </ul>
             </div>
           </div>
