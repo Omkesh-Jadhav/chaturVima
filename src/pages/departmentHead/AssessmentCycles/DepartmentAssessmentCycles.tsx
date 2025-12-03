@@ -86,9 +86,6 @@ const DepartmentAssessmentCycles = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-brand-teal">
-            Department Head / Scheduling Access
-          </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">
               Assigned Assessment Cycles
@@ -98,74 +95,8 @@ const DepartmentAssessmentCycles = () => {
             </span>
           </div>
           <p className="mt-2 text-sm text-gray-600">
-            You can only schedule cycles shared by HR. Creation rights stay with
-            HR, but you can fine-tune timelines for your org unit.
+            You can only schedule cycles shared by HR.
           </p>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-2 shadow-sm"
-        >
-          <ShieldCheck className="h-4 w-4 text-brand-teal" />
-          <div>
-            <p className="text-xs font-semibold text-gray-900">
-              HR governance on
-            </p>
-            <p className="text-[11px] text-gray-500">
-              Last sync {new Date().toLocaleDateString()}
-            </p>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <CalendarClock className="h-10 w-10 rounded-2xl bg-brand-teal/10 p-2 text-brand-teal" />
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Scheduling ownership
-              </p>
-              <p className="text-xs text-gray-500">
-                {allowedCycleIds.length} cycles shared by HR
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-10 w-10 rounded-2xl bg-amber-50 p-2 text-amber-500" />
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Upcoming launches
-              </p>
-              <p className="text-xs text-gray-500">
-                {
-                  visibleCycles.filter((cycle) => cycle.status === "Upcoming")
-                    .length
-                }{" "}
-                upcoming launches
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <CalendarClock className="h-10 w-10 rounded-2xl bg-purple-50 p-2 text-purple-500" />
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Completed coverage
-              </p>
-              <p className="text-xs text-gray-500">
-                {
-                  visibleCycles.filter((cycle) => cycle.status === "Completed")
-                    .length
-                }{" "}
-                cycles finished
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
