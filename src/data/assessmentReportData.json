@@ -51,10 +51,10 @@
     "stage": "Honeymoon",
     "score": 153.73,
     "employeeStageDescription": [
-      "The employee is currently operating in the Honeymoon Stage, which is clearly the dominant emotional and behavioural state based on the dashboard data. This state is characterized by high enthusiasm, optimism, and elevated motivation—traits strongly reflected in the employee’s scores."
+      "The employee is currently operating in the Honeymoon Stage, which is clearly the dominant emotional and behavioural state based on the dashboard data. This state is characterized by high enthusiasm, optimism, and elevated motivation - traits strongly reflected in the employee’s scores."
     ],
     "stageDescription": [
-      "The Honeymoon State represents the early phase of a transition—such as stepping into a new role, joining a new team, or achieving a major milestone—where individuals feel energized, confident, and deeply optimistic about what lies ahead. This psychological state is especially common among new employees, newly promoted leaders, or high-performing individuals who have recently experienced success.",
+      "The Honeymoon State represents the early phase of a transition - such as stepping into a new role, joining a new team, or achieving a major milestone - where individuals feel energized, confident, and deeply optimistic about what lies ahead. This psychological state is especially common among new employees, newly promoted leaders, or high-performing individuals who have recently experienced success.",
       "During this phase, there is a sense of limitless possibility, where challenges seem manageable and opportunities appear abundant. Individuals rely on their past achievements, believing these successes will naturally extend into the new environment."
     ]
   },
@@ -165,7 +165,7 @@
       },
       {
         "title": "Tendency to rely on past experiences instead of adapting to new dynamics",
-        "text": "Previous success can create a cognitive bias, causing the employee to generalize past solutions to new contexts—even when conditions differ.",
+        "text": "Previous success can create a cognitive bias, causing the employee to generalize past solutions to new contexts - even when conditions differ.",
         "whyMatters": "Rigid application of past methods can limit innovation and may cause misalignment with current organizational processes.",
         "actionableInsight": "Promote a habit of asking contextual questions. Encourage evidence-based reasoning rather than assumption-driven action."
       },
@@ -247,7 +247,7 @@
           },
           {
             "title": "Inspire your team",
-            "description": "Your positivity can uplift team dynamics—use it to encourage collaboration and bring people together."
+            "description": "Your positivity can uplift team dynamics - use it to encourage collaboration and bring people together."
           },
           {
             "title": "Build early credibility",
@@ -274,7 +274,7 @@
           },
           {
             "title": "Build resilience early",
-            "description": "Not everything will succeed at first attempt—prepare mentally for adjustments and setbacks."
+            "description": "Not everything will succeed at first attempt - prepare mentally for adjustments and setbacks."
           }
         ]
       },
@@ -304,7 +304,7 @@
       {
         "id": 4,
         "title": "Address Threats",
-        "description": "Optimism is beneficial—but without balance, it may lead to burnout, frustration, or misalignment with team expectations.",
+        "description": "Optimism is beneficial - but without balance, it may lead to burnout, frustration, or misalignment with team expectations.",
         "recommendations": [
           {
             "title": "Set realistic expectations",
@@ -343,7 +343,7 @@
           },
           {
             "title": "Focus on sustained performance, not just quick wins",
-            "description": "Aim for consistent impact across months—not just immediate bursts of success."
+            "description": "Aim for consistent impact across months - not just immediate bursts of success."
           }
         ]
       }

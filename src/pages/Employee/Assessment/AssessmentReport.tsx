@@ -1030,7 +1030,7 @@ const AssessmentReport: React.FC = () => {
         {/* Interpretation */}
         <section className="p-6 bg-purple-100 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-purple-800 mb-4">
-            7. Detailed Interpretation
+            7. Conclusion
           </h2>
           <p className="text-gray-700 leading-relaxed">
             {assessmentData.detailedInterpretation.text}
