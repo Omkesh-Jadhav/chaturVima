@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import CycleTable from "@/components/assessmentCycles/CycleTable";
 import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
@@ -9,6 +9,9 @@ import {
   departmentHeadsDirectory,
   loadShareMatrix,
   persistShareMatrix,
+  loadCycles,
+  persistCycles,
+  CYCLES_STORAGE_KEY,
   statusFilters,
   yearFilters,
   departmentOptions,
@@ -24,10 +27,24 @@ const AssessmentCycles = () => {
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [cycles, setCycles] = useState<AssessmentCycle[]>(assessmentCyclesSeed);
+  const [cycles, setCycles] = useState<AssessmentCycle[]>(() => loadCycles());
   const [shareMatrix, setShareMatrix] = useState<ShareMatrix>(() =>
     loadShareMatrix()
   );
+
+  // Listen for cycle updates from other tabs/pages
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === CYCLES_STORAGE_KEY) {
+        setCycles(loadCycles());
+      }
+      if (event.key === "cv_hr_share_matrix_v1") {
+        setShareMatrix(loadShareMatrix());
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const [drawerState, setDrawerState] = useState<{
     mode: "create" | "schedule";
@@ -70,14 +87,18 @@ const AssessmentCycles = () => {
       linkedTeams: 0,
       notes: payload.notes,
     };
-    setCycles((prev) => [newCycle, ...prev]);
+    setCycles((prev) => {
+      const updated = [newCycle, ...prev];
+      persistCycles(updated);
+      return updated;
+    });
     closeDrawer();
   };
 
   const handleSchedule = (payload: CycleFormPayload) => {
     if (!drawerState.cycle) return;
-    setCycles((prev) =>
-      prev.map((cycle) =>
+    setCycles((prev) => {
+      const updated = prev.map((cycle) =>
         cycle.id === drawerState.cycle?.id
           ? {
               ...cycle,
@@ -90,8 +111,10 @@ const AssessmentCycles = () => {
               notes: payload.notes,
             }
           : cycle
-      )
-    );
+      );
+      persistCycles(updated);
+      return updated;
+    });
     closeDrawer();
   };
 

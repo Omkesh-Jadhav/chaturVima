@@ -39,7 +39,9 @@ const CycleTable = ({
           <tr className="bg-gray-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
             <th className="px-5 py-3 text-left">Cycle</th>
             <th className="px-4 py-3 text-left">Status</th>
-            <th className="px-4 py-3 text-left">Departments</th>
+            {!isDepartmentHead && (
+              <th className="px-4 py-3 text-left">Departments</th>
+            )}
             <th className="px-4 py-3 text-left">Assessments</th>
             <th className="px-4 py-3 text-left">Progress</th>
             <th className="px-6 py-3 text-right">Actions</th>
@@ -81,41 +83,43 @@ const CycleTable = ({
                     {cycle.status}
                   </span>
                 </td>
-                <td className="px-4 py-4 align-top">
-                  <div className="flex flex-wrap items-center gap-1">
-                    {cycle.departments.slice(0, 2).map((dept) => (
-                      <span
-                        key={dept}
-                        className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600"
-                      >
-                        {dept}
-                      </span>
-                    ))}
-                    {cycle.departments.length > 2 && (
-                      <Tooltip
-                        content={
-                          <div className="space-y-1">
-                            <div className="font-semibold text-gray-900 mb-1.5">
-                              Remaining departments:
-                            </div>
-                            <div className="space-y-1">
-                              {cycle.departments.slice(2).map((dept) => (
-                                <div key={dept} className="text-gray-700">
-                                  {dept}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        }
-                        position="right"
-                      >
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100">
-                          <MoreHorizontal className="h-3 w-3" />
+                {!isDepartmentHead && (
+                  <td className="px-4 py-4 align-top">
+                    <div className="flex flex-wrap items-center gap-1">
+                      {cycle.departments.slice(0, 2).map((dept) => (
+                        <span
+                          key={dept}
+                          className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600"
+                        >
+                          {dept}
                         </span>
-                      </Tooltip>
-                    )}
-                  </div>
-                </td>
+                      ))}
+                      {cycle.departments.length > 2 && (
+                        <Tooltip
+                          content={
+                            <div className="space-y-1">
+                              <div className="font-semibold text-gray-900 mb-1.5">
+                                Remaining departments:
+                              </div>
+                              <div className="space-y-1">
+                                {cycle.departments.slice(2).map((dept) => (
+                                  <div key={dept} className="text-gray-700">
+                                    {dept}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          }
+                          position="right"
+                        >
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100">
+                            <MoreHorizontal className="h-3 w-3" />
+                          </span>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </td>
+                )}
                 <td className="px-4 py-4 align-top">
                   {cycle.assessmentTypes?.length ? (
                     <div className="text-sm font-semibold text-gray-900">

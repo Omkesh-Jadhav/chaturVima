@@ -12,6 +12,7 @@ export const assessmentTypeOptions = [
 ];
 
 export const SHARE_MATRIX_STORAGE_KEY = "cv_hr_share_matrix_v1";
+export const CYCLES_STORAGE_KEY = "cv_hr_assessment_cycles_v1";
 
 export const assessmentCyclesSeed: AssessmentCycle[] = [
   {
@@ -160,6 +161,35 @@ export const loadShareMatrix = (): ShareMatrix => {
 export const persistShareMatrix = (matrix: ShareMatrix) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(SHARE_MATRIX_STORAGE_KEY, JSON.stringify(matrix));
+};
+
+export const loadCycles = (): AssessmentCycle[] => {
+  if (typeof window === "undefined") return assessmentCyclesSeed;
+  const cached = localStorage.getItem(CYCLES_STORAGE_KEY);
+  if (!cached) {
+    // First time - initialize with seed data
+    persistCycles(assessmentCyclesSeed);
+    return assessmentCyclesSeed;
+  }
+  try {
+    const parsed = JSON.parse(cached) as AssessmentCycle[];
+    // Merge with seed to ensure we have all seed cycles, but use stored versions if they exist
+    const storedMap = new Map(parsed.map((c) => [c.id, c]));
+    const seedIds = new Set(assessmentCyclesSeed.map((c) => c.id));
+    const seedCycles = assessmentCyclesSeed.map(
+      (seed) => storedMap.get(seed.id) || seed
+    );
+    const customCycles = parsed.filter((c) => !seedIds.has(c.id));
+    return [...seedCycles, ...customCycles];
+  } catch {
+    return assessmentCyclesSeed;
+  }
+};
+
+export const persistCycles = (cycles: AssessmentCycle[]) => {
+  if (typeof window === "undefined") return;
+  // Store all cycles
+  localStorage.setItem(CYCLES_STORAGE_KEY, JSON.stringify(cycles));
 };
 
 export const statusFilters = ["All Status", "Active", "Upcoming", "Completed"];

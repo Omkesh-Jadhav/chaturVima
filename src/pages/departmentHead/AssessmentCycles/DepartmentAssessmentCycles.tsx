@@ -3,9 +3,11 @@ import { useUser } from "../../../context/UserContext";
 import CycleTable from "@/components/assessmentCycles/CycleTable";
 import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
 import {
-  assessmentCyclesSeed,
   departmentHeadsDirectory,
   loadShareMatrix,
+  loadCycles,
+  persistCycles,
+  CYCLES_STORAGE_KEY,
 } from "@/data/assessmentCycles";
 import type {
   AssessmentCycle,
@@ -15,13 +17,16 @@ import type {
 
 const DepartmentAssessmentCycles = () => {
   const { user } = useUser();
-  const [cycles, setCycles] = useState<AssessmentCycle[]>(assessmentCyclesSeed);
+  const [cycles, setCycles] = useState<AssessmentCycle[]>(() => loadCycles());
   const [shareMatrix, setShareMatrix] = useState<ShareMatrix>(() =>
     loadShareMatrix()
   );
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
+      if (event.key === CYCLES_STORAGE_KEY) {
+        setCycles(loadCycles());
+      }
       if (event.key === "cv_hr_share_matrix_v1") {
         setShareMatrix(loadShareMatrix());
       }
@@ -64,19 +69,23 @@ const DepartmentAssessmentCycles = () => {
 
   const handleSchedule = (payload: CycleFormPayload) => {
     if (!drawerState.cycle) return;
-    setCycles((prev) =>
-      prev.map((cycle) =>
+    setCycles((prev) => {
+      const updated = prev.map((cycle) =>
         cycle.id === drawerState.cycle?.id
           ? {
               ...cycle,
               startDate: payload.startDate,
               endDate: payload.endDate,
               notes: payload.notes,
-              status: cycle.status === "Active" ? cycle.status : "Upcoming",
+              status: (cycle.status === "Active"
+                ? cycle.status
+                : "Upcoming") as AssessmentCycle["status"],
             }
           : cycle
-      )
-    );
+      );
+      persistCycles(updated);
+      return updated;
+    });
     closeDrawer();
   };
 
@@ -122,6 +131,7 @@ const DepartmentAssessmentCycles = () => {
         cycle={drawerState.cycle}
         onClose={closeDrawer}
         onSubmit={handleSchedule}
+        fixedDepartment={viewerHead.department}
       />
     </div>
   );
