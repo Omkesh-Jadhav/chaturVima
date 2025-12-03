@@ -2,7 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
-import { Play, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Play,
+  CheckCircle,
+  TrendingUp,
+  AlertTriangle,
+  Sparkles,
+} from "lucide-react";
 import { SearchInput, Button, AnimatedContainer } from "@/components/ui";
 // Data imports
 import {
@@ -48,6 +54,7 @@ import {
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+import EmotionalStageTransitionLab from "@/components/assessment/EmotionalStageTransitionLab";
 
 // Common card styling
 const CARD_BASE_CLASSES =
@@ -815,6 +822,25 @@ const AssessmentDashboard = () => {
           </div>
         </div>
       </AnimatedContainer>
+
+      {/* Emotional Stage Transition Lab */}
+      <div className="space-y-6">
+        <AnimatedContainer>
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Transition Lab
+            </h2>
+            {/* <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-purple-500 to-indigo-600 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+              <Sparkles className="h-3 w-3" />
+              New
+            </span> */}
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Analyze your emotional stage progression across multiple assessments
+          </p>
+          <EmotionalStageTransitionLab />
+        </AnimatedContainer>
+      </div>
 
       {/* Pending Assessments */}
       <AnimatedContainer
