@@ -3,14 +3,19 @@
  * Contains all mock data used in the Assessment Dashboard component
  */
 
-export type Priority = "High" | "Medium" | "Low";
+export type AssessmentType =
+  | "Employee Self Assessment"
+  | "Manager Relationship Assessment"
+  | "Department Assessment"
+  | "Company Assessment";
 
 export type PendingAssessment = {
   id: string;
   title: string;
   category: string;
   dueDate: string;
-  priority: Priority;
+  cycleName: string;
+  assessmentTypes: AssessmentType[];
 };
 
 export type CompletedAssessment = {
@@ -27,12 +32,6 @@ export type StageDatum = {
   label: string;
   value: number;
 };
-
-export type AssessmentType =
-  | "Employee Self Assessment"
-  | "Manager Relationship Assessment"
-  | "Department Assessment"
-  | "Company Assessment";
 
 export type EmotionalIntensityRow = {
   stage: string;
@@ -64,21 +63,39 @@ export const MOCK_PENDING_ASSESSMENTS: PendingAssessment[] = [
     title: "Leadership Essentials",
     category: "Leadership",
     dueDate: "2025-11-15",
-    priority: "High",
+    cycleName: "Q4 Employee Self-Assessment",
+    assessmentTypes: ["Employee Self Assessment"],
   },
   {
     id: "p2",
     title: "Advanced Communication",
     category: "Communication",
     dueDate: "2025-11-20",
-    priority: "Medium",
+    cycleName: "Manager Relationship Assessment",
+    assessmentTypes: [
+      "Manager Relationship Assessment",
+      "Department Assessment",
+    ],
   },
   {
     id: "p3",
     title: "Data Literacy",
     category: "Analytics",
     dueDate: "2025-11-28",
-    priority: "Low",
+    cycleName: "Q4 Employee Self-Assessment",
+    assessmentTypes: ["Employee Self Assessment", "Company Assessment"],
+  },
+  {
+    id: "p4",
+    title: "Annual Performance Review",
+    category: "Performance",
+    dueDate: "2025-12-05",
+    cycleName: "Annual Performance Assessment",
+    assessmentTypes: [
+      "Employee Self Assessment",
+      "Manager Relationship Assessment",
+      "Department Assessment",
+    ],
   },
 ];
 

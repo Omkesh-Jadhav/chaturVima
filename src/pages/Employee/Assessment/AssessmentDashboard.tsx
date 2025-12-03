@@ -7,7 +7,7 @@ import {
   CheckCircle,
   TrendingUp,
   AlertTriangle,
-  Sparkles,
+  Calendar,
 } from "lucide-react";
 import { SearchInput, Button, AnimatedContainer } from "@/components/ui";
 // Data imports
@@ -26,8 +26,6 @@ import {
 import { formatDisplayDate } from "@/utils/dateUtils";
 import {
   calculateCompletionRate,
-  getPriorityStyles,
-  countHighPriority,
   calculatePercentage,
   findMaxByKey,
 } from "@/utils/assessmentUtils";
@@ -43,9 +41,7 @@ import {
   SummaryCard,
   AnimatedBackground,
   SectionHeader,
-  usePriorityFilter,
   useAssessmentSearch,
-  PRIORITY_ICONS,
   STATUS_STYLES,
   SWOT_CONFIG,
   ANIMATION_DELAYS,
@@ -71,20 +67,16 @@ const AssessmentDashboard = () => {
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
 
   const totalCompleted = completed.length;
-  const highPriorityPending = countHighPriority(pending);
+  const totalPending = pending.length;
   const completionRate = useMemo(
-    () => calculateCompletionRate(totalCompleted, highPriorityPending),
-    [totalCompleted, highPriorityPending]
+    () => calculateCompletionRate(totalCompleted, totalPending),
+    [totalCompleted, totalPending]
   );
 
   const swotData = useMemo<SWOTQuadrant[]>(
     () =>
-      generateSWOTAnalysis(
-        categoryDistribution,
-        completionRate,
-        highPriorityPending
-      ),
-    [categoryDistribution, completionRate, highPriorityPending]
+      generateSWOTAnalysis(categoryDistribution, completionRate, totalPending),
+    [categoryDistribution, completionRate, totalPending]
   );
 
   // Transform heatmap data: Assessment Types as rows (Y-axis), Emotional Stages as columns (X-axis)
@@ -182,11 +174,6 @@ const AssessmentDashboard = () => {
   }, [selectedStage]);
 
   const {
-    priorityFilter,
-    setPriorityFilter,
-    filteredItems: filteredPending,
-  } = usePriorityFilter(pending);
-  const {
     searchQuery,
     setSearchQuery,
     filteredAssessments: visibleHistory,
@@ -215,8 +202,8 @@ const AssessmentDashboard = () => {
           gradient="bg-linear-to-b from-brand-teal to-brand-navy"
         />
         <SummaryCard
-          label="Critical Pending"
-          value={highPriorityPending}
+          label="Pending Assessments"
+          value={totalPending}
           icon={AlertTriangle}
           gradient="bg-linear-to-b from-amber-500 to-orange-600"
         />
@@ -849,83 +836,64 @@ const AssessmentDashboard = () => {
         delay="md"
         className={CARD_BASE_CLASSES}
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Pending Assessments
-            </h2>
-            <p className="text-xs text-gray-500">
-              Upcoming tests and due dates
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {(["All", "High", "Medium", "Low"] as const).map((p) => (
-              <Button
-                key={p}
-                onClick={() => setPriorityFilter(p)}
-                variant={priorityFilter === p ? "primary" : "outline"}
-                size="xs"
-                className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
-              >
-                {p}
-              </Button>
-            ))}
-          </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Pending Assessments
+          </h2>
+          <p className="text-xs text-gray-500">Upcoming tests and due dates</p>
         </div>
-        <div className="mt-4 space-y-2">
-          {filteredPending.length === 0 ? (
+        <div className="mt-4">
+          {pending.length === 0 ? (
             <div className="text-center py-12 text-gray-500 text-sm">
-              No {priorityFilter !== "All" ? priorityFilter : ""} priority
-              assessments found.
+              No pending assessments found.
             </div>
           ) : (
-            filteredPending.map((item, idx) => (
-              <AnimatedContainer
-                key={item.id}
-                animation="fadeInLeft"
-                transitionPreset="normal"
-                delay={idx * ANIMATION_DELAYS.stageCard}
-                className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300 hover:scale-[1.005] hover:-translate-y-0.5"
-              >
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shrink-0 ${getPriorityStyles(
-                        item.priority
-                      )}`}
-                    >
-                      {(() => {
-                        const Icon = PRIORITY_ICONS[item.priority];
-                        return <Icon className="h-3 w-3" />;
-                      })()}
-                      {item.priority}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold text-gray-900 truncate">
-                        {item.title}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center">
-                    <Button
-                      variant="gradient"
-                      size="sm"
-                      className="relative overflow-hidden"
-                    >
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {pending.map((item, idx) => (
+                <AnimatedContainer
+                  key={item.id}
+                  animation="scaleIn"
+                  transitionPreset="spring"
+                  delay={idx * 0.1}
+                  className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300"
+                >
+                  {/* Cycle Name */}
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2.5 line-clamp-2 min-h-[32px]">
+                    {item.cycleName}
+                  </h3>
+
+                  {/* Assessment Types */}
+                  <div className="flex flex-wrap gap-1 mb-2.5">
+                    {item.assessmentTypes.map((type, typeIdx) => (
                       <span
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{
-                          background:
-                            "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2), transparent 50%)",
-                        }}
-                      />
-                      <Play className="h-4 w-4 mr-1.5" />
-                      Start Test
-                    </Button>
+                        key={typeIdx}
+                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[9px] font-medium"
+                      >
+                        {type.split(" ")[0]}
+                      </span>
+                    ))}
                   </div>
-                </div>
-              </AnimatedContainer>
-            ))
+
+                  {/* Due Date */}
+                  <div className="flex items-center gap-1 mb-3">
+                    <Calendar className="h-3 w-3 text-gray-400" />
+                    <span className="text-[10px] text-gray-500">
+                      {formatDisplayDate(item.dueDate)}
+                    </span>
+                  </div>
+
+                  {/* Start Test Button */}
+                  <Button
+                    variant="gradient"
+                    size="sm"
+                    className="w-full relative overflow-hidden text-xs py-1.5"
+                  >
+                    <Play className="h-3.5 w-3.5 mr-1" />
+                    Start Test
+                  </Button>
+                </AnimatedContainer>
+              ))}
+            </div>
           )}
         </div>
       </AnimatedContainer>
