@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { CalendarClock, ShieldCheck, Sparkles } from "lucide-react";
 import { useUser } from "../../../context/UserContext";
 import CycleTable from "@/components/assessmentCycles/CycleTable";
 import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
@@ -91,11 +89,15 @@ const DepartmentAssessmentCycles = () => {
               Assigned Assessment Cycles
             </h1>
             <span className="rounded-full border border-gray-200 px-3 py-0.5 text-xs font-semibold tracking-wide text-gray-600">
-              {viewerHead.department}
+              {viewerHead.department} Department
             </span>
           </div>
           <p className="mt-2 text-sm text-gray-600">
-            You can only schedule cycles shared by HR.
+            Viewing assessment cycles for{" "}
+            <span className="font-semibold text-gray-900">
+              {viewerHead.department} Department
+            </span>
+            . You can only schedule cycles shared by HR.
           </p>
         </div>
       </div>
