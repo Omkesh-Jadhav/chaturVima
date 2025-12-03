@@ -28,14 +28,17 @@ const AssessmentReport: React.FC = () => {
 
   // Assessment Data from JSON
   const overviewText = assessmentData.overview.text;
-  const interpretationText = assessmentData.interpretation.text;
+  const interpretationText = assessmentData.interpretation.stageInterpretation;
   const distributionData = assessmentData.interpretation.distribution;
-  const mainStage = assessmentData.mainStage.stage;
-  const mainStageScore = assessmentData.mainStage.score;
-  const employeeStageDescription = assessmentData.mainStage.employeeStageDescription;
-  const stageDescription = assessmentData.mainStage.stageDescription;
-  const subStageScoresSummary = assessmentData.subStageScores.summary;
-  const subStageScoresData = assessmentData.subStageScores.subStage;
+  
+  // Get the dominant stage (first item in distribution array)
+  const dominantStageData = distributionData[0];
+  const mainStage = dominantStageData.stage;
+  const mainStageScore = dominantStageData.score;
+  const employeeStageDescription = assessmentData.interpretation.employeeStageDescription;
+  const stageDescription = assessmentData.interpretation.dominantStageDescription;
+  const subStageScoresSummary = dominantStageData.subStageSummary;
+  const subStageScoresData = dominantStageData.subStageDetails;
   const strengths = assessmentData.swot.strengths;
   const weaknesses = assessmentData.swot.weaknesses;
   const opportunities = assessmentData.swot.opportunities;
@@ -564,7 +567,7 @@ const AssessmentReport: React.FC = () => {
               <ResponsiveRadar
                 data={subStageScoresData.map((item) => ({
                   subStage: item.subStage,
-                  score: item.scorePercentage,
+                  score: item.subStageScore,
                 }))}
                 keys={["score"]}
                 indexBy="subStage"
@@ -602,11 +605,11 @@ const AssessmentReport: React.FC = () => {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xl font-semibold text-rose-700">{item.subStage}</h4>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-rose-600">{item.scorePercentage}%</div>
+                      <div className="text-2xl font-bold text-rose-600">{item.subStageScore}</div>
                       <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
                         <div
                           className="bg-rose-500 h-2 rounded-full"
-                          style={{ width: `${item.scorePercentage}%` }}
+                          style={{ width: `${item.subStageScore}%` }}
                         ></div>
                       </div>
                     </div>
@@ -1030,7 +1033,7 @@ const AssessmentReport: React.FC = () => {
         {/* Interpretation */}
         <section className="p-6 bg-purple-100 rounded-2xl shadow-inner">
           <h2 className="text-2xl font-semibold text-purple-800 mb-4">
-            7. Detailed Interpretation
+            7. Conclusion
           </h2>
           <p className="text-gray-700 leading-relaxed">
             {assessmentData.detailedInterpretation.text}
