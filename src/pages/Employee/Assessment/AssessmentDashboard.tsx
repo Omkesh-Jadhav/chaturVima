@@ -811,23 +811,24 @@ const AssessmentDashboard = () => {
       </AnimatedContainer>
 
       {/* Emotional Stage Transition Lab */}
-      <div className="space-y-6">
-        <AnimatedContainer>
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Transition Lab
-            </h2>
-            {/* <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-purple-500 to-indigo-600 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
-              <Sparkles className="h-3 w-3" />
-              New
-            </span> */}
-          </div>
-          <p className="text-xs text-gray-500 mb-3">
+      <AnimatedContainer
+        animation="fadeInUp"
+        transitionPreset="slow"
+        delay="md"
+        className={CARD_BASE_CLASSES}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Transition Lab
+          </h2>
+          <p className="text-xs text-gray-500">
             Analyze your emotional stage progression across multiple assessments
           </p>
+        </div>
+        <div className="mt-4">
           <EmotionalStageTransitionLab />
-        </AnimatedContainer>
-      </div>
+        </div>
+      </AnimatedContainer>
 
       {/* Pending Assessments */}
       <AnimatedContainer
