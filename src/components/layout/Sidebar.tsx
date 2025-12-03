@@ -44,6 +44,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
     roles: ["employee"],
   },
+  {
+    id: "hr-admin-dashboard",
+    label: "Dashboard",
+    path: "/hr/dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    roles: ["hr-admin"],
+  },
   // {
   //   id: "manager-dashboard",
   //   label: "Dashboard",
