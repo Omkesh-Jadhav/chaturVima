@@ -1,0 +1,472 @@
+{
+    "employee": [
+        {
+            "name": "Omkesh Jadhav",
+            "department": "Software Development",
+            "designation": "Employee",
+            "stageDetails": {
+                "stage": "Honeymoon",
+                "level": "Dominant",
+                "score": 153.73,
+                "scorePercentage": 42,
+                "subStageDetails": [
+                    {
+                        "subStage": "Excitement & Optimism",
+                        "subStageScore": 44.4
+                    },
+                    {
+                        "subStage": "Initial Reality Check",
+                        "subStageScore": 42.7
+                    },
+                    {
+                        "subStage": "Sustained Confidence",
+                        "subStageScore": 25.6
+                    },
+                    {
+                        "subStage": "Confidence & Over-Reliance",
+                        "subStageScore": 27.3
+                    },
+                    {
+                        "subStage": "Subtle Complacency",
+                        "subStageScore": 13.7
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Rajvi Warade",
+            "department": "SAP",
+            "designation": "Employee",
+            "stageDetails": {
+                "stage": "Self-Introspection",
+                "level": "Dominant",
+                "score": 141.32,
+                "scorePercentage": 48,
+                "subStageDetails": [
+                    {
+                        "subStage": "Acknowledgment of Problems",
+                        "subStageScore": 44.4
+                    },
+                    {
+                        "subStage": " Analyzing Causes,Partial Acceptance of Responsibility",
+                        "subStageScore": 42.7
+                    },
+                    {
+                        "subStage": "Exploration of Solutions",
+                        "subStageScore": 25.6
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Sampada Joshi",
+            "department": "Sales & Marketing",
+            "designation": "Employee",
+            "stageDetails": {
+                "stage": "Soul-Searching",
+                "level": "Dominant",
+                "score": 145.66,
+                "scorePercentage": 41.5,
+                "subStageDetails": [
+                    {
+                        "subStage": "Deep Frustration",
+                        "subStageScore": 44.4
+                    },
+                    {
+                        "subStage": "Questioning Fundamentals",
+                        "subStageScore": 42.7
+                    },
+                    {
+                        "subStage": "Openness to Change",
+                        "subStageScore": 25.6
+                    },
+                    {
+                        "subStage": "Actionable Transformation",
+                        "subStageScore": 25.6
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Balaji Aravamuthan",
+            "department": "AI",
+            "designation": "Employee",
+            "stageDetails": {
+                "stage": "Steady-State",
+                "level": "Dominant",
+                "score": 155.33,
+                "scorePercentage": 55.5,
+                "subStageDetails": [
+                    {
+                        "subStage": "Stability and Alignment",
+                        "subStageScore": 44.4
+                    },
+                    {
+                        "subStage": "Operational Predictability",
+                        "subStageScore": 42.7
+                    },
+                    {
+                        "subStage": "Emerging Challenges",
+                        "subStageScore": 25.6
+                    },
+                    {
+                        "subStage": "Dynamic Balance",
+                        "subStageScore": 25.6
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Priya Sharma",
+            "department": "Software Development",
+            "designation": "Senior Developer",
+            "stageDetails": {
+                "stage": "Self-Introspection",
+                "level": "Dominant",
+                "score": 138.45,
+                "scorePercentage": 46,
+                "subStageDetails": [
+                    {
+                        "subStage": "Acknowledgment of Problems",
+                        "subStageScore": 38.2
+                    },
+                    {
+                        "subStage": "Analyzing Causes",
+                        "subStageScore": 45.8
+                    },
+                    {
+                        "subStage": "Exploration of Solutions",
+                        "subStageScore": 32.1
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Arjun Patel",
+            "department": "SAP",
+            "designation": "SAP Consultant",
+            "stageDetails": {
+                "stage": "Honeymoon",
+                "level": "Dominant",
+                "score": 149.87,
+                "scorePercentage": 39,
+                "subStageDetails": [
+                    {
+                        "subStage": "Excitement & Optimism",
+                        "subStageScore": 41.3
+                    },
+                    {
+                        "subStage": "Initial Reality Check",
+                        "subStageScore": 38.9
+                    },
+                    {
+                        "subStage": "Sustained Confidence",
+                        "subStageScore": 29.4
+                    },
+                    {
+                        "subStage": "Confidence & Over-Reliance",
+                        "subStageScore": 22.8
+                    },
+                    {
+                        "subStage": "Subtle Complacency",
+                        "subStageScore": 17.5
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Neha Gupta",
+            "department": "Sales & Marketing",
+            "designation": "Marketing Manager",
+            "stageDetails": {
+                "stage": "Steady-State",
+                "level": "Dominant",
+                "score": 162.14,
+                "scorePercentage": 58,
+                "subStageDetails": [
+                    {
+                        "subStage": "Stability and Alignment",
+                        "subStageScore": 48.7
+                    },
+                    {
+                        "subStage": "Operational Predictability",
+                        "subStageScore": 45.2
+                    },
+                    {
+                        "subStage": "Emerging Challenges",
+                        "subStageScore": 28.9
+                    },
+                    {
+                        "subStage": "Dynamic Balance",
+                        "subStageScore": 31.3
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Vikram Singh",
+            "department": "AI",
+            "designation": "ML Engineer",
+            "stageDetails": {
+                "stage": "Soul-Searching",
+                "level": "Dominant",
+                "score": 142.78,
+                "scorePercentage": 43,
+                "subStageDetails": [
+                    {
+                        "subStage": "Deep Frustration",
+                        "subStageScore": 39.6
+                    },
+                    {
+                        "subStage": "Questioning Fundamentals",
+                        "subStageScore": 41.8
+                    },
+                    {
+                        "subStage": "Openness to Change",
+                        "subStageScore": 33.2
+                    },
+                    {
+                        "subStage": "Actionable Transformation",
+                        "subStageScore": 28.1
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Anita Reddy",
+            "department": "Software Development",
+            "designation": "Team Lead",
+            "stageDetails": {
+                "stage": "Steady-State",
+                "level": "Dominant",
+                "score": 158.92,
+                "scorePercentage": 52,
+                "subStageDetails": [
+                    {
+                        "subStage": "Stability and Alignment",
+                        "subStageScore": 42.1
+                    },
+                    {
+                        "subStage": "Operational Predictability",
+                        "subStageScore": 47.3
+                    },
+                    {
+                        "subStage": "Emerging Challenges",
+                        "subStageScore": 35.8
+                    },
+                    {
+                        "subStage": "Dynamic Balance",
+                        "subStageScore": 33.7
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Rohit Kumar",
+            "department": "SAP",
+            "designation": "Functional Consultant",
+            "stageDetails": {
+                "stage": "Honeymoon",
+                "level": "Dominant",
+                "score": 147.25,
+                "scorePercentage": 38,
+                "subStageDetails": [
+                    {
+                        "subStage": "Excitement & Optimism",
+                        "subStageScore": 43.8
+                    },
+                    {
+                        "subStage": "Initial Reality Check",
+                        "subStageScore": 36.4
+                    },
+                    {
+                        "subStage": "Sustained Confidence",
+                        "subStageScore": 28.7
+                    },
+                    {
+                        "subStage": "Confidence & Over-Reliance",
+                        "subStageScore": 24.1
+                    },
+                    {
+                        "subStage": "Subtle Complacency",
+                        "subStageScore": 14.2
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Kavya Nair",
+            "department": "Sales & Marketing",
+            "designation": "Sales Executive",
+            "stageDetails": {
+                "stage": "Self-Introspection",
+                "level": "Dominant",
+                "score": 144.63,
+                "scorePercentage": 49,
+                "subStageDetails": [
+                    {
+                        "subStage": "Acknowledgment of Problems",
+                        "subStageScore": 46.7
+                    },
+                    {
+                        "subStage": "Analyzing Causes",
+                        "subStageScore": 41.2
+                    },
+                    {
+                        "subStage": "Exploration of Solutions",
+                        "subStageScore": 37.8
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Aditya Mehta",
+            "department": "AI",
+            "designation": "Data Scientist",
+            "stageDetails": {
+                "stage": "Honeymoon",
+                "level": "Dominant",
+                "score": 151.34,
+                "scorePercentage": 44,
+                "subStageDetails": [
+                    {
+                        "subStage": "Excitement & Optimism",
+                        "subStageScore": 46.2
+                    },
+                    {
+                        "subStage": "Initial Reality Check",
+                        "subStageScore": 40.8
+                    },
+                    {
+                        "subStage": "Sustained Confidence",
+                        "subStageScore": 27.9
+                    },
+                    {
+                        "subStage": "Confidence & Over-Reliance",
+                        "subStageScore": 23.5
+                    },
+                    {
+                        "subStage": "Subtle Complacency",
+                        "subStageScore": 12.9
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Deepika Iyer",
+            "department": "Software Development",
+            "designation": "Frontend Developer",
+            "stageDetails": {
+                "stage": "Soul-Searching",
+                "level": "Dominant",
+                "score": 139.56,
+                "scorePercentage": 40,
+                "subStageDetails": [
+                    {
+                        "subStage": "Deep Frustration",
+                        "subStageScore": 37.4
+                    },
+                    {
+                        "subStage": "Questioning Fundamentals",
+                        "subStageScore": 43.1
+                    },
+                    {
+                        "subStage": "Openness to Change",
+                        "subStageScore": 31.8
+                    },
+                    {
+                        "subStage": "Actionable Transformation",
+                        "subStageScore": 27.3
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Manish Agarwal",
+            "department": "SAP",
+            "designation": "Technical Consultant",
+            "stageDetails": {
+                "stage": "Steady-State",
+                "level": "Dominant",
+                "score": 156.78,
+                "scorePercentage": 54,
+                "subStageDetails": [
+                    {
+                        "subStage": "Stability and Alignment",
+                        "subStageScore": 43.9
+                    },
+                    {
+                        "subStage": "Operational Predictability",
+                        "subStageScore": 46.1
+                    },
+                    {
+                        "subStage": "Emerging Challenges",
+                        "subStageScore": 32.4
+                    },
+                    {
+                        "subStage": "Dynamic Balance",
+                        "subStageScore": 34.4
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Pooja Desai",
+            "department": "Sales & Marketing",
+            "designation": "Digital Marketing Specialist",
+            "stageDetails": {
+                "stage": "Honeymoon",
+                "level": "Dominant",
+                "score": 148.91,
+                "scorePercentage": 41,
+                "subStageDetails": [
+                    {
+                        "subStage": "Excitement & Optimism",
+                        "subStageScore": 42.6
+                    },
+                    {
+                        "subStage": "Initial Reality Check",
+                        "subStageScore": 39.7
+                    },
+                    {
+                        "subStage": "Sustained Confidence",
+                        "subStageScore": 26.8
+                    },
+                    {
+                        "subStage": "Confidence & Over-Reliance",
+                        "subStageScore": 25.3
+                    },
+                    {
+                        "subStage": "Subtle Complacency",
+                        "subStageScore": 14.5
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Sanjay Rao",
+            "department": "AI",
+            "designation": "AI Research Analyst",
+            "stageDetails": {
+                "stage": "Self-Introspection",
+                "level": "Dominant",
+                "score": 143.27,
+                "scorePercentage": 47,
+                "subStageDetails": [
+                    {
+                        "subStage": "Acknowledgment of Problems",
+                        "subStageScore": 44.8
+                    },
+                    {
+                        "subStage": "Analyzing Causes",
+                        "subStageScore": 43.5
+                    },
+                    {
+                        "subStage": "Exploration of Solutions",
+                        "subStageScore": 35.0
+                    }
+                ]
+            }
+        }
+    ]
+}
