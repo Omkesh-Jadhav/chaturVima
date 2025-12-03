@@ -9,6 +9,8 @@ export type AssessmentType =
   | "Department Assessment"
   | "Company Assessment";
 
+export type Priority = "High" | "Medium" | "Low";
+
 export type PendingAssessment = {
   id: string;
   title: string;

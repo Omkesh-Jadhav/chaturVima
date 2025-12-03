@@ -5,7 +5,6 @@ import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
 import ShareDrawer from "@/components/assessmentCycles/ShareDrawer";
 import { FilterBar, Button } from "@/components/ui";
 import {
-  assessmentCyclesSeed,
   departmentHeadsDirectory,
   loadShareMatrix,
   persistShareMatrix,

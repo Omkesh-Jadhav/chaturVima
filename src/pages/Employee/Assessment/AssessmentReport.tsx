@@ -1011,7 +1011,7 @@ const AssessmentReport: React.FC = () => {
                         {category.description}
                       </p>
                       <ul className="space-y-2">
-                        {category.actions.map((action, actionIndex) => (
+                        {category.actions.map((action: { title: string; description: string }, actionIndex: number) => (
                           <li key={actionIndex} className="text-sm">
                             <div className="font-medium text-gray-800">
                               {actionIndex + 1}. {action.title}
