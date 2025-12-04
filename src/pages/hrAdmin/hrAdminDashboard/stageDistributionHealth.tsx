@@ -1,129 +1,176 @@
+import { Users, TrendingUp } from "lucide-react";
 import { ResponsivePie } from "@nivo/pie";
+import { AnimatedContainer } from "@/components/ui";
+import { SectionHeader } from "@/components/assessmentDashboard";
+import { getStagePieColor } from "@/utils/assessmentConfig";
+import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
+const CARD_BASE_CLASSES =
+  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
+
 interface PieDatum {
-    id: string;
-    label: string;
-    value: number;
-    color: string;
+  id: string;
+  label: string;
+  value: number;
+  color: string;
 }
 
 const StageDistributionHealth = () => {
-    // Process employee data to count stage distribution
-    const processStageDistribution = () => {
-        const stageCount: { [key: string]: number } = {
-            "Honeymoon": 0,
-            "Self-Introspection": 0,
-            "Soul-Searching": 0,
-            "Steady-State": 0
-        };
-
-        hrDashboardData.employee.forEach(employee => {
-            const stage = employee.stageDetails.stage;
-            if (stage in stageCount) {
-                stageCount[stage]++;
-            }
-        });
-
-        return Object.entries(stageCount).map(([stage, count]) => ({
-            id: stage,
-            label: stage,
-            value: count,
-            color: getStageColor(stage)
-        }));
+  // Stage Distribution Data
+  const processStageDistribution = () => {
+    const stageCount: { [key: string]: number } = {
+      Honeymoon: 0,
+      "Self-Introspection": 0,
+      "Soul-Searching": 0,
+      "Steady-State": 0,
     };
 
-    // Define colors for each stage
-    const getStageColor = (stage: string): string => {
-        const colors: { [key: string]: string } = {
-            "Honeymoon": "#FF6B6B",
-            "Self-Introspection": "#4ECDC4", 
-            "Soul-Searching": "#45B7D1",
-            "Steady-State": "#96CEB4"
-        };
-        return colors[stage] || "#95A5A6";
-    };
+    hrDashboardData.employee.forEach((employee) => {
+      const stage = employee.stageDetails.stage;
+      if (stage in stageCount) {
+        stageCount[stage]++;
+      }
+    });
 
-    const data = processStageDistribution();
-    const totalEmployees = data.reduce((sum, item) => sum + item.value, 0);
+    return Object.entries(stageCount).map(([stage, count]) => ({
+      id: stage,
+      label: stage,
+      value: count,
+      color: getStagePieColor(stage),
+    }));
+  };
 
-    return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                    Employee Stage Distribution
-                </h2>
-                <p className="text-sm text-gray-600">
-                    Distribution of {totalEmployees} employees across different emotional stages
-                </p>
-            </div>
-            
-            <div className="h-80">
-                <ResponsivePie
-                    data={data}
-                    margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-                    innerRadius={0.5}
-                    padAngle={0.7}
-                    cornerRadius={3}
-                    activeOuterRadiusOffset={8}
-                    colors={{ datum: 'data.color' }}
-                    borderWidth={1}
-                    borderColor={{
-                        from: 'color',
-                        modifiers: [['darker', 0.2]]
-                    }}
-                    arcLinkLabelsSkipAngle={10}
-                    arcLinkLabelsTextColor="#333333"
-                    arcLinkLabelsThickness={2}
-                    arcLinkLabelsColor={{ from: 'color' }}
-                    arcLabelsSkipAngle={10}
-                    arcLabelsTextColor={{
-                        from: 'color',
-                        modifiers: [['darker', 2]]
-                    }}
-                    legends={[
-                        {
-                            anchor: 'bottom',
-                            direction: 'row',
-                            justify: false,
-                            translateX: 0,
-                            translateY: 56,
-                            itemsSpacing: 0,
-                            itemWidth: 100,
-                            itemHeight: 18,
-                            itemTextColor: '#999',
-                            itemDirection: 'left-to-right',
-                            itemOpacity: 1,
-                            symbolSize: 18,
-                            symbolShape: 'circle',
-                            effects: [
-                                {
-                                    on: 'hover',
-                                    style: {
-                                        itemTextColor: '#000'
-                                    }
-                                }
-                            ]
-                        }
-                    ]}
-                    tooltip={({ datum }: { datum: PieDatum }) => (
-                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border">
-                            <div className="flex items-center gap-2">
-                                <div 
-                                    className="w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: datum.color }}
-                                />
-                                <span className="font-medium">{datum.label}</span>
-                            </div>
-                            <div className="text-sm text-gray-600 mt-1">
-                                {datum.value} employees ({((datum.value / totalEmployees) * 100).toFixed(1)}%)
-                            </div>
-                        </div>
-                    )}
-                />
-            </div>
+  const stageData = processStageDistribution();
+  const totalEmployees = stageData.reduce((sum, item) => sum + item.value, 0);
+  const dominantStage = stageData.reduce(
+    (max, item) => (item.value > max.value ? item : max),
+    stageData[0]
+  );
+  const dominantPercentage = (
+    (dominantStage.value / totalEmployees) *
+    100
+  ).toFixed(1);
+
+  return (
+    <AnimatedContainer
+      animation="fadeInUp"
+      transitionPreset="slow"
+      className={CARD_BASE_CLASSES}
+    >
+      <SectionHeader
+        title="Stage Distribution Analysis"
+        description="Comprehensive overview of employee emotional journey across all organizational stages. Track engagement levels and identify areas for targeted support."
+      />
+
+      <div className="grid gap-3 md:grid-cols-3 mt-3">
+        <div className="md:col-span-2 h-60">
+          <ResponsivePie
+            data={stageData}
+            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            innerRadius={0.6}
+            padAngle={2}
+            cornerRadius={6}
+            activeOuterRadiusOffset={8}
+            colors={(d: { label: string }) => getStagePieColor(d.label)}
+            enableArcLinkLabels={false}
+            arcLabelsSkipAngle={10}
+            arcLabel={(d: { value: number }) => `${d.value}`}
+            arcLabelsTextColor={{
+              from: "color",
+              modifiers: [["darker", 2.2]],
+            }}
+            arcLabelsRadiusOffset={0.5}
+            defs={PIE_GRADIENTS}
+            fill={PIE_FILL}
+            theme={pieChartTheme}
+            animate
+            motionConfig="gentle"
+            tooltip={({ datum }: { datum: PieDatum }) => (
+              <div className="bg-white px-3 py-2 shadow-xl rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: datum.color }}
+                  />
+                  <span className="font-semibold text-sm text-gray-900">
+                    {datum.label}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600">
+                  {datum.value} employees
+                </div>
+              </div>
+            )}
+          />
         </div>
-    );
+
+        <div className="space-y-2.5">
+          <div className="rounded-lg border border-gray-200 bg-linear-to-br from-brand-teal/5 to-brand-navy/5 p-2.5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-linear-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1 rounded bg-linear-to-br from-brand-teal/20 to-brand-navy/20">
+                  <Users className="h-3.5 w-3.5 text-brand-teal" />
+                </div>
+                <span className="text-xs font-medium text-gray-600">
+                  Total Employees Assessed
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {totalEmployees}
+              </div>
+              <div className="text-[10px] text-gray-500 mt-0.5">
+                Across all stages
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="rounded-lg border border-gray-200 bg-white p-2.5 relative overflow-hidden group"
+            style={{
+              borderLeftWidth: "3px",
+              borderLeftColor: dominantStage.color,
+            }}
+          >
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                background: `linear-gradient(135deg, ${dominantStage.color}08, transparent)`,
+              }}
+            />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp
+                  className="h-3.5 w-3.5"
+                  style={{ color: dominantStage.color }}
+                />
+                <span className="text-xs font-medium text-gray-600">
+                  Dominant Stage
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full shadow-sm"
+                  style={{ backgroundColor: dominantStage.color }}
+                />
+                <span className="text-sm font-semibold text-gray-900">
+                  {dominantStage.label}
+                </span>
+              </div>
+              <div
+                className="text-lg font-bold mt-1"
+                style={{ color: dominantStage.color }}
+              >
+                {dominantStage.value} employees
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AnimatedContainer>
+  );
 };
 
 export default StageDistributionHealth;

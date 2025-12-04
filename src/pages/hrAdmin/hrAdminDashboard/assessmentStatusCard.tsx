@@ -20,24 +20,24 @@ const AssessmentStatusCard = () => {
     );
 
     return (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 mb-6">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SummaryCard
                 label="Total Assessments"
                 value={totalAssessments}
                 icon={CheckCircle}
-                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                gradient="bg-linear-to-b from-brand-teal to-brand-navy"
             />
             <SummaryCard
                 label="Pending Assessments"
                 value={pendingAssessments}
                 icon={AlertTriangle}
-                gradient="bg-gradient-to-br from-orange-500 to-orange-600"
+                gradient="bg-linear-to-b from-amber-500 to-orange-600"
             />
             <SummaryCard
                 label="Completion Rate"
                 value={`${completionRate}%`}
                 icon={TrendingUp}
-                gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                gradient="bg-linear-to-b from-purple-500 to-indigo-600"
             />
         </div>
     );

@@ -1,160 +1,224 @@
-import { ResponsiveBar } from "@nivo/bar";
+import { motion } from "framer-motion";
+import { Users } from "lucide-react";
+import { AnimatedContainer } from "@/components/ui";
+import { SectionHeader } from "@/components/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
-interface SubStageData {
-    subStage: string;
-    count: number;
-    stage: string;
-}
-
-interface ChartData {
-    subStage: string;
-    fullSubStage: string;
-    count: number;
-    color: string;
-    stage: string;
-}
+const CARD_BASE_CLASSES =
+    "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const SubStageDistributionHealth = () => {
-    // Process employee data to count sub-stage distribution
-    const processSubStageDistribution = (): SubStageData[] => {
-        const subStageCount: { [key: string]: { count: number; stage: string } } = {};
+    // Get actual employee count per stage - Same logic as StageDistributionHealth
+    const getStageEmployeeCount = () => {
+        const stageCount: { [key: string]: number } = {
+            "Honeymoon": 0,
+            "Self-Introspection": 0,
+            "Soul-Searching": 0,
+            "Steady-State": 0
+        };
+        hrDashboardData.employee.forEach(employee => {
+            const stage = employee.stageDetails.stage;
+            if (stage in stageCount) {
+                stageCount[stage]++;
+            }
+        });
+        return stageCount;
+    };
+
+    // Sub-Stage Distribution Data - Count unique employees per sub-stage
+    const processSubStageDistribution = () => {
+        const stageGroups: Record<string, { subStage: string; count: number; employeeIds: Set<string> }[]> = {
+            "Honeymoon": [],
+            "Self-Introspection": [],
+            "Soul-Searching": [],
+            "Steady-State": []
+        };
 
         hrDashboardData.employee.forEach(employee => {
             const mainStage = employee.stageDetails.stage;
+            const employeeId = employee.name; // Using name as unique identifier
+            
             employee.stageDetails.subStageDetails.forEach(subStageDetail => {
                 const subStage = subStageDetail.subStage.trim();
-                if (!subStageCount[subStage]) {
-                    subStageCount[subStage] = { count: 0, stage: mainStage };
+                const existing = stageGroups[mainStage]?.find(s => s.subStage === subStage);
+                if (existing) {
+                    // Only count if this employee hasn't been counted for this sub-stage
+                    if (!existing.employeeIds.has(employeeId)) {
+                        existing.count++;
+                        existing.employeeIds.add(employeeId);
+                    }
+                } else {
+                    if (stageGroups[mainStage]) {
+                        const employeeIds = new Set<string>();
+                        employeeIds.add(employeeId);
+                        stageGroups[mainStage].push({ subStage, count: 1, employeeIds });
+                    }
                 }
-                subStageCount[subStage].count++;
             });
         });
 
-        return Object.entries(subStageCount).map(([subStage, data]) => ({
-            subStage,
-            count: data.count,
-            stage: data.stage
-        })).sort((a, b) => b.count - a.count); // Sort by count descending
+        // Sort sub-stages within each stage by count and remove employeeIds
+        Object.keys(stageGroups).forEach(stage => {
+            stageGroups[stage].sort((a, b) => b.count - a.count);
+            // Clean up employeeIds for return
+            stageGroups[stage] = stageGroups[stage].map(({ employeeIds, ...rest }) => rest);
+        });
+
+        return stageGroups;
     };
 
-    // Define colors for each main stage
     const getStageColor = (stage: string): string => {
         const colors: { [key: string]: string } = {
-            "Honeymoon": "#FF6B6B",
-            "Self-Introspection": "#4ECDC4", 
-            "Soul-Searching": "#45B7D1",
-            "Steady-State": "#96CEB4"
+            "Honeymoon": "#10B981",
+            "Self-Introspection": "#3B82F6", 
+            "Soul-Searching": "#F59E0B",
+            "Steady-State": "#8B5CF6"
         };
-        return colors[stage] || "#95A5A6";
+        return colors[stage] || "#6B7280";
     };
 
-    const data = processSubStageDistribution();
-    const totalEmployeeSubStages = data.reduce((sum, item) => sum + item.count, 0);
-
-    // Prepare data for bar chart
-    const chartData = data.map(item => ({
-        subStage: item.subStage.length > 20 ? item.subStage.substring(0, 20) + "..." : item.subStage,
-        fullSubStage: item.subStage,
-        count: item.count,
-        color: getStageColor(item.stage),
-        stage: item.stage
-    }));
+    const subStageGroups = processSubStageDistribution();
+    const stageEmployeeCounts = getStageEmployeeCount();
+    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                    Sub-Stage Distribution
-                </h2>
-                <p className="text-sm text-gray-600">
-                    Employee count across {data.length} different sub-stages ({totalEmployeeSubStages} total occurrences)
-                </p>
-            </div>
-            
-            <div className="h-96">
-                <ResponsiveBar
-                    data={chartData}
-                    keys={['count']}
-                    indexBy="subStage"
-                    margin={{ top: 50, right: 130, bottom: 100, left: 60 }}
-                    padding={0.3}
-                    valueScale={{ type: 'linear' }}
-                    indexScale={{ type: 'band', round: true }}
-                    colors={({ data }: { data: ChartData }) => data.color}
-                    borderColor={{
-                        from: 'color',
-                        modifiers: [['darker', 1.6]]
-                    }}
-                    axisTop={null}
-                    axisRight={null}
-                    axisBottom={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: -45,
-                        legend: 'Sub-Stages',
-                        legendPosition: 'middle',
-                        legendOffset: 80
-                    }}
-                    axisLeft={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: 0,
-                        legend: 'Employee Count',
-                        legendPosition: 'middle',
-                        legendOffset: -40
-                    }}
-                    labelSkipWidth={12}
-                    labelSkipHeight={12}
-                    labelTextColor={{
-                        from: 'color',
-                        modifiers: [['darker', 1.6]]
-                    }}
-                    legends={[
-                        {
-                            dataFrom: 'keys',
-                            anchor: 'bottom-right',
-                            direction: 'column',
-                            justify: false,
-                            translateX: 120,
-                            translateY: 0,
-                            itemsSpacing: 2,
-                            itemWidth: 100,
-                            itemHeight: 20,
-                            itemDirection: 'left-to-right',
-                            itemOpacity: 0.85,
-                            symbolSize: 20,
-                            effects: [
-                                {
-                                    on: 'hover',
-                                    style: {
-                                        itemOpacity: 1
-                                    }
-                                }
-                            ]
-                        }
-                    ]}
-                    tooltip={({ data }: { data: ChartData }) => (
-                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border">
-                            <div className="flex items-center gap-2 mb-1">
-                                <div 
-                                    className="w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: data.color }}
-                                />
-                                <span className="font-medium text-sm">{data.stage}</span>
+        <AnimatedContainer
+            animation="fadeInUp"
+            transitionPreset="slow"
+            className={CARD_BASE_CLASSES}
+        >
+            <SectionHeader
+                title="Sub-Stage Distribution Analysis"
+                description="Detailed breakdown of employee emotional sub-stages within each parent stage. Identify specific areas of focus for personalized employee development and support strategies."
+            />
+
+            <div className="space-y-3 mt-3">
+                {/* Compact Badge-Style Grid Layout - 5 Cards per Row */}
+                {stages.map((stage, stageIdx) => {
+                    const stageSubStages = subStageGroups[stage] || [];
+                    const stageColor = getStageColor(stage);
+                    const totalInStage = stageEmployeeCounts[stage] || 0; // Use actual employee count, not sum of sub-stages
+                    
+                    if (stageSubStages.length === 0) return null;
+                    
+                    const maxCount = Math.max(...stageSubStages.map(s => s.count), 1);
+                    
+                    return (
+                        <motion.div
+                            key={stage}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: stageIdx * 0.1 }}
+                            className="rounded-lg border border-gray-200 bg-white overflow-hidden"
+                            style={{
+                                borderLeftWidth: '3px',
+                                borderLeftColor: stageColor
+                            }}
+                        >
+                            {/* Compact Stage Header */}
+                            <div
+                                className="px-2.5 py-1.5 border-b border-gray-100"
+                                style={{
+                                    background: `linear-gradient(135deg, ${stageColor}08, ${stageColor}03)`
+                                }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <div
+                                            className="w-2.5 h-2.5 rounded-full shadow-sm"
+                                            style={{ backgroundColor: stageColor }}
+                                        />
+                                        <h3 className="text-xs font-bold text-gray-900">{stage}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <Users className="h-3 w-3 text-gray-400" />
+                                        <span className="text-[10px] font-semibold text-gray-600">{totalInStage} employees</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-sm font-semibold">{data.fullSubStage}</div>
-                            <div className="text-sm text-gray-600">
-                                {data.count} employees ({((data.count / totalEmployeeSubStages) * 100).toFixed(1)}%)
+
+                            {/* Sub-Stages Grid - 5 Cards per Row, Compact */}
+                            <div className="p-2">
+                                <div className="grid grid-cols-5 gap-2">
+                                    {stageSubStages.map((subStage, idx) => {
+                                        const percentage = totalInStage > 0 ? ((subStage.count / totalInStage) * 100).toFixed(0) : '0';
+                                        const barPercentage = (subStage.count / maxCount) * 100;
+                                        
+                                        return (
+                                            <motion.div
+                                                key={subStage.subStage}
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{
+                                                    delay: (stageIdx * 0.05) + (idx * 0.03),
+                                                    type: "spring",
+                                                    stiffness: 200
+                                                }}
+                                                whileHover={{ scale: 1.02, y: -1 }}
+                                                className="group relative overflow-hidden rounded-md border border-gray-200 bg-white p-1.5 transition-all hover:shadow-sm hover:border-gray-300"
+                                                style={{
+                                                    borderTopWidth: '2px',
+                                                    borderTopColor: stageColor
+                                                }}
+                                            >
+                                                {/* Gradient Background on Hover */}
+                                                <div
+                                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    style={{
+                                                        background: `linear-gradient(135deg, ${stageColor}05, transparent)`
+                                                    }}
+                                                />
+                                                
+                                                <div className="relative z-10">
+                                                    {/* Sub-Stage Name - Compact */}
+                                                    <h4 className="text-[10px] font-semibold text-gray-900 mb-1.5 line-clamp-2 min-h-[2rem] leading-tight">
+                                                        {subStage.subStage}
+                                                    </h4>
+                                                    
+                                                    {/* Count Display - Smaller but Prominent */}
+                                                    <div className="flex items-baseline justify-between mb-1.5">
+                                                        <div className="flex items-baseline gap-0.5">
+                                                            <span
+                                                                className="text-lg font-bold leading-none"
+                                                                style={{ color: stageColor }}
+                                                            >
+                                                                {subStage.count}
+                                                            </span>
+                                                            <span className="text-[9px] text-gray-500 ml-0.5">employees</span>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-gray-600">
+                                                            {percentage}%
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {/* Progress Bar - Thinner */}
+                                                    <div className="relative h-1 rounded-full bg-gray-100 overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${barPercentage}%` }}
+                                                            transition={{
+                                                                duration: 0.6,
+                                                                delay: (stageIdx * 0.05) + (idx * 0.03) + 0.2,
+                                                                ease: "easeOut",
+                                                            }}
+                                                            className="h-full rounded-full"
+                                                            style={{
+                                                                background: `linear-gradient(90deg, ${stageColor}, ${stageColor}dd)`,
+                                                                boxShadow: `0 0 3px ${stageColor}40`
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    animate={true}
-                    motionStiffness={90}
-                    motionDamping={15}
-                />
+                        </motion.div>
+                    );
+                })}
             </div>
-        </div>
+        </AnimatedContainer>
     );
 };
 
