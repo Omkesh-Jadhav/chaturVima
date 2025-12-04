@@ -111,20 +111,20 @@ export const departmentHeadsDirectory: DepartmentHeadAccess[] = [
     activeCycles: 1,
   },
   {
-    id: "dh-people",
-    name: "Naveen Iyer",
-    email: "naveen.iyer@example.com",
-    department: "People Ops",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Naveen",
-    activeCycles: 1,
-  },
-  {
     id: "dh-sales",
     name: "Tara Menon",
     email: "tara.menon@example.com",
     department: "Marketing",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tara",
     activeCycles: 0,
+  },
+  {
+    id: "dh-sales",
+    name: "Rekha Sharma",
+    email: "rekha.sharma@example.com",
+    department: "Finance",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rekha",
+    activeCycles: 3,
   },
 ];
 

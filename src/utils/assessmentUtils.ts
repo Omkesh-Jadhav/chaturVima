@@ -4,6 +4,7 @@
  */
 
 import type { Priority } from "@/data/assessmentDashboard";
+import type { CycleStatus } from "@/types/assessmentCycles";
 
 /**
  * Calculate completion rate based on completed and critical pending assessments
@@ -84,4 +85,50 @@ export const findMaxByKey = <T>(items: T[], key: keyof T): number => {
     return typeof value === "number" ? value : 0;
   });
   return Math.max(...values);
+};
+
+/**
+ * Cycle Status Colors
+ * Reusable status color configuration matching CycleTable
+ */
+export const CYCLE_STATUS_COLORS: Record<
+  CycleStatus,
+  { bg: string; text: string; border?: string }
+> = {
+  Active: {
+    bg: "bg-emerald-100",
+    text: "text-emerald-800",
+    border: "border-emerald-200",
+  },
+  Upcoming: {
+    bg: "bg-orange-100",
+    text: "text-orange-800",
+    border: "border-orange-200",
+  },
+  Completed: {
+    bg: "bg-slate-200",
+    text: "text-slate-800",
+    border: "border-slate-300",
+  },
+  Draft: {
+    bg: "bg-indigo-100",
+    text: "text-indigo-800",
+    border: "border-indigo-200",
+  },
+};
+
+/**
+ * Get cycle status color classes
+ * @param status - Cycle status
+ * @param includeBorder - Whether to include border class (default: false)
+ * @returns Tailwind CSS classes for the status
+ */
+export const getCycleStatusColor = (
+  status: CycleStatus,
+  includeBorder = false
+): string => {
+  const colors = CYCLE_STATUS_COLORS[status];
+  return includeBorder
+    ? `${colors.bg} ${colors.text} ${colors.border || ""}`
+    : `${colors.bg} ${colors.text}`;
 };

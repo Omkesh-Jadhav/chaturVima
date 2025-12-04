@@ -1,176 +1,314 @@
-import { ResponsiveScatterPlot } from "@nivo/scatterplot";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Building2, Users, TrendingUp } from "lucide-react";
+import { AnimatedContainer } from "@/components/ui";
+import { CheckboxDropdown } from "@/components/ui/CheckboxDropdown";
+import { SectionHeader } from "@/components/assessmentDashboard";
+import { getStagePieColor } from "@/utils/assessmentConfig";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
-interface EmployeeDataPoint {
-    id: string;
-    x: number;
-    y: number;
-    data: {
-        name: string;
-        department: string;
-        stage: string;
-        score: number;
-        scorePercentage: number;
-    };
-}
+const CARD_BASE_CLASSES =
+  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
-interface ScatterPlotData {
-    id: string;
-    data: EmployeeDataPoint[];
-}
+const STAGES = [
+  "Honeymoon",
+  "Self-Introspection",
+  "Soul-Searching",
+  "Steady-State",
+] as const;
 
 const DepartmentDistribution = () => {
-    // Process employee data for scatterplot
-    const processEmployeeData = (): ScatterPlotData[] => {
-        // Create department and stage mappings for positioning
-        const departments = [...new Set(hrDashboardData.employee.map(emp => emp.department))];
-        const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
-        
-        // Group employees by stage for different series
-        const stageGroups: { [key: string]: EmployeeDataPoint[] } = {};
-        
-        stages.forEach(stage => {
-            stageGroups[stage] = [];
-        });
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [selectedStages, setSelectedStages] = useState<string[]>([]);
 
-        hrDashboardData.employee.forEach((employee, index) => {
-            const deptIndex = departments.indexOf(employee.department);
-            const stageIndex = stages.indexOf(employee.stageDetails.stage);
-            const stage = employee.stageDetails.stage;
-            
-            if (stageIndex !== -1 && deptIndex !== -1) {
-                stageGroups[stage].push({
-                    id: `employee-${index}`,
-                    x: deptIndex,
-                    y: stageIndex,
-                    data: {
-                        name: employee.name,
-                        department: employee.department,
-                        stage: employee.stageDetails.stage,
-                        score: employee.stageDetails.score,
-                        scorePercentage: employee.stageDetails.scorePercentage
-                    }
-                });
-            }
-        });
+  // Get all unique departments
+  const allDepartments = useMemo(() => {
+    return [
+      ...new Set(hrDashboardData.employee.map((emp) => emp.department)),
+    ].sort();
+  }, []);
 
-        return Object.entries(stageGroups).map(([stage, employees]) => ({
-            id: stage,
-            data: employees
-        }));
-    };
+  // Process department data - aggregate at department level
+  const departmentData = useMemo(() => {
+    // Get unique departments
+    let departments = [
+      ...new Set(hrDashboardData.employee.map((emp) => emp.department)),
+    ];
 
-    // Define colors for each stage
-    const getStageColor = (stage: string): string => {
-        const colors: { [key: string]: string } = {
-            "Honeymoon": "#FF6B6B",
-            "Self-Introspection": "#4ECDC4", 
-            "Soul-Searching": "#45B7D1",
-            "Steady-State": "#96CEB4"
-        };
-        return colors[stage] || "#95A5A6";
-    };
+    // Filter by selected departments
+    if (selectedDepartments.length > 0) {
+      departments = departments.filter((dept) =>
+        selectedDepartments.includes(dept)
+      );
+    }
 
-    const data = processEmployeeData();
-    const departments = [...new Set(hrDashboardData.employee.map(emp => emp.department))];
-    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    return departments.map((dept) => {
+      // Aggregate employees by department
+      let deptEmployees = hrDashboardData.employee.filter(
+        (emp) => emp.department === dept
+      );
 
-    return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                    Department-wise Stage Distribution
-                </h2>
-                <p className="text-sm text-gray-600">
-                    Employee distribution across departments and stages (bubble size = score)
-                </p>
-            </div>
-            
-            <div className="h-96">
-                <ResponsiveScatterPlot
-                    data={data}
-                    margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
-                    xScale={{ type: 'linear', min: -0.5, max: departments.length - 0.5 }}
-                    yScale={{ type: 'linear', min: -0.5, max: stages.length - 0.5 }}
-                    blendMode="multiply"
-                    nodeSize={(node) => {
-                        // Scale node size based on score (min: 8, max: 24)
-                        const score = node.data.data.score;
-                        return Math.max(8, Math.min(24, (score / 170) * 20 + 4));
-                    }}
-                    colors={(serie) => getStageColor(String(serie.serieId))}
-                    axisTop={null}
-                    axisRight={null}
-                    axisBottom={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: -45,
-                        legend: 'Departments',
-                        legendPosition: 'middle',
-                        legendOffset: 60,
-                        tickValues: departments.map((_, index) => index),
-                        format: (value) => departments[value] || ''
-                    }}
-                    axisLeft={{
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: 0,
-                        legend: 'Stages',
-                        legendPosition: 'middle',
-                        legendOffset: -70,
-                        tickValues: stages.map((_, index) => index),
-                        format: (value) => stages[value] || ''
-                    }}
-                    legends={[
-                        {
-                            anchor: 'bottom-right',
-                            direction: 'column',
-                            justify: false,
-                            translateX: 130,
-                            translateY: 0,
-                            itemWidth: 100,
-                            itemHeight: 12,
-                            itemsSpacing: 5,
-                            itemDirection: 'left-to-right',
-                            symbolSize: 12,
-                            symbolShape: 'circle',
-                            effects: [
-                                {
-                                    on: 'hover',
-                                    style: {
-                                        itemOpacity: 1
-                                    }
-                                }
-                            ]
-                        }
-                    ]}
-                    tooltip={({ node }) => (
-                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border">
-                            <div className="flex items-center gap-2 mb-1">
-                                <div 
-                                    className="w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: getStageColor(String(node.serieId)) }}
-                                />
-                                <span className="font-medium text-sm">{node.data.data.name}</span>
-                            </div>
-                            <div className="text-xs text-gray-600 space-y-1">
-                                <div><strong>Department:</strong> {node.data.data.department}</div>
-                                <div><strong>Stage:</strong> {node.data.data.stage}</div>
-                                <div><strong>Score:</strong> {node.data.data.score.toFixed(2)}</div>
-                                <div><strong>Percentage:</strong> {node.data.data.scorePercentage}%</div>
-                            </div>
-                        </div>
-                    )}
-                    animate={true}
-                />
-            </div>
-            
-            {/* Legend explanation */}
-            <div className="mt-4 text-xs text-gray-500 border-t pt-4">
-                <p><strong>How to read:</strong> Each bubble represents an employee. Position shows department (X-axis) and stage (Y-axis). Bubble size indicates the employee's score in their stage.</p>
-            </div>
-        </div>
+      // Filter by selected stages if any selected
+      if (selectedStages.length > 0) {
+        deptEmployees = deptEmployees.filter((emp) =>
+          selectedStages.includes(emp.stageDetails.stage)
+        );
+      }
+
+      // Count stages
+      const stageCounts = deptEmployees.reduce(
+        (acc, emp) => {
+          const stage = emp.stageDetails.stage;
+          if (STAGES.includes(stage as (typeof STAGES)[number])) {
+            acc[stage as (typeof STAGES)[number]] =
+              (acc[stage as (typeof STAGES)[number]] || 0) + 1;
+          }
+          return acc;
+        },
+        {
+          Honeymoon: 0,
+          "Self-Introspection": 0,
+          "Soul-Searching": 0,
+          "Steady-State": 0,
+        } as Record<(typeof STAGES)[number], number>
+      );
+
+      // Find dominant stage
+      const dominantStage = Object.entries(stageCounts).reduce(
+        (max, [stage, count]) => (count > max.count ? { stage, count } : max),
+        { stage: "", count: 0 } as { stage: string; count: number }
+      );
+
+      return {
+        department: dept,
+        totalEmployees: deptEmployees.length,
+        stageDistribution: {
+          Honeymoon: stageCounts.Honeymoon,
+          "Self-Introspection": stageCounts["Self-Introspection"],
+          "Soul-Searching": stageCounts["Soul-Searching"],
+          "Steady-State": stageCounts["Steady-State"],
+        },
+        dominantStage: dominantStage.stage,
+        dominantCount: dominantStage.count,
+      };
+    });
+  }, [selectedDepartments, selectedStages]);
+
+  // Calculate overall statistics
+  const overallStats = useMemo(() => {
+    const totalEmployees = departmentData.reduce(
+      (sum, dept) => sum + dept.totalEmployees,
+      0
     );
+    const totalDepartments = departmentData.length;
+
+    return { totalEmployees, totalDepartments };
+  }, [departmentData]);
+
+  return (
+    <AnimatedContainer
+      animation="fadeInUp"
+      transitionPreset="slow"
+      className={CARD_BASE_CLASSES}
+    >
+      <SectionHeader
+        title="Department Distribution"
+        description="Stage-wise employee distribution across all organizational departments"
+        actions={
+          <div className="flex gap-2">
+            <CheckboxDropdown
+              label="Department"
+              options={allDepartments}
+              selected={selectedDepartments}
+              onChange={setSelectedDepartments}
+              placeholder="All Departments"
+              className="w-full sm:w-auto min-w-[180px]"
+            />
+            <CheckboxDropdown
+              label="Stage"
+              options={[...STAGES]}
+              selected={selectedStages}
+              onChange={setSelectedStages}
+              placeholder="All Stages"
+              className="w-full sm:w-auto min-w-[180px]"
+            />
+          </div>
+        }
+      />
+
+      {/* Overall Statistics */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="rounded-xl border border-gray-200 bg-linear-to-br from-brand-teal/5 to-brand-navy/5 p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1.5 rounded-lg bg-brand-teal/10">
+              <Building2 className="h-4 w-4 text-brand-teal" />
+            </div>
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide">
+                Total Departments
+              </div>
+              <div className="text-xl font-bold text-gray-900">
+                {overallStats.totalDepartments}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-linear-to-br from-blue-50 to-indigo-50 p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1.5 rounded-lg bg-blue-100">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide">
+                Total Employees
+              </div>
+              <div className="text-xl font-bold text-gray-900">
+                {overallStats.totalEmployees.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Department Cards - Scrollable Grid */}
+      <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+        {departmentData.length === 0 ? (
+          <div className="text-center py-12 text-sm text-gray-500">
+            No departments found for selected filters
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {departmentData.map((dept, idx) => {
+              const stageColor = getStagePieColor(dept.dominantStage);
+              const maxStageCount = Math.max(
+                ...Object.values(dept.stageDistribution)
+              );
+
+              return (
+                <motion.div
+                  key={dept.department}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-linear-to-br from-white to-gray-50 p-3 shadow-sm"
+                  style={{
+                    borderTopWidth: "4px",
+                    borderTopColor: stageColor,
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div
+                      className="p-1.5 rounded-lg shrink-0"
+                      style={{
+                        backgroundColor: `${stageColor}15`,
+                      }}
+                    >
+                      <Building2
+                        className="h-4 w-4"
+                        style={{ color: stageColor }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-bold text-gray-900 truncate">
+                        {dept.department}
+                      </h3>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Users className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">
+                          {dept.totalEmployees} employees
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dominant Stage Badge */}
+                  <div className="mb-2.5 px-2 py-1 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-medium text-gray-600">
+                        Dominant
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: stageColor }}
+                        />
+                        <span
+                          className="text-xs font-bold"
+                          style={{ color: stageColor }}
+                        >
+                          {dept.dominantStage.split("-")[0]}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-1 text-xs font-semibold text-gray-700">
+                      {dept.dominantCount} employees
+                    </div>
+                  </div>
+
+                  {/* Stage Distribution */}
+                  <div className="space-y-2">
+                    {STAGES.map((stage) => {
+                      const count = dept.stageDistribution[stage];
+                      const stageColorValue = getStagePieColor(stage);
+                      const barWidth =
+                        maxStageCount > 0 ? (count / maxStageCount) * 100 : 0;
+
+                      return (
+                        <div
+                          key={stage}
+                          className="group/item rounded-lg border border-gray-200 bg-white p-1.5"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <div
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: stageColorValue }}
+                              />
+                              <span className="text-[10px] font-medium text-gray-700 truncate">
+                                {stage.split("-")[0]}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <TrendingUp
+                                className="h-3 w-3 text-gray-400"
+                                style={{ color: stageColorValue }}
+                              />
+                              <span
+                                className="text-xs font-bold min-w-[25px] text-right"
+                                style={{ color: stageColorValue }}
+                              >
+                                {count}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="relative h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${barWidth}%` }}
+                              transition={{
+                                duration: 0.7,
+                                delay: idx * 0.03 + 0.15,
+                                ease: "easeOut",
+                              }}
+                              className="h-full rounded-full shadow-sm"
+                              style={{
+                                backgroundColor: stageColorValue,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </AnimatedContainer>
+  );
 };
 
 export default DepartmentDistribution;
