@@ -29,7 +29,7 @@ const SubStageDistributionHealth = () => {
   const processSubStageDistribution = () => {
     const stageGroups: Record<
       string,
-      { subStage: string; count: number; employeeIds: Set<string> }[]
+      { subStage: string; count: number; employeeIds?: Set<string> }[]
     > = {
       Honeymoon: [],
       "Self-Introspection": [],
@@ -48,8 +48,11 @@ const SubStageDistributionHealth = () => {
         );
         if (existing) {
           // Only count if this employee hasn't been counted for this sub-stage
-          if (!existing.employeeIds.has(employeeId)) {
+          if (!existing.employeeIds?.has(employeeId)) {
             existing.count++;
+            if (!existing.employeeIds) {
+              existing.employeeIds = new Set<string>();
+            }
             existing.employeeIds.add(employeeId);
           }
         } else {
@@ -66,9 +69,10 @@ const SubStageDistributionHealth = () => {
     Object.keys(stageGroups).forEach((stage) => {
       stageGroups[stage].sort((a, b) => b.count - a.count);
       // Clean up employeeIds for return
-      stageGroups[stage] = stageGroups[stage].map(
-        ({ employeeIds, ...rest }) => rest
-      );
+      stageGroups[stage] = stageGroups[stage].map((item) => ({
+        subStage: item.subStage,
+        count: item.count,
+      }));
     });
 
     return stageGroups;

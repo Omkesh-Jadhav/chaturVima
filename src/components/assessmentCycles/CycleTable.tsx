@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
+import { CYCLE_STATUS_COLORS } from "@/utils/assessmentUtils";
 
 type TableVariant = "hr" | "department-head";
 
@@ -12,16 +13,6 @@ interface CycleTableProps {
   variant?: TableVariant;
   scheduleAccess?: Record<string, boolean>;
 }
-
-const statusColors: Record<
-  AssessmentCycle["status"],
-  { bg: string; text: string }
-> = {
-  Active: { bg: "bg-emerald-100", text: "text-emerald-800" },
-  Upcoming: { bg: "bg-orange-100", text: "text-orange-800" },
-  Completed: { bg: "bg-slate-200", text: "text-slate-800" },
-  Draft: { bg: "bg-indigo-100", text: "text-indigo-800" },
-};
 
 const CycleTable = ({
   data,
@@ -49,7 +40,7 @@ const CycleTable = ({
         </thead>
         <tbody className="divide-y divide-gray-100">
           {data.map((cycle, idx) => {
-            const palette = statusColors[cycle.status];
+            const palette = CYCLE_STATUS_COLORS[cycle.status];
             const isCompleted = cycle.status === "Completed";
             const canSchedule = isCompleted
               ? false
