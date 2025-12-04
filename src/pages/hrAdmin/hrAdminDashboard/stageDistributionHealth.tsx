@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Users, TrendingUp } from "lucide-react";
 import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
@@ -10,6 +11,13 @@ import hrDashboardData from "@/data/hrDashboardData.json";
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
+const STAGES = [
+  "Honeymoon",
+  "Self-Introspection",
+  "Soul-Searching",
+  "Steady-State",
+] as const;
+
 interface PieDatum {
   id: string;
   label: string;
@@ -17,16 +25,21 @@ interface PieDatum {
   color: string;
 }
 
-const StageDistributionHealth = () => {
-  // Stage Distribution Data
-  const processStageDistribution = () => {
-    const stageCount: { [key: string]: number } = {
-      Honeymoon: 0,
-      "Self-Introspection": 0,
-      "Soul-Searching": 0,
-      "Steady-State": 0,
-    };
+interface StageData {
+  id: string;
+  label: string;
+  value: number;
+  color: string;
+}
 
+const StageDistributionHealth = () => {
+  // Memoize stage distribution calculation
+  const { stageData, totalEmployees, dominantStage } = useMemo(() => {
+    const stageCount: Record<string, number> = Object.fromEntries(
+      STAGES.map((stage) => [stage, 0])
+    );
+
+    // Count employees per stage
     hrDashboardData.employee.forEach((employee) => {
       const stage = employee.stageDetails.stage;
       if (stage in stageCount) {
@@ -34,24 +47,27 @@ const StageDistributionHealth = () => {
       }
     });
 
-    return Object.entries(stageCount).map(([stage, count]) => ({
+    // Transform to chart data format
+    const data: StageData[] = STAGES.map((stage) => ({
       id: stage,
       label: stage,
-      value: count,
+      value: stageCount[stage],
       color: getStagePieColor(stage),
     }));
-  };
 
-  const stageData = processStageDistribution();
-  const totalEmployees = stageData.reduce((sum, item) => sum + item.value, 0);
-  const dominantStage = stageData.reduce(
-    (max, item) => (item.value > max.value ? item : max),
-    stageData[0]
-  );
-  const dominantPercentage = (
-    (dominantStage.value / totalEmployees) *
-    100
-  ).toFixed(1);
+    // Calculate totals
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    const dominant = data.reduce(
+      (max, item) => (item.value > max.value ? item : max),
+      data[0]
+    );
+
+    return {
+      stageData: data,
+      totalEmployees: total,
+      dominantStage: dominant,
+    };
+  }, []);
 
   return (
     <AnimatedContainer
@@ -99,7 +115,7 @@ const StageDistributionHealth = () => {
                   </span>
                 </div>
                 <div className="text-xs text-gray-600">
-                  {datum.value} employees
+                  {datum.value} {datum.value === 1 ? "employee" : "employees"}
                 </div>
               </div>
             )}
@@ -107,6 +123,7 @@ const StageDistributionHealth = () => {
         </div>
 
         <div className="space-y-2.5">
+          {/* Total Employees Card */}
           <div className="rounded-lg border border-gray-200 bg-linear-to-br from-brand-teal/5 to-brand-navy/5 p-2.5 relative overflow-hidden group">
             <div className="absolute inset-0 bg-linear-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10">
@@ -119,7 +136,7 @@ const StageDistributionHealth = () => {
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
-                {totalEmployees}
+                {totalEmployees.toLocaleString()}
               </div>
               <div className="text-[10px] text-gray-500 mt-0.5">
                 Across all stages
@@ -127,6 +144,7 @@ const StageDistributionHealth = () => {
             </div>
           </div>
 
+          {/* Dominant Stage Card */}
           <div
             className="rounded-lg border border-gray-200 bg-white p-2.5 relative overflow-hidden group"
             style={{
@@ -163,7 +181,7 @@ const StageDistributionHealth = () => {
                 className="text-lg font-bold mt-1"
                 style={{ color: dominantStage.color }}
               >
-                {dominantStage.value} employees
+                {dominantStage.value.toLocaleString()} employees
               </div>
             </div>
           </div>
