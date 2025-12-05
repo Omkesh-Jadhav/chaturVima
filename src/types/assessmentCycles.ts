@@ -37,7 +37,5 @@ export interface CycleFormPayload {
   endDate: string;
   departments: string[];
   assessmentTypes: string[];
-  allowCustomUpload: boolean;
-  customQuestionnaireName?: string;
   notes?: string;
 }

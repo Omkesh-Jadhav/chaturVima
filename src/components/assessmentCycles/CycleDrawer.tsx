@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import {
@@ -37,8 +37,6 @@ const defaultPayload: CycleFormPayload = {
   endDate: "",
   departments: [],
   assessmentTypes: [],
-  allowCustomUpload: false,
-  customQuestionnaireName: "",
   notes: "",
 };
 
@@ -54,7 +52,6 @@ const CycleDrawer = ({
   fixedDepartment,
 }: CycleDrawerProps) => {
   const [form, setForm] = useState<CycleFormPayload>(defaultPayload);
-  const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const [selectedDeptsForManual, setSelectedDeptsForManual] = useState<
     string[]
@@ -64,8 +61,6 @@ const CycleDrawer = ({
   );
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
-  const requiresAssessmentSelection =
-    form.allowCustomUpload && form.assessmentTypes.length === 0;
 
   useEffect(() => {
     if (typeof document === "undefined" || !open) return;
@@ -90,8 +85,6 @@ const CycleDrawer = ({
         endDate: cycle.endDate,
         departments: departments, // Use fixed department if provided
         assessmentTypes: cycle.assessmentTypes ?? [],
-        allowCustomUpload: Boolean(cycle.allowCustomUpload),
-        customQuestionnaireName: cycle.customQuestionnaireName ?? "",
         notes: cycle.notes,
       });
       // Reset manual selection when opening schedule
@@ -125,9 +118,12 @@ const CycleDrawer = ({
       setSelectedDeptsForManual([]);
     } else if (enableManualSelection && fixedDepartment) {
       // Auto-set selectedDeptsForManual to fixedDepartment when enabling manual selection
-      if (!selectedDeptsForManual.includes(fixedDepartment)) {
-        setSelectedDeptsForManual([fixedDepartment]);
-      }
+      setSelectedDeptsForManual((prev) => {
+        if (!prev.includes(fixedDepartment)) {
+          return [fixedDepartment];
+        }
+        return prev;
+      });
     }
   }, [enableManualSelection, fixedDepartment]);
 
@@ -259,33 +255,8 @@ const CycleDrawer = ({
     }
   };
 
-  const toggleCustomUpload = () => {
-    setForm((prev) => ({
-      ...prev,
-      allowCustomUpload: !prev.allowCustomUpload,
-      customQuestionnaireName: prev.allowCustomUpload
-        ? ""
-        : prev.customQuestionnaireName,
-    }));
-  };
-
-  const handleUploadClick = () => {
-    if (requiresAssessmentSelection) return;
-    uploadInputRef.current?.click();
-  };
-
-  const handleUploadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleChange("customQuestionnaireName", file.name);
-    }
-  };
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (requiresAssessmentSelection) {
-      return;
-    }
     if (
       enableManualSelection &&
       !fixedDepartment &&
@@ -380,56 +351,6 @@ const CycleDrawer = ({
                     className="w-full"
                     selectAllLabel="Select all"
                   />
-                  <label className="flex items-start gap-2 text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={form.allowCustomUpload}
-                      onChange={toggleCustomUpload}
-                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-teal focus:ring-brand-teal"
-                    />
-                    <span>Add custom questionnaire upload</span>
-                  </label>
-                  {form.allowCustomUpload && (
-                    <div className="rounded-2xl border border-dashed border-brand-teal/40 bg-brand-teal/5 p-4">
-                      <input
-                        ref={uploadInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx,.xlsx,.csv"
-                        className="sr-only"
-                        onChange={handleUploadChange}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleUploadClick}
-                        disabled={requiresAssessmentSelection}
-                        className={`rounded-xl border border-brand-teal/40 px-4 py-2 text-xs font-semibold shadow-sm transition ${
-                          requiresAssessmentSelection
-                            ? "cursor-not-allowed bg-white/70 text-brand-teal/50"
-                            : "bg-white text-brand-teal hover:bg-brand-teal/5"
-                        }`}
-                      >
-                        {form.customQuestionnaireName
-                          ? "Replace file"
-                          : "Upload file"}
-                      </button>
-                      {form.customQuestionnaireName && (
-                        <p className="mt-2 text-xs text-gray-600">
-                          {form.customQuestionnaireName}
-                        </p>
-                      )}
-                      <p
-                        className={`mt-2 text-xs ${
-                          requiresAssessmentSelection
-                            ? "font-semibold text-red-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {requiresAssessmentSelection
-                          ? "Select at least one assessment type before uploading a custom questionnaire."
-                          : "Attach PDF, DOCX, XLSX, or CSV templates for assessors."}
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
