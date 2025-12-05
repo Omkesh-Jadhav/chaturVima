@@ -19,7 +19,6 @@ const STAGES = [
 
 const DepartmentDistribution = () => {
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [selectedStages, setSelectedStages] = useState<string[]>([]);
 
   // Get all unique departments
   const allDepartments = useMemo(() => {
@@ -47,13 +46,6 @@ const DepartmentDistribution = () => {
       let deptEmployees = hrDashboardData.employee.filter(
         (emp) => emp.department === dept
       );
-
-      // Filter by selected stages if any selected
-      if (selectedStages.length > 0) {
-        deptEmployees = deptEmployees.filter((emp) =>
-          selectedStages.includes(emp.stageDetails.stage)
-        );
-      }
 
       // Count stages
       const stageCounts = deptEmployees.reduce(
@@ -92,7 +84,7 @@ const DepartmentDistribution = () => {
         dominantCount: dominantStage.count,
       };
     });
-  }, [selectedDepartments, selectedStages]);
+  }, [selectedDepartments]);
 
   // Calculate overall statistics
   const overallStats = useMemo(() => {
@@ -122,14 +114,6 @@ const DepartmentDistribution = () => {
               selected={selectedDepartments}
               onChange={setSelectedDepartments}
               placeholder="All Departments"
-              className="w-full sm:w-auto min-w-[180px]"
-            />
-            <CheckboxDropdown
-              label="Stage"
-              options={[...STAGES]}
-              selected={selectedStages}
-              onChange={setSelectedStages}
-              placeholder="All Stages"
               className="w-full sm:w-auto min-w-[180px]"
             />
           </div>
