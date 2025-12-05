@@ -70,7 +70,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Organization Setup",
     path: "/organization-setup",
     icon: <FileText className="h-5 w-5" />,
-    roles: ["super-admin"],
+    roles: ["super-admin", "hr-admin"],
   },
   {
     id: "hr-assessment-cycles",

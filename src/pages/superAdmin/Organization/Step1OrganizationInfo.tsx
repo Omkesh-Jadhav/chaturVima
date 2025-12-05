@@ -5,6 +5,7 @@ import {
   validateWebsite,
 } from "./validationUtils";
 import { FilterSelect, Input } from "@/components/ui";
+import { useUser } from "@/context/UserContext";
 
 interface OrganizationInfo {
   name: string;
@@ -28,10 +29,17 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   data,
   onUpdate,
 }) => {
+  const { user } = useUser();
   const [formData, setFormData] = useState<OrganizationInfo>(data);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
+  // Determine if the form should be readonly based on user role
+  const isReadonly = user?.role === "hr-admin";
+
   const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
+    // Prevent changes if user is hr-admin (readonly mode)
+    if (isReadonly) return;
+    
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
     onUpdate(updatedData);
@@ -68,9 +76,16 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900">
-        Organization Info
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900">
+          Organization Info
+        </h2>
+        {isReadonly && (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            View Only
+          </span>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -81,11 +96,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             type="text"
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
+            disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               !formData.name.trim()
                 ? "border-red-300 focus:ring-red-500"
                 : "border-gray-300 focus:ring-brand-teal"
-            }`}
+            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="Enter organization name"
             required
           />
@@ -105,7 +121,9 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(value) =>
               handleInputChange("type", value === "Select type" ? "" : value)
             }
-            className="w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className={`w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal ${
+              isReadonly ? "opacity-50 pointer-events-none" : ""
+            }`}
             options={[
               "Select type",
               "Private Limited",
@@ -126,7 +144,9 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(value) =>
               handleInputChange("size", value === "Select size" ? "" : value)
             }
-            className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${
+              isReadonly ? "opacity-50 pointer-events-none" : ""
+            }`}
             options={[
               "Select size",
               "1-10 employees",
@@ -150,7 +170,9 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                 value === "Select industry" ? "" : value
               )
             }
-            className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${
+              isReadonly ? "opacity-50 pointer-events-none" : ""
+            }`}
             options={[
               "Select industry",
               "Technology",
@@ -173,11 +195,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             value={formData.website}
             onChange={(e) => handleInputChange("website", e.target.value)}
             onBlur={(e) => validateField("website", e.target.value)}
+            disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               fieldErrors.website
                 ? "border-red-300 focus:ring-red-500"
                 : "border-gray-300 focus:ring-brand-teal"
-            }`}
+            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="www.example.com"
           />
           {fieldErrors.website && (
@@ -194,11 +217,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             onBlur={(e) => validateField("email", e.target.value)}
+            disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               !formData.email.trim() || fieldErrors.email
                 ? "border-red-300 focus:ring-red-500"
                 : "border-gray-300 focus:ring-brand-teal"
-            }`}
+            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="contact@example.com"
             required
           />
@@ -221,11 +245,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             value={formData.phone}
             onChange={(e) => handleInputChange("phone", e.target.value)}
             onBlur={(e) => validateField("phone", e.target.value)}
+            disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               !formData.phone.trim() || fieldErrors.phone
                 ? "border-red-300 focus:ring-red-500"
                 : "border-gray-300 focus:ring-brand-teal"
-            }`}
+            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="+91 9876543210"
             required
           />
@@ -247,7 +272,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             type="text"
             value={formData.city}
             onChange={(e) => handleInputChange("city", e.target.value)}
-            // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+            disabled={isReadonly}
+            className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter city"
           />
         </div>
@@ -260,7 +286,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             type="text"
             value={formData.state}
             onChange={(e) => handleInputChange("state", e.target.value)}
-            // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+            disabled={isReadonly}
+            className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter state"
           />
         </div>
@@ -273,7 +300,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             type="text"
             value={formData.country}
             onChange={(e) => handleInputChange("country", e.target.value)}
-            // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
+            disabled={isReadonly}
+            className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter country"
           />
         </div>

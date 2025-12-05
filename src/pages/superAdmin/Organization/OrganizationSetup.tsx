@@ -7,6 +7,7 @@ import ValidationStatus from "./ValidationStatus";
 import { validateTabSpecific, validateOverallSetup } from "./validationUtils";
 import type { ValidationResult } from "./validationUtils";
 import { Button } from "@/components/ui";
+import { useUser } from "@/context/UserContext";
 
 interface OrganizationInfo {
   name: string;
@@ -39,6 +40,7 @@ interface Employee {
 }
 
 const OrganizationSetup = () => {
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("organization");
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     name: "",
@@ -166,12 +168,13 @@ const OrganizationSetup = () => {
         <Button
           onClick={handleSave}
           disabled={
+            user?.role === "hr-admin" ||
             !validateOverallSetup(organizationInfo, departments, employees)
           }
           variant="gradient"
           size="md"
         >
-          Save Organization Setup
+          {user?.role === "hr-admin" ? "View Only Mode" : "Save Organization Setup"}
         </Button>
       </div>
     </div>
