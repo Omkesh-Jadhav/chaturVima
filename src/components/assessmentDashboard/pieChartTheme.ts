@@ -2,7 +2,7 @@
  * Pie Chart Theme Configuration
  */
 
-import { colors } from "@/utils/colors";
+import { colors } from "@/utils/theme";
 
 export const pieChartTheme = {
   text: {

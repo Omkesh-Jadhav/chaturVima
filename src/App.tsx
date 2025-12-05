@@ -11,7 +11,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Employee/Assessment/AssessmentDashboard";
 import Assessment from "./pages/Employee/Assessment/Assessment";
 import AssessmentQuestions from "./pages/Employee/Assessment/AssessmentQuestions";
-import Analytics from "./pages/Analytics";
 import AssessmentReport from "./pages/Employee/Assessment/AssessmentReport";
 import OrganizationSetup from "./pages/superAdmin/Organization/OrganizationSetup";
 import EmployeeSetup from "./pages/superAdmin/Employee/EmployeeSetup";
@@ -90,7 +89,6 @@ function AppRoutes() {
         <Route path="/assessment-dashboard" element={<Dashboard />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/assessment/questions" element={<AssessmentQuestions />} />
-        <Route path="/analytics" element={<Analytics />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/journey" element={<JourneyPage />} />

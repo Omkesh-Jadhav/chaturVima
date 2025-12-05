@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { manualDepartments } from "@/data/manualAssessments";
 import { cn } from "@/utils/cn";
-import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
+import { CycleDrawer } from "@/components/assessmentCycles";
 import type { CycleFormPayload } from "@/types/assessmentCycles";
 
 const ManualAssessments = () => {

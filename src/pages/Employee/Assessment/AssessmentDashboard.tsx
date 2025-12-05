@@ -50,7 +50,7 @@ import {
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
-import EmotionalStageTransitionLab from "@/components/assessment/EmotionalStageTransitionLab";
+import { EmotionalStageTransitionLab } from "@/components/assessment";
 
 // Common card styling
 const CARD_BASE_CLASSES =

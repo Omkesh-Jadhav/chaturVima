@@ -1,8 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import CycleTable from "@/components/assessmentCycles/CycleTable";
-import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
-import ShareDrawer from "@/components/assessmentCycles/ShareDrawer";
+import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
 import { FilterBar, Button } from "@/components/ui";
 import {
   departmentHeadsDirectory,

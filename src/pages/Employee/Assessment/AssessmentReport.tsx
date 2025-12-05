@@ -18,7 +18,7 @@ import {
 } from "recharts";
 import { ResponsiveRadar } from "@nivo/radar";
 import assessmentData from "@/data/assessmentReportData.json";
-import InteractiveMindMap from "@/components/assessment/InteractiveMindMap";
+import { InteractiveMindMap } from "@/components/assessment";
 
 
 

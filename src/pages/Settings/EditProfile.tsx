@@ -29,7 +29,7 @@ import {
   type SelectOption,
 } from "../../components/ui";
 import { useUser } from "../../context/UserContext";
-import { COUNTRY_CODES, SALUTATIONS } from "../../utils/constants";
+import { COUNTRY_CODES, SALUTATIONS } from "../../utils/theme";
 
 // Success Modal Component
 const SuccessModal = ({

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "../../../context/UserContext";
-import CycleTable from "@/components/assessmentCycles/CycleTable";
-import CycleDrawer from "@/components/assessmentCycles/CycleDrawer";
+import { CycleTable, CycleDrawer } from "@/components/assessmentCycles";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,

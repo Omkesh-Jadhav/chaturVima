@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import {
@@ -17,6 +17,14 @@ import {
 } from "@/data/assessmentCycles";
 import { manualDepartments } from "@/data/manualAssessments";
 import { cn } from "@/utils/cn";
+import { toggleArrayItem, areAllSelected } from "@/utils/commonUtils";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import {
+  DepartmentBadge,
+  EmployeeCard,
+  DepartmentSelector,
+} from "./components";
+import { DEFAULT_PAYLOAD, FIELD_CLASSES, DRAWER_CONFIG } from "./constants";
 
 type DrawerMode = "create" | "schedule";
 
@@ -26,22 +34,8 @@ interface CycleDrawerProps {
   cycle?: AssessmentCycle | null;
   onClose: () => void;
   onSubmit: (payload: CycleFormPayload) => void;
-  fixedDepartment?: string; // For department head - automatically set department
+  fixedDepartment?: string;
 }
-
-const defaultPayload: CycleFormPayload = {
-  name: "",
-  type: "Quarterly",
-  period: "Fiscal",
-  startDate: "",
-  endDate: "",
-  departments: [],
-  assessmentTypes: [],
-  notes: "",
-};
-
-const fieldClasses =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal/30 focus:border-brand-teal transition-all";
 
 const CycleDrawer = ({
   open,
@@ -51,7 +45,8 @@ const CycleDrawer = ({
   onSubmit,
   fixedDepartment,
 }: CycleDrawerProps) => {
-  const [form, setForm] = useState<CycleFormPayload>(defaultPayload);
+  // State
+  const [form, setForm] = useState<CycleFormPayload>(DEFAULT_PAYLOAD);
   const [enableManualSelection, setEnableManualSelection] = useState(false);
   const [selectedDeptsForManual, setSelectedDeptsForManual] = useState<
     string[]
@@ -62,18 +57,20 @@ const CycleDrawer = ({
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (typeof document === "undefined" || !open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
+  // Custom hooks
+  useBodyScrollLock(open);
 
+  // Reset manual selection state
+  const resetManualSelection = useCallback(() => {
+    setEnableManualSelection(false);
+    setSelectedEmployees([]);
+    setSelectedDeptsForManual([]);
+    setEmployeeSearch("");
+  }, []);
+
+  // Initialize form based on mode
   useEffect(() => {
     if (mode === "schedule" && cycle) {
-      // If fixedDepartment is provided, use only that department
       const departments = fixedDepartment
         ? [fixedDepartment]
         : cycle.departments;
@@ -83,80 +80,57 @@ const CycleDrawer = ({
         period: cycle.period,
         startDate: cycle.startDate,
         endDate: cycle.endDate,
-        departments: departments, // Use fixed department if provided
+        departments,
         assessmentTypes: cycle.assessmentTypes ?? [],
         notes: cycle.notes,
       });
-      // Reset manual selection when opening schedule
-      setEnableManualSelection(false);
-      setSelectedEmployees([]);
-      setSelectedDeptsForManual([]);
-      setEmployeeSearch("");
-      // Pre-select first department from cycle if manual selection is enabled later
-      const deptToUse =
-        fixedDepartment ||
-        (cycle.departments.length > 0 ? cycle.departments[0] : null);
+      resetManualSelection();
+
+      const deptToUse = fixedDepartment || (cycle.departments[0] ?? null);
       if (deptToUse) {
         const matchingDept = manualDepartments.find(
           (d) => d.name === deptToUse
         );
-        if (matchingDept) {
-          setActiveDeptId(matchingDept.id);
-        }
+        if (matchingDept) setActiveDeptId(matchingDept.id);
       }
     } else if (mode === "create") {
-      setForm(defaultPayload);
-      setEnableManualSelection(false);
-      setSelectedEmployees([]);
-      setSelectedDeptsForManual([]);
+      setForm(DEFAULT_PAYLOAD);
+      resetManualSelection();
     }
-  }, [mode, cycle, open, fixedDepartment]);
+  }, [mode, cycle, open, fixedDepartment, resetManualSelection]);
 
-  // Reset selected departments when manual selection is disabled
+  // Auto-set fixed department when manual selection is enabled
   useEffect(() => {
-    if (!enableManualSelection) {
+    if (enableManualSelection && fixedDepartment) {
+      setSelectedDeptsForManual((prev) =>
+        prev.includes(fixedDepartment) ? prev : [fixedDepartment]
+      );
+    } else if (!enableManualSelection) {
       setSelectedDeptsForManual([]);
-    } else if (enableManualSelection && fixedDepartment) {
-      // Auto-set selectedDeptsForManual to fixedDepartment when enabling manual selection
-      setSelectedDeptsForManual((prev) => {
-        if (!prev.includes(fixedDepartment)) {
-          return [fixedDepartment];
-        }
-        return prev;
-      });
     }
   }, [enableManualSelection, fixedDepartment]);
 
-  // Filter departments based on selected departments for manual selection
+  // Available departments for manual selection
   const availableDepartments = useMemo(() => {
-    if (mode === "schedule" && enableManualSelection) {
-      // If fixedDepartment is provided, only show that department
-      if (fixedDepartment) {
-        return manualDepartments.filter(
-          (dept) => dept.name === fixedDepartment
-        );
-      }
-      // Filter by selected departments for manual selection, or show all if none selected
-      if (selectedDeptsForManual.length > 0) {
-        return manualDepartments.filter((dept) =>
-          selectedDeptsForManual.includes(dept.name)
-        );
-      }
-      // Show all departments if none selected yet
-      return manualDepartments;
+    if (mode !== "schedule" || !enableManualSelection) return manualDepartments;
+    if (fixedDepartment) {
+      return manualDepartments.filter((dept) => dept.name === fixedDepartment);
+    }
+    if (selectedDeptsForManual.length > 0) {
+      return manualDepartments.filter((dept) =>
+        selectedDeptsForManual.includes(dept.name)
+      );
     }
     return manualDepartments;
   }, [mode, enableManualSelection, selectedDeptsForManual, fixedDepartment]);
 
-  // Update activeDeptId when availableDepartments changes
+  // Sync active department with available departments
   useEffect(() => {
     if (enableManualSelection && availableDepartments.length > 0) {
       const currentDept = availableDepartments.find(
         (d) => d.id === activeDeptId
       );
-      if (!currentDept) {
-        setActiveDeptId(availableDepartments[0].id);
-      }
+      if (!currentDept) setActiveDeptId(availableDepartments[0].id);
     }
   }, [enableManualSelection, availableDepartments, activeDeptId]);
 
@@ -169,35 +143,12 @@ const CycleDrawer = ({
 
   const filteredEmployees = useMemo(() => {
     if (!activeDepartment || !enableManualSelection) return [];
-    if (!employeeSearch.trim()) return activeDepartment.employees;
+    const searchTerm = employeeSearch.trim().toLowerCase();
+    if (!searchTerm) return activeDepartment.employees;
     return activeDepartment.employees.filter((emp) =>
-      emp.name.toLowerCase().includes(employeeSearch.toLowerCase())
+      emp.name.toLowerCase().includes(searchTerm)
     );
   }, [activeDepartment, employeeSearch, enableManualSelection]);
-
-  const toggleEmployee = (employeeId: string) => {
-    setSelectedEmployees((prev) =>
-      prev.includes(employeeId)
-        ? prev.filter((id) => id !== employeeId)
-        : [...prev, employeeId]
-    );
-  };
-
-  const selectAllInDepartment = () => {
-    if (!activeDepartment) return;
-    const allIds = activeDepartment.employees.map((e) => e.id);
-    const allSelected = allIds.every((id) => selectedEmployees.includes(id));
-    if (allSelected) {
-      // Deselect all from this department
-      setSelectedEmployees((prev) => prev.filter((id) => !allIds.includes(id)));
-    } else {
-      // Select all from this department
-      setSelectedEmployees((prev) => {
-        const newIds = allIds.filter((id) => !prev.includes(id));
-        return [...prev, ...newIds];
-      });
-    }
-  };
 
   const selectedInActiveDept = useMemo(() => {
     if (!activeDepartment) return 0;
@@ -206,90 +157,130 @@ const CycleDrawer = ({
     ).length;
   }, [activeDepartment, selectedEmployees]);
 
-  const handleChange = <K extends keyof CycleFormPayload>(
-    field: K,
-    value: CycleFormPayload[K]
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  // Form handlers
+  const handleChange = useCallback(
+    <K extends keyof CycleFormPayload>(
+      field: K,
+      value: CycleFormPayload[K]
+    ) => {
+      setForm((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
-  const toggleDepartment = (dept: string) => {
-    setForm((prev) => {
-      const exists = prev.departments.includes(dept);
-      const departments = exists
-        ? prev.departments.filter((item) => item !== dept)
-        : [...prev.departments, dept];
-      return { ...prev, departments };
-    });
-  };
+  const toggleDepartment = useCallback((dept: string) => {
+    setForm((prev) => ({
+      ...prev,
+      departments: toggleArrayItem(prev.departments, dept),
+    }));
+  }, []);
 
-  const toggleManualDept = (dept: string) => {
+  const toggleAllDepartments = useCallback(() => {
+    setForm((prev) => ({
+      ...prev,
+      departments: areAllSelected(departmentOptions, prev.departments)
+        ? []
+        : [...departmentOptions],
+    }));
+  }, []);
+
+  const selectAllDepartments = useCallback(() => {
+    setForm((prev) => ({ ...prev, departments: [...departmentOptions] }));
+  }, []);
+
+  // Manual selection handlers
+  const toggleManualDept = useCallback((dept: string) => {
     setSelectedDeptsForManual((prev) => {
-      const exists = prev.includes(dept);
-      if (exists) {
-        const newDepts = prev.filter((d) => d !== dept);
-        // If no departments selected, clear employee selection
-        if (newDepts.length === 0) {
-          setSelectedEmployees([]);
-        }
-        return newDepts;
-      }
-      return [...prev, dept];
+      const newDepts = toggleArrayItem(prev, dept);
+      if (newDepts.length === 0) setSelectedEmployees([]);
+      return newDepts;
     });
-  };
+  }, []);
 
-  const selectAllDepartments = () => {
-    setForm((prev) => ({ ...prev, departments: departmentOptions }));
-  };
+  const toggleEmployee = useCallback((employeeId: string) => {
+    setSelectedEmployees((prev) => toggleArrayItem(prev, employeeId));
+  }, []);
 
-  const toggleAllDepartments = () => {
-    const allSelected = departmentOptions.every((dept) =>
-      form.departments.includes(dept)
+  const selectAllInDepartment = useCallback(() => {
+    if (!activeDepartment) return;
+    const allIds = activeDepartment.employees.map((e) => e.id);
+    const allSelected = areAllSelected(allIds, selectedEmployees);
+    setSelectedEmployees((prev) =>
+      allSelected
+        ? prev.filter((id) => !allIds.includes(id))
+        : [...prev, ...allIds.filter((id) => !prev.includes(id))]
     );
-    if (allSelected) {
-      // Deselect all departments
-      setForm((prev) => ({ ...prev, departments: [] }));
-    } else {
-      // Select all departments
-      setForm((prev) => ({ ...prev, departments: [...departmentOptions] }));
-    }
-  };
+  }, [activeDepartment, selectedEmployees]);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (
-      enableManualSelection &&
-      !fixedDepartment &&
-      (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0)
-    ) {
-      if (selectedDeptsForManual.length === 0) {
-        alert("Please select at least one department for employee selection.");
+  const handleManualSelectionToggle = useCallback(
+    (checked: boolean) => {
+      setEnableManualSelection(checked);
+      if (checked && cycle) {
+        if (fixedDepartment) {
+          setSelectedDeptsForManual([fixedDepartment]);
+        } else if (selectedDeptsForManual.length === 0) {
+          setSelectedDeptsForManual([...cycle.departments]);
+        }
       } else {
-        alert("Please select at least one employee.");
+        resetManualSelection();
       }
-      return;
-    }
-    if (
-      enableManualSelection &&
-      fixedDepartment &&
-      selectedEmployees.length === 0
-    ) {
-      alert("Please select at least one employee.");
-      return;
-    }
-    // Always use fixedDepartment if provided
-    const finalPayload = fixedDepartment
-      ? { ...form, departments: [fixedDepartment] }
-      : form;
-    onSubmit(finalPayload);
-  };
+    },
+    [
+      cycle,
+      fixedDepartment,
+      selectedDeptsForManual.length,
+      resetManualSelection,
+    ]
+  );
 
-  const title =
-    mode === "create" ? "Create Assessment Cycle" : "Schedule assessment";
-  const description =
+  // Validation
+  const validateManualSelection = useCallback((): string | null => {
+    if (!enableManualSelection) return null;
+    if (!fixedDepartment && selectedDeptsForManual.length === 0) {
+      return "Please select at least one department for employee selection.";
+    }
+    if (selectedEmployees.length === 0) {
+      return "Please select at least one employee.";
+    }
+    return null;
+  }, [
+    enableManualSelection,
+    fixedDepartment,
+    selectedDeptsForManual,
+    selectedEmployees,
+  ]);
+
+  // Submit handler
+  const handleSubmit = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      const validationError = validateManualSelection();
+      if (validationError) {
+        alert(validationError);
+        return;
+      }
+      const finalPayload = fixedDepartment
+        ? { ...form, departments: [fixedDepartment] }
+        : form;
+      onSubmit(finalPayload);
+    },
+    [form, fixedDepartment, validateManualSelection, onSubmit]
+  );
+
+  // Computed values
+  const config = DRAWER_CONFIG[mode];
+  const title = config.title;
+  const description = config.getDescription(cycle?.name);
+  const submitButtonText =
     mode === "create"
-      ? "Define cadence, coverage, and communication in a single flow."
-      : `Drop reminders and go-live windows for ${cycle?.name ?? "the cycle"}.`;
+      ? config.getSubmitText()
+      : enableManualSelection
+      ? config.getSubmitText(selectedEmployees.length)
+      : config.getSubmitText();
+
+  const isSubmitDisabled =
+    enableManualSelection &&
+    (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0);
 
   return (
     <AnimatePresence>
@@ -307,6 +298,7 @@ const CycleDrawer = ({
             transition={{ type: "spring", stiffness: 220, damping: 30 }}
             className="flex h-full w-full max-w-lg flex-col bg-white shadow-2xl"
           >
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -321,8 +313,11 @@ const CycleDrawer = ({
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
+            {/* Form Content */}
             <div className="custom-scrollbar flex-1 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4 px-6 py-6">
+                {/* Cycle Name */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase text-gray-500">
                     Cycle Name
@@ -332,10 +327,11 @@ const CycleDrawer = ({
                     value={form.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                     placeholder="e.g. Q1 2025 Performance Review"
-                    className={fieldClasses}
+                    className={FIELD_CLASSES}
                   />
                 </div>
 
+                {/* Assessment Types */}
                 <div className="space-y-3">
                   <label className="text-xs font-semibold uppercase text-gray-500">
                     Assessment Types
@@ -353,6 +349,7 @@ const CycleDrawer = ({
                   />
                 </div>
 
+                {/* Type & Period */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase text-gray-500">
@@ -385,6 +382,7 @@ const CycleDrawer = ({
                   </div>
                 </div>
 
+                {/* Dates */}
                 <div className="grid grid-cols-2 gap-3">
                   <CalendarInput
                     label="Start Date"
@@ -401,92 +399,40 @@ const CycleDrawer = ({
                   />
                 </div>
 
+                {/* Departments - Schedule Mode */}
                 {mode === "schedule" && !fixedDepartment && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold uppercase text-gray-500">
-                        Departments
-                      </label>
-                      <button
-                        type="button"
-                        onClick={toggleAllDepartments}
-                        className="text-[11px] font-semibold text-brand-teal"
-                      >
-                        {departmentOptions.every((dept) =>
-                          form.departments.includes(dept)
-                        ) && departmentOptions.length > 0
-                          ? "Deselect all"
-                          : "Select all"}
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {departmentOptions.map((dept) => {
-                        const isActive = form.departments.includes(dept);
-                        return (
-                          <button
-                            type="button"
-                            key={dept}
-                            onClick={() => toggleDepartment(dept)}
-                            className={cn(
-                              "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
-                              isActive
-                                ? "border-brand-teal bg-brand-teal/10 text-brand-teal"
-                                : "border-gray-200 text-gray-600 hover:border-gray-300"
-                            )}
-                          >
-                            {dept}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <DepartmentSelector
+                    departments={departmentOptions}
+                    selected={form.departments}
+                    onToggle={toggleDepartment}
+                    onSelectAll={toggleAllDepartments}
+                    showSelectAll={true}
+                  />
                 )}
 
+                {/* Departments - Create Mode */}
                 {mode === "create" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold uppercase text-gray-500">
-                        Departments
-                      </label>
-                      <button
-                        type="button"
-                        onClick={selectAllDepartments}
-                        className="text-[11px] font-semibold text-brand-teal"
-                      >
-                        Select all
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {departmentOptions.map((dept) => {
-                        const isActive = form.departments.includes(dept);
-                        return (
-                          <button
-                            type="button"
-                            key={dept}
-                            onClick={() => toggleDepartment(dept)}
-                            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
-                              isActive
-                                ? "border-brand-teal bg-brand-teal/10 text-brand-teal"
-                                : "border-gray-200 text-gray-600 hover:border-gray-300"
-                            }`}
-                          >
-                            {dept}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <DepartmentSelector
+                    departments={departmentOptions}
+                    selected={form.departments}
+                    onToggle={toggleDepartment}
+                    onSelectAll={selectAllDepartments}
+                    showSelectAll={true}
+                  />
                 )}
 
+                {/* Fixed Department Display */}
                 {mode === "schedule" && fixedDepartment && (
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase text-gray-500">
                       Department
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full border border-brand-teal bg-brand-teal/10 px-3 py-1 text-xs font-semibold text-brand-teal">
-                        {fixedDepartment}
-                      </span>
+                      <DepartmentBadge
+                        department={fixedDepartment}
+                        isActive={true}
+                        variant="display"
+                      />
                     </div>
                     <p className="text-xs text-gray-500">
                       Schedule for {fixedDepartment} department only
@@ -494,28 +440,16 @@ const CycleDrawer = ({
                   </div>
                 )}
 
+                {/* Manual Employee Selection */}
                 {mode === "schedule" && (
                   <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
                     <label className="flex items-start gap-3 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={enableManualSelection}
-                        onChange={(e) => {
-                          setEnableManualSelection(e.target.checked);
-                          if (e.target.checked && cycle) {
-                            // Pre-select cycle departments when enabling manual selection
-                            if (fixedDepartment) {
-                              // If fixed department is provided, use only that
-                              setSelectedDeptsForManual([fixedDepartment]);
-                            } else if (selectedDeptsForManual.length === 0) {
-                              setSelectedDeptsForManual([...cycle.departments]);
-                            }
-                          } else {
-                            setSelectedEmployees([]);
-                            setSelectedDeptsForManual([]);
-                            setEmployeeSearch("");
-                          }
-                        }}
+                        onChange={(e) =>
+                          handleManualSelectionToggle(e.target.checked)
+                        }
                         className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-teal focus:ring-brand-teal"
                       />
                       <div className="flex-1">
@@ -551,25 +485,16 @@ const CycleDrawer = ({
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              {departmentOptions.map((dept) => {
-                                const isSelected =
-                                  selectedDeptsForManual.includes(dept);
-                                return (
-                                  <button
-                                    type="button"
-                                    key={dept}
-                                    onClick={() => toggleManualDept(dept)}
-                                    className={cn(
-                                      "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
-                                      isSelected
-                                        ? "border-brand-teal bg-brand-teal/10 text-brand-teal shadow-sm"
-                                        : "border-gray-200 text-gray-600 hover:border-gray-300"
-                                    )}
-                                  >
-                                    {dept}
-                                  </button>
-                                );
-                              })}
+                              {departmentOptions.map((dept) => (
+                                <DepartmentBadge
+                                  key={dept}
+                                  department={dept}
+                                  isActive={selectedDeptsForManual.includes(
+                                    dept
+                                  )}
+                                  onClick={() => toggleManualDept(dept)}
+                                />
+                              ))}
                             </div>
                             {selectedDeptsForManual.length === 0 && (
                               <p className="text-xs text-amber-600">
@@ -579,24 +504,19 @@ const CycleDrawer = ({
                             )}
                           </div>
                         )}
+
                         {fixedDepartment && (
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <label className="text-xs font-semibold uppercase text-gray-500">
-                                Department
-                              </label>
-                            </div>
+                            <label className="text-xs font-semibold uppercase text-gray-500">
+                              Department
+                            </label>
                             <div className="flex flex-wrap gap-2">
-                              <span className="rounded-full border border-brand-teal bg-brand-teal/10 px-3 py-1 text-xs font-semibold text-brand-teal shadow-sm">
-                                {fixedDepartment}
-                              </span>
+                              <DepartmentBadge
+                                department={fixedDepartment}
+                                isActive={true}
+                                variant="display"
+                              />
                             </div>
-                            {selectedDeptsForManual.length === 0 && (
-                              <p className="text-xs text-gray-500">
-                                Selecting employees from {fixedDepartment}{" "}
-                                department
-                              </p>
-                            )}
                           </div>
                         )}
                       </div>
@@ -604,6 +524,7 @@ const CycleDrawer = ({
                   </div>
                 )}
 
+                {/* Email Notes */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase text-gray-500">
                     Email Notes
@@ -613,10 +534,11 @@ const CycleDrawer = ({
                     value={form.notes}
                     onChange={(e) => handleChange("notes", e.target.value)}
                     placeholder="Key objectives, blackout dates, or data dependencies..."
-                    className={fieldClasses}
+                    className={FIELD_CLASSES}
                   />
                 </div>
 
+                {/* Employee Selection UI */}
                 {mode === "schedule" &&
                   enableManualSelection &&
                   selectedDeptsForManual.length > 0 && (
@@ -631,30 +553,22 @@ const CycleDrawer = ({
                         </span>
                       </div>
 
+                      {/* Department Tabs */}
                       <div className="flex flex-wrap gap-2">
-                        {availableDepartments.map((dept) => {
-                          const isActive = dept.id === activeDeptId;
-                          return (
-                            <button
-                              type="button"
-                              key={dept.id}
-                              onClick={() => {
-                                setActiveDeptId(dept.id);
-                                setEmployeeSearch("");
-                              }}
-                              className={cn(
-                                "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
-                                isActive
-                                  ? "border-brand-teal bg-brand-teal/10 text-brand-teal shadow-sm"
-                                  : "border-gray-200 text-gray-600 hover:border-gray-300"
-                              )}
-                            >
-                              {dept.name}
-                            </button>
-                          );
-                        })}
+                        {availableDepartments.map((dept) => (
+                          <DepartmentBadge
+                            key={dept.id}
+                            department={dept.name}
+                            isActive={dept.id === activeDeptId}
+                            onClick={() => {
+                              setActiveDeptId(dept.id);
+                              setEmployeeSearch("");
+                            }}
+                          />
+                        ))}
                       </div>
 
+                      {/* Employee Search & Selection */}
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <div className="relative flex-1">
@@ -667,7 +581,7 @@ const CycleDrawer = ({
                               placeholder={`Search ${
                                 activeDepartment?.employees.length ?? 0
                               } employees...`}
-                              className={fieldClasses}
+                              className={FIELD_CLASSES}
                             />
                             {employeeSearch && (
                               <button
@@ -698,6 +612,8 @@ const CycleDrawer = ({
                             </button>
                           )}
                         </div>
+
+                        {/* Employee Count */}
                         <div className="flex items-center justify-between text-[11px] text-gray-500">
                           <span>
                             {filteredEmployees.length} employee
@@ -711,6 +627,8 @@ const CycleDrawer = ({
                             </span>
                           )}
                         </div>
+
+                        {/* Employee List */}
                         <div className="max-h-64 overflow-y-auto custom-scrollbar space-y-1.5 rounded-lg border border-gray-100 p-2">
                           {filteredEmployees.length === 0 ? (
                             <p className="p-4 text-center text-xs text-gray-500">
@@ -719,76 +637,31 @@ const CycleDrawer = ({
                                 : "No employees in this department"}
                             </p>
                           ) : (
-                            filteredEmployees.map((employee) => {
-                              const isSelected = selectedEmployees.includes(
-                                employee.id
-                              );
-                              return (
-                                <button
-                                  key={employee.id}
-                                  type="button"
-                                  onClick={() => toggleEmployee(employee.id)}
-                                  className={cn(
-                                    "flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-all",
-                                    isSelected
-                                      ? "border-brand-teal bg-brand-teal/10"
-                                      : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
-                                  )}
-                                >
-                                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50 text-[10px] font-semibold uppercase text-gray-500">
-                                    {employee.name
-                                      .split(" ")
-                                      .map((p) => p.charAt(0))
-                                      .slice(0, 2)
-                                      .join("")}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-semibold text-gray-900">
-                                      {employee.name}
-                                    </p>
-                                    <p className="truncate text-[11px] text-gray-500">
-                                      {employee.title}
-                                    </p>
-                                  </div>
-                                  <span
-                                    className={cn(
-                                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold transition-all",
-                                      isSelected
-                                        ? "border-brand-teal bg-brand-teal text-white"
-                                        : "border-gray-300 bg-white text-transparent"
-                                    )}
-                                  >
-                                    {isSelected ? "✓" : ""}
-                                  </span>
-                                </button>
-                              );
-                            })
+                            filteredEmployees.map((employee) => (
+                              <EmployeeCard
+                                key={employee.id}
+                                employee={employee}
+                                isSelected={selectedEmployees.includes(
+                                  employee.id
+                                )}
+                                onToggle={() => toggleEmployee(employee.id)}
+                              />
+                            ))
                           )}
                         </div>
                       </div>
                     </div>
                   )}
 
+                {/* Submit Button */}
                 <Button
                   type="submit"
-                  disabled={
-                    enableManualSelection &&
-                    (selectedDeptsForManual.length === 0 ||
-                      selectedEmployees.length === 0)
-                  }
+                  disabled={isSubmitDisabled}
                   variant="gradient"
                   size="md"
                   className="w-full"
                 >
-                  {mode === "create"
-                    ? "Create Cycle"
-                    : enableManualSelection
-                    ? `Schedule for ${
-                        selectedEmployees.length
-                      } Selected Employee${
-                        selectedEmployees.length !== 1 ? "s" : ""
-                      }`
-                    : "Save Schedule"}
+                  {submitButtonText}
                 </Button>
               </form>
             </div>
