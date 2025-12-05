@@ -1,6 +1,4 @@
 import React, { useRef, useState } from "react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { ResponsiveChord } from "@nivo/chord";
 import { ResponsiveAreaBump } from "@nivo/bump";
 import { ResponsiveStream } from "@nivo/stream";
@@ -19,6 +17,7 @@ import {
 import { ResponsiveRadar } from "@nivo/radar";
 import assessmentData from "@/data/assessmentReportData.json";
 import { InteractiveMindMap } from "@/components/assessment";
+import AssessmentReportPdf from "./AssessmentReportPdf";
 
 
 
@@ -109,239 +108,6 @@ const AssessmentReport: React.FC = () => {
   // Circle Packing Data - Skill Hierarchies
   const circlePackingData = assessmentData.circlePacking.data;
 
-  const generatePDF = async () => {
-    const element = reportRef.current;
-    if (!element) return;
-
-    try {
-      // Wait for any animations or renders to complete
-      await new Promise((r) => setTimeout(r, 500));
-
-      // Create canvas with options to handle modern CSS features
-      const canvas = await html2canvas(element, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        ignoreElements: (element) => {
-          // Skip elements that might cause issues
-          return element.tagName === "SCRIPT" || element.tagName === "STYLE";
-        },
-        onclone: (clonedDoc) => {
-          // Replace problematic CSS properties and fix layout issues
-          const style = clonedDoc.createElement("style");
-          style.textContent = `
-                        * {
-                            box-sizing: border-box !important;
-                            -webkit-print-color-adjust: exact !important;
-                            print-color-adjust: exact !important;
-                        }
-                        
-                        body {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            font-family: system-ui, -apple-system, sans-serif !important;
-                        }
-                        
-                        /* Fix positioning and layout */
-                        * {
-                            position: relative !important;
-                            transform: none !important;
-                            animation: none !important;
-                            transition: none !important;
-                        }
-                        
-                        /* Ensure proper spacing and no overlapping */
-                        .space-y-10 > * + * {
-                            margin-top: 2.5rem !important;
-                        }
-                        
-                        .space-y-6 > * + * {
-                            margin-top: 1.5rem !important;
-                        }
-                        
-                        .space-y-1 > * + * {
-                            margin-top: 0.25rem !important;
-                        }
-                        
-                        /* Fix chart containers */
-                        .recharts-wrapper {
-                            width: 100% !important;
-                            height: auto !important;
-                            min-height: 250px !important;
-                            overflow: visible !important;
-                        }
-                        
-                        .recharts-surface {
-                            overflow: visible !important;
-                        }
-                        
-                        /* Grid layout fixes */
-                        .grid {
-                            display: grid !important;
-                        }
-                        
-                        .grid-cols-2 {
-                            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                        }
-                        
-                        .gap-6 {
-                            gap: 1.5rem !important;
-                        }
-                        
-                        /* Padding and margins */
-                        .p-6 { padding: 1.5rem !important; }
-                        .p-4 { padding: 1rem !important; }
-                        .p-10 { padding: 2.5rem !important; }
-                        .mb-2 { margin-bottom: 0.5rem !important; }
-                        .mb-4 { margin-bottom: 1rem !important; }
-                        .mt-8 { margin-top: 2rem !important; }
-                        .pt-6 { padding-top: 1.5rem !important; }
-                        .pl-5 { padding-left: 1.25rem !important; }
-                        
-                        /* Text and color fixes */
-                        .text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
-                        .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
-                        .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-                        
-                        .font-bold { font-weight: 700 !important; }
-                        .font-semibold { font-weight: 600 !important; }
-                        
-                        .leading-relaxed { line-height: 1.625 !important; }
-                        
-                        .text-center { text-align: center !important; }
-                        
-                        /* Background colors */
-                        .bg-white { background-color: rgb(255 255 255) !important; }
-                        .bg-indigo-50 { background-color: rgb(238 242 255) !important; }
-                        .bg-purple-50 { background-color: rgb(250 245 255) !important; }
-                        .bg-pink-50 { background-color: rgb(253 242 248) !important; }
-                        .bg-rose-50 { background-color: rgb(255 241 242) !important; }
-                        .bg-indigo-100 { background-color: rgb(224 231 255) !important; }
-                        .bg-purple-100 { background-color: rgb(243 232 255) !important; }
-                        .bg-green-50 { background-color: rgb(240 253 244) !important; }
-                        .bg-green-100 { background-color: rgb(220 252 231) !important; }
-                        .bg-red-100 { background-color: rgb(254 226 226) !important; }
-                        .bg-blue-100 { background-color: rgb(219 234 254) !important; }
-                        .bg-yellow-100 { background-color: rgb(254 249 195) !important; }
-                        .bg-teal-50 { background-color: rgb(240 253 250) !important; }
-                        .border-teal-200 { border-color: rgb(153 246 228) !important; }
-                        .bg-violet-50 { background-color: rgb(245 243 255) !important; }
-                        .border-violet-200 { border-color: rgb(196 181 253) !important; }
-                        .bg-purple-50 { background-color: rgb(250 245 255) !important; }
-                        .border-purple-200 { border-color: rgb(196 181 253) !important; }
-                        .bg-amber-50 { background-color: rgb(255 251 235) !important; }
-                        .border-amber-200 { border-color: rgb(253 230 138) !important; }
-                        .bg-emerald-50 { background-color: rgb(236 253 245) !important; }
-                        .border-emerald-200 { border-color: rgb(167 243 208) !important; }
-                        .bg-cyan-50 { background-color: rgb(236 254 255) !important; }
-                        .border-cyan-200 { border-color: rgb(165 243 252) !important; }
-                        .bg-orange-50 { background-color: rgb(255 247 237) !important; }
-                        .border-orange-200 { border-color: rgb(254 215 170) !important; }
-                        .bg-pink-50 { background-color: rgb(253 242 248) !important; }
-                        .border-pink-200 { border-color: rgb(251 207 232) !important; }
-                        
-                        /* Text colors */
-                        .text-indigo-700 { color: rgb(67 56 202) !important; }
-                        .text-purple-700 { color: rgb(126 34 206) !important; }
-                        .text-pink-700 { color: rgb(190 24 93) !important; }
-                        .text-rose-700 { color: rgb(190 18 60) !important; }
-                        .text-indigo-800 { color: rgb(55 48 163) !important; }
-                        .text-purple-800 { color: rgb(107 33 168) !important; }
-                        .text-green-700 { color: rgb(21 128 61) !important; }
-                        .text-red-700 { color: rgb(185 28 28) !important; }
-                        .text-blue-700 { color: rgb(29 78 216) !important; }
-                        .text-yellow-700 { color: rgb(161 98 7) !important; }
-                        .text-gray-600 { color: rgb(75 85 99) !important; }
-                        .text-gray-700 { color: rgb(55 65 81) !important; }
-                        .text-gray-500 { color: rgb(107 114 128) !important; }
-                        .text-gray-800 { color: rgb(31 41 55) !important; }
-                        .text-teal-700 { color: rgb(15 118 110) !important; }
-                        .text-violet-700 { color: rgb(109 40 217) !important; }
-                        .text-violet-600 { color: rgb(124 58 237) !important; }
-                        .text-purple-700 { color: rgb(126 34 206) !important; }
-                        .text-amber-700 { color: rgb(180 83 9) !important; }
-                        .text-emerald-700 { color: rgb(4 120 87) !important; }
-                        .text-cyan-700 { color: rgb(14 116 144) !important; }
-                        .text-orange-700 { color: rgb(194 65 12) !important; }
-                        .text-pink-700 { color: rgb(190 24 93) !important; }
-                        
-                        /* Border and shadow fixes */
-                        .rounded-3xl { border-radius: 1.5rem !important; }
-                        .rounded-2xl { border-radius: 1rem !important; }
-                        .rounded-xl { border-radius: 0.75rem !important; }
-                        
-                        .shadow-2xl, .shadow-lg, .shadow, .shadow-inner {
-                            box-shadow: none !important;
-                        }
-                        
-                        .border-t { border-top: 1px solid rgb(229 231 235) !important; }
-                        .border-gray-200 { border-color: rgb(229 231 235) !important; }
-                        
-                        /* List styles */
-                        .list-disc {
-                            list-style-type: disc !important;
-                            list-style-position: inside !important;
-                        }
-                        
-                        /* Flexbox fixes */
-                        .flex { display: flex !important; }
-                        .flex-col { flex-direction: column !important; }
-                        .items-center { align-items: center !important; }
-                        .justify-center { justify-content: center !important; }
-                        
-                        /* Width and height fixes */
-                        .w-full { width: 100% !important; }
-                        .max-w-4xl { max-width: 56rem !important; }
-                        .h-72 { height: 18rem !important; }
-                        .h-80 { height: 20rem !important; }
-                        
-                        /* Remove gradients that might cause issues */
-                        .bg-linear-to-br, .bg-gradient-to-r {
-                            background: rgb(255 255 255) !important;
-                        }
-                    `;
-          clonedDoc.head.appendChild(style);
-        },
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // Handle multi-page PDFs if content is too long
-      if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        let heightLeft = pdfHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - pdfHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-          heightLeft -= pageHeight;
-        }
-      } else {
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      }
-
-      pdf.save("Employee_Assessment_Report.pdf");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
-    }
-  };
 
   return (
     <div className="bg-linear-to-br from-indigo-50 to-purple-100 min-h-screen flex flex-col items-center p-8">
@@ -1846,12 +1612,9 @@ const AssessmentReport: React.FC = () => {
         </footer>
       </div>
 
-      <button
-        onClick={generatePDF}
-        className="mt-8 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-full shadow-lg transition-all duration-300"
-      >
-        📄 Download PDF Report
-      </button>
+      <div className="mt-8">
+        <AssessmentReportPdf reportRef={reportRef} />
+      </div>
     </div>
   );
 };
