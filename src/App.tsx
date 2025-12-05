@@ -15,7 +15,7 @@ import AssessmentReport from "./pages/Employee/Assessment/AssessmentReport";
 import OrganizationSetup from "./pages/superAdmin/Organization/OrganizationSetup";
 import EmployeeSetup from "./pages/superAdmin/Employee/EmployeeSetup";
 import DepartmentSetup from "./pages/superAdmin/Department/DepartmentSetup";
-import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
+// import SuperAdminDashboard from "./pages/superAdmin/Dashboard/SuperAdminDashboard";
 import Settings from "./pages/Settings/Settings";
 import EditProfile from "./pages/Settings/EditProfile";
 import HRAssessmentCycles from "./pages/hrAdmin/AssessmentCycles/AssessmentCycles";
@@ -104,10 +104,10 @@ function AppRoutes() {
           path="/department-head/assessment-cycles"
           element={<DepartmentHeadAssessmentCycles />}
         />
-        <Route
+        {/* <Route
           path="/super-admin-dashboard"
           element={<SuperAdminDashboard />}
-        />
+        /> */}
       </Route>
 
       {/* Redirect root to dashboard or login */}

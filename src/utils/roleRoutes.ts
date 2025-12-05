@@ -5,7 +5,7 @@ const roleLandingRoutes: Record<UserRole, string> = {
   // manager: "/assessment-dashboard",
   "hr-admin": "/hr/dashboard",
   "department-head": "/department-head/assessment-cycles",
-  "super-admin": "/super-admin-dashboard",
+  "super-admin": "/organization-setup",
 };
 
 export const getRoleLandingRoute = (role: UserRole | undefined) => {

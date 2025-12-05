@@ -30,13 +30,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  {
-    id: "super-admin-dashboard",
-    label: "Dashboard",
-    path: "/super-admin-dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["super-admin"],
-  },
+  // {
+  //   id: "super-admin-dashboard",
+  //   label: "Dashboard",
+  //   path: "/super-admin-dashboard",
+  //   icon: <LayoutDashboard className="h-5 w-5" />,
+  //   roles: ["super-admin"],
+  // },
   {
     id: "assessment-dashboard",
     label: "Dashboard",
