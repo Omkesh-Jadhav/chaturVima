@@ -4,6 +4,8 @@ import StageDistributionHealth from "./stageDistributionHealth";
 import SubStageDistributionHealth from "./subStageDistributionHealth";
 import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
+import OrganizationOverview from "./organizationOverview";
+import OrganizationSetupInfo from "./organizationSetupInfo";
 import {
   AnimatedBackground,
   BACKGROUND_COLORS,
@@ -27,6 +29,12 @@ const HrAdminDashboard = () => {
 
       <div className="relative z-10 space-y-4">
         <AssessmentStatusCard />
+
+        {/* Organization Setup Section */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <OrganizationOverview />
+          <OrganizationSetupInfo />
+        </div>
 
         {/* Quick Overview Section */}
         <div className="grid gap-4 md:grid-cols-2">
