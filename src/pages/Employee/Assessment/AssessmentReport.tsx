@@ -154,7 +154,7 @@ const AssessmentReport: React.FC = () => {
             ))}
           </div>
 
-          <div className="w-full h-96">
+          <div className="w-full h-96" data-chart-id="radialBar">
             <ResponsiveRadialBar
               data={distributionData.map((item) => ({
                 id: item.stage,
@@ -329,7 +329,7 @@ const AssessmentReport: React.FC = () => {
           {/* Radar Chart */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-rose-700 mb-4">Performance Overview</h3>
-            <div className="w-full h-80">
+            <div className="w-full h-80" data-chart-id="radar">
               <ResponsiveRadar
                 data={subStageScoresData.map((item) => ({
                   subStage: item.subStage,
@@ -818,7 +818,7 @@ const AssessmentReport: React.FC = () => {
           </p>
 
           <div className="bg-white rounded-xl p-4 border border-amber-200 mb-4">
-            <div className="w-full h-96">
+            <div className="w-full h-96" data-chart-id="chord">
               <ResponsiveChord
                 data={chordData}
                 keys={chordKeys}
@@ -1206,7 +1206,7 @@ const AssessmentReport: React.FC = () => {
           </p>
 
           <div className="bg-white rounded-xl p-4 border border-emerald-200 mb-4">
-            <div className="w-full h-80">
+            <div className="w-full h-80" data-chart-id="areaBump">
               <ResponsiveAreaBump
                 data={areaBumpData}
                 margin={{ top: 40, right: 100, bottom: 40, left: 100 }}
