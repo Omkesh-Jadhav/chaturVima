@@ -4,7 +4,6 @@ import {
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
 import SummaryCards from "./summaryCards";
-import EmotionalStageAssessment from "./emotionalStageAssessment";
 import SubStagesBreakdown from "./subStagesBreakdown";
 import SWOTAnalysis from "./swotAnalysis";
 import EmotionalIntensityHeatmap from "./emotionalIntensityHeatmap";
@@ -12,6 +11,7 @@ import TransitionLab from "./transitionLab";
 import PendingAssessments from "./pendingAssessments";
 import TestHistory from "./testHistory";
 import { type EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
+import EmotionalStageAssessment from "./emotionalStageAssessment";
 
 const EmployeeDashboard = () => {
   const [selectedStage, setSelectedStage] =
