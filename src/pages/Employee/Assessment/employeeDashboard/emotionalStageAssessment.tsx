@@ -7,9 +7,10 @@ import {
   MOCK_CATEGORY_DISTRIBUTION,
   MOCK_EMOTIONAL_STAGE_ASSESSMENT,
 } from "@/data/assessmentDashboard";
-import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
+import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
 import { calculatePercentage, findMaxByKey } from "@/utils/assessmentUtils";
-import { getStagePieColor, type StageDatum } from "@/utils/assessmentConfig";
+import { getStagePieColor } from "@/utils/assessmentConfig";
+import type { StageDatum } from "@/utils/assessmentConfig";
 import {
   STATUS_STYLES,
   ANIMATION_DELAYS,
@@ -22,8 +23,8 @@ const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 interface EmotionalStageAssessmentProps {
-  onStageSelect: (stage: EmotionalStageAssessment | null) => void;
-  selectedStage: EmotionalStageAssessment | null;
+  onStageSelect: (stage: EmotionalStageAssessmentType | null) => void;
+  selectedStage: EmotionalStageAssessmentType | null;
 }
 
 const EmotionalStageAssessment = ({
@@ -43,7 +44,7 @@ const EmotionalStageAssessment = ({
     }
   }, []);
 
-  const handleStageClick = (stage: EmotionalStageAssessment) => {
+  const handleStageClick = (stage: EmotionalStageAssessmentType) => {
     const newSelection = selectedStage?.stage === stage.stage ? null : stage;
     onStageSelect(newSelection);
   };
