@@ -43,7 +43,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       gradient:
         "bg-linear-to-r from-brand-teal to-brand-navy text-white hover:from-brand-teal/90 hover:to-brand-navy/90 focus-visible:ring-brand-teal shadow-md hover:shadow-lg",
       outline:
-        "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus-visible:ring-gray-300",
+        "border-1 border-brand-teal/100 hover:bg-brand-teal/10 hover:border-brand-teal",
       ghost: "text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-300",
       danger:
         "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600 shadow-sm hover:shadow-md",
