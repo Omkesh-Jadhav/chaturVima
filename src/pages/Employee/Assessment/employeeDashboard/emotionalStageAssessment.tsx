@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
