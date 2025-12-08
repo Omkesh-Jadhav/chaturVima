@@ -7,10 +7,12 @@ import {
   MOCK_CATEGORY_DISTRIBUTION,
   MOCK_EMOTIONAL_STAGE_ASSESSMENT,
 } from "@/data/assessmentDashboard";
-import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
+import type {
+  EmotionalStageAssessment as EmotionalStageAssessmentType,
+  StageDatum,
+} from "@/data/assessmentDashboard";
 import { calculatePercentage, findMaxByKey } from "@/utils/assessmentUtils";
 import { getStagePieColor } from "@/utils/assessmentConfig";
-import type { StageDatum } from "@/utils/assessmentConfig";
 import {
   STATUS_STYLES,
   ANIMATION_DELAYS,
@@ -42,6 +44,7 @@ const EmotionalStageAssessment = ({
     if (!selectedStage && dominantStage) {
       onStageSelect(dominantStage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStageClick = (stage: EmotionalStageAssessmentType) => {
