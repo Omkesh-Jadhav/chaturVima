@@ -1,5 +1,6 @@
 import AssessmentStatusCard from "./assessmentStatusCard";
 import DepartmentDistribution from "./departmentDistribution";
+import DepartmentLevelHealthScores from "./departmentLevelHealthScores";
 import StageDistributionHealth from "./stageDistributionHealth";
 import SubStageDistributionHealth from "./subStageDistributionHealth";
 import ActiveAssessmentCycles from "./activeAssessmentCycles";
@@ -52,6 +53,7 @@ const HrAdminDashboard = () => {
 
         {/* Department Section */}
         <DepartmentDistribution />
+        <DepartmentLevelHealthScores />
       </div>
     </div>
   );
