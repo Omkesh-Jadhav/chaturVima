@@ -10,7 +10,7 @@ import EmotionalIntensityHeatmap from "./emotionalIntensityHeatmap";
 import TransitionLab from "./transitionLab";
 import PendingAssessments from "./pendingAssessments";
 import TestHistory from "./testHistory";
-import { type EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
+import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
 import EmotionalStageAssessment from "./emotionalStageAssessment";
 
 const EmployeeDashboard = () => {

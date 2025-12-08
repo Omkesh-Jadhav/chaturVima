@@ -6,8 +6,8 @@ import { SectionHeader } from "@/components/assessmentDashboard";
 import {
   MOCK_CATEGORY_DISTRIBUTION,
   MOCK_EMOTIONAL_STAGE_ASSESSMENT,
-  type EmotionalStageAssessment,
 } from "@/data/assessmentDashboard";
+import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 import { calculatePercentage, findMaxByKey } from "@/utils/assessmentUtils";
 import { getStagePieColor, type StageDatum } from "@/utils/assessmentConfig";
 import {
