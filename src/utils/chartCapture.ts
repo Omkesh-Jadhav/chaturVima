@@ -1,4 +1,4 @@
-// import { toPng } from 'html-to-image';
+import { toPng } from 'html-to-image';
 
 export interface ChartImages {
   radialBar?: string;
