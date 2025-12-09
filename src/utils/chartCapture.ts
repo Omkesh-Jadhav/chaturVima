@@ -1,4 +1,4 @@
-import { toPng } from 'html-to-image';
+// import { toPng } from 'html-to-image';
 
 export interface ChartImages {
   radialBar?: string;
@@ -11,39 +11,67 @@ export const captureChartsFromPage = async (
   reportRef: React.RefObject<HTMLDivElement | null>
 ): Promise<ChartImages> => {
   if (!reportRef?.current) {
-    console.warn('Report reference not found');
+    console.warn("Report reference not found");
     return {};
   }
 
-  console.log('Starting chart capture process...');
+  console.log("Starting chart capture process...");
   const images: ChartImages = {};
 
   try {
     // Find chart containers in the actual page
-    const radialBarChart = reportRef.current.querySelector('[data-chart-id="radialBar"]');
-    const radarChart = reportRef.current.querySelector('[data-chart-id="radar"]');
-    const chordChart = reportRef.current.querySelector('[data-chart-id="chord"]');
-    const areaBumpChart = reportRef.current.querySelector('[data-chart-id="areaBump"]');
+    const radialBarChart = reportRef.current.querySelector(
+      '[data-chart-id="radialBar"]'
+    );
+    const radarChart = reportRef.current.querySelector(
+      '[data-chart-id="radar"]'
+    );
+    const chordChart = reportRef.current.querySelector(
+      '[data-chart-id="chord"]'
+    );
+    const areaBumpChart = reportRef.current.querySelector(
+      '[data-chart-id="areaBump"]'
+    );
 
     const charts = [
-      { element: radialBarChart, id: 'radialBar' as keyof ChartImages, name: 'Radial Bar Chart' },
-      { element: radarChart, id: 'radar' as keyof ChartImages, name: 'Radar Chart' },
-      { element: chordChart, id: 'chord' as keyof ChartImages, name: 'Chord Chart' },
-      { element: areaBumpChart, id: 'areaBump' as keyof ChartImages, name: 'Area Bump Chart' },
+      {
+        element: radialBarChart,
+        id: "radialBar" as keyof ChartImages,
+        name: "Radial Bar Chart",
+      },
+      {
+        element: radarChart,
+        id: "radar" as keyof ChartImages,
+        name: "Radar Chart",
+      },
+      {
+        element: chordChart,
+        id: "chord" as keyof ChartImages,
+        name: "Chord Chart",
+      },
+      {
+        element: areaBumpChart,
+        id: "areaBump" as keyof ChartImages,
+        name: "Area Bump Chart",
+      },
     ];
 
-    console.log(`Found ${charts.filter(c => c.element).length} chart elements to capture`);
+    console.log(
+      `Found ${
+        charts.filter((c) => c.element).length
+      } chart elements to capture`
+    );
 
     for (const chart of charts) {
       if (chart.element) {
         try {
           console.log(`Capturing ${chart.name}...`);
-          
+
           // Wait for chart to be fully rendered
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
           // Check if the chart has SVG content (indicating it's rendered)
-          const svgElement = chart.element.querySelector('svg');
+          const svgElement = chart.element.querySelector("svg");
           if (!svgElement) {
             console.warn(`No SVG found in ${chart.name}, skipping...`);
             continue;
@@ -52,13 +80,13 @@ export const captureChartsFromPage = async (
           const dataUrl = await toPng(chart.element as HTMLElement, {
             quality: 0.95,
             pixelRatio: 2,
-            backgroundColor: '#ffffff',
+            backgroundColor: "#ffffff",
             cacheBust: true,
             width: chart.element.clientWidth,
             height: chart.element.clientHeight,
             style: {
-              transform: 'scale(1)',
-              transformOrigin: 'top left',
+              transform: "scale(1)",
+              transformOrigin: "top left",
             },
             filter: () => {
               // Preserve all elements including SVG and canvas
@@ -66,14 +94,16 @@ export const captureChartsFromPage = async (
             },
             skipAutoScale: true,
             includeQueryParams: true,
-            preferredFontFormat: 'woff2',
+            preferredFontFormat: "woff2",
           });
-          
-          if (dataUrl && dataUrl.startsWith('data:image/')) {
+
+          if (dataUrl && dataUrl.startsWith("data:image/")) {
             images[chart.id] = dataUrl;
             console.log(`✅ Successfully captured ${chart.name}`);
           } else {
-            console.warn(`❌ Failed to capture ${chart.name}: Invalid data URL`);
+            console.warn(
+              `❌ Failed to capture ${chart.name}: Invalid data URL`
+            );
           }
         } catch (error) {
           console.error(`❌ Failed to capture ${chart.name}:`, error);
@@ -84,11 +114,13 @@ export const captureChartsFromPage = async (
     }
 
     const capturedCount = Object.keys(images).length;
-    console.log(`Chart capture completed: ${capturedCount}/4 charts captured successfully`);
-    
+    console.log(
+      `Chart capture completed: ${capturedCount}/4 charts captured successfully`
+    );
+
     return images;
   } catch (error) {
-    console.error('Error during chart capture process:', error);
+    console.error("Error during chart capture process:", error);
     return {};
   }
 };
