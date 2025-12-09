@@ -1,11 +1,13 @@
 import AssessmentStatusCard from "./assessmentStatusCard";
 import DepartmentDistribution from "./departmentDistribution";
+import DepartmentLevelHealthScores from "./departmentLevelHealthScores";
 import StageDistributionHealth from "./stageDistributionHealth";
 import SubStageDistributionHealth from "./subStageDistributionHealth";
 import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
 import OrganizationSetupInfo from "./organizationSetupInfo";
+import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
 import {
   AnimatedBackground,
   BACKGROUND_COLORS,
@@ -30,6 +32,9 @@ const HrAdminDashboard = () => {
       <div className="relative z-10 space-y-4">
         <AssessmentStatusCard />
 
+        {/* Overall Organizational Health Score */}
+        <OverallOrganizationalHealthScore />
+
         {/* Organization Setup Section */}
         <div className="grid gap-4 md:grid-cols-2">
           <OrganizationOverview />
@@ -48,6 +53,7 @@ const HrAdminDashboard = () => {
 
         {/* Department Section */}
         <DepartmentDistribution />
+        <DepartmentLevelHealthScores />
       </div>
     </div>
   );
