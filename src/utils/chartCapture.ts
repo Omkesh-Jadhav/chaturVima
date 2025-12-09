@@ -1,4 +1,4 @@
-import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 
 export interface ChartImages {
   radialBar?: string;
@@ -77,25 +77,16 @@ export const captureChartsFromPage = async (
             continue;
           }
 
-          const dataUrl = await toPng(chart.element as HTMLElement, {
-            quality: 0.95,
-            pixelRatio: 2,
+          const canvas = await html2canvas(chart.element as HTMLElement, {
             backgroundColor: "#ffffff",
-            cacheBust: true,
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
             width: chart.element.clientWidth,
             height: chart.element.clientHeight,
-            style: {
-              transform: "scale(1)",
-              transformOrigin: "top left",
-            },
-            filter: () => {
-              // Preserve all elements including SVG and canvas
-              return true;
-            },
-            skipAutoScale: true,
-            includeQueryParams: true,
-            preferredFontFormat: "woff2",
           });
+          
+          const dataUrl = canvas.toDataURL('image/png', 0.95);
 
           if (dataUrl && dataUrl.startsWith("data:image/")) {
             images[chart.id] = dataUrl;
