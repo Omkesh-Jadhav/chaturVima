@@ -8,29 +8,29 @@ interface AssessmentReportPdfProps {
 }
 
 const AssessmentReportPdf: React.FC<AssessmentReportPdfProps> = ({ reportRef }) => {
-  const [isCapturingCharts, setIsCapturingCharts] = useState(false);
+  // const [isCapturingCharts, setIsCapturingCharts] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-  const handleCaptureCharts = async () => {
-    if (!reportRef?.current) {
-      alert('Report element not found. Please try again.');
-      return;
-    }
+  // const handleCaptureCharts = async () => {
+  //   if (!reportRef?.current) {
+  //     alert('Report element not found. Please try again.');
+  //     return;
+  //   }
 
-    setIsCapturingCharts(true);
-    try {
-      console.log('Starting chart capture...');
-      const chartImages = await captureChartsFromPage(reportRef);
-      console.log('Charts captured successfully:', Object.keys(chartImages));
-      return chartImages;
-    } catch (error) {
-      console.error('Error capturing charts:', error);
-      alert('Error capturing charts. Please try again.');
-      return {};
-    } finally {
-      setIsCapturingCharts(false);
-    }
-  };
+  //   setIsCapturingCharts(true);
+  //   try {
+  //     console.log('Starting chart capture...');
+  //     const chartImages = await captureChartsFromPage(reportRef);
+  //     console.log('Charts captured successfully:', Object.keys(chartImages));
+  //     return chartImages;
+  //   } catch (error) {
+  //     console.error('Error capturing charts:', error);
+  //     alert('Error capturing charts. Please try again.');
+  //     return {};
+  //   } finally {
+  //     setIsCapturingCharts(false);
+  //   }
+  // };
 
   const handleGeneratePDF = async () => {
     setIsGeneratingPDF(true);
@@ -59,13 +59,13 @@ const AssessmentReportPdf: React.FC<AssessmentReportPdfProps> = ({ reportRef }) 
   return (
     <div className="flex flex-wrap gap-4 justify-center">
       {/* Capture Charts Button */}
-      <button
+      {/* <button
         onClick={handleCaptureCharts}
         disabled={isCapturingCharts}
         className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         📸 {isCapturingCharts ? 'Capturing Charts...' : 'Capture Charts'}
-      </button>
+      </button> */}
 
       {/* Generate PDF Button */}
       <button
