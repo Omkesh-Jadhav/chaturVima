@@ -20,6 +20,7 @@ import {
   PIE_FILL,
 } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+import Aura from "./aura";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -173,6 +174,8 @@ const EmotionalStageAssessment = ({
           />
         </div>
       </AnimatedContainer>
+
+      <Aura/>
     </div>
   );
 };
