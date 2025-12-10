@@ -8,7 +8,7 @@ import { MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
 const CARD_BASE_CLASSES =
-  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
+  "group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-4 shadow-lg transition-all hover:shadow-xl";
 
 const STAGES = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"] as const;
 
@@ -113,7 +113,7 @@ const SubStageDistributionHealth = () => {
         }
       />
 
-      <div className="space-y-3 mt-3">
+      <div className="space-y-2 mt-2">
         {STAGES.map((stage, stageIdx) => {
           const stageSubStages = subStageGroups[stage] || [];
           const stageColor = getStageColor(stage);
@@ -128,42 +128,46 @@ const SubStageDistributionHealth = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: stageIdx * 0.1 }}
-              className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm"
+              className="rounded-xl border-2 border-gray-200 bg-white overflow-hidden shadow-md hover:shadow-lg transition-shadow"
               style={{
-                borderLeftWidth: "4px",
+                borderLeftWidth: "5px",
                 borderLeftColor: stageColor,
+                borderTopColor: `${stageColor}30`,
+                borderRightColor: `${stageColor}30`,
+                borderBottomColor: `${stageColor}30`,
               }}
             >
-               {/* Compact Stage Header with Highlighted Employee Count */}
+               {/* Enhanced Stage Header with Highlighted Employee Count */}
                <div
-                 className="px-2.5 py-1.5 border-b border-gray-100"
+                 className="px-2.5 py-2 border-b-2"
                  style={{
-                   background: `linear-gradient(135deg, ${stageColor}10, ${stageColor}05)`,
+                   background: `linear-gradient(135deg, ${stageColor}15, ${stageColor}08)`,
+                   borderBottomColor: `${stageColor}30`,
                  }}
                >
                  <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-1.5">
+                   <div className="flex items-center gap-2">
                      <div
-                       className="w-2.5 h-2.5 rounded-full shadow-sm"
+                       className="w-3 h-3 rounded-full shadow-md"
                        style={{ backgroundColor: stageColor }}
                      />
-                     <h3 className="text-xs font-bold text-gray-900">{stage}</h3>
+                     <h3 className="text-sm font-bold text-gray-900">{stage}</h3>
                    </div>
                    <div
-                     className="flex items-center gap-1.5 px-2 py-1 rounded-md"
+                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg shadow-sm"
                      style={{
-                       backgroundColor: `${stageColor}18`,
-                       border: `1px solid ${stageColor}35`,
+                       backgroundColor: `${stageColor}20`,
+                       border: `2px solid ${stageColor}40`,
                      }}
                    >
-                     <Users className="h-3.5 w-3.5" style={{ color: stageColor }} />
+                     <Users className="h-4 w-4" style={{ color: stageColor }} />
                      <span
-                       className="text-sm font-bold leading-none"
+                       className="text-base font-bold leading-none"
                        style={{ color: stageColor }}
                      >
                        {totalInStage}
                      </span>
-                     <span className="text-[9px] text-gray-600 font-medium">
+                     <span className="text-[10px] text-gray-700 font-semibold">
                        employees
                      </span>
                    </div>
@@ -190,45 +194,46 @@ const SubStageDistributionHealth = () => {
                            type: "spring",
                            stiffness: 200,
                          }}
-                         whileHover={{ y: -2 }}
-                         className="group relative overflow-hidden rounded border border-gray-200 bg-white p-2 transition-all hover:shadow-md hover:border-gray-300"
+                         whileHover={{ y: -3 }}
+                         className="group relative overflow-hidden rounded-lg border-2 bg-white p-2 transition-all hover:shadow-lg"
                          style={{
-                           borderTopWidth: "2px",
+                           borderTopWidth: "3px",
                            borderTopColor: stageColor,
-                           willChange: "transform",
+                           borderColor: `${stageColor}30`,
                          }}
                        >
                          <div
                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                            style={{
-                             background: `linear-gradient(135deg, ${stageColor}08, transparent)`,
+                             background: `linear-gradient(135deg, ${stageColor}12, ${stageColor}05)`,
                            }}
                          />
 
                          <div className="relative z-10">
                            {/* Sub-Stage Name */}
-                           <h4 className="text-[10px] font-semibold text-gray-900 mb-1 line-clamp-2 min-h-8 leading-tight">
+                           <h4 className="text-xs font-bold text-gray-900 mb-1 line-clamp-2 min-h-8 leading-tight">
                              {subStage.subStage}
                            </h4>
 
                            {/* Count and Percentage - Inline */}
                            <div className="flex items-center justify-between mb-1">
-                             <div className="flex items-baseline gap-0.5">
+                             <div className="flex items-baseline gap-1">
                                <span
-                                 className="text-lg font-bold leading-none"
+                                 className="text-xl font-bold leading-none"
                                  style={{ color: stageColor }}
                                >
                                  {subStage.count}
                                </span>
-                               <span className="text-[9px] text-gray-500">
+                               <span className="text-[9px] text-gray-600 font-medium">
                                  employees
                                </span>
                              </div>
                              <span
-                               className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                               className="text-[11px] font-bold px-1.5 py-0.5 rounded-md shadow-sm"
                                style={{
                                  color: stageColor,
-                                 backgroundColor: `${stageColor}15`,
+                                 backgroundColor: `${stageColor}20`,
+                                 border: `1px solid ${stageColor}40`,
                                }}
                              >
                                {percentage}%
@@ -236,7 +241,7 @@ const SubStageDistributionHealth = () => {
                            </div>
 
                            {/* Progress Bar */}
-                           <div className="relative h-0.5 rounded-full bg-gray-100 overflow-hidden">
+                           <div className="relative h-1 rounded-full bg-gray-200 overflow-hidden shadow-inner">
                              <motion.div
                                initial={{ width: 0 }}
                                animate={{ width: `${barPercentage}%` }}
@@ -245,7 +250,7 @@ const SubStageDistributionHealth = () => {
                                  delay: stageIdx * 0.05 + idx * 0.03 + 0.2,
                                  ease: "easeOut",
                                }}
-                               className="h-full rounded-full"
+                               className="h-full rounded-full shadow-sm"
                                style={{
                                  background: `linear-gradient(90deg, ${stageColor}, ${stageColor}dd)`,
                                }}
