@@ -1,14 +1,17 @@
+import { useMemo } from "react";
 import { Activity, Award, Users, Target } from "lucide-react";
 import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import { Badge } from "@/components/ui";
 import { getStagePieColor } from "@/utils/assessmentConfig";
+import { MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
+import hrDashboardData from "@/data/hrDashboardData.json";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const DUMMY_DATA = {
-  overallScore: 4,
+  overallScore: 3,
   totalEmployees: 156,
   stageDistribution: {
     "Steady-State": 45,
@@ -45,9 +48,35 @@ const getStageFromScore = (score: number) => {
 };
 
 const OverallOrganizationalHealthScore = () => {
-  const { overallScore, totalEmployees, stageDistribution } = DUMMY_DATA;
+  const { overallScore, totalEmployees } = DUMMY_DATA;
   const stageInfo = getStageFromScore(overallScore);
   const scorePercentage = (overallScore / 5) * 100;
+
+  // Calculate sub-stages distribution for the current stage
+  const subStageDistribution = useMemo(() => {
+    const currentStage = stageInfo.stage;
+    const subStages = MOCK_SUB_STAGES[currentStage] || [];
+
+    // Initialize all sub-stages with 0 count
+    const distribution: Record<string, number> = {};
+    subStages.forEach((subStage) => {
+      distribution[subStage.label] = 0;
+    });
+
+    // Count employees in each sub-stage for the current stage
+    hrDashboardData.employee.forEach((employee) => {
+      if (employee.stageDetails.stage === currentStage) {
+        employee.stageDetails.subStageDetails.forEach((subStageDetail) => {
+          const subStageLabel = subStageDetail.subStage.trim();
+          if (distribution.hasOwnProperty(subStageLabel)) {
+            distribution[subStageLabel]++;
+          }
+        });
+      }
+    });
+
+    return distribution;
+  }, [stageInfo.stage]);
 
   return (
     <AnimatedContainer
@@ -133,19 +162,26 @@ const OverallOrganizationalHealthScore = () => {
           </p>
         </div>
 
-        {/* Stage Distribution */}
+        {/* Sub-Stages Distribution */}
         <div className="relative flex flex-col justify-center p-3 bg-linear-to-br from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-100 shadow-sm hover:shadow-md transition-all">
           <div className="absolute top-2 right-2 p-1 rounded-lg bg-purple-100/50">
             <Target className="h-3.5 w-3.5 text-purple-500/60" />
           </div>
           <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">
-            Stage Distribution
+            Sub-Stages Distribution
           </div>
           <div className="space-y-2">
-            {Object.entries(stageDistribution).map(([stage, count]) => {
-              const hexColor = getStagePieColor(stage);
+            {Object.entries(subStageDistribution).map(([subStage, count]) => {
+              const hexColor = stageInfo.hexColor;
+              const totalInStage = Object.values(subStageDistribution).reduce(
+                (sum, c) => sum + c,
+                0
+              );
+              const percentage =
+                totalInStage > 0 ? (count / totalInStage) * 100 : 0;
+
               return (
-                <div key={stage} className="flex items-center gap-2">
+                <div key={subStage} className="flex items-center gap-2">
                   <div
                     className="p-1 rounded border shrink-0"
                     style={{
@@ -163,13 +199,15 @@ const OverallOrganizationalHealthScore = () => {
                       <span className="text-xs font-semibold text-gray-900">
                         {count} employees
                       </span>
-                      <span className="text-xs text-gray-600">{stage}</span>
+                      <span className="text-[10px] text-gray-600 line-clamp-1">
+                        {subStage}
+                      </span>
                     </div>
                     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-1000"
                         style={{
-                          width: `${(count / totalEmployees) * 100}%`,
+                          width: `${percentage}%`,
                           backgroundColor: hexColor,
                         }}
                       />
