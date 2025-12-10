@@ -190,17 +190,18 @@ const SubStageDistributionHealth = () => {
                            type: "spring",
                            stiffness: 200,
                          }}
-                         whileHover={{ scale: 1.02, y: -1 }}
-                         className="group relative overflow-hidden rounded border border-gray-200 bg-white p-2 transition-all hover:shadow-sm hover:border-gray-300"
+                         whileHover={{ y: -2 }}
+                         className="group relative overflow-hidden rounded border border-gray-200 bg-white p-2 transition-all hover:shadow-md hover:border-gray-300"
                          style={{
                            borderTopWidth: "2px",
                            borderTopColor: stageColor,
+                           willChange: "transform",
                          }}
                        >
                          <div
                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                            style={{
-                             background: `linear-gradient(135deg, ${stageColor}06, transparent)`,
+                             background: `linear-gradient(135deg, ${stageColor}08, transparent)`,
                            }}
                          />
 

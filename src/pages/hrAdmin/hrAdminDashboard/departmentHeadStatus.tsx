@@ -160,45 +160,50 @@ const DepartmentHeadStatus = () => {
           allCycleIdsWithAccess.includes(cycle.id)
         );
 
-        // Count cycles this HOD has actually scheduled/created
-        // A cycle is considered "scheduled by HOD" if it's in their department AND is Active/Upcoming
-        // Only check real cycles (not dummy) for scheduled status
-        const cyclesScheduled = cycles.filter(
+        // Find the active cycle for this HOD (only one can be active at a time)
+        // Priority: Active > Upcoming > Draft
+        // A cycle is considered "scheduled" if it's in their department AND is Active/Upcoming
+        const scheduledCycle = cycles.find(
           (cycle) =>
             cycle.departments.includes(head.department) &&
             (cycle.status === "Active" || cycle.status === "Upcoming")
-        ).length;
-
-        // Get scheduled cycle IDs (only from real cycles, not dummy)
-        const scheduledCycleIds = cycles
-          .filter(
-            (cycle) =>
-              cycle.departments.includes(head.department) &&
-              (cycle.status === "Active" || cycle.status === "Upcoming")
-          )
-          .map((c) => c.id);
-
-        // Pending cycles: cycles they have access to but haven't scheduled
-        // This includes:
-        // - Draft cycles (not yet scheduled/activated)
-        // - Cycles with access but not in their department (not scheduled by them)
-        // - Dummy cycles (which are never in their department)
-        const pendingCycles = cyclesWithAccessList.filter(
-          (cycle) => !scheduledCycleIds.includes(cycle.id)
         );
 
-        const hasAccess = cyclesWithAccessList.length > 0;
+        // For testing: Force some HODs to be pending (index 1, 2, 3)
+        const forcePendingForTesting = index >= 1 && index <= 3;
 
-        // For testing: Force some HODs to be pending to ensure we have pending records
-        // HODs at index 2 and 3 (People Ops and Marketing) will be forced to pending
-        // This ensures we have dummy pending data to display
-        const forcePendingForTesting = index >= 2; // People Ops (index 2) and Marketing (index 3)
+        // If HOD has a scheduled cycle and not forced to pending, they are "Scheduled"
+        // Otherwise, they are "Pending"
+        const hasScheduled = forcePendingForTesting ? false : !!scheduledCycle;
+        
+        // Pending cycles: Only if no scheduled cycle exists
+        // If scheduled cycle exists, no pending cycles
+        // If no scheduled cycle, create one pending cycle for display
+        const pendingCycles = hasScheduled
+          ? [] // If scheduled, no pending cycles
+          : [
+              // Create a default pending cycle for each HOD without scheduled cycle
+              {
+                id: `pending-${head.id}`,
+                name: `Assessment Cycle - ${head.department}`,
+                startDate: new Date().toISOString().split("T")[0],
+                endDate: new Date(
+                  Date.now() + 30 * 24 * 60 * 60 * 1000
+                ).toISOString().split("T")[0],
+                type: "Quarterly" as const,
+                period: "Calendar" as const,
+                status: "Draft" as const,
+                departments: [head.department],
+                assessmentTypes: ["Employee Self Assessment"],
+                allowCustomUpload: false,
+                participants: 0,
+                owner: "HR Admin",
+                linkedTeams: 0,
+              },
+            ];
 
-        // If forcing pending for testing, mark as not scheduled
-        // Otherwise, check if they have real scheduled cycles
-        const hasScheduled = forcePendingForTesting
-          ? false // Force pending for testing
-          : cyclesScheduled > 0; // Use real scheduled status
+        const hasAccess = true; // All HODs have access by default (1 cycle each)
+        const cyclesScheduled = hasScheduled ? 1 : 0;
 
         return {
           id: head.id,
@@ -215,38 +220,35 @@ const DepartmentHeadStatus = () => {
       }
     );
 
-    // Sort: Has access but not scheduled first, then others
+    // Sort: Pending first, then scheduled, then by department name
     return statuses.sort((a, b) => {
-      if (a.hasAccess && !a.hasScheduled && !(b.hasAccess && !b.hasScheduled))
-        return -1;
-      if (b.hasAccess && !b.hasScheduled && !(a.hasAccess && !a.hasScheduled))
-        return 1;
+      // Pending (not scheduled) first
+      if (!a.hasScheduled && b.hasScheduled) return -1;
+      if (a.hasScheduled && !b.hasScheduled) return 1;
+      // Then sort by department name
       return a.department.localeCompare(b.department);
     });
   }, []);
 
-  // Filter HODs based on selected filter - Only show HODs with access
+  // Filter HODs based on selected filter
   const filteredHODs = useMemo(() => {
-    const withAccess = hodStatuses.filter((h) => h.hasAccess);
-
-    switch (selectedFilter) {
-      case "Pending":
-        return withAccess.filter((h) => !h.hasScheduled);
-      case "Scheduled":
-        return withAccess.filter((h) => h.hasScheduled);
-      default:
-        return withAccess; // "All" shows only HODs with access
+    if (selectedFilter === "Pending") {
+      return hodStatuses.filter((h) => !h.hasScheduled);
     }
+    if (selectedFilter === "Scheduled") {
+      return hodStatuses.filter((h) => h.hasScheduled);
+    }
+    // "All" shows all HODs
+    return hodStatuses;
   }, [hodStatuses, selectedFilter]);
 
   const stats = useMemo(() => {
-    // Only count HODs who have been given access
-    const withAccess = hodStatuses.filter((h) => h.hasAccess);
-    const totalWithAccess = withAccess.length;
-    const scheduled = withAccess.filter((h) => h.hasScheduled).length;
-    const pending = withAccess.filter((h) => !h.hasScheduled).length;
+    // Stats always show overall numbers (not filtered)
+    const total = hodStatuses.length;
+    const scheduled = hodStatuses.filter((h) => h.hasScheduled).length;
+    const pending = hodStatuses.filter((h) => !h.hasScheduled).length;
 
-    return { totalWithAccess, scheduled, pending };
+    return { total, scheduled, pending };
   }, [hodStatuses]);
 
   const handleRemind = (hod: HODStatus) => {
@@ -270,7 +272,12 @@ const DepartmentHeadStatus = () => {
         actions={
           <FilterSelect
             value={selectedFilter}
-            onChange={(value) => setSelectedFilter(value as FilterType)}
+            onChange={(value) => {
+              const filterValue = value as FilterType;
+              if (FILTER_OPTIONS.includes(filterValue)) {
+                setSelectedFilter(filterValue);
+              }
+            }}
             options={FILTER_OPTIONS}
             className="w-full sm:w-auto min-w-[140px]"
           />
@@ -283,10 +290,10 @@ const DepartmentHeadStatus = () => {
           <div className="rounded-lg border border-gray-200 bg-white p-2.5">
             <div className="text-xs text-gray-600 mb-1">Total HODs</div>
             <div className="text-lg font-bold text-gray-900">
-              {stats.totalWithAccess}
+              {stats.total}
             </div>
             <div className="text-[10px] text-gray-500 mt-0.5">
-              With access granted
+              Department heads
             </div>
           </div>
           <div className="rounded-lg border border-green-200 bg-green-50/50 p-2.5">
@@ -295,10 +302,8 @@ const DepartmentHeadStatus = () => {
               {stats.scheduled}
             </div>
             <div className="text-[10px] text-green-700 mt-0.5">
-              {stats.totalWithAccess > 0
-                ? `${Math.round(
-                    (stats.scheduled / stats.totalWithAccess) * 100
-                  )}% completed`
+              {stats.total > 0
+                ? `${Math.round((stats.scheduled / stats.total) * 100)}% completed`
                 : "0% completed"}
             </div>
           </div>
@@ -316,14 +321,14 @@ const DepartmentHeadStatus = () => {
         </div>
 
         {/* HOD List with Scrollbar */}
-        <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+        <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar space-y-2" key={selectedFilter}>
           {filteredHODs.length === 0 ? (
             <div className="text-center py-8 text-sm text-gray-500">
               No department heads found for selected filter
             </div>
           ) : (
             filteredHODs.map((hod) => {
-              const isPending = hod.hasAccess && !hod.hasScheduled;
+              const isPending = !hod.hasScheduled;
               return (
                 <div
                   key={hod.id}
@@ -364,70 +369,27 @@ const DepartmentHeadStatus = () => {
 
                     {/* Status Indicators & Actions */}
                     <div className="flex items-center gap-3 shrink-0">
-                      {/* Access Status */}
-                      <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-1.5">
-                          {hod.hasAccess ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-xs text-gray-600">
-                                Access Granted
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-4 w-4 text-gray-400" />
-                              <span className="text-xs text-gray-500">
-                                No Access
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        {hod.hasAccess && (
-                          <div className="text-[10px] text-gray-500">
-                            {hod.cyclesWithAccess} cycle
-                            {hod.cyclesWithAccess !== 1 ? "s" : ""} granted
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Scheduled Status */}
-                      <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-1.5">
-                          {hod.hasScheduled ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-xs text-gray-600">
-                                Scheduled
-                              </span>
-                            </>
-                          ) : hod.hasAccess ? (
-                            <>
-                              <Clock className="h-4 w-4 text-amber-600" />
-                              <span className="text-xs text-amber-700">
-                                Pending
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-4 w-4 text-gray-400" />
-                              <span className="text-xs text-gray-500">-</span>
-                            </>
-                          )}
-                        </div>
-                        {isPending && hod.pendingCycles.length > 0 && (
-                          <div className="flex flex-col items-end gap-1">
-                            <div className="text-[10px] text-amber-700">
-                              {hod.pendingCycles.length} cycle
-                              {hod.pendingCycles.length !== 1 ? "s" : ""}{" "}
-                              pending
-                            </div>
-                          </div>
+                      {/* Status - Either Scheduled or Pending */}
+                      <div className="flex items-center gap-1.5">
+                        {hod.hasScheduled ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="text-xs text-gray-600">
+                              Scheduled
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-4 w-4 text-amber-600" />
+                            <span className="text-xs text-amber-700">
+                              Pending
+                            </span>
+                          </>
                         )}
                       </div>
 
                       {/* Remind Button for Pending */}
-                      {hod.hasAccess && !hod.hasScheduled && (
+                      {!hod.hasScheduled && (
                         <button
                           onClick={() => handleRemind(hod)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300 transition-all flex items-center gap-1.5"
