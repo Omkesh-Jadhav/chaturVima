@@ -71,13 +71,13 @@ const Aura = ({ data }: AuraProps) => {
             animation="fadeInUp"
             transitionPreset="slow"
             delay="xs"
-            className={`${CARD_BASE_CLASSES} p-5`}
+            className={`${CARD_BASE_CLASSES} p-4`}
         >
             <SectionHeader
                 title="Emotional Aura"
                 description="Interactive visualization of emotional stage distribution"
             />
-            <div className="flex items-center justify-center mt-4">
+            <div className="flex items-center justify-center -mt-12">
                 <div className="relative">
                     <svg width={size} height={size} className="drop-shadow-2xl">
                         <defs>
