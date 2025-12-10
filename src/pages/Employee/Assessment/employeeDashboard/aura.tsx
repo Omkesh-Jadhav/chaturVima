@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { AnimatedContainer } from "@/components/ui";
+import { SectionHeader } from "@/components/assessmentDashboard";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
+
+const CARD_BASE_CLASSES =
+  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 interface AuraProps {
     data: EmotionalStageAssessment[];
@@ -62,26 +67,36 @@ const Aura = ({ data }: AuraProps) => {
     };
 
     return (
-        <div className="flex items-center justify-center bg-linear-to-br  p-8">
-            <div className="relative">
-                <svg width={size} height={size} className="drop-shadow-2xl">
-                    <defs>
-                        {/* Glow filters */}
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
+        <AnimatedContainer
+            animation="fadeInUp"
+            transitionPreset="slow"
+            delay="xs"
+            className={`${CARD_BASE_CLASSES} p-5`}
+        >
+            <SectionHeader
+                title="Emotional Aura"
+                description="Interactive visualization of emotional stage distribution"
+            />
+            <div className="flex items-center justify-center mt-4">
+                <div className="relative">
+                    <svg width={size} height={size} className="drop-shadow-2xl">
+                        <defs>
+                            {/* Glow filters */}
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
 
-                        <filter id="strongGlow">
-                            <feGaussianBlur stdDeviation="8" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
+                            <filter id="strongGlow">
+                                <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
 
                         {/* Dynamic holographic gradient for human figure based on data */}
                         <linearGradient id="holoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -252,6 +267,7 @@ const Aura = ({ data }: AuraProps) => {
                 )}
             </div>
         </div>
+        </AnimatedContainer>
     );
 };
 
