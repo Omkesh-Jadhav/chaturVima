@@ -11,10 +11,17 @@ const Aura = ({ data }: AuraProps) => {
     // Calculate total and percentages
     console.log(data)
     const total = data.reduce((sum, item) => sum + item.score, 0);
+    const padAngle = 4;
+    const totalPadding = padAngle * data.length;
+    const availableAngle = 360 - totalPadding;
+    
     const dataWithAngles = data.map((item, index) => {
         const percentage = (item.score / total) * 100;
-        const angle = (item.score / total) * 360;
-        const startAngle = data.slice(0, index).reduce((sum, d) => sum + (d.score / total) * 360, 0);
+        const angle = (item.score / total) * availableAngle; // Use available angle after padding
+        const startAngle = data.slice(0, index).reduce((sum, d) => {
+            const segmentAngle = (d.score / total) * availableAngle;
+            return sum + segmentAngle + padAngle; // Add padding after each segment
+        }, 0);
         return { ...item, percentage, angle, startAngle };
     });
 
@@ -120,14 +127,21 @@ const Aura = ({ data }: AuraProps) => {
                         const labelPos = getLabelPosition(item.startAngle, item.angle);
                         const percentage = item.percentage.toFixed(1);
                         
+                        const isHovered = hoveredStage?.stage === item.stage;
+                        const scale = isHovered ? 1.1 : 1;
+                        
                         return (
-                            <g key={index}>
+                            <g 
+                                key={index}
+                                transform={`translate(${center}, ${center}) scale(${scale}) translate(${-center}, ${-center})`}
+                                className="transition-transform duration-600 ease-out"
+                            >
                                 <path
                                     d={createArc(item.startAngle, endAngle, innerRadius, outerRadius)}
                                     fill={item.color}
                                     stroke={item.color}
                                     strokeWidth="2"
-                                    opacity={hoveredStage?.stage === item.stage ? "1" : "0.85"}
+                                    opacity={isHovered ? "1" : "0.85"}
                                     className="transition-all duration-300 hover:opacity-100 cursor-pointer"
                                     onMouseEnter={() => setHoveredStage(item)}
                                     onMouseLeave={() => setHoveredStage(null)}
