@@ -1,31 +1,12 @@
-const Aura = () => {
-    const data = [
-        {
-            stage: "Honeymoon",
-            score: 153.73,
-            color: "#10b981",
-            status: "Dominant",
-        },
-        {
-            stage: "Self-Introspection",
-            score: 122.47,
-            color: "#3b82f6",
-            status: "Secondary",
-        },
-        {
-            stage: "Soul-Searching",
-            score: 121.07,
-            color: "#f97316",
-            status: "Transitional",
-        },
-        {
-            stage: "Steady-State",
-            score: 118.73,
-            color: "#a855f7",
-        },
-    ];
+import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 
+interface AuraProps {
+    data: EmotionalStageAssessment[];
+}
+
+const Aura = ({ data }: AuraProps) => {
     // Calculate total and percentages
+    console.log(data)
     const total = data.reduce((sum, item) => sum + item.score, 0);
     const dataWithAngles = data.map((item, index) => {
         const percentage = (item.score / total) * 100;
@@ -37,8 +18,8 @@ const Aura = () => {
     // SVG dimensions
     const size = 400;
     const center = size / 2;
-    const outerRadius = 180;
-    const innerRadius = 130;
+    const outerRadius = 150;
+    const innerRadius = 100;
 
     // Function to create arc path
     const createArc = (startAngle, endAngle, innerR, outerR) => {
@@ -60,18 +41,10 @@ const Aura = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-8">
+        <div className="flex items-center justify-center bg-linear-to-br  p-8">
             <div className="relative">
                 <svg width={size} height={size} className="drop-shadow-2xl">
                     <defs>
-                        {/* Gradients for each segment */}
-                        {dataWithAngles.map((item, index) => (
-                            <linearGradient key={`grad-${index}`} id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor={item.color} stopOpacity="0.8" />
-                                <stop offset="100%" stopColor={item.color} stopOpacity="0.4" />
-                            </linearGradient>
-                        ))}
-
                         {/* Glow filters */}
                         <filter id="glow">
                             <feGaussianBlur stdDeviation="4" result="coloredBlur" />
@@ -89,13 +62,21 @@ const Aura = () => {
                             </feMerge>
                         </filter>
 
-                        {/* Holographic gradient for human figure */}
+                        {/* Dynamic holographic gradient for human figure based on data */}
                         <linearGradient id="holoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#00d4ff" stopOpacity="0.9" />
-                            <stop offset="30%" stopColor="#00d4ff" stopOpacity="0.7" />
-                            <stop offset="50%" stopColor="#ffaa00" stopOpacity="0.6" />
-                            <stop offset="70%" stopColor="#ff6b00" stopOpacity="0.8" />
-                            <stop offset="100%" stopColor="#ff3333" stopOpacity="0.9" />
+                            {dataWithAngles.map((item, index) => {
+                                const cumulativePercentage = dataWithAngles
+                                    .slice(0, index + 1)
+                                    .reduce((sum, d) => sum + d.percentage, 0);
+                                return (
+                                    <stop 
+                                        key={index}
+                                        offset={`${cumulativePercentage}%`} 
+                                        stopColor={item.color} 
+                                        stopOpacity="0.8" 
+                                    />
+                                );
+                            })}
                         </linearGradient>
 
                         {/* Radial gradient for concentric circles */}
@@ -126,10 +107,9 @@ const Aura = () => {
                             <g key={index}>
                                 <path
                                     d={createArc(item.startAngle, endAngle, innerRadius, outerRadius)}
-                                    fill={`url(#gradient-${index})`}
+                                    fill={item.color}
                                     stroke={item.color}
                                     strokeWidth="2"
-                                    filter="url(#glow)"
                                     opacity="0.85"
                                     className="transition-all duration-300 hover:opacity-100"
                                 />
@@ -140,7 +120,7 @@ const Aura = () => {
                     {/* Holographic human figure using provided SVG */}
                     <g transform={`translate(${center}, ${center})`} filter="url(#strongGlow)">
                         {/* Scale and position the human SVG */}
-                        <g transform="translate(-103, -103) scale(1)">
+                        <g transform="translate(-77, -77) scale(0.75)">
                             <path
                                 d="M104.265,117.959c-0.304,3.58,2.126,22.529,3.38,29.959c0.597,3.52,2.234,9.255,1.645,12.3
                 c-0.841,4.244-1.084,9.736-0.621,12.934c0.292,1.942,1.211,10.899-0.104,14.175c-0.688,1.718-1.949,10.522-1.949,10.522

@@ -175,7 +175,7 @@ const EmotionalStageAssessment = ({
         </div>
       </AnimatedContainer>
 
-      <Aura/>
+      <Aura data={emotionalStageAssessment}/>
     </div>
   );
 };
