@@ -37,15 +37,27 @@
         ],
         "subStageDetails": [
           {
-            "subStage": "Excitement & Optimism",
+            "subStage": "Excitement and Optimism",
             "subStageScore": 44.4,
-            "subStageIntro": "This is the employee’s strongest sub-stage, and a full score indicates a heightened state of enthusiasm and emotional uplift. At this level:",
+            "subStageIntro": "This is the employee's strongest sub-stage, and a full score indicates a heightened state of enthusiasm and emotional uplift. At this level:",
             "subStageDescription": [
               "The employee is exceptionally motivated, eager to take initiative, and ready to contribute at full capacity.",
               "Creativity is at its peak, leading to fresh ideas, innovative thinking, and rapid problem-solving approaches.",
               "There is a strong internal belief in the positivity of the environment, the opportunities ahead, and their own ability to succeed."
             ],
-            "subStageConclusion": "This aligns perfectly with the natural Honeymoon stage, where individuals enter a new role, phase, project, or environment with a sense of possibility, hopefulness, and momentum. It’s a powerful phase for early wins and uplifting team morale."
+            "subStageConclusion": "This aligns perfectly with the natural Honeymoon stage, where individuals enter a new role, phase, project, or environment with a sense of possibility, hopefulness, and momentum. It's a powerful phase for early wins and uplifting team morale."
+          },
+          {
+            "subStage": "Confidence and Over-Reliance on Past Success",
+            "subStageScore": 27.3,
+            "subStageIntro": "A medium score here indicates that while the employee is confident, there is a moderate risk of imbalance, which may manifest as:",
+            "subStageDescription": [
+              "Slight overestimation of their capabilities",
+              "Taking on responsibilities too quickly",
+              "Diving into tasks without full understanding of organizational complexities",
+              "Relying heavily on initial enthusiasm instead of sustainable strategy"
+            ],
+            "subStageConclusion": "This is not a red flag; it simply highlights the natural tendency seen in highly motivated individuals. With guidance, priority-setting, and realistic expectation management, this can be easily balanced."
           },
           {
             "subStage": "Initial Reality Check",
@@ -60,38 +72,16 @@
             "subStageConclusion": "This combination of optimism with a touch of realism is a positive trait. It helps prevent the employee from falling into unchecked idealism and reduces the risk of emotional drop-off when early challenges emerge. It represents healthy self-awareness and sets the stage for balanced growth."
           },
           {
-            "subStage": "Sustained Confidence",
+            "subStage": "Sustained Confidence with Subtle Complacency",
             "subStageScore": 25.6,
             "subStageIntro": "This moderate score indicates that the employee is:",
             "subStageDescription": [
               "Confident in their abilities but still developing deeper self-assurance",
               "Building long-term belief in how they fit within the system or organization",
-              "Open to guidance, direction, and feedback"
+              "Open to guidance, direction, and feedback",
+              "Maintaining alertness and proactivity without settling into routine prematurely"
             ],
-            "subStageConclusion": "This level of confidence is healthy: they are neither overconfident nor insecure. However, it also implies that structure, clarity, mentoring, or positive reinforcement will help solidify their long-term confidence."
-          },
-          {
-            "subStage": "Confidence & Over-Reliance",
-            "subStageScore": 27.3,
-            "subStageIntro": "A medium score here indicates that while the employee is confident, there is a moderate risk of imbalance, which may manifest as:",
-            "subStageDescription": [
-              "Slight overestimation of their capabilities",
-              "Taking on responsibilities too quickly",
-              "Diving into tasks without full understanding of organizational complexities",
-              "Relying heavily on initial enthusiasm instead of sustainable strategy"
-            ],
-            "subStageConclusion": "This is not a red flag; it simply highlights the natural tendency seen in highly motivated individuals. With guidance, priority-setting, and realistic expectation management, this can be easily balanced."
-          },
-          {
-            "subStage": "Subtle Complacency",
-            "subStageScore": 13.7,
-            "subStageIntro": "A low score in complacency is a positive indicator. It means:",
-            "subStageDescription": [
-              "The employee is not becoming relaxed, passive, or disengaged",
-              "They remain alert, proactive, and committed",
-              "They continue to push themselves rather than settling into routine prematurely"
-            ],
-            "subStageConclusion": "This reinforces that the employee is still in an active growth phase and has not allowed comfort to reduce their drive."
+            "subStageConclusion": "This level of confidence is healthy: they are neither overconfident nor insecure. However, it also implies that structure, clarity, mentoring, or positive reinforcement will help solidify their long-term confidence while maintaining their drive."
           }
         ]
       },
@@ -106,35 +96,46 @@
           {
             "subStage": "Acknowledgment of Problems",
             "subStageScore": 42.9,
-            "subStageIntro": "A low score in complacency is a positive indicator. It means:",
+            "subStageIntro": "The employee demonstrates awareness and recognition of existing challenges. This indicates:",
             "subStageDescription": [
-              "The employee is not becoming relaxed, passive, or disengaged",
-              "They remain alert, proactive, and committed",
-              "They continue to push themselves rather than settling into routine prematurely"
+              "The employee is actively identifying issues and challenges",
+              "They are not avoiding or denying problems",
+              "They show readiness to address difficulties head-on"
             ],
-            "subStageConclusion": "This reinforces that the employee is still in an active growth phase and has not allowed comfort to reduce their drive."
+            "subStageConclusion": "This is a positive first step in the self-introspection process, showing maturity and willingness to confront reality."
           },
           {
-            "subStage": "Analyzing Causes,Partial Acceptance of Responsibility",
-            "subStageScore": 49.0,
-            "subStageIntro": "A low score in complacency is a positive indicator. It means:",
+            "subStage": "Analyzing Causes",
+            "subStageScore": 24.5,
+            "subStageIntro": "The employee is engaging in critical analysis to understand root causes. This suggests:",
             "subStageDescription": [
-              "The employee is not becoming relaxed, passive, or disengaged",
-              "They remain alert, proactive, and committed",
-              "They continue to push themselves rather than settling into routine prematurely"
+              "They are investigating underlying factors contributing to problems",
+              "They are seeking to understand the 'why' behind challenges",
+              "They are applying analytical thinking to complex situations"
             ],
-            "subStageConclusion": "This reinforces that the employee is still in an active growth phase and has not allowed comfort to reduce their drive."
+            "subStageConclusion": "This analytical approach helps build a deeper understanding and enables more effective problem-solving strategies."
+          },
+          {
+            "subStage": "Partial Acceptance of Responsibility",
+            "subStageScore": 24.5,
+            "subStageIntro": "The employee is beginning to recognize their role in situations. This indicates:",
+            "subStageDescription": [
+              "They are taking ownership of their contributions to challenges",
+              "They are moving beyond blame to self-reflection",
+              "They are developing accountability for their actions and decisions"
+            ],
+            "subStageConclusion": "Partial acceptance shows growth in self-awareness, though full acceptance would indicate even greater maturity and readiness for transformation."
           },
           {
             "subStage": "Exploration of Solutions",
             "subStageScore": 30.6,
-            "subStageIntro": "A low score in complacency is a positive indicator. It means:",
+            "subStageIntro": "The employee is actively seeking ways to address identified problems. This suggests:",
             "subStageDescription": [
-              "The employee is not becoming relaxed, passive, or disengaged",
-              "They remain alert, proactive, and committed",
-              "They continue to push themselves rather than settling into routine prematurely"
+              "They are generating potential solutions and alternatives",
+              "They are open to different approaches and strategies",
+              "They are moving from problem identification to solution-oriented thinking"
             ],
-            "subStageConclusion": "This reinforces that the employee is still in an active growth phase and has not allowed comfort to reduce their drive."
+            "subStageConclusion": "This forward-looking approach demonstrates readiness to move from reflection to action, which is essential for meaningful change."
           }
         ]
       },

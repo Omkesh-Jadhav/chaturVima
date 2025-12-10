@@ -10,9 +10,10 @@
                 "score": 153.73,
                 "scorePercentage": 42,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.4 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.4 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 42.7 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 25.6 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 25.6 }
                 ]
             }
         },
@@ -27,7 +28,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.4 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.7 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.7 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 25.6 }
                 ]
             }
@@ -74,10 +76,10 @@
                 "score": 149.87,
                 "scorePercentage": 39,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 41.3 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 41.3 },
                     { "subStage": "Initial Reality Check", "subStageScore": 38.9 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.4 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 22.8 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.4 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 22.8 }
                 ]
             }
         },
@@ -91,9 +93,10 @@
                 "score": 147.25,
                 "scorePercentage": 38,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 43.8 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 43.8 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 36.4 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 14.2 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 14.2 }
                 ]
             }
         },
@@ -155,11 +158,10 @@
                 "score": 151.34,
                 "scorePercentage": 44,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.2 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.8 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 27.9 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 23.5 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 12.9 }
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 23.5 },
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 27.9 }
                 ]
             }
         },
@@ -174,7 +176,9 @@
                 "scorePercentage": 49,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 46.7 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 41.2 }
+                    { "subStage": "Analyzing Causes", "subStageScore": 41.2 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
+                    { "subStage": "Exploration of Solutions", "subStageScore": 25.0 }
                 ]
             }
         },
@@ -188,9 +192,10 @@
                 "score": 143.27,
                 "scorePercentage": 47,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.8 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.8 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 43.5 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 35.0 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 35.0 }
                 ]
             }
         },
@@ -237,9 +242,10 @@
                 "score": 148.91,
                 "scorePercentage": 41,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 42.6 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 42.6 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 25.3 },
                     { "subStage": "Initial Reality Check", "subStageScore": 39.7 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 25.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 30.0 }
                 ]
             }
         },
@@ -254,7 +260,8 @@
                 "scorePercentage": 46,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 38.2 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 45.8 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 45.8 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 32.1 }
                 ]
             }
@@ -270,6 +277,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.4 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 35.0 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 25.6 }
                 ]
             }
@@ -284,9 +293,10 @@
                 "score": 150.12,
                 "scorePercentage": 43,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 45.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 45.2 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 38.5 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 28.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 28.3 }
                 ]
             }
         },
@@ -333,10 +343,10 @@
                 "score": 152.67,
                 "scorePercentage": 45,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 47.1 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 47.1 },
                     { "subStage": "Initial Reality Check", "subStageScore": 41.3 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 30.2 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 24.8 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 30.2 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 24.8 }
                 ]
             }
         },
@@ -351,7 +361,8 @@
                 "scorePercentage": 47,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 43.6 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.1 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.1 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 34.2 }
                 ]
             }
@@ -366,9 +377,10 @@
                 "score": 149.23,
                 "scorePercentage": 40,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 43.5 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 43.5 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 37.8 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 15.2 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 15.2 }
                 ]
             }
         },
@@ -415,10 +427,10 @@
                 "score": 151.89,
                 "scorePercentage": 44,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 45.7 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 45.7 },
                     { "subStage": "Initial Reality Check", "subStageScore": 39.4 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.1 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 22.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.1 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 22.3 }
                 ]
             }
         },
@@ -433,7 +445,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 45.2 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 41.8 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 41.8 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 35.6 }
                 ]
             }
@@ -464,11 +477,10 @@
                 "score": 148.45,
                 "scorePercentage": 39,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.2 },
                     { "subStage": "Initial Reality Check", "subStageScore": 38.1 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 27.5 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 23.8 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 14.6 }
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 23.8 },
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 27.5 }
                 ]
             }
         },
@@ -499,7 +511,8 @@
                 "scorePercentage": 49,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 46.3 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 40.7 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 40.7 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 36.8 }
                 ]
             }
@@ -531,9 +544,10 @@
                 "score": 150.78,
                 "scorePercentage": 42,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.5 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.5 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.2 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 28.9 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 28.9 }
                 ]
             }
         },
@@ -548,7 +562,8 @@
                 "scorePercentage": 47,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.1 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 43.2 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 43.2 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 33.4 }
                 ]
             }
@@ -563,9 +578,10 @@
                 "score": 147.89,
                 "scorePercentage": 38,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 43.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 43.2 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 24.1 },
                     { "subStage": "Initial Reality Check", "subStageScore": 37.5 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 24.1 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 30.0 }
                 ]
             }
         },
@@ -613,10 +629,10 @@
                 "score": 152.34,
                 "scorePercentage": 45,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 47.3 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 47.3 },
                     { "subStage": "Initial Reality Check", "subStageScore": 41.1 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 30.5 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 25.2 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 30.5 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 25.2 }
                 ]
             }
         },
@@ -631,7 +647,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 45.6 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.3 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.3 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 34.8 }
                 ]
             }
@@ -678,10 +695,10 @@
                 "score": 149.56,
                 "scorePercentage": 40,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.8 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.8 },
                     { "subStage": "Initial Reality Check", "subStageScore": 38.7 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 28.4 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 13.9 }
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 30.0 },
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 28.4 }
                 ]
             }
         },
@@ -712,7 +729,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 45.8 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 41.5 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 41.5 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 35.2 }
                 ]
             }
@@ -727,10 +745,10 @@
                 "score": 151.67,
                 "scorePercentage": 44,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.2 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.5 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.8 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 24.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.8 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 24.3 }
                 ]
             }
         },
@@ -761,9 +779,9 @@
                 "score": 148.12,
                 "scorePercentage": 39,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.1 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.1 },
                     { "subStage": "Initial Reality Check", "subStageScore": 37.9 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 23.4 }
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 23.4 }
                 ]
             }
         },
@@ -795,7 +813,8 @@
                 "scorePercentage": 47,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.3 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.7 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.7 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 33.9 }
                 ]
             }
@@ -810,11 +829,11 @@
                 "score": 150.45,
                 "scorePercentage": 43,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 45.9 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 45.9 },
                     { "subStage": "Initial Reality Check", "subStageScore": 39.8 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.2 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 23.7 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 13.8 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.2 },
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 23.7 },
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 13.8 }
                 ]
             }
         },
@@ -861,9 +880,9 @@
                 "score": 149.78,
                 "scorePercentage": 41,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 45.2 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 45.2 },
                     { "subStage": "Initial Reality Check", "subStageScore": 39.1 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 28.6 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 28.6 }
                 ]
             }
         },
@@ -878,7 +897,8 @@
                 "scorePercentage": 47,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.7 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.9 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.9 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 34.6 }
                 ]
             }
@@ -893,9 +913,9 @@
                 "score": 147.34,
                 "scorePercentage": 38,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 43.8 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 43.8 },
                     { "subStage": "Initial Reality Check", "subStageScore": 37.2 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 14.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 14.3 }
                 ]
             }
         },
@@ -925,9 +945,9 @@
                 "score": 152.45,
                 "scorePercentage": 44,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.8 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.8 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.2 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.5 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.5 }
                 ]
             }
         },
@@ -942,7 +962,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 45.3 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.1 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.1 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 34.8 }
                 ]
             }
@@ -989,9 +1010,9 @@
                 "score": 151.34,
                 "scorePercentage": 43,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.1 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.1 },
                     { "subStage": "Initial Reality Check", "subStageScore": 39.8 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 28.9 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 28.9 }
                 ]
             }
         },
@@ -1022,7 +1043,8 @@
                 "scorePercentage": 47,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 44.2 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 42.8 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 42.8 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 34.5 }
                 ]
             }
@@ -1037,9 +1059,9 @@
                 "score": 150.78,
                 "scorePercentage": 42,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 45.9 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 45.9 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.1 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.3 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.3 }
                 ]
             }
         },
@@ -1101,9 +1123,9 @@
                 "score": 149.23,
                 "scorePercentage": 40,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 44.5 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 44.5 },
                     { "subStage": "Initial Reality Check", "subStageScore": 38.7 },
-                    { "subStage": "Confidence & Over-Reliance", "subStageScore": 24.2 }
+                    { "subStage": "Confidence and Over-Reliance on Past Success", "subStageScore": 24.2 }
                 ]
             }
         },
@@ -1118,7 +1140,8 @@
                 "scorePercentage": 49,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 46.1 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 40.8 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 40.8 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 36.2 }
                 ]
             }
@@ -1133,9 +1156,9 @@
                 "score": 148.67,
                 "scorePercentage": 39,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 43.9 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 43.9 },
                     { "subStage": "Initial Reality Check", "subStageScore": 37.6 },
-                    { "subStage": "Subtle Complacency", "subStageScore": 14.8 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 14.8 }
                 ]
             }
         },
@@ -1198,7 +1221,8 @@
                 "scorePercentage": 48,
                 "subStageDetails": [
                     { "subStage": "Acknowledgment of Problems", "subStageScore": 45.7 },
-                    { "subStage": "Analyzing Causes,Partial Acceptance of Responsibility", "subStageScore": 41.5 },
+                    { "subStage": "Analyzing Causes", "subStageScore": 41.5 },
+                    { "subStage": "Partial Acceptance of Responsibility", "subStageScore": 30.0 },
                     { "subStage": "Exploration of Solutions", "subStageScore": 35.4 }
                 ]
             }
@@ -1213,9 +1237,9 @@
                 "score": 151.56,
                 "scorePercentage": 44,
                 "subStageDetails": [
-                    { "subStage": "Excitement & Optimism", "subStageScore": 46.3 },
+                    { "subStage": "Excitement and Optimism", "subStageScore": 46.3 },
                     { "subStage": "Initial Reality Check", "subStageScore": 40.4 },
-                    { "subStage": "Sustained Confidence", "subStageScore": 29.1 }
+                    { "subStage": "Sustained Confidence with Subtle Complacency", "subStageScore": 29.1 }
                 ]
             }
         },

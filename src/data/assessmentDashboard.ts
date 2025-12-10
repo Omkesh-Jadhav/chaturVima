@@ -224,22 +224,26 @@ export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
 // The value represents the weight/percentage distribution within that stage
 export const MOCK_SUB_STAGES: Record<string, SubStage[]> = {
   Honeymoon: [
-    { id: "excitement", label: "Excitement & Optimism", value: 26 },
+    { id: "excitement", label: "Excitement and Optimism", value: 25 },
+    { id: "over-reliance", label: "Confidence and Over-Reliance on Past Success", value: 25 },
     { id: "reality", label: "Initial Reality Check", value: 25 },
-    { id: "confidence", label: "Sustained Confidence", value: 15 },
-    { id: "over-reliance", label: "Confidence & Over-Reliance", value: 16 },
-    { id: "complacency", label: "Subtle Complacency", value: 8 },
+    { id: "sustained-complacency", label: "Sustained Confidence with Subtle Complacency", value: 25 },
   ],
   "Self-Introspection": [
     {
       id: "acknowledgment",
       label: "Acknowledgment of Problems",
-      value: 35,
+      value: 25,
     },
     {
       id: "analyzing",
-      label: "Analyzing Causes, Partial Acceptance of Responsibility",
-      value: 40,
+      label: "Analyzing Causes",
+      value: 25,
+    },
+    {
+      id: "partial-acceptance",
+      label: "Partial Acceptance of Responsibility",
+      value: 25,
     },
     {
       id: "exploration",
@@ -248,16 +252,16 @@ export const MOCK_SUB_STAGES: Record<string, SubStage[]> = {
     },
   ],
   "Soul-Searching": [
-    { id: "frustration", label: "Deep Frustration", value: 30 },
-    { id: "questioning", label: "Questioning Fundamentals", value: 28 },
-    { id: "openness", label: "Openness to Change", value: 22 },
-    { id: "transformation", label: "Actionable Transformation", value: 20 },
+    { id: "frustration", label: "Deep Frustration", value: 25 },
+    { id: "questioning", label: "Questioning Fundamentals", value: 25 },
+    { id: "openness", label: "Openness to Change", value: 25 },
+    { id: "transformation", label: "Actionable Transformation", value: 25 },
   ],
   "Steady-State": [
-    { id: "stability", label: "Stability and Alignment", value: 30 },
-    { id: "predictability", label: "Operational Predictability", value: 28 },
-    { id: "challenges", label: "Emerging Challenges", value: 22 },
-    { id: "balance", label: "Dynamic Balance", value: 20 },
+    { id: "stability", label: "Stability and Alignment", value: 25 },
+    { id: "predictability", label: "Operational Predictability", value: 25 },
+    { id: "challenges", label: "Emerging Challenges", value: 25 },
+    { id: "balance", label: "Dynamic Balance", value: 25 },
   ],
 };
 
