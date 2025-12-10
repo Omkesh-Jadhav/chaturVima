@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 
 interface AuraProps {
@@ -5,6 +6,8 @@ interface AuraProps {
 }
 
 const Aura = ({ data }: AuraProps) => {
+    const [hoveredStage, setHoveredStage] = useState<EmotionalStageAssessment | null>(null);
+
     // Calculate total and percentages
     console.log(data)
     const total = data.reduce((sum, item) => sum + item.score, 0);
@@ -38,6 +41,17 @@ const Aura = ({ data }: AuraProps) => {
         const largeArc = endAngle - startAngle > 180 ? 1 : 0;
 
         return `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+    };
+
+    // Function to calculate label position for each segment
+    const getLabelPosition = (startAngle: number, angle: number) => {
+        const midAngle = startAngle + angle / 2;
+        const labelRadius = (outerRadius + innerRadius) / 2;
+        const rad = (midAngle - 90) * (Math.PI / 180);
+        return {
+            x: center + labelRadius * Math.cos(rad),
+            y: center + labelRadius * Math.sin(rad)
+        };
     };
 
     return (
@@ -103,6 +117,9 @@ const Aura = ({ data }: AuraProps) => {
                     {/* Donut segments */}
                     {dataWithAngles.map((item, index) => {
                         const endAngle = item.startAngle + item.angle;
+                        const labelPos = getLabelPosition(item.startAngle, item.angle);
+                        const percentage = item.percentage.toFixed(1);
+                        
                         return (
                             <g key={index}>
                                 <path
@@ -110,19 +127,38 @@ const Aura = ({ data }: AuraProps) => {
                                     fill={item.color}
                                     stroke={item.color}
                                     strokeWidth="2"
-                                    opacity="0.85"
-                                    className="transition-all duration-300 hover:opacity-100"
+                                    opacity={hoveredStage?.stage === item.stage ? "1" : "0.85"}
+                                    className="transition-all duration-300 hover:opacity-100 cursor-pointer"
+                                    onMouseEnter={() => setHoveredStage(item)}
+                                    onMouseLeave={() => setHoveredStage(null)}
                                 />
+                                {/* Percentage label on segment */}
+                                <text
+                                    x={labelPos.x}
+                                    y={labelPos.y}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fill="white"
+                                    fontSize="14"
+                                    fontWeight="bold"
+                                    className="pointer-events-none drop-shadow-lg"
+                                    style={{
+                                        textShadow: `0 0 4px ${item.color}, 0 0 8px rgba(0,0,0,0.8)`
+                                    }}
+                                >
+                                    {percentage}%
+                                </text>
                             </g>
                         );
                     })}
 
-                    {/* Holographic human figure using provided SVG */}
-                    <g transform={`translate(${center}, ${center})`} filter="url(#strongGlow)">
-                        {/* Scale and position the human SVG */}
-                        <g transform="translate(-77, -77) scale(0.75)">
-                            <path
-                                d="M104.265,117.959c-0.304,3.58,2.126,22.529,3.38,29.959c0.597,3.52,2.234,9.255,1.645,12.3
+                    {/* Holographic human figure using provided SVG - only show when not hovering */}
+                    {!hoveredStage && (
+                        <g transform={`translate(${center}, ${center})`} filter="url(#strongGlow)">
+                            {/* Scale and position the human SVG */}
+                            <g transform="translate(-77, -77) scale(0.75)">
+                                <path
+                                    d="M104.265,117.959c-0.304,3.58,2.126,22.529,3.38,29.959c0.597,3.52,2.234,9.255,1.645,12.3
                 c-0.841,4.244-1.084,9.736-0.621,12.934c0.292,1.942,1.211,10.899-0.104,14.175c-0.688,1.718-1.949,10.522-1.949,10.522
                 c-3.285,8.294-1.431,7.886-1.431,7.886c1.017,1.248,2.759,0.098,2.759,0.098c1.327,0.846,2.246-0.201,2.246-0.201
                 c1.139,0.943,2.467-0.116,2.467-0.116c1.431,0.743,2.758-0.627,2.758-0.627c0.822,0.414,1.023-0.109,1.023-0.109
@@ -153,40 +189,53 @@ const Aura = ({ data }: AuraProps) => {
                 c0,0,0.91,1.047,2.237,0.201c0,0,1.742,1.175,2.777-0.098c0,0,1.839,0.408-1.435-7.886c0,0-1.254-8.793-1.945-10.522
                 c-1.318-3.275-0.387-12.251-0.106-14.175c0.453-3.216,0.21-8.695-0.618-12.934c-0.606-3.038,1.035-8.774,1.641-12.3
                 c1.245-7.423,3.685-26.373,3.38-29.959l1.008,0.354C103.809,118.312,104.265,117.959,104.265,117.959z"
-                                fill="url(#holoGradient)"
-                                stroke="url(#holoGradient)"
-                                strokeWidth="1"
-                                opacity="0.9"
-                            />
+                                    fill="url(#holoGradient)"
+                                    stroke="url(#holoGradient)"
+                                    strokeWidth="1"
+                                    opacity="0.9"
+                                />
+                            </g>
                         </g>
-                    </g>
+                    )}
+
                 </svg>
 
-                {/* Legend */}
-                <div className="absolute -right-64 top-0 space-y-4">
-                    {dataWithAngles.map((item, index) => (
-                        <div key={index} className="flex items-center gap-3 text-white">
+                {/* Hover Details - Positioned in center of donut */}
+                {hoveredStage && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[220px] max-w-[250px] z-10">
+                        <div className="flex items-center gap-2 mb-3">
                             <div
                                 className="w-4 h-4 rounded-sm shadow-lg"
                                 style={{
-                                    backgroundColor: item.color,
-                                    boxShadow: `0 0 10px ${item.color}`,
+                                    backgroundColor: hoveredStage.color,
+                                    boxShadow: `0 0 10px ${hoveredStage.color}`,
                                 }}
                             />
-                            <div>
-                                <div className="font-semibold text-sm">{item.stage}</div>
-                                <div className="text-xs text-gray-400">
-                                    {item.score.toFixed(2)} • {item.percentage.toFixed(1)}%
-                                    {item.status && (
-                                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-white/10">
-                                            {item.status}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                            <h3 className="font-bold text-base">{hoveredStage.stage}</h3>
                         </div>
-                    ))}
-                </div>
+                        
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-300">Score:</span>
+                                <span className="font-semibold">{hoveredStage.score.toFixed(2)}</span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-300">Percentage:</span>
+                                <span className="font-semibold">{((hoveredStage.score / total) * 100).toFixed(1)}%</span>
+                            </div>
+                            
+                            {hoveredStage.status && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-300">Status:</span>
+                                    <span className="px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
+                                        {hoveredStage.status}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
