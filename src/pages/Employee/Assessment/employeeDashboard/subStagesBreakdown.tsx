@@ -9,7 +9,7 @@ import {
 import { calculatePercentage } from "@/utils/assessmentUtils";
 
 const CARD_BASE_CLASSES =
-  "group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-4 shadow-lg transition-all hover:shadow-xl";
+  "group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-4";
 
 interface SubStagesBreakdownProps {
   selectedStage: EmotionalStageAssessment | null;
@@ -19,7 +19,7 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
   const selectedSubStages = useMemo(() => {
     if (!selectedStage) return [];
     const subStages = getSubStagesForStage(selectedStage.stage);
-    
+
     // Generate varied scores for each sub-stage based on the stage score
     // Each sub-stage gets a different percentage of the total stage score
     // Using realistic distribution patterns similar to assessment report data
@@ -28,25 +28,25 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
       [0.29, 0.18, 0.28, 0.25], // Pattern 1: High, Low, High, Medium
       [0.28, 0.28, 0.22, 0.22], // Pattern 2: High, High, Medium, Medium
       [0.25, 0.25, 0.25, 0.25], // Pattern 3: Even distribution
-      [0.32, 0.24, 0.24, 0.20], // Pattern 4: High, Medium, Medium, Low
+      [0.32, 0.24, 0.24, 0.2], // Pattern 4: High, Medium, Medium, Low
     ];
-    
+
     // Select pattern based on stage to ensure variety
     const patternIndex = subStages.length % 4;
     const multipliers = scoreMultipliers[patternIndex];
-    
+
     return subStages.map((subStage, idx) => {
       // Calculate score with variation - each sub-stage gets different portion
       const multiplier = multipliers[idx] || 0.25;
       // Base score from stage, but vary it per sub-stage
       const baseScore = selectedStage.score * multiplier;
       // Add some realistic variation based on sub-stage index
-      const variationFactor = 0.85 + (idx * 0.08) + (Math.sin(idx) * 0.05);
+      const variationFactor = 0.85 + idx * 0.08 + Math.sin(idx) * 0.05;
       const finalScore = Math.max(
         selectedStage.score * 0.15, // Minimum 15% of stage score
         Math.min(selectedStage.score * 0.45, baseScore * variationFactor) // Maximum 45% of stage score
       );
-      
+
       return {
         ...subStage,
         score: Number(finalScore.toFixed(2)),
