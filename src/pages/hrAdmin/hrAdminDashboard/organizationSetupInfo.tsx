@@ -30,35 +30,39 @@ const OrganizationSetupInfo = () => {
         description="Departments and employee mapping information"
       />
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-2.5 space-y-2.5">
         {/* Departments */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Building2 className="h-4 w-4 text-brand-teal shrink-0" />
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-teal to-brand-navy text-white shadow-sm">
+              <Building2 className="h-4 w-4" />
+            </div>
             <h3 className="text-sm font-semibold text-gray-900">
               Departments ({DUMMY_DEPARTMENTS.length})
             </h3>
           </div>
-          <div className="flex flex-wrap gap-2 pl-6">
+          <div className="flex flex-wrap gap-1.5 pl-10">
             {DUMMY_DEPARTMENTS.map((dept, index) => (
-              <Button key={index} variant="outline" size="xs">
+              <Button key={index} variant="outline" size="xs" className="text-xs">
                 {dept}
               </Button>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-gray-100" />
+        <div className="border-t border-gray-100 my-1" />
 
         {/* Employee Mapping */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-4 w-4 text-brand-teal shrink-0" />
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-teal to-brand-navy text-white shadow-sm">
+              <Users className="h-4 w-4" />
+            </div>
             <h3 className="text-sm font-semibold text-gray-900">
               Employee Mapping
             </h3>
           </div>
-          <div className="pl-6">
+          <div className="pl-10">
             <p className="text-sm text-gray-700">
               <strong className="font-semibold text-gray-900">
                 {DUMMY_EMPLOYEE_COUNT}
