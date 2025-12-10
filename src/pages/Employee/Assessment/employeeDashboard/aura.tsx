@@ -37,7 +37,7 @@ const Aura = ({ data }: AuraProps) => {
     const innerRadius = 100;
 
     // Function to create arc path
-    const createArc = (startAngle, endAngle, innerR, outerR) => {
+    const createArc = (startAngle: number, endAngle: number, innerR: number, outerR: number) => {
         const startRad = (startAngle - 90) * (Math.PI / 180);
         const endRad = (endAngle - 90) * (Math.PI / 180);
 
