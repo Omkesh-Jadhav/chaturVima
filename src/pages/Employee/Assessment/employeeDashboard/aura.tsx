@@ -200,9 +200,9 @@ const Aura = ({ data }: AuraProps) => {
 
                 </svg>
 
-                {/* Hover Details - Positioned in center of donut */}
+                {/* Hover Details */}
                 {hoveredStage && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[220px] max-w-[250px] z-10">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[120px] max-w-[156px] z-10">
                         <div className="flex items-center gap-2 mb-3">
                             <div
                                 className="w-4 h-4 rounded-sm shadow-lg"
