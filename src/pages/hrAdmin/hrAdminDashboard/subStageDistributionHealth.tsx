@@ -109,7 +109,7 @@ const SubStageDistributionHealth = () => {
       />
 
       <div className="space-y-3 mt-3">
-        {/* Compact Badge-Style Grid Layout - 5 Cards per Row */}
+        {/* Compact Badge-Style Grid Layout - 4 Cards per Row */}
         {stages.map((stage, stageIdx) => {
           const stageSubStages = subStageGroups[stage] || [];
           const stageColor = getStageColor(stage);
@@ -155,9 +155,9 @@ const SubStageDistributionHealth = () => {
                 </div>
               </div>
 
-              {/* Sub-Stages Grid - 5 Cards per Row, Compact */}
+              {/* Sub-Stages Grid - 4 Cards per Row, Compact */}
               <div className="p-2">
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {stageSubStages.map((subStage, idx) => {
                     const percentage =
                       totalInStage > 0
@@ -192,7 +192,7 @@ const SubStageDistributionHealth = () => {
 
                         <div className="relative z-10">
                           {/* Sub-Stage Name - Compact */}
-                          <h4 className="text-[10px] font-semibold text-gray-900 mb-1.5 line-clamp-2 min-h-[2rem] leading-tight">
+                          <h4 className="text-[10px] font-semibold text-gray-900 mb-1.5 line-clamp-2 min-h-8 leading-tight">
                             {subStage.subStage}
                           </h4>
 

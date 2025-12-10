@@ -47,7 +47,7 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
         {selectedSubStages.map((subStage, idx) => {
           const maxSubScore = Math.max(
             ...selectedSubStages.map((s) => s.score)
@@ -91,12 +91,15 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
                 </div>
               </div>
 
-              <div className="flex items-center">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-gray-500 font-medium">
+                  Score:
+                </span>
                 <span
-                  className="text-lg font-bold"
+                  className="text-lg font-bold leading-none"
                   style={{ color: selectedStage.color }}
                 >
-                  {subStage.score.toFixed(1)}
+                  {subStage.score.toFixed(2)}
                 </span>
               </div>
             </AnimatedContainer>
