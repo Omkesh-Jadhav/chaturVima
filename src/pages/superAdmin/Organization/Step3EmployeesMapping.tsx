@@ -18,7 +18,7 @@ interface Employee {
   designation: string;
   department: string;
   boss: string;
-  role: "Employee" | "Administration";
+  role: "Employee" | "HoD";
 }
 
 interface Department {
@@ -45,7 +45,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     designation: "",
     department: "",
     boss: "",
-    role: "Employee" as "Employee" | "Administration",
+    role: "Employee" as "Employee" | "HoD",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -213,7 +213,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const downloadTemplate = () => {
     // In a real implementation, this would download an actual CSV template
     const csvContent =
-      "Employee ID,Name,Email,Designation,Department,Department Head\nEMP001,John Doe,john@example.com,Software Engineer,Engineering,Jane Smith";
+      "Employee ID,Name,Email,Designation,Department,Reporting Manager\nEMP001,John Doe,john@example.com,Software Engineer,Engineering,Jane Smith";
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -225,7 +225,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const getAvailableBosses = () => {
     return employees.filter(
-      (emp) => emp.id !== editingId && emp.role === "Administration"
+      (emp) => emp.id !== editingId && emp.role === "HoD"
     );
   };
 
@@ -333,7 +333,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
+                Full Name
               </label>
               <Input
                 type="text"
@@ -388,7 +388,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 value={formData.role}
                 onChange={(value) => handleInputChange("role", value)}
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                options={["Employee", "Administration"]}
+                options={["Employee", "HoD"]}
               />
             </div>
 
@@ -414,19 +414,19 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department Head
+                Reporting To
               </label>
               <FilterSelect
-                value={formData.boss || "Select Department Head"}
+                value={formData.boss || "Select Reporting Manager"}
                 onChange={(value) =>
                   handleInputChange(
                     "boss",
-                    value === "Select Department Head" ? "" : value
+                    value === "Select Reporting Manager" ? "" : value
                   )
                 }
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 options={[
-                  "Select Department Head",
+                  "Select Reporting Manager",
                   ...getAvailableBosses().map((emp) => emp.name),
                 ]}
               />
@@ -481,7 +481,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     Department
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Department Head
+                    Reporting Manager
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
@@ -503,7 +503,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${
-                          employee.role === "Administration"
+                          employee.role === "HoD"
                             ? "bg-blue-100 text-blue-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
