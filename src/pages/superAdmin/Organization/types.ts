@@ -1,0 +1,37 @@
+// Shared type definitions for Organization Setup module
+
+export interface OrganizationInfo {
+  name: string;
+  type: string;
+  size: string;
+  industry: string;
+  website: string;
+  email: string;
+  phone: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface Employee {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  designation: string;
+  department: string;
+  boss: string;
+  role: "Employee" | "HoD";
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  message: string;
+  type: "success" | "error" | "warning";
+}

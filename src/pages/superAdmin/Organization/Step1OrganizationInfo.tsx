@@ -4,21 +4,10 @@ import {
   validatePhone,
   validateWebsite,
 } from "./validationUtils";
+import type { OrganizationInfo } from "./types";
 import { FilterSelect, Input } from "@/components/ui";
 import { useUser } from "@/context/UserContext";
 
-interface OrganizationInfo {
-  name: string;
-  type: string;
-  size: string;
-  industry: string;
-  website: string;
-  email: string;
-  phone: string;
-  city: string;
-  state: string;
-  country: string;
-}
 
 interface Step1OrganizationInfoProps {
   data: OrganizationInfo;

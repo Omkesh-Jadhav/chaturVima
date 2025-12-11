@@ -1,38 +1,6 @@
-interface OrganizationInfo {
-  name: string;
-  type: string;
-  size: string;
-  industry: string;
-  website: string;
-  email: string;
-  phone: string;
-  city: string;
-  state: string;
-  country: string;
-}
+import type { OrganizationInfo, Department, Employee, ValidationResult } from "./types";
 
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-}
-
-interface Employee {
-  id: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  designation: string;
-  department: string;
-  boss: string;
-  role: "Employee" | "HoD";
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  message: string;
-  type: "success" | "error" | "warning";
-}
+export type { ValidationResult };
 
 // Email validation
 export const validateEmail = (email: string): boolean => {
