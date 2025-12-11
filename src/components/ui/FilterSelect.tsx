@@ -50,19 +50,12 @@ export const FilterSelect = ({
     if (isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      const dropdownHeight = 320; // max-h-80 = 320px
       const spaceBelow = viewportHeight - buttonRect.bottom;
-      const spaceAbove = buttonRect.top;
 
-      // Calculate position
-      let top = buttonRect.bottom + 8; // mt-2 = 8px
+      // Calculate position - Always show below the button
+      const top = buttonRect.bottom + 8; // mt-2 = 8px
       const left = buttonRect.left;
       const width = buttonRect.width;
-
-      // If not enough space below but enough above, flip upward
-      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-        top = buttonRect.top - dropdownHeight - 8;
-      }
 
       setDropdownPosition({ top, left, width });
     } else {
