@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
+import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
 
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-}
 
 interface Step2DepartmentsProps {
   departments: Department[];
