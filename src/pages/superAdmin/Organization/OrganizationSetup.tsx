@@ -5,39 +5,10 @@ import Step2Departments from "./Step2Departments";
 import Step3EmployeesMapping from "./Step3EmployeesMapping";
 import ValidationStatus from "./ValidationStatus";
 import { validateTabSpecific, validateOverallSetup } from "./validationUtils";
-import type { ValidationResult } from "./validationUtils";
+import type { OrganizationInfo, Department, Employee, ValidationResult } from "./types";
 import { Button } from "@/components/ui";
 import { useUser } from "@/context/UserContext";
 
-interface OrganizationInfo {
-  name: string;
-  type: string;
-  size: string;
-  industry: string;
-  website: string;
-  email: string;
-  phone: string;
-  city: string;
-  state: string;
-  country: string;
-}
-
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-}
-
-interface Employee {
-  id: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  designation: string;
-  department: string;
-  boss: string;
-  role: "Employee" | "Administration";
-}
 
 const OrganizationSetup = () => {
   const { user } = useUser();

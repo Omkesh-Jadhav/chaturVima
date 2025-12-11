@@ -8,24 +8,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { validateEmail } from "./validationUtils";
+import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
 
-interface Employee {
-  id: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  designation: string;
-  department: string;
-  boss: string;
-  role: "Employee" | "HoD";
-}
-
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-}
 
 interface Step3EmployeesMappingProps {
   employees: Employee[];
