@@ -59,13 +59,7 @@ const MOCK_HISTORICAL_ASSESSMENTS: HistoricalAssessment[] = [
   },
 ];
 
-// Stage colors matching the main dashboard
-const STAGE_COLORS: Record<string, string> = {
-  Honeymoon: "#10b981",
-  "Self-Introspection": "#3b82f6",
-  "Soul-Searching": "#f97316",
-  "Steady-State": "#8b5cf6",
-};
+import { getStagePieColor } from "@/utils/assessmentConfig";
 
 const STAGE_ORDER = [
   "Honeymoon",
@@ -110,7 +104,7 @@ const EmotionalStageTransitionLab = ({
             return {
               stage,
               score,
-              color: STAGE_COLORS[stage],
+              color: getStagePieColor(stage),
               isDominant: stage === assessment.dominantStage,
             };
           });

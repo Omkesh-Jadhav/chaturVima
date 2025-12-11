@@ -185,10 +185,10 @@ const SuccessModal = ({
         color: [
           "#2BC6B4",
           "#1E3A5F",
-          "#F59E0B",
+          "#FF6347",
           "#EF4444",
-          "#8B5CF6",
-          "#10B981",
+          "#6A5ACD",
+          "#FFD700",
         ][Math.floor(Math.random() * 6)],
         delay: Math.random() * 0.5,
       }));

@@ -1,16 +1,22 @@
 /**
  * Animated Background Component
  * Floating gradient orbs for dashboard background
+ * Uses centralized theme colors by default
  */
 
 import { motion } from "framer-motion";
+import { getStagePieColor } from "@/utils/assessmentConfig";
 
 interface AnimatedBackgroundProps {
   colors?: string[];
 }
 
 export const AnimatedBackground = ({
-  colors = ["#10b981", "#7c3aed", "#3b82f6"],
+  colors = [
+    getStagePieColor("Honeymoon"),
+    getStagePieColor("Self-Introspection"),
+    getStagePieColor("Soul-Searching"),
+  ],
 }: AnimatedBackgroundProps) => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {colors.map((color, i) => (

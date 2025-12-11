@@ -16,24 +16,24 @@ export const colors = {
   // Stage Colors
   stages: {
     honeymoon: {
-      main: "#475569",
-      light: "#f1f5f9",
-      dark: "#1e293b",
+      main: "#FFD700", // Gold
+      light: "#FFF9E6",
+      dark: "#B8860B",
     },
     selfReflection: {
-      main: "#7c3aed",
-      light: "#f5f3ff",
-      dark: "#5b21b6",
+      main: "#6A5ACD", // Purple
+      light: "#E6E4F7",
+      dark: "#483D8B",
     },
     soulSearching: {
-      main: "#0284c7",
-      light: "#e0f2fe",
-      dark: "#075985",
+      main: "#FF6347", // Tomato
+      light: "#FFE5E1",
+      dark: "#CD5C5C",
     },
     steadyState: {
-      main: "#0d9488",
-      light: "#ccfbf1",
-      dark: "#134e4a",
+      main: "#20B2AA", // Teal
+      light: "#E0F7F5",
+      dark: "#008B8B",
     },
   },
 

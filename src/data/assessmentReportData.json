@@ -579,7 +579,7 @@
     "data": [
       {
         "stage": "Honeymoon",
-        "stageColor": "#6366F1",
+        "stageColor": "#FFD700",
         "transitions": [
           {
             "to": "Self-Reflection",
@@ -600,7 +600,7 @@
       },
       {
         "stage": "Self-Reflection",
-        "stageColor": "#8B5CF6",
+        "stageColor": "#6A5ACD",
         "transitions": [
           {
             "to": "Honeymoon",
@@ -621,7 +621,7 @@
       },
       {
         "stage": "Soul-searching",
-        "stageColor": "#06B6D4",
+        "stageColor": "#FF6347",
         "transitions": [
           {
             "to": "Honeymoon",
@@ -642,7 +642,7 @@
       },
       {
         "stage": "Steady State",
-        "stageColor": "#10B981",
+        "stageColor": "#20B2AA",
         "transitions": [
           {
             "to": "Honeymoon",

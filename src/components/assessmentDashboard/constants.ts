@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Priority } from "@/data/assessmentDashboard";
 import type { SWOTRating } from "@/utils/swotUtils";
+import { getStageColor } from "@/utils/assessmentConfig";
 
 /**
  * SWOT Quadrant Configuration
@@ -124,39 +125,39 @@ export const ANIMATION_DELAYS = {
 } as const;
 
 /**
- * Pie Chart Gradients Configuration
+ * Pie Chart Gradients Configuration (uses centralized theme colors)
  */
 export const PIE_GRADIENTS = [
+  {
+    id: "gradHoney",
+    type: "linearGradient" as const,
+    colors: [
+      { offset: 0, color: getStageColor("Honeymoon", "main") },
+      { offset: 100, color: getStageColor("Honeymoon", "dark") },
+    ],
+  },
   {
     id: "gradSelf",
     type: "linearGradient" as const,
     colors: [
-      { offset: 0, color: "#93C5FD" },
-      { offset: 100, color: "#2563EB" },
+      { offset: 0, color: getStageColor("Self-Introspection", "main") },
+      { offset: 100, color: getStageColor("Self-Introspection", "dark") },
     ],
   },
   {
     id: "gradSoul",
     type: "linearGradient" as const,
     colors: [
-      { offset: 0, color: "#FCD34D" },
-      { offset: 100, color: "#EA580C" },
+      { offset: 0, color: getStageColor("Soul-Searching", "main") },
+      { offset: 100, color: getStageColor("Soul-Searching", "dark") },
     ],
   },
   {
     id: "gradSteady",
     type: "linearGradient" as const,
     colors: [
-      { offset: 0, color: "#DDD6FE" },
-      { offset: 100, color: "#7C3AED" },
-    ],
-  },
-  {
-    id: "gradHoney",
-    type: "linearGradient" as const,
-    colors: [
-      { offset: 0, color: "#A7F3D0" },
-      { offset: 100, color: "#059669" },
+      { offset: 0, color: getStageColor("Steady-State", "main") },
+      { offset: 100, color: getStageColor("Steady-State", "dark") },
     ],
   },
 ];
@@ -165,13 +166,17 @@ export const PIE_GRADIENTS = [
  * Pie Chart Fill Configuration
  */
 export const PIE_FILL = [
+  { match: { id: "Honeymoon" }, id: "gradHoney" },
   { match: { id: "Self-Introspection" }, id: "gradSelf" },
   { match: { id: "Soul-Searching" }, id: "gradSoul" },
   { match: { id: "Steady-State" }, id: "gradSteady" },
-  { match: { id: "Honeymoon" }, id: "gradHoney" },
 ];
 
 /**
- * Background Animation Colors
+ * Background Animation Colors (uses centralized theme colors)
  */
-export const BACKGROUND_COLORS = ["#10b981", "#7c3aed", "#3b82f6"] as const;
+export const BACKGROUND_COLORS = [
+  getStageColor("Honeymoon", "main"),
+  getStageColor("Self-Introspection", "main"),
+  getStageColor("Soul-Searching", "main"),
+] as const;

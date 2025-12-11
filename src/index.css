@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* Variant 3B: Cool Blues & Purples Colors */
-  --color-stages-honeymoon: #475569;
-  --color-stages-honeymoon-light: #f1f5f9;
-  --color-stages-honeymoon-dark: #1e293b;
+  /* Stage Colors */
+  --color-stages-honeymoon: #FFD700;
+  --color-stages-honeymoon-light: #FFF9E6;
+  --color-stages-honeymoon-dark: #B8860B;
 
-  --color-stages-self-reflection: #7c3aed;
-  --color-stages-self-reflection-light: #f5f3ff;
-  --color-stages-self-reflection-dark: #5b21b6;
+  --color-stages-self-reflection: #6A5ACD;
+  --color-stages-self-reflection-light: #E6E4F7;
+  --color-stages-self-reflection-dark: #483D8B;
 
-  --color-stages-soul-searching: #0284c7;
-  --color-stages-soul-searching-light: #e0f2fe;
-  --color-stages-soul-searching-dark: #075985;
+  --color-stages-soul-searching: #FF6347;
+  --color-stages-soul-searching-light: #FFE5E1;
+  --color-stages-soul-searching-dark: #CD5C5C;
 
-  --color-stages-steady-state: #0d9488;
-  --color-stages-steady-state-light: #ccfbf1;
-  --color-stages-steady-state-dark: #134e4a;
+  --color-stages-steady-state: #20B2AA;
+  --color-stages-steady-state-light: #E0F7F5;
+  --color-stages-steady-state-dark: #008B8B;
 
   /* Brand Colors - Update these values to change colors project-wide */
   --color-brand-navy: #ff6700;

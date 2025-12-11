@@ -1,7 +1,10 @@
 /**
  * Assessment Dashboard Mock Data
  * Contains all mock data used in the Assessment Dashboard component
+ * Colors are imported from centralized theme configuration
  */
+
+import { getStagePieColor } from "@/utils/assessmentConfig";
 
 export type AssessmentType =
   | "Employee Self Assessment"
@@ -194,29 +197,31 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
 ];
 
 // Emotional Stage Assessment Data
+// Note: Colors are dynamically generated using getStagePieColor from centralized theme
+// This ensures all colors come from a single source (src/utils/theme.ts)
 export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
   {
     stage: "Honeymoon",
     score: 153.73,
-    color: "#10b981",
+    color: getStagePieColor("Honeymoon"),
     status: "Dominant",
   },
   {
     stage: "Self-Introspection",
     score: 122.47,
-    color: "#3b82f6",
+    color: getStagePieColor("Self-Introspection"),
     status: "Secondary",
   },
   {
     stage: "Soul-Searching",
     score: 121.07,
-    color: "#f97316",
+    color: getStagePieColor("Soul-Searching"),
     status: "Transitional",
   },
   {
     stage: "Steady-State",
     score: 118.73,
-    color: "#a855f7",
+    color: getStagePieColor("Steady-State"),
   },
 ];
 
@@ -225,9 +230,17 @@ export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
 export const MOCK_SUB_STAGES: Record<string, SubStage[]> = {
   Honeymoon: [
     { id: "excitement", label: "Excitement and Optimism", value: 25 },
-    { id: "over-reliance", label: "Confidence and Over-Reliance on Past Success", value: 25 },
+    {
+      id: "over-reliance",
+      label: "Confidence and Over-Reliance on Past Success",
+      value: 25,
+    },
     { id: "reality", label: "Initial Reality Check", value: 25 },
-    { id: "sustained-complacency", label: "Sustained Confidence with Subtle Complacency", value: 25 },
+    {
+      id: "sustained-complacency",
+      label: "Sustained Confidence with Subtle Complacency",
+      value: 25,
+    },
   ],
   "Self-Introspection": [
     {

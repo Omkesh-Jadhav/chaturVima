@@ -636,24 +636,24 @@ const AssessmentReport: React.FC = () => {
                   <defs>
                     {/* Gradients for each segment */}
                     <linearGradient id="gradient-0" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#4ade80" />
-                      <stop offset="100%" stopColor="#16a34a" />
+                      <stop offset="0%" stopColor="#FFD700" />
+                      <stop offset="100%" stopColor="#B8860B" />
                     </linearGradient>
                     <linearGradient id="gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#60a5fa" />
-                      <stop offset="100%" stopColor="#2563eb" />
+                      <stop offset="0%" stopColor="#6A5ACD" />
+                      <stop offset="100%" stopColor="#483D8B" />
                     </linearGradient>
                     <linearGradient id="gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fb923c" />
-                      <stop offset="100%" stopColor="#ea580c" />
+                      <stop offset="0%" stopColor="#FF6347" />
+                      <stop offset="100%" stopColor="#CD5C5C" />
                     </linearGradient>
                     <linearGradient id="gradient-3" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f87171" />
-                      <stop offset="100%" stopColor="#dc2626" />
+                      <stop offset="0%" stopColor="#FF6347" />
+                      <stop offset="100%" stopColor="#CD5C5C" />
                     </linearGradient>
                     <linearGradient id="gradient-4" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#a78bfa" />
-                      <stop offset="100%" stopColor="#7c3aed" />
+                      <stop offset="0%" stopColor="#20B2AA" />
+                      <stop offset="100%" stopColor="#008B8B" />
                     </linearGradient>
                   </defs>
 
@@ -1058,10 +1058,10 @@ const AssessmentReport: React.FC = () => {
                 <AreaChart data={predictiveData}>
                   <defs>
                     <linearGradient id="honeymoon" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#FFD700" stopOpacity={0.3} />
                       <stop
                         offset="95%"
-                        stopColor="#6366F1"
+                        stopColor="#FFD700"
                         stopOpacity={0.1}
                       />
                     </linearGradient>
@@ -1072,10 +1072,10 @@ const AssessmentReport: React.FC = () => {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#6A5ACD" stopOpacity={0.3} />
                       <stop
                         offset="95%"
-                        stopColor="#8B5CF6"
+                        stopColor="#6A5ACD"
                         stopOpacity={0.1}
                       />
                     </linearGradient>
@@ -1086,18 +1086,18 @@ const AssessmentReport: React.FC = () => {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#FF6347" stopOpacity={0.3} />
                       <stop
                         offset="95%"
-                        stopColor="#06B6D4"
+                        stopColor="#FF6347"
                         stopOpacity={0.1}
                       />
                     </linearGradient>
                     <linearGradient id="readyState" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#20B2AA" stopOpacity={0.3} />
                       <stop
                         offset="95%"
-                        stopColor="#10B981"
+                        stopColor="#20B2AA"
                         stopOpacity={0.1}
                       />
                     </linearGradient>
@@ -1128,7 +1128,7 @@ const AssessmentReport: React.FC = () => {
                     type="monotone"
                     dataKey="Honeymoon"
                     stackId="1"
-                    stroke="#6366F1"
+                    stroke="#FFD700"
                     fill="url(#honeymoon)"
                     strokeWidth={2}
                   />
@@ -1136,7 +1136,7 @@ const AssessmentReport: React.FC = () => {
                     type="monotone"
                     dataKey="Self-Reflection"
                     stackId="1"
-                    stroke="#8B5CF6"
+                    stroke="#6A5ACD"
                     fill="url(#selfReflection)"
                     strokeWidth={2}
                   />
@@ -1144,7 +1144,7 @@ const AssessmentReport: React.FC = () => {
                     type="monotone"
                     dataKey="Soul-searching"
                     stackId="1"
-                    stroke="#06B6D4"
+                    stroke="#FF6347"
                     fill="url(#soulSearching)"
                     strokeWidth={2}
                   />
@@ -1152,7 +1152,7 @@ const AssessmentReport: React.FC = () => {
                     type="monotone"
                     dataKey="Steady State"
                     stackId="1"
-                    stroke="#10B981"
+                    stroke="#20B2AA"
                     fill="url(#readyState)"
                     strokeWidth={2}
                   />

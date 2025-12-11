@@ -2,6 +2,17 @@
  * Assessment Dashboard Configuration
  * Static configurations for colors, dimensions, and other constants
  */
+import { colors } from "./theme";
+
+// Stage name mapping for different naming conventions
+const STAGE_NAME_MAP: Record<string, string> = {
+  "Honeymoon": "honeymoon",
+  "Self-Introspection": "selfReflection",
+  "Self-Reflection": "selfReflection",
+  "Soul-Searching": "soulSearching",
+  "Steady-State": "steadyState",
+  "Steady State": "steadyState",
+};
 
 /**
  * Assessment Types for Emotional Intensity Heatmap
@@ -73,24 +84,24 @@ export type CategoryPalette = {
 
 export const HISTORY_CATEGORY_PALETTE: Record<string, CategoryPalette> = {
   Honeymoon: {
-    from: "#d1fae5",
-    to: "#a7f3d0",
-    accent: "#047857",
+    from: colors.stages.honeymoon.light,
+    to: "#FFE5B4",
+    accent: colors.stages.honeymoon.dark,
   },
   "Self-Introspection": {
-    from: "#dbeafe",
-    to: "#bfdbfe",
-    accent: "#1d4ed8",
+    from: colors.stages.selfReflection.light,
+    to: "#C9C5E8",
+    accent: colors.stages.selfReflection.dark,
   },
   "Soul-Searching": {
-    from: "#fee2e2",
-    to: "#fecdd3",
-    accent: "#b91c1c",
+    from: colors.stages.soulSearching.light,
+    to: "#FFC4B8",
+    accent: colors.stages.soulSearching.dark,
   },
   "Steady-State": {
-    from: "#ede9fe",
-    to: "#ddd6fe",
-    accent: "#6d28d9",
+    from: colors.stages.steadyState.light,
+    to: "#B8E8E3",
+    accent: colors.stages.steadyState.dark,
   },
   default: {
     from: "#f1f5f9",
@@ -159,18 +170,96 @@ export const getDimensionColorToken = (
 };
 
 /**
- * Pie chart color mapping for stage distribution
+ * Get pie chart color for a stage (uses centralized theme colors)
  */
-export const STAGE_PIE_COLORS: Record<string, string> = {
-  "Self-Introspection": "#3B82F6",
-  "Soul-Searching": "#F59E0B",
-  "Steady-State": "#8B5CF6",
-  Honeymoon: "#10B981",
+export const getStagePieColor = (stage: string): string => {
+  // First check the mapping
+  const mappedKey = STAGE_NAME_MAP[stage];
+  if (mappedKey) {
+    switch (mappedKey) {
+      case "honeymoon":
+        return colors.stages.honeymoon.main;
+      case "selfReflection":
+        return colors.stages.selfReflection.main;
+      case "soulSearching":
+        return colors.stages.soulSearching.main;
+      case "steadyState":
+        return colors.stages.steadyState.main;
+    }
+  }
+  
+  // Fallback: normalize the stage name
+  const normalized = stage.toLowerCase().replace(/[-\s]/g, "");
+  
+  switch (normalized) {
+    case "honeymoon":
+      return colors.stages.honeymoon.main;
+    case "selfreflection":
+    case "selfintrospection":
+      return colors.stages.selfReflection.main;
+    case "soulsearching":
+      return colors.stages.soulSearching.main;
+    case "steadystate":
+      return colors.stages.steadyState.main;
+    default:
+      console.warn(`Unknown stage name: "${stage}". Using default color.`);
+      return "#CBD5F5";
+  }
 };
 
 /**
- * Get pie chart color for a stage
+ * Get stage color with shade variant
  */
-export const getStagePieColor = (stage: string): string => {
-  return STAGE_PIE_COLORS[stage] || "#CBD5F5";
+export const getStageColor = (
+  stage: string,
+  shade: "main" | "light" | "dark" = "main"
+): string => {
+  // First check the mapping
+  const mappedKey = STAGE_NAME_MAP[stage];
+  if (mappedKey) {
+    switch (mappedKey) {
+      case "honeymoon":
+        return colors.stages.honeymoon[shade];
+      case "selfReflection":
+        return colors.stages.selfReflection[shade];
+      case "soulSearching":
+        return colors.stages.soulSearching[shade];
+      case "steadyState":
+        return colors.stages.steadyState[shade];
+    }
+  }
+  
+  // Fallback: normalize the stage name
+  const normalized = stage.toLowerCase().replace(/[-\s]/g, "");
+  
+  switch (normalized) {
+    case "honeymoon":
+      return colors.stages.honeymoon[shade];
+    case "selfreflection":
+    case "selfintrospection":
+      return colors.stages.selfReflection[shade];
+    case "soulsearching":
+      return colors.stages.soulSearching[shade];
+    case "steadystate":
+      return colors.stages.steadyState[shade];
+    default:
+      console.warn(`Unknown stage name: "${stage}". Using default color.`);
+      return "#CBD5F5";
+  }
+};
+
+/**
+ * Get stage gradient colors
+ */
+export const getStageGradient = (
+  stage: string,
+  type: "linear" | "radial" = "linear"
+): string => {
+  const main = getStageColor(stage, "main");
+  const dark = getStageColor(stage, "dark");
+  
+  if (type === "radial") {
+    return `radial-gradient(circle, ${main}, ${dark})`;
+  }
+  return `linear-gradient(135deg, ${main}, ${dark})`;
 };

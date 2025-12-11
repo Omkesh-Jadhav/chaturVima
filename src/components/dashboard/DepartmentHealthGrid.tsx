@@ -8,6 +8,7 @@ import {
 import { motion } from "framer-motion";
 import { TrendingUp, Users, CheckCircle2 } from "lucide-react";
 import type { Department } from "../../data/mockAnalytics";
+import { getStagePieColor } from "@/utils/assessmentConfig";
 
 interface DepartmentHealthGridProps {
   departments: Department[];
@@ -111,7 +112,7 @@ export const DepartmentHealthGrid = ({
                             duration: 0.6,
                             delay: 1 + index * 0.08,
                           }}
-                          style={{ backgroundColor: "#475569" }}
+                          style={{ backgroundColor: getStagePieColor("Honeymoon") }}
                         />
                         <motion.div
                           initial={{ width: 0 }}
@@ -122,7 +123,7 @@ export const DepartmentHealthGrid = ({
                             duration: 0.6,
                             delay: 1 + index * 0.08,
                           }}
-                          style={{ backgroundColor: "#7C3AED" }}
+                          style={{ backgroundColor: getStagePieColor("Self-Introspection") }}
                         />
                         <motion.div
                           initial={{ width: 0 }}
@@ -133,7 +134,7 @@ export const DepartmentHealthGrid = ({
                             duration: 0.6,
                             delay: 1 + index * 0.08,
                           }}
-                          style={{ backgroundColor: "#0284C7" }}
+                          style={{ backgroundColor: getStagePieColor("Soul-Searching") }}
                         />
                         <motion.div
                           initial={{ width: 0 }}
@@ -144,7 +145,7 @@ export const DepartmentHealthGrid = ({
                             duration: 0.6,
                             delay: 1 + index * 0.08,
                           }}
-                          style={{ backgroundColor: "#0D9488" }}
+                          style={{ backgroundColor: getStagePieColor("Steady-State") }}
                         />
                       </div>
                     </div>

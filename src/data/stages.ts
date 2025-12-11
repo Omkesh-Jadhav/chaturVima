@@ -1,8 +1,10 @@
 /**
  * Stage Configuration - Variant 3B: Cool Blues & Purples
  * Complete configuration for all 4 stages with colors, shapes, and metadata
+ * Colors are imported from centralized theme.ts
  */
 import type { Stage, StageType, ThemeConfig } from "@/types";
+import { colors } from "@/utils/theme";
 
 export const STAGES: Record<StageType, Stage> = {
   honeymoon: {
@@ -10,11 +12,7 @@ export const STAGES: Record<StageType, Stage> = {
     name: "Honeymoon",
     description:
       "Establishing trust, alignment, and initial performance clarity",
-    color: {
-      main: "#475569", // Matte Slate
-      light: "#F1F5F9",
-      dark: "#1E293B",
-    },
+    color: colors.stages.honeymoon,
     shape: "square",
     icon: "■",
   },
@@ -22,11 +20,7 @@ export const STAGES: Record<StageType, Stage> = {
     id: "self-reflection",
     name: "Self-Reflection",
     description: "Identifying strengths, gaps, and opportunities for growth",
-    color: {
-      main: "#7C3AED", // Matte Violet
-      light: "#F5F3FF",
-      dark: "#5B21B6",
-    },
+    color: colors.stages.selfReflection,
     shape: "triangle",
     icon: "▲",
   },
@@ -35,11 +29,7 @@ export const STAGES: Record<StageType, Stage> = {
     name: "Soul-Searching",
     description:
       "Confronting deeper structural, cultural, or leadership challenges",
-    color: {
-      main: "#0284C7", // Matte Sky
-      light: "#E0F2FE",
-      dark: "#075985",
-    },
+    color: colors.stages.soulSearching,
     shape: "circle",
     icon: "●",
   },
@@ -47,11 +37,7 @@ export const STAGES: Record<StageType, Stage> = {
     id: "steady-state",
     name: "Steady-State",
     description: "Achieving balance, stability, and sustained innovation",
-    color: {
-      main: "#0D9488", // Matte Teal
-      light: "#CCFBF1",
-      dark: "#134E4A",
-    },
+    color: colors.stages.steadyState,
     shape: "diamond",
     icon: "♦",
   },

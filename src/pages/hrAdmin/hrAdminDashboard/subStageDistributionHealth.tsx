@@ -5,6 +5,7 @@ import { AnimatedContainer } from "@/components/ui";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import { MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
+import { getStagePieColor } from "@/utils/assessmentConfig";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
 const CARD_BASE_CLASSES =
@@ -16,13 +17,6 @@ const STAGES = [
   "Soul-Searching",
   "Steady-State",
 ] as const;
-
-const STAGE_COLORS: Record<string, string> = {
-  Honeymoon: "#10B981",
-  "Self-Introspection": "#3B82F6",
-  "Soul-Searching": "#F59E0B",
-  "Steady-State": "#8B5CF6",
-};
 
 const SubStageDistributionHealth = () => {
   const [selectedDepartment, setSelectedDepartment] =
@@ -103,7 +97,7 @@ const SubStageDistributionHealth = () => {
   }, [filteredEmployees]);
 
   const getStageColor = (stage: string): string => {
-    return STAGE_COLORS[stage] || "#6B7280";
+    return getStagePieColor(stage) || "#6B7280";
   };
 
   return (

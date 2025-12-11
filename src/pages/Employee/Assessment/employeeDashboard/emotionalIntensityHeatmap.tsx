@@ -6,7 +6,7 @@ import {
   MOCK_EMOTIONAL_INTENSITY_HEATMAP,
   ASSESSMENT_TYPES,
 } from "@/data/assessmentDashboard";
-import { getCategoryPalette } from "@/utils/assessmentConfig";
+import { getCategoryPalette, getStageColor } from "@/utils/assessmentConfig";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -90,42 +90,46 @@ const EmotionalIntensityHeatmap = () => {
   const headerColors: Record<
     string,
     { bg: string; border: string; dot: string }
-  > = {
-    Honeymoon: {
-      bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
-      border: "#10b981",
-      dot: "linear-gradient(135deg, #10b981, #059669)",
-    },
-    "Self-Introspection": {
-      bg: "linear-gradient(135deg, #eff6ff, #dbeafe)",
-      border: "#3b82f6",
-      dot: "linear-gradient(135deg, #3b82f6, #2563eb)",
-    },
-    "Soul-Searching": {
-      bg: "linear-gradient(135deg, #fef2f2, #fee2e2)",
-      border: "#ef4444",
-      dot: "linear-gradient(135deg, #f97316, #ea580c)",
-    },
-    "Steady-State": {
-      bg: "linear-gradient(135deg, #f5f3ff, #ede9fe)",
-      border: "#8b5cf6",
-      dot: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
-    },
-  };
+  > = useMemo(() => {
+    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    const lightToDarkMap: Record<string, string> = {
+      "Honeymoon": "#FFE5B4",
+      "Self-Introspection": "#C9C5E8",
+      "Soul-Searching": "#FFC4B8",
+      "Steady-State": "#B8E8E3",
+    };
+    return stages.reduce((acc, stage) => {
+      const main = getStageColor(stage, "main");
+      const light = getStageColor(stage, "light");
+      const dark = getStageColor(stage, "dark");
+      acc[stage] = {
+        bg: `linear-gradient(135deg, ${light}, ${lightToDarkMap[stage] || light})`,
+        border: main,
+        dot: `linear-gradient(135deg, ${main}, ${dark})`,
+      };
+      return acc;
+    }, {} as Record<string, { bg: string; border: string; dot: string }>);
+  }, []);
 
-  const cellGradients: Record<string, string> = {
-    Honeymoon: "linear-gradient(135deg, #10b981, #059669, #047857)",
-    "Self-Introspection": "linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8)",
-    "Soul-Searching": "linear-gradient(135deg, #f97316, #ea580c, #dc2626)",
-    "Steady-State": "linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9)",
-  };
+  const cellGradients: Record<string, string> = useMemo(() => {
+    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    return stages.reduce((acc, stage) => {
+      const main = getStageColor(stage, "main");
+      const dark = getStageColor(stage, "dark");
+      // Create intermediate color for gradient
+      const mid = main; // Can be adjusted if needed
+      acc[stage] = `linear-gradient(135deg, ${main}, ${mid}, ${dark})`;
+      return acc;
+    }, {} as Record<string, string>);
+  }, []);
 
-  const shadowColors: Record<string, string> = {
-    Honeymoon: "#10b981",
-    "Self-Introspection": "#3b82f6",
-    "Soul-Searching": "#f97316",
-    "Steady-State": "#8b5cf6",
-  };
+  const shadowColors: Record<string, string> = useMemo(() => {
+    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    return stages.reduce((acc, stage) => {
+      acc[stage] = getStageColor(stage, "main");
+      return acc;
+    }, {} as Record<string, string>);
+  }, []);
 
   return (
     <AnimatedContainer
