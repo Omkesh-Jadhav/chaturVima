@@ -216,7 +216,21 @@ const SubStageDistributionChart = () => {
                         />
                       </>
                     )}
-                    <div className="relative z-10">
+                    <div className="relative z-10 flex flex-col items-center justify-center">
+                      <Users
+                        className={`shrink-0 mb-1 ${
+                          isEmpty
+                            ? "h-3.5 w-3.5 text-gray-400"
+                            : "h-5 w-5 text-white"
+                        }`}
+                        style={
+                          !isEmpty
+                            ? {
+                                filter: `drop-shadow(0 2px 4px ${stageData.color}90)`,
+                              }
+                            : {}
+                        }
+                      />
                       <span
                         className={`font-extrabold drop-shadow-2xl ${
                           isEmpty
@@ -323,21 +337,27 @@ const SubStageDistributionChart = () => {
                     </h3>
                   </div>
                   <div
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg shadow-sm transition-all hover:shadow-md"
                     style={{
-                      backgroundColor: `${stageData.color}15`,
-                      border: `1px solid ${stageData.color}30`,
+                      background: `linear-gradient(135deg, ${stageData.color}20, ${stageData.color}10)`,
+                      border: `2px solid ${stageData.color}40`,
                     }}
                   >
                     <Users
-                      className="h-3 w-3"
+                      className="h-3.5 w-3.5"
                       style={{ color: stageData.color }}
                     />
                     <span
-                      className="text-xs font-bold"
+                      className="text-sm font-extrabold"
                       style={{ color: stageData.color }}
                     >
                       {stageData.total}
+                    </span>
+                    <span
+                      className="text-[9px] font-semibold uppercase tracking-wide opacity-70"
+                      style={{ color: stageData.color }}
+                    >
+                      Total
                     </span>
                   </div>
                 </div>
