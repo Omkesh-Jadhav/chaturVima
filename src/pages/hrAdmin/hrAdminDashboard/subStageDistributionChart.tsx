@@ -354,7 +354,7 @@ const SubStageDistributionChart = () => {
                       {stageData.total}
                     </span>
                     <span
-                      className="text-[9px] font-semibold uppercase tracking-wide opacity-70"
+                      className="text-[10px] font-semibold "
                       style={{ color: stageData.color }}
                     >
                       Total
