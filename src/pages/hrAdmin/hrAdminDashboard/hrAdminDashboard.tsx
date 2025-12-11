@@ -2,7 +2,8 @@ import AssessmentStatusCard from "./assessmentStatusCard";
 import DepartmentDistribution from "./departmentDistribution";
 import DepartmentLevelHealthScores from "./departmentLevelHealthScores";
 import StageDistributionHealth from "./stageDistributionHealth";
-import SubStageDistributionHealth from "./subStageDistributionHealth";
+// import SubStageDistributionHealth from "./subStageDistributionHealth";
+import SubStageDistributionChart from "./subStageDistributionChart";
 import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
@@ -12,6 +13,7 @@ import {
   AnimatedBackground,
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
+import SubStageDistributionHealth from "./subStageDistributionHealth";
 
 const HrAdminDashboard = () => {
   return (
@@ -49,7 +51,8 @@ const HrAdminDashboard = () => {
 
         {/* Stage Analysis Section */}
         <StageDistributionHealth />
-        <SubStageDistributionHealth />
+        {/* <SubStageDistributionHealth /> */}
+        <SubStageDistributionChart />
 
         {/* Department Section */}
         <DepartmentDistribution />
