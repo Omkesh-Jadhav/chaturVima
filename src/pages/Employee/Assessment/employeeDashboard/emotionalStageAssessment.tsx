@@ -139,7 +139,7 @@ const EmotionalStageAssessment = ({
         </div>
       </AnimatedContainer>
 
-      {/* <AnimatedContainer
+      <AnimatedContainer
         animation="fadeInUp"
         transitionPreset="slow"
         delay="xs"
@@ -173,9 +173,9 @@ const EmotionalStageAssessment = ({
             motionConfig="gentle"
           />
         </div>
-      </AnimatedContainer> */}
+      </AnimatedContainer>
 
-      <Aura data={emotionalStageAssessment}/>
+      {/* <Aura data={emotionalStageAssessment}/> */}
     </div>
   );
 };
