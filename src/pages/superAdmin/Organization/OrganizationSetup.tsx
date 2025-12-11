@@ -36,7 +36,7 @@ interface Employee {
   designation: string;
   department: string;
   boss: string;
-  role: "Employee" | "Administration";
+  role: "Employee" | "HoD";
 }
 
 const OrganizationSetup = () => {
