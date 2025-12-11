@@ -49,8 +49,6 @@ export const FilterSelect = ({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - buttonRect.bottom;
 
       // Calculate position - Always show below the button
       const top = buttonRect.bottom + 8; // mt-2 = 8px

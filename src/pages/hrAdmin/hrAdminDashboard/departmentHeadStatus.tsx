@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { CheckCircle, XCircle, Clock, Building2, Mail } from "lucide-react";
+import { CheckCircle, Clock, Building2, Mail } from "lucide-react";
 import { AnimatedContainer } from "@/components/ui";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { SectionHeader } from "@/components/assessmentDashboard";

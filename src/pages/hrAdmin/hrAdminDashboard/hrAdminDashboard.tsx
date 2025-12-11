@@ -13,7 +13,6 @@ import {
   AnimatedBackground,
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
-import SubStageDistributionHealth from "./subStageDistributionHealth";
 
 const HrAdminDashboard = () => {
   return (
