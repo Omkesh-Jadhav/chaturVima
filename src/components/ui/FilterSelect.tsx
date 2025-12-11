@@ -16,14 +16,22 @@ export const FilterSelect = ({
   className = "",
 }: FilterSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const isActive = value !== options[0];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -38,38 +46,74 @@ export const FilterSelect = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const dropdownHeight = 320; // max-h-80 = 320px
+      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+
+      // Calculate position
+      let top = buttonRect.bottom + 8; // mt-2 = 8px
+      const left = buttonRect.left;
+      const width = buttonRect.width;
+
+      // If not enough space below but enough above, flip upward
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        top = buttonRect.top - dropdownHeight - 8;
+      }
+
+      setDropdownPosition({ top, left, width });
+    } else {
+      setDropdownPosition(null);
+    }
+  }, [isOpen]);
+
   const handleSelect = (option: string) => {
     onChange(option);
     setIsOpen(false);
   };
 
   return (
-    <div className={`relative group ${className}`} ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`inline-flex items-center justify-between gap-2 w-full rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all duration-200 ${
-          isActive
-            ? "border-brand-teal/50 bg-brand-teal/5 text-brand-teal shadow-sm"
-            : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-        } focus:outline-none focus:ring-2 focus:ring-brand-teal/30 focus:border-brand-teal`}
-      >
-        <span className="flex-1 text-left truncate font-semibold">{value}</span>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          } ${isActive ? "text-brand-teal" : "text-gray-400"}`}
-        />
-      </button>
-      {isOpen && (
+    <>
+      <div className={`relative group ${className}`}>
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`inline-flex items-center justify-between gap-2 w-full rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all duration-200 ${
+            isActive
+              ? "border-brand-teal/50 bg-brand-teal/5 text-brand-teal shadow-sm"
+              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+          } focus:outline-none focus:ring-2 focus:ring-brand-teal/30 focus:border-brand-teal`}
+        >
+          <span className="flex-1 text-left truncate font-semibold">{value}</span>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            } ${isActive ? "text-brand-teal" : "text-gray-400"}`}
+          />
+        </button>
+      </div>
+      {isOpen && dropdownPosition && (
         <>
           <div
-            className="fixed inset-0 z-10 bg-black/5"
+            className="fixed inset-0 z-[9998] bg-black/5"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute z-20 mt-2 min-w-full w-auto rounded-2xl border-2 border-gray-100 bg-white shadow-xl overflow-hidden">
+          <div
+            ref={dropdownRef}
+            className="fixed z-[9999] rounded-2xl border-2 border-gray-100 bg-white shadow-xl overflow-hidden"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              maxHeight: "320px",
+            }}
+          >
             <div className="h-1 bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal" />
-            <div className="max-h-80 overflow-y-auto p-1.5">
+            <div className="max-h-80 overflow-y-auto p-1.5 filter-select-scrollbar">
               <div className="space-y-0.5">
                 {options.map((option) => {
                   const isSelected = value === option;
@@ -103,6 +147,6 @@ export const FilterSelect = ({
           </div>
         </>
       )}
-    </div>
+    </>
   );
 };

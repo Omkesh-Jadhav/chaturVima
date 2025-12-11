@@ -119,6 +119,30 @@
   scrollbar-color: var(--color-brand-teal) #f3f4f6;
 }
 
+/* Filter Select Dropdown Scrollbar */
+.filter-select-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-select-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.filter-select-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.filter-select-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.filter-select-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
 /* Stage shapes */
 .shape-square {
   clip-path: none;

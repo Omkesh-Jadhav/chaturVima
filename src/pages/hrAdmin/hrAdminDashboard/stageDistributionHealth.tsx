@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Users, TrendingUp } from "lucide-react";
 import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
@@ -33,6 +34,26 @@ interface StageData {
 }
 
 const StageDistributionHealth = () => {
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<string>("All Departments");
+
+  // Get all unique departments
+  const allDepartments = useMemo(() => {
+    const departments = [
+      ...new Set(hrDashboardData.employee.map((emp) => emp.department)),
+    ].sort();
+    return ["All Departments", ...departments];
+  }, []);
+
+  // Filter employees by selected department
+  const filteredEmployees = useMemo(() => {
+    if (selectedDepartment === "All Departments")
+      return hrDashboardData.employee;
+    return hrDashboardData.employee.filter(
+      (emp) => emp.department === selectedDepartment
+    );
+  }, [selectedDepartment]);
+
   // Memoize stage distribution calculation
   const { stageData, totalEmployees, dominantStage } = useMemo(() => {
     const stageCount: Record<string, number> = Object.fromEntries(
@@ -40,7 +61,7 @@ const StageDistributionHealth = () => {
     );
 
     // Count employees per stage
-    hrDashboardData.employee.forEach((employee) => {
+    filteredEmployees.forEach((employee) => {
       const stage = employee.stageDetails.stage;
       if (stage in stageCount) {
         stageCount[stage]++;
@@ -67,7 +88,7 @@ const StageDistributionHealth = () => {
       totalEmployees: total,
       dominantStage: dominant,
     };
-  }, []);
+  }, [filteredEmployees]);
 
   return (
     <AnimatedContainer
@@ -78,6 +99,15 @@ const StageDistributionHealth = () => {
       <SectionHeader
         title="Stage Distribution Analysis"
         description="Comprehensive overview of employee emotional journey across all organizational stages. Track engagement levels and identify areas for targeted support."
+        actions={
+          <FilterSelect
+            label="Department"
+            value={selectedDepartment}
+            onChange={setSelectedDepartment}
+            options={allDepartments}
+            className="w-full sm:w-auto min-w-[180px]"
+          />
+        }
       />
 
       <div className="grid gap-3 md:grid-cols-3 mt-3">
