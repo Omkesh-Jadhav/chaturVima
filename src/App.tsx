@@ -20,6 +20,7 @@ import Settings from "./pages/Settings/Settings";
 import EditProfile from "./pages/Settings/EditProfile";
 import HRAssessmentCycles from "./pages/hrAdmin/AssessmentCycles/AssessmentCycles";
 import HrAdminDashboard from "./pages/hrAdmin/hrAdminDashboard/hrAdminDashboard";
+import OrganizationHealthReport from "./pages/hrAdmin/hrAdminDashboard/report/organizationHealthReport";
 import DepartmentHeadAssessmentCycles from "./pages/departmentHead/AssessmentCycles/DepartmentAssessmentCycles";
 
 // Protected Route Component
@@ -100,6 +101,7 @@ function AppRoutes() {
         <Route path="/department-setup" element={<DepartmentSetup />} />
         <Route path="/hr/assessment-cycles" element={<HRAssessmentCycles />} />
         <Route path="/hr/dashboard" element={<HrAdminDashboard />} />
+        <Route path="/hr/organization-health-report" element={<OrganizationHealthReport />} />
         <Route
           path="/department-head/assessment-cycles"
           element={<DepartmentHeadAssessmentCycles />}
