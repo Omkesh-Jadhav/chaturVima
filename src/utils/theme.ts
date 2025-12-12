@@ -65,27 +65,46 @@ export const getColorVar = (colorPath: string): string => {
   return colorPath.replace(/\./g, "-");
 };
 
+// ==================== Font Families ====================
+export const fonts = {
+  // Headings: Inter or Poppins (modern, professional, readable)
+  heading: "font-inter", // Primary: Inter, fallback: Poppins
+  headingAlt: "font-poppins", // Alternative heading font
+
+  // Body: Open Sans or Roboto (high readability for long reports)
+  body: "font-open-sans", // Primary: Open Sans, fallback: Roboto
+  bodyAlt: "font-roboto", // Alternative body font
+
+  // Data/Numbers: Roboto Mono (tabular figures for alignment)
+  mono: "font-roboto-mono", // For numbers, data, code
+} as const;
+
 // ==================== Typography ====================
 export const typography = {
-  // Page titles
-  pageTitle: "text-2xl md:text-3xl font-bold text-gray-900",
+  // Page titles (using heading font)
+  pageTitle: "font-inter text-2xl md:text-3xl font-bold text-gray-900",
 
-  // Section headings
-  sectionHeading: "text-lg font-semibold text-gray-900",
+  // Section headings (using heading font)
+  sectionHeading: "font-inter text-lg font-semibold text-gray-900",
 
-  // Subsection headings
-  subsectionHeading: "text-base font-medium text-gray-900",
+  // Subsection headings (using heading font)
+  subsectionHeading: "font-inter text-base font-medium text-gray-900",
 
-  // Card labels
-  cardLabel: "text-sm font-medium text-gray-600",
+  // Card labels (using body font)
+  cardLabel: "font-open-sans text-sm font-medium text-gray-600",
 
-  // Body text
-  body: "text-sm text-gray-700",
-  bodyLarge: "text-base text-gray-700",
+  // Body text (using body font)
+  body: "font-open-sans text-sm text-gray-700",
+  bodyLarge: "font-open-sans text-base text-gray-700",
 
-  // Small text
-  small: "text-xs text-gray-500",
-  smallMedium: "text-xs font-medium text-gray-500",
+  // Small text (using body font)
+  small: "font-open-sans text-xs text-gray-500",
+  smallMedium: "font-open-sans text-xs font-medium text-gray-500",
+
+  // Data/Numbers (using mono font)
+  data: "font-roboto-mono text-sm text-gray-700",
+  dataLarge: "font-roboto-mono text-base font-semibold text-gray-900",
+  dataBold: "font-roboto-mono text-lg font-bold text-gray-900",
 } as const;
 
 // ==================== Common Constants ====================
