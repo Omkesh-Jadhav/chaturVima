@@ -55,7 +55,7 @@ const HrAdminDashboard = () => {
 
         {/* Department Section */}
         <DepartmentDistribution />
-        <DepartmentLevelHealthScores />
+        {/* <DepartmentLevelHealthScores /> */}
       </div>
     </div>
   );
