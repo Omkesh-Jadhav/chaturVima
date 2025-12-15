@@ -128,7 +128,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: pairIdx * 0.15 + stageIdx * 0.08 }}
-                  className="relative bg-white rounded-xl border border-gray-200 p-4 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                  className="relative bg-white rounded-xl border border-gray-200 p-3 shadow-lg transition-all duration-300 overflow-hidden"
                   style={{
                     borderColor: `${headerColor.border}25`,
                     boxShadow: `0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 1px ${headerColor.border}15`,
@@ -136,14 +136,14 @@ const AssessmentTypesSubStagesHeatmap = () => {
                 >
                   {/* Stage Header */}
                   <div
-                    className="flex items-center justify-center p-3.5 rounded-lg border border-gray-200 mb-4 shadow-sm"
+                    className="flex items-center justify-center p-2.5 rounded-lg border border-gray-200 mb-3 shadow-sm"
                     style={{
                       borderColor: `${headerColor.border}35`,
                       background: headerColor.bg,
                       boxShadow: `0 2px 8px ${headerColor.border}15`,
                     }}
                   >
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-xs font-bold text-gray-900">
                       {stage}
                     </span>
                   </div>
@@ -153,27 +153,28 @@ const AssessmentTypesSubStagesHeatmap = () => {
                     <div
                       className="grid w-full"
                       style={{
-                        gridTemplateColumns: `140px repeat(${subStages.length}, minmax(120px, 1fr))`,
-                        gap: "8px",
+                        gridTemplateColumns: `100px repeat(${subStages.length}, minmax(90px, 1fr))`,
+                        gap: "6px",
                       }}
                     >
-                      <div className="flex items-center justify-start pl-3 text-xs font-bold text-gray-700 bg-gray-50 rounded-lg py-2.5 shrink-0 shadow-sm border border-gray-200">
+                      <div className="flex items-center justify-start pl-2 text-[10px] font-bold text-gray-700 bg-gray-50 rounded-lg py-2 shrink-0 shadow-sm border border-gray-200">
                         Assessment
                       </div>
                       {subStages.map((subStage) => (
                         <Tooltip
                           key={subStage.id}
                           content={subStage.label}
-                          position="top"
+                          position="bottom"
+                          className="w-full"
                         >
                           <div
-                            className="flex items-center justify-center p-2.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow-md min-h-[60px] overflow-hidden w-full"
+                            className="flex items-center justify-center p-2 rounded-lg border-2 shadow-sm min-h-[50px] overflow-hidden w-full"
                             style={{
                               background: `linear-gradient(135deg, ${headerColor.border}10, ${headerColor.border}05)`,
                               borderColor: `${headerColor.border}25`,
                             }}
                           >
-                            <span className="text-[10px] font-semibold text-gray-800 text-center leading-tight break-words px-1 w-full line-clamp-3">
+                            <span className="text-[9px] font-semibold text-gray-800 text-center leading-tight wrap-break-word px-1 w-full line-clamp-3">
                               {subStage.label}
                             </span>
                           </div>
@@ -183,7 +184,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
                   </div>
 
                   {/* Assessment Type Rows */}
-                  <div className="space-y-2 overflow-x-auto scrollbar-hide">
+                  <div className="space-y-1.5 overflow-x-auto scrollbar-hide">
                     {ASSESSMENT_TYPES.map((assessmentType, rowIdx) => {
                       return (
                         <motion.div
@@ -196,8 +197,8 @@ const AssessmentTypesSubStagesHeatmap = () => {
                           }}
                           className="grid items-center w-full"
                           style={{
-                            gridTemplateColumns: `140px repeat(${subStages.length}, minmax(120px, 1fr))`,
-                            gap: "8px",
+                            gridTemplateColumns: `100px repeat(${subStages.length}, minmax(90px, 1fr))`,
+                            gap: "6px",
                           }}
                         >
                           <Tooltip
@@ -205,8 +206,8 @@ const AssessmentTypesSubStagesHeatmap = () => {
                             position="right"
                             className="shrink-0"
                           >
-                            <div className="flex items-center p-3 rounded-lg border border-gray-300 bg-gradient-to-r from-gray-50 via-white to-gray-50 shadow-sm hover:shadow-md transition-all">
-                              <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2">
+                            <div className="flex items-center p-2 rounded-lg border-2 border-gray-300 bg-gradient-to-r from-gray-50 via-white to-gray-50 shadow-sm">
+                              <span className="text-[10px] font-bold text-gray-900 leading-tight line-clamp-2">
                                 {assessmentType}
                               </span>
                             </div>
@@ -224,8 +225,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
                             return (
                               <motion.div
                                 key={`${assessmentType}-${subStage.id}`}
-                                whileHover={{ scale: 1.01 }}
-                                className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden w-full max-w-full ${
+                                className={`relative rounded-lg transition-all overflow-hidden w-full max-w-full ${
                                   isZero
                                     ? "border border-gray-200 bg-white"
                                     : "bg-gray-50"
@@ -263,9 +263,9 @@ const AssessmentTypesSubStagesHeatmap = () => {
                                   />
                                 )}
 
-                                <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
+                                <div className="relative z-10 flex items-center justify-center min-h-[45px] px-2 py-1.5">
                                   <span
-                                    className={`text-sm font-bold transition-all ${
+                                    className={`text-xs font-bold transition-all ${
                                       isZero
                                         ? "text-gray-400"
                                         : value > 50
@@ -289,17 +289,6 @@ const AssessmentTypesSubStagesHeatmap = () => {
                                     {value}%
                                   </span>
                                 </div>
-
-                                {!isZero && (
-                                  <div
-                                    className="absolute inset-0 rounded-lg border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{
-                                      borderColor: shadowColor,
-                                      boxShadow: `0 0 16px ${shadowColor}40`,
-                                      pointerEvents: "none",
-                                    }}
-                                  />
-                                )}
                               </motion.div>
                             );
                           })}

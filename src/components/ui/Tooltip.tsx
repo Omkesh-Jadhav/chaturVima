@@ -49,10 +49,12 @@ export const Tooltip = ({
     }
   }, [isVisible, position]);
 
+  const isFullWidth = className.includes("w-full");
+  
   return (
     <div
       ref={triggerRef}
-      className={`relative inline-block ${className}`}
+      className={`relative ${isFullWidth ? "block" : "inline-block"} ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
@@ -60,7 +62,7 @@ export const Tooltip = ({
       {isVisible && (
         <div
           ref={tooltipRef}
-          className="absolute z-50 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-lg"
+          className="absolute z-[9999] rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-lg"
           style={{
             whiteSpace: "nowrap",
             pointerEvents: "none",
