@@ -91,9 +91,14 @@ const EmotionalIntensityHeatmap = () => {
     string,
     { bg: string; border: string; dot: string }
   > = useMemo(() => {
-    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    const stages = [
+      "Honeymoon",
+      "Self-Introspection",
+      "Soul-Searching",
+      "Steady-State",
+    ];
     const lightToDarkMap: Record<string, string> = {
-      "Honeymoon": "#FFE5B4",
+      Honeymoon: "#FFE5B4",
       "Self-Introspection": "#C9C5E8",
       "Soul-Searching": "#FFC4B8",
       "Steady-State": "#B8E8E3",
@@ -103,7 +108,9 @@ const EmotionalIntensityHeatmap = () => {
       const light = getStageColor(stage, "light");
       const dark = getStageColor(stage, "dark");
       acc[stage] = {
-        bg: `linear-gradient(135deg, ${light}, ${lightToDarkMap[stage] || light})`,
+        bg: `linear-gradient(135deg, ${light}, ${
+          lightToDarkMap[stage] || light
+        })`,
         border: main,
         dot: `linear-gradient(135deg, ${main}, ${dark})`,
       };
@@ -112,7 +119,12 @@ const EmotionalIntensityHeatmap = () => {
   }, []);
 
   const cellGradients: Record<string, string> = useMemo(() => {
-    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    const stages = [
+      "Honeymoon",
+      "Self-Introspection",
+      "Soul-Searching",
+      "Steady-State",
+    ];
     return stages.reduce((acc, stage) => {
       const main = getStageColor(stage, "main");
       const dark = getStageColor(stage, "dark");
@@ -124,7 +136,12 @@ const EmotionalIntensityHeatmap = () => {
   }, []);
 
   const shadowColors: Record<string, string> = useMemo(() => {
-    const stages = ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"];
+    const stages = [
+      "Honeymoon",
+      "Self-Introspection",
+      "Soul-Searching",
+      "Steady-State",
+    ];
     return stages.reduce((acc, stage) => {
       acc[stage] = getStageColor(stage, "main");
       return acc;
@@ -139,8 +156,8 @@ const EmotionalIntensityHeatmap = () => {
       className={CARD_BASE_CLASSES}
     >
       <SectionHeader
-        title="Emotional Intensity Heatmap"
-        description="Mapping stages across organizational dimensions"
+        title="Stage Assessment Heatmap"
+        description="Performance analysis across emotional stages by assessment type"
       />
 
       <div className="mt-4">
