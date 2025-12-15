@@ -27,7 +27,9 @@ const TestHistory = () => {
     >
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Test History</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Assessment History
+          </h2>
           <p className="text-xs text-gray-500">
             Completed assessments and results
           </p>
