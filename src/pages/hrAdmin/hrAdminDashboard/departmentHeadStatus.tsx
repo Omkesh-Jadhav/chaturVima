@@ -175,7 +175,7 @@ const DepartmentHeadStatus = () => {
         // If HOD has a scheduled cycle and not forced to pending, they are "Scheduled"
         // Otherwise, they are "Pending"
         const hasScheduled = forcePendingForTesting ? false : !!scheduledCycle;
-        
+
         // Pending cycles: Only if no scheduled cycle exists
         // If scheduled cycle exists, no pending cycles
         // If no scheduled cycle, create one pending cycle for display
@@ -187,9 +187,9 @@ const DepartmentHeadStatus = () => {
                 id: `pending-${head.id}`,
                 name: `Assessment Cycle - ${head.department}`,
                 startDate: new Date().toISOString().split("T")[0],
-                endDate: new Date(
-                  Date.now() + 30 * 24 * 60 * 60 * 1000
-                ).toISOString().split("T")[0],
+                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                  .toISOString()
+                  .split("T")[0],
                 type: "Quarterly" as const,
                 period: "Calendar" as const,
                 status: "Draft" as const,
@@ -268,7 +268,7 @@ const DepartmentHeadStatus = () => {
     >
       <SectionHeader
         title="Department Head Status"
-        description="Track which department heads have scheduled or pending assessment cycles"
+        description="Track which department heads have scheduled or pending assessments"
         actions={
           <FilterSelect
             value={selectedFilter}
@@ -289,9 +289,7 @@ const DepartmentHeadStatus = () => {
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="rounded-lg border border-gray-200 bg-white p-2.5">
             <div className="text-xs text-gray-600 mb-1">Total HODs</div>
-            <div className="text-lg font-bold text-gray-900">
-              {stats.total}
-            </div>
+            <div className="text-lg font-bold text-gray-900">{stats.total}</div>
             <div className="text-[10px] text-gray-500 mt-0.5">
               Department heads
             </div>
@@ -303,7 +301,9 @@ const DepartmentHeadStatus = () => {
             </div>
             <div className="text-[10px] text-green-700 mt-0.5">
               {stats.total > 0
-                ? `${Math.round((stats.scheduled / stats.total) * 100)}% completed`
+                ? `${Math.round(
+                    (stats.scheduled / stats.total) * 100
+                  )}% completed`
                 : "0% completed"}
             </div>
           </div>
@@ -321,7 +321,10 @@ const DepartmentHeadStatus = () => {
         </div>
 
         {/* HOD List with Scrollbar */}
-        <div className="max-h-96 overflow-y-auto pr-2 custom-scrollbar space-y-2" key={selectedFilter}>
+        <div
+          className="max-h-96 overflow-y-auto pr-2 custom-scrollbar space-y-2"
+          key={selectedFilter}
+        >
           {filteredHODs.length === 0 ? (
             <div className="text-center py-8 text-sm text-gray-500">
               No department heads found for selected filter

@@ -31,7 +31,7 @@ const HrAdminDashboard = () => {
       </div>
 
       <div className="relative z-10 space-y-4">
-        <AssessmentStatusCard />
+        {/* <AssessmentStatusCard /> */}
 
         {/* Overall Organizational Health Score */}
         <OverallOrganizationalHealthScore />
