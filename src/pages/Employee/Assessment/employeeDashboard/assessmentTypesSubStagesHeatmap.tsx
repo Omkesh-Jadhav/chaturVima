@@ -1,88 +1,16 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { AnimatedContainer } from "@/components/ui";
+import { AnimatedContainer, Tooltip } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import { ASSESSMENT_TYPES, MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
+import {
+  ASSESSMENT_TYPES,
+  MOCK_SUB_STAGES,
+  MOCK_EMOTIONAL_INTENSITY_HEATMAP,
+} from "@/data/assessmentDashboard";
 import { getStageColor } from "@/utils/assessmentConfig";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
-
-// Mock data: Assessment type scores for each sub-stage
-const MOCK_ASSESSMENT_SUB_STAGE_DATA: Record<string, Record<string, number>> = {
-  "Employee Self Assessment": {
-    "Excitement and Optimism": 92,
-    "Confidence and Over-Reliance on Past Success": 78,
-    "Initial Reality Check": 65,
-    "Sustained Confidence with Subtle Complacency": 55,
-    "Acknowledgment of Problems": 45,
-    "Analyzing Causes": 52,
-    "Partial Acceptance of Responsibility": 48,
-    "Exploration of Solutions": 58,
-    "Deep Frustration": 35,
-    "Questioning Fundamentals": 42,
-    "Openness to Change": 55,
-    "Actionable Transformation": 62,
-    "Stability and Alignment": 75,
-    "Operational Predictability": 68,
-    "Emerging Challenges": 58,
-    "Dynamic Balance": 72,
-  },
-  "Manager Relationship Assessment": {
-    "Excitement and Optimism": 88,
-    "Confidence and Over-Reliance on Past Success": 72,
-    "Initial Reality Check": 58,
-    "Sustained Confidence with Subtle Complacency": 48,
-    "Acknowledgment of Problems": 68,
-    "Analyzing Causes": 75,
-    "Partial Acceptance of Responsibility": 72,
-    "Exploration of Solutions": 78,
-    "Deep Frustration": 42,
-    "Questioning Fundamentals": 48,
-    "Openness to Change": 65,
-    "Actionable Transformation": 72,
-    "Stability and Alignment": 82,
-    "Operational Predictability": 75,
-    "Emerging Challenges": 68,
-    "Dynamic Balance": 78,
-  },
-  "Department Assessment": {
-    "Excitement and Optimism": 85,
-    "Confidence and Over-Reliance on Past Success": 70,
-    "Initial Reality Check": 62,
-    "Sustained Confidence with Subtle Complacency": 52,
-    "Acknowledgment of Problems": 55,
-    "Analyzing Causes": 62,
-    "Partial Acceptance of Responsibility": 58,
-    "Exploration of Solutions": 65,
-    "Deep Frustration": 38,
-    "Questioning Fundamentals": 45,
-    "Openness to Change": 58,
-    "Actionable Transformation": 68,
-    "Stability and Alignment": 78,
-    "Operational Predictability": 72,
-    "Emerging Challenges": 65,
-    "Dynamic Balance": 75,
-  },
-  "Company Assessment": {
-    "Excitement and Optimism": 80,
-    "Confidence and Over-Reliance on Past Success": 65,
-    "Initial Reality Check": 55,
-    "Sustained Confidence with Subtle Complacency": 45,
-    "Acknowledgment of Problems": 50,
-    "Analyzing Causes": 58,
-    "Partial Acceptance of Responsibility": 55,
-    "Exploration of Solutions": 62,
-    "Deep Frustration": 32,
-    "Questioning Fundamentals": 38,
-    "Openness to Change": 52,
-    "Actionable Transformation": 65,
-    "Stability and Alignment": 75,
-    "Operational Predictability": 68,
-    "Emerging Challenges": 60,
-    "Dynamic Balance": 72,
-  },
-};
 
 const STAGES = [
   "Honeymoon",
@@ -99,14 +27,73 @@ const AssessmentTypesSubStagesHeatmap = () => {
     }));
   }, []);
 
-  const stageColors = useMemo(() => {
+  // Group stages in pairs for quadrant layout
+  const stagePairs = useMemo(() => {
+    const pairs = [];
+    for (let i = 0; i < subStagesByStage.length; i += 2) {
+      pairs.push(subStagesByStage.slice(i, i + 2));
+    }
+    return pairs;
+  }, [subStagesByStage]);
+
+  const getSubStageValue = (
+    assessmentType: string,
+    stage: string,
+    subStageIndex: number,
+    totalSubStages: number
+  ): number => {
+    const stageData = MOCK_EMOTIONAL_INTENSITY_HEATMAP.find(
+      (r) => r.stage === stage
+    );
+    if (!stageData) return 0;
+
+    const stageValue =
+      stageData.values[assessmentType as keyof typeof stageData.values] ?? 0;
+
+    const baseValue = stageValue / totalSubStages;
+    const variation = [1.2, 0.9, 1.1, 0.8][subStageIndex % 4] || 1;
+    return Math.min(100, Math.round(baseValue * variation));
+  };
+
+  const headerColors: Record<
+    string,
+    { bg: string; border: string; dot: string }
+  > = useMemo(() => {
+    const lightToDarkMap: Record<string, string> = {
+      Honeymoon: "#FFE5B4",
+      "Self-Introspection": "#C9C5E8",
+      "Soul-Searching": "#FFC4B8",
+      "Steady-State": "#B8E8E3",
+    };
     return STAGES.reduce((acc, stage) => {
+      const main = getStageColor(stage, "main");
+      const light = getStageColor(stage, "light");
+      const dark = getStageColor(stage, "dark");
       acc[stage] = {
-        main: getStageColor(stage, "main"),
-        dark: getStageColor(stage, "dark"),
+        bg: `linear-gradient(135deg, ${light}, ${
+          lightToDarkMap[stage] || light
+        })`,
+        border: main,
+        dot: `linear-gradient(135deg, ${main}, ${dark})`,
       };
       return acc;
-    }, {} as Record<string, { main: string; dark: string }>);
+    }, {} as Record<string, { bg: string; border: string; dot: string }>);
+  }, []);
+
+  const cellGradients: Record<string, string> = useMemo(() => {
+    return STAGES.reduce((acc, stage) => {
+      const main = getStageColor(stage, "main");
+      const dark = getStageColor(stage, "dark");
+      acc[stage] = `linear-gradient(135deg, ${main}, ${dark})`;
+      return acc;
+    }, {} as Record<string, string>);
+  }, []);
+
+  const shadowColors: Record<string, string> = useMemo(() => {
+    return STAGES.reduce((acc, stage) => {
+      acc[stage] = getStageColor(stage, "main");
+      return acc;
+    }, {} as Record<string, string>);
   }, []);
 
   return (
@@ -121,109 +108,208 @@ const AssessmentTypesSubStagesHeatmap = () => {
         description="Detailed breakdown of assessment performance across emotional sub-stages"
       />
 
-      <div className="mt-4 space-y-4">
-        {ASSESSMENT_TYPES.map((assessmentType, typeIdx) => (
+      <div className="mt-6 space-y-8">
+        {stagePairs.map((pair, pairIdx) => (
           <motion.div
-            key={assessmentType}
-            initial={{ opacity: 0, y: 10 }}
+            key={pairIdx}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: typeIdx * 0.05 }}
-            className="border border-gray-200 rounded-lg p-3 bg-gray-50/50"
+            transition={{ delay: pairIdx * 0.15 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
           >
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
-              {assessmentType}
-            </h3>
+            {pair.map(({ stage, subStages }, stageIdx) => {
+              const headerColor = headerColors[stage];
+              const cellGradient = cellGradients[stage];
+              const shadowColor = shadowColors[stage];
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-              {subStagesByStage.map(({ stage, subStages }, stageIdx) => {
-                const colors = stageColors[stage];
-                const values = subStages.map(
-                  (s) =>
-                    MOCK_ASSESSMENT_SUB_STAGE_DATA[assessmentType]?.[s.label] ??
-                    0
-                );
-                const stageAvg = Math.round(
-                  values.reduce((sum, val) => sum + val, 0) / values.length
-                );
-
-                return (
-                  <motion.div
-                    key={stage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      delay: typeIdx * 0.05 + stageIdx * 0.02,
+              return (
+                <motion.div
+                  key={stage}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: pairIdx * 0.15 + stageIdx * 0.08 }}
+                  className="relative bg-white rounded-xl border border-gray-200 p-4 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                  style={{
+                    borderColor: `${headerColor.border}25`,
+                    boxShadow: `0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 1px ${headerColor.border}15`,
+                  }}
+                >
+                  {/* Stage Header */}
+                  <div
+                    className="flex items-center justify-center p-3.5 rounded-lg border border-gray-200 mb-4 shadow-sm"
+                    style={{
+                      borderColor: `${headerColor.border}35`,
+                      background: headerColor.bg,
+                      boxShadow: `0 2px 8px ${headerColor.border}15`,
                     }}
-                    className="bg-white rounded-md border border-gray-200 p-3"
                   >
-                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: colors.main }}
-                        />
-                        <span className="text-xs font-semibold text-gray-900">
-                          {stage}
-                        </span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {stage}
+                    </span>
+                  </div>
+
+                  {/* Sub-Stage Headers */}
+                  <div className="mb-3 overflow-x-auto scrollbar-hide">
+                    <div
+                      className="grid w-full"
+                      style={{
+                        gridTemplateColumns: `140px repeat(${subStages.length}, minmax(120px, 1fr))`,
+                        gap: "8px",
+                      }}
+                    >
+                      <div className="flex items-center justify-start pl-3 text-xs font-bold text-gray-700 bg-gray-50 rounded-lg py-2.5 shrink-0 shadow-sm border border-gray-200">
+                        Assessment
                       </div>
-                      <span
-                        className="text-xs font-bold"
-                        style={{ color: colors.dark }}
-                      >
-                        {stageAvg}%
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {subStages.map((subStage, subIdx) => {
-                        const value =
-                          MOCK_ASSESSMENT_SUB_STAGE_DATA[assessmentType]?.[
-                            subStage.label
-                          ] ?? 0;
-
-                        return (
+                      {subStages.map((subStage) => (
+                        <Tooltip
+                          key={subStage.id}
+                          content={subStage.label}
+                          position="top"
+                        >
                           <div
-                            key={subStage.id}
-                            className="flex items-center justify-between gap-2"
+                            className="flex items-center justify-center p-2.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:shadow-md min-h-[60px] overflow-hidden w-full"
+                            style={{
+                              background: `linear-gradient(135deg, ${headerColor.border}10, ${headerColor.border}05)`,
+                              borderColor: `${headerColor.border}25`,
+                            }}
                           >
-                            <span className="text-[10px] text-gray-600 leading-tight line-clamp-1 flex-1">
+                            <span className="text-[10px] font-semibold text-gray-800 text-center leading-tight break-words px-1 w-full line-clamp-3">
                               {subStage.label}
                             </span>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <div className="w-16 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${value}%` }}
-                                  transition={{
-                                    duration: 0.6,
-                                    delay:
-                                      typeIdx * 0.05 +
-                                      stageIdx * 0.02 +
-                                      subIdx * 0.01 +
-                                      0.1,
-                                    ease: "easeOut",
-                                  }}
-                                  className="h-full rounded-full"
-                                  style={{
-                                    backgroundColor: colors.main,
-                                  }}
-                                />
-                              </div>
-                              <span
-                                className="text-[10px] font-semibold w-8 text-right"
-                                style={{ color: colors.dark }}
-                              >
-                                {value}%
+                          </div>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assessment Type Rows */}
+                  <div className="space-y-2 overflow-x-auto scrollbar-hide">
+                    {ASSESSMENT_TYPES.map((assessmentType, rowIdx) => {
+                      return (
+                        <motion.div
+                          key={assessmentType}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay:
+                              pairIdx * 0.15 + stageIdx * 0.08 + rowIdx * 0.05,
+                          }}
+                          className="grid items-center w-full"
+                          style={{
+                            gridTemplateColumns: `140px repeat(${subStages.length}, minmax(120px, 1fr))`,
+                            gap: "8px",
+                          }}
+                        >
+                          <Tooltip
+                            content={assessmentType}
+                            position="right"
+                            className="shrink-0"
+                          >
+                            <div className="flex items-center p-3 rounded-lg border border-gray-300 bg-gradient-to-r from-gray-50 via-white to-gray-50 shadow-sm hover:shadow-md transition-all">
+                              <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2">
+                                {assessmentType}
                               </span>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                          </Tooltip>
+
+                          {subStages.map((subStage, cellIdx) => {
+                            const value = getSubStageValue(
+                              assessmentType,
+                              stage,
+                              cellIdx,
+                              subStages.length
+                            );
+                            const isZero = value === 0;
+
+                            return (
+                              <motion.div
+                                key={`${assessmentType}-${subStage.id}`}
+                                whileHover={{ scale: 1.01 }}
+                                className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden w-full max-w-full ${
+                                  isZero
+                                    ? "border border-gray-200 bg-white"
+                                    : "bg-gray-50"
+                                }`}
+                                style={
+                                  !isZero
+                                    ? {
+                                        border: `1px solid ${shadowColor}30`,
+                                        boxShadow: `0 2px 8px ${shadowColor}20, 0 1px 2px rgba(0,0,0,0.05)`,
+                                      }
+                                    : {
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                                      }
+                                }
+                              >
+                                {!isZero && (
+                                  <motion.div
+                                    className="absolute bottom-0 left-0 right-0 rounded-b-lg overflow-hidden"
+                                    style={{
+                                      background: cellGradient,
+                                      height: `${value}%`,
+                                    }}
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${value}%` }}
+                                    transition={{
+                                      duration: 0.8,
+                                      delay:
+                                        pairIdx * 0.15 +
+                                        stageIdx * 0.08 +
+                                        rowIdx * 0.05 +
+                                        cellIdx * 0.03 +
+                                        0.2,
+                                      ease: "easeOut",
+                                    }}
+                                  />
+                                )}
+
+                                <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
+                                  <span
+                                    className={`text-sm font-bold transition-all ${
+                                      isZero
+                                        ? "text-gray-400"
+                                        : value > 50
+                                        ? "text-white drop-shadow-lg"
+                                        : "text-gray-900 drop-shadow-sm"
+                                    }`}
+                                    style={
+                                      !isZero && value > 50
+                                        ? {
+                                            textShadow:
+                                              "0 2px 4px rgba(0,0,0,0.5)",
+                                          }
+                                        : !isZero
+                                        ? {
+                                            textShadow:
+                                              "0 1px 2px rgba(255,255,255,0.8)",
+                                          }
+                                        : {}
+                                    }
+                                  >
+                                    {value}%
+                                  </span>
+                                </div>
+
+                                {!isZero && (
+                                  <div
+                                    className="absolute inset-0 rounded-lg border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    style={{
+                                      borderColor: shadowColor,
+                                      boxShadow: `0 0 16px ${shadowColor}40`,
+                                      pointerEvents: "none",
+                                    }}
+                                  />
+                                )}
+                              </motion.div>
+                            );
+                          })}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         ))}
       </div>
