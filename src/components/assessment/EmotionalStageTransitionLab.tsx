@@ -114,12 +114,33 @@ const EmotionalStageTransitionLab = ({
           return (
             <div
               key={assessment.id}
-              className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+              className="relative rounded-xl border border-gray-100 bg-white p-4 shadow-sm overflow-hidden"
             >
+              {/* Badge - Sticker style with colors */}
+              {isCurrent ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-3 right-3 rounded-md bg-green-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg z-10"
+                >
+                  Current
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-3 right-3 rounded-md bg-orange-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg z-10"
+                >
+                  Previous
+                </motion.div>
+              )}
+
               {/* Assessment Header */}
               <div className="mb-4 pb-3 border-b border-gray-200">
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
+                  <div className="flex-1 pr-16">
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">
                       {assessment.title}
                     </h3>
@@ -127,17 +148,6 @@ const EmotionalStageTransitionLab = ({
                       <Calendar className="h-3 w-3" />
                       <span>{formatDisplayDate(assessment.date)}</span>
                     </div>
-                  </div>
-                  <div className="shrink-0 ml-3">
-                    {isCurrent ? (
-                      <span className="text-[10px] font-bold text-green-600">
-                        Current
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-bold text-orange-600">
-                        Previous
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
