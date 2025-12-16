@@ -321,7 +321,7 @@ const OrganizationHealthReport: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-lg p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                 {/* Pie Chart */}
               <div className="w-full h-80" data-chart-id="stageDistributionPie">
                 <h3 className="text-lg font-semibold text-purple-700 mb-4 text-center">
@@ -364,40 +364,42 @@ const OrganizationHealthReport: React.FC = () => {
                 <h3 className="text-lg font-semibold text-purple-700 mb-4 text-center">
                   Stage Analysis
                 </h3>
-                {stageDistribution.map((item) => (
-                  <div
-                    key={item.stage}
-                    className="bg-white rounded-lg p-4 shadow-sm border border-purple-100"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        <h4 className="font-semibold text-gray-800">{item.stage}</h4>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-purple-600">
-                          {item.employeeCount}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {stageDistribution.map((item) => (
+                    <div
+                      key={item.stage}
+                      className="bg-white rounded-lg p-4 shadow-sm border border-purple-100"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          ></div>
+                          <h4 className="font-semibold text-gray-800">{item.stage}</h4>
                         </div>
-                        <div className="text-xs text-gray-500">employees</div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-purple-600">
+                            {item.employeeCount}
+                          </div>
+                          <div className="text-xs text-gray-500">employees</div>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${item.percentage}%`,
+                            backgroundColor: item.color
+                          }}
+                        ></div>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-2 text-right">
+                        {item.percentage}% of workforce
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${item.percentage}%`,
-                          backgroundColor: item.color
-                        }}
-                      ></div>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-2 text-right">
-                      {item.percentage}% of workforce
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
