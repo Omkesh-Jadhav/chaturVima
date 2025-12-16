@@ -10,7 +10,6 @@ const OrganizationHealthReport: React.FC = () => {
     executiveSummary,
     interpretations,
     overview: { text: overviewText },
-    healthScoreBreakdown,
     stageDistribution: { data: stageDistribution },
     stageAnalysisDistribution,
     stageAnalysis,
