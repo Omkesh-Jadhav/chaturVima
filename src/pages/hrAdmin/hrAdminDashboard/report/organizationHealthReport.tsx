@@ -21,6 +21,24 @@ const OrganizationHealthReport: React.FC = () => {
     conclusion
   } = organizationHealthData;
 
+  // Dynamic color palette for departments
+  const colorPalette = [
+    "#e74c3c", "#3498db", "#9b59b6", "#f39c12", "#2ecc71", 
+    "#e67e22", "#1abc9c", "#34495e", "#f1c40f", "#e91e63",
+    "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4",
+    "#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107"
+  ];
+
+  // Function to get department color dynamically
+  const getDepartmentColor = (department: string, index?: number) => {
+    if (index !== undefined) {
+      return colorPalette[index % colorPalette.length];
+    }
+    // Fallback: find index by department name
+    const deptIndex = departmentBreakdown.findIndex(dept => dept.department === department);
+    return deptIndex >= 0 ? colorPalette[deptIndex % colorPalette.length] : "#95a5a6";
+  };
+
   return (
     <div className="bg-linear-to-br from-indigo-50 to-purple-100 min-h-screen flex flex-col items-center p-8">
       <div className="bg-white shadow-2xl rounded-3xl max-w-6xl w-full p-10 space-y-10">
@@ -850,7 +868,7 @@ const OrganizationHealthReport: React.FC = () => {
             <h3 className="text-lg font-semibold text-rose-700 mb-4">
               Department Health Scores
             </h3>
-            <div className="w-full h-80" data-chart-id="departmentHealthRadial">
+            {/* <div className="w-full h-80" data-chart-id="departmentHealthRadial">
               <ResponsiveRadialBar
                 data={departmentBreakdown.map((dept) => ({
                   id: dept.department,
@@ -868,16 +886,8 @@ const OrganizationHealthReport: React.FC = () => {
                 radialAxisStart={{ tickSize: 5, tickPadding: 5, tickRotation: 0 }}
                 circularAxisOuter={{ tickSize: 5, tickPadding: 12, tickRotation: 0 }}
                 colors={(bar) => {
-                  // Use a predefined color palette that cycles through different colors
-                  const colorPalette = [
-                    "#e74c3c", "#3498db", "#9b59b6", "#f39c12", "#2ecc71", 
-                    "#e67e22", "#1abc9c", "#34495e", "#f1c40f", "#e91e63",
-                    "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4",
-                    "#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107"
-                  ];
-                  
                   const index = departmentBreakdown.findIndex(dept => dept.department === bar.id);
-                  return colorPalette[index % colorPalette.length];
+                  return getDepartmentColor(bar.id, index);
                 }}
                 borderColor={{
                   from: "color",
@@ -913,53 +923,66 @@ const OrganizationHealthReport: React.FC = () => {
                   },
                 ]}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Department Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {departmentBreakdown.map((dept) => (
-              <div
-                key={dept.department}
-                className="bg-white rounded-lg p-6 shadow-sm border border-rose-100 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold text-gray-800">{dept.department}</h4>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-rose-600">
-                      {dept.healthScore}
+            {departmentBreakdown.map((dept) => {
+              const deptColor = getDepartmentColor(dept.department);
+              return (
+                <div
+                  key={dept.department}
+                  className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+                  style={{ borderLeft: `4px solid ${deptColor}`, borderTop: `1px solid ${deptColor}20`, borderRight: `1px solid ${deptColor}20`, borderBottom: `1px solid ${deptColor}20` }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: deptColor }}
+                      ></div>
+                      <h4 className="font-semibold text-gray-800">{dept.department}</h4>
                     </div>
-                    <div className="text-xs text-gray-500">Health Score</div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold" style={{ color: deptColor }}>
+                        {dept.healthScore}
+                      </div>
+                      <div className="text-xs text-gray-500">Health Score</div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Employees</span>
-                    <span>{dept.employeeCount}</span>
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Employees</span>
+                      <span>{dept.employeeCount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-3">
+                      <span>Dominant Stage</span>
+                      <span className="font-medium" style={{ color: deptColor }}>{dept.dominantStage}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${(dept.healthScore / 5) * 100}%`,
+                          backgroundColor: deptColor
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-3">
-                    <span>Dominant Stage</span>
-                    <span className="font-medium text-rose-700">{dept.dominantStage}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-rose-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(dept.healthScore / 5) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
 
-                <div className="text-xs text-gray-600">
-                  <div className="mb-2">
-                    <span className="font-medium">Interpretation:</span>
+                  <div className="text-xs text-gray-600">
+                    <div className="mb-2">
+                      <span className="font-medium">Interpretation:</span>
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {dept.interpretation}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {dept.interpretation}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
