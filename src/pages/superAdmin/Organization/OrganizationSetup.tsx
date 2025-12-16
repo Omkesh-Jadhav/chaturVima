@@ -145,7 +145,7 @@ const OrganizationSetup = () => {
           variant="gradient"
           size="md"
         >
-          {user?.role === "hr-admin" ? "View Only Mode" : "Save Organization Setup"}
+          {user?.role === "hr-admin" ? "Save" : "Save"}
         </Button>
       </div>
     </div>
