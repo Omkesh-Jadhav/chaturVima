@@ -34,7 +34,7 @@ const HrAdminDashboard = () => {
         {/* <AssessmentStatusCard /> */}
 
         {/* Overall Organizational Health Score */}
-        <OverallOrganizationalHealthScore />
+        {/* <OverallOrganizationalHealthScore /> */}
 
         {/* Organization Setup Section */}
         <div className="grid gap-4 md:grid-cols-2">
