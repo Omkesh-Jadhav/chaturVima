@@ -1,5 +1,5 @@
 import React from "react";
-import { ResponsiveRadialBar } from "@nivo/radial-bar";
+// import { ResponsiveRadialBar } from "@nivo/radial-bar";
 import { ResponsivePie } from "@nivo/pie";
 import organizationHealthData from "@/data/organizationHealthData.json";
 

@@ -8,7 +8,7 @@ import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
 import OrganizationSetupInfo from "./organizationSetupInfo";
-import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
+// import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
 import {
   AnimatedBackground,
   BACKGROUND_COLORS,
