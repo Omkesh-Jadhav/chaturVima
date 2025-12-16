@@ -8,13 +8,25 @@ import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
 import OrganizationSetupInfo from "./organizationSetupInfo";
+import OrganizationalStageGauges from "./organizationalStageGauges";
+import OrganizationalSubStagesBreakdown from "./organizationalSubStagesBreakdown";
 // import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
 import {
   AnimatedBackground,
   BACKGROUND_COLORS,
 } from "@/components/assessmentDashboard";
+import { useState } from "react";
+import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
+
+interface StageGaugeData extends EmotionalStageAssessment {
+  count: number;
+  scoreOnScale: number;
+}
 
 const HrAdminDashboard = () => {
+  const [selectedStage, setSelectedStage] = useState<StageGaugeData | null>(
+    null
+  );
   return (
     <div className="space-y-6 relative">
       <AnimatedBackground colors={[...BACKGROUND_COLORS]} />
@@ -35,6 +47,13 @@ const HrAdminDashboard = () => {
 
         {/* Overall Organizational Health Score */}
         {/* <OverallOrganizationalHealthScore /> */}
+
+        {/* Organizational Stage Gauges */}
+        <OrganizationalStageGauges
+          onStageSelect={setSelectedStage}
+          selectedStage={selectedStage}
+        />
+        <OrganizationalSubStagesBreakdown selectedStage={selectedStage} />
 
         {/* Organization Setup Section */}
         <div className="grid gap-4 md:grid-cols-2">
