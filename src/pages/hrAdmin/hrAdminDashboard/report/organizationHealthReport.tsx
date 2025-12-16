@@ -88,9 +88,6 @@ const OrganizationHealthReport: React.FC = () => {
                   {reportInfo.overallHealthScore}
                 </div>
                 <div className="text-lg text-gray-500">/ {reportInfo.maxHealthScore}</div>
-                <div className="text-sm text-green-700 font-medium">
-                  {Math.round((reportInfo.overallHealthScore / reportInfo.maxHealthScore) * 100)}%
-                </div>
               </div>
             </div>
             <div className="text-center">
@@ -188,15 +185,6 @@ const OrganizationHealthReport: React.FC = () => {
               </div>
             ))}
           </div> */}
-        </section>
-
-        {/* Stage Distribution */}
-        <section className="p-6 bg-purple-50 rounded-2xl shadow-inner">
-          <h2 className="text-2xl font-semibold text-purple-700 mb-6">
-            Organizational Stage Distribution
-          </h2>
-
-
         </section>
 
         {/* Overview */}
