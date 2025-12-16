@@ -4,19 +4,14 @@ import { Users } from "lucide-react";
 import { AnimatedContainer } from "@/components/ui";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import { MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
+import { MOCK_SUB_STAGES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-4";
 
-const STAGES = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-] as const;
+const STAGES = STAGE_ORDER;
 
 const SubStageDistributionHealth = () => {
   const [selectedDepartment, setSelectedDepartment] =

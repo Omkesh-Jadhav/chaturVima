@@ -4,18 +4,14 @@ import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import { ANIMATION_DELAYS } from "@/components/assessmentDashboard";
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
-const STAGES = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-] as const;
+const STAGES = STAGE_ORDER;
 
 interface StageGaugeData extends EmotionalStageAssessment {
   count: number;

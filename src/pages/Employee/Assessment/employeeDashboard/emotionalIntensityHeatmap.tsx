@@ -5,6 +5,7 @@ import { SectionHeader } from "@/components/assessmentDashboard";
 import {
   MOCK_EMOTIONAL_INTENSITY_HEATMAP,
   ASSESSMENT_TYPES,
+  STAGE_ORDER,
 } from "@/data/assessmentDashboard";
 import { getCategoryPalette, getStageColor } from "@/utils/assessmentConfig";
 
@@ -16,7 +17,10 @@ const EmotionalIntensityHeatmap = () => {
   const assessmentTypes = ASSESSMENT_TYPES;
 
   const transformedHeatmap = useMemo(() => {
-    const emotionalStages = emotionalIntensityHeatmap.map((row) => row.stage);
+    // Use STAGE_ORDER to ensure consistent ordering
+    const emotionalStages = STAGE_ORDER.filter((stage) =>
+      emotionalIntensityHeatmap.some((row) => row.stage === stage)
+    );
     return assessmentTypes.map((assessmentType) => ({
       assessmentType,
       values: emotionalStages.reduce((acc, stage) => {
@@ -91,12 +95,7 @@ const EmotionalIntensityHeatmap = () => {
     string,
     { bg: string; border: string; dot: string }
   > = useMemo(() => {
-    const stages = [
-      "Honeymoon",
-      "Self-Introspection",
-      "Soul-Searching",
-      "Steady-State",
-    ];
+    const stages = STAGE_ORDER;
     const lightToDarkMap: Record<string, string> = {
       Honeymoon: "#FFE5B4",
       "Self-Introspection": "#C9C5E8",
@@ -119,12 +118,7 @@ const EmotionalIntensityHeatmap = () => {
   }, []);
 
   const cellGradients: Record<string, string> = useMemo(() => {
-    const stages = [
-      "Honeymoon",
-      "Self-Introspection",
-      "Soul-Searching",
-      "Steady-State",
-    ];
+    const stages = STAGE_ORDER;
     return stages.reduce((acc, stage) => {
       const main = getStageColor(stage, "main");
       const dark = getStageColor(stage, "dark");
@@ -136,12 +130,7 @@ const EmotionalIntensityHeatmap = () => {
   }, []);
 
   const shadowColors: Record<string, string> = useMemo(() => {
-    const stages = [
-      "Honeymoon",
-      "Self-Introspection",
-      "Soul-Searching",
-      "Steady-State",
-    ];
+    const stages = STAGE_ORDER;
     return stages.reduce((acc, stage) => {
       acc[stage] = getStageColor(stage, "main");
       return acc;
@@ -174,7 +163,9 @@ const EmotionalIntensityHeatmap = () => {
               }}
             >
               <div className="flex items-center justify-start pl-2" />
-              {emotionalIntensityHeatmap.map((row) => {
+              {STAGE_ORDER.map((stage) => {
+                const row = emotionalIntensityHeatmap.find((r) => r.stage === stage);
+                if (!row) return null;
                 const headerColor = headerColors[row.stage] || {
                   bg: "linear-gradient(135deg, #f9fafb, #f3f4f6)",
                   border: "#6b7280",
@@ -183,7 +174,7 @@ const EmotionalIntensityHeatmap = () => {
 
                 return (
                   <div
-                    key={row.stage}
+                    key={stage}
                     className="flex flex-col items-center justify-center p-2.5 rounded-lg border-2 shadow-sm"
                     style={{
                       borderColor: `${headerColor.border}30`,
@@ -198,7 +189,7 @@ const EmotionalIntensityHeatmap = () => {
                       }}
                     />
                     <span className="text-xs font-bold text-gray-900 text-center leading-tight">
-                      {row.stage}
+                      {stage}
                     </span>
                   </div>
                 );
@@ -207,7 +198,9 @@ const EmotionalIntensityHeatmap = () => {
 
             <div className="space-y-1.5">
               {transformedHeatmap.map((row, rowIdx) => {
-                const stages = emotionalIntensityHeatmap.map((r) => r.stage);
+                const stages = STAGE_ORDER.filter((stage) =>
+                  emotionalIntensityHeatmap.some((r) => r.stage === stage)
+                );
                 return (
                   <div
                     key={row.assessmentType}

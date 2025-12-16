@@ -60,13 +60,7 @@ const MOCK_HISTORICAL_ASSESSMENTS: HistoricalAssessment[] = [
 ];
 
 import { getStagePieColor } from "@/utils/assessmentConfig";
-
-const STAGE_ORDER = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-] as const;
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
 
 interface EmotionalStageTransitionLabProps {
   historicalAssessments?: HistoricalAssessment[];

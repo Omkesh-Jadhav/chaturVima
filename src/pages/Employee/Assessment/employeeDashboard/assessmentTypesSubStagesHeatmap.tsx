@@ -6,18 +6,14 @@ import {
   ASSESSMENT_TYPES,
   MOCK_SUB_STAGES,
   MOCK_EMOTIONAL_INTENSITY_HEATMAP,
+  STAGE_ORDER,
 } from "@/data/assessmentDashboard";
 import { getStageColor } from "@/utils/assessmentConfig";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
-const STAGES = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-] as const;
+const STAGES = STAGE_ORDER;
 
 const AssessmentTypesSubStagesHeatmap = () => {
   const subStagesByStage = useMemo(() => {

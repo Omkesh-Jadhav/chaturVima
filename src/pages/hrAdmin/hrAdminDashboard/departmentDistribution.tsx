@@ -4,18 +4,14 @@ import { Building2, Users, TrendingUp } from "lucide-react";
 import { AnimatedContainer } from "@/components/ui";
 import { CheckboxDropdown } from "@/components/ui/CheckboxDropdown";
 import { SectionHeader } from "@/components/assessmentDashboard";
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import hrDashboardData from "@/data/hrDashboardData.json";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
-const STAGES = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-] as const;
+const STAGES = STAGE_ORDER;
 
 const DepartmentDistribution = () => {
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);

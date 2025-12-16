@@ -6,6 +6,16 @@
 
 import { getStagePieColor } from "@/utils/assessmentConfig";
 
+// Centralized Stage Order - Use this across the entire project
+export const STAGE_ORDER = [
+  "Steady-State",
+  "Honeymoon",
+  "Self-Introspection",
+  "Soul-Searching",
+] as const;
+
+export type StageName = (typeof STAGE_ORDER)[number];
+
 export type AssessmentType =
   | "Employee Self Assessment"
   | "Manager Relationship Assessment"
@@ -156,8 +166,17 @@ export const ASSESSMENT_TYPES: AssessmentType[] = [
   "Company Assessment",
 ];
 
-// Emotional Intensity Heatmap Data - Stages vs Assessment Types
+// Emotional Intensity Heatmap Data - Stages vs Assessment Types (ordered by STAGE_ORDER)
 export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
+  {
+    stage: "Steady-State",
+    values: {
+      "Employee Self Assessment": 90,
+      "Manager Relationship Assessment": 0,
+      "Department Assessment": 30,
+      "Company Assessment": 0,
+    },
+  },
   {
     stage: "Honeymoon",
     values: {
@@ -185,21 +204,17 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
       "Company Assessment": 15,
     },
   },
-  {
-    stage: "Steady-State",
-    values: {
-      "Employee Self Assessment": 90,
-      "Manager Relationship Assessment": 0,
-      "Department Assessment": 30,
-      "Company Assessment": 0,
-    },
-  },
 ];
 
 // Emotional Stage Assessment Data
 // Note: Colors are dynamically generated using getStagePieColor from centralized theme
 // This ensures all colors come from a single source (src/utils/theme.ts)
 export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
+  {
+    stage: "Steady-State",
+    score: 118.73,
+    color: getStagePieColor("Steady-State"),
+  },
   {
     stage: "Honeymoon",
     score: 153.73,
@@ -217,11 +232,6 @@ export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
     score: 121.07,
     color: getStagePieColor("Soul-Searching"),
     status: "Transitional",
-  },
-  {
-    stage: "Steady-State",
-    score: 118.73,
-    color: getStagePieColor("Steady-State"),
   },
 ];
 

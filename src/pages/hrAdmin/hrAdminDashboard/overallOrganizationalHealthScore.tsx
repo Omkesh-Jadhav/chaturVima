@@ -3,7 +3,7 @@ import { Users, Award, TrendingUp } from "lucide-react";
 import { AnimatedContainer } from "@/components/ui";
 import { Badge } from "@/components/ui";
 import { getStagePieColor } from "@/utils/assessmentConfig";
-import { MOCK_SUB_STAGES } from "@/data/assessmentDashboard";
+import { MOCK_SUB_STAGES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import { motion } from "framer-motion";
 
@@ -54,12 +54,9 @@ const getStageFromScore = (score: number) => {
   };
 };
 
-const STAGES_ORDER = [
-  "Honeymoon",
-  "Self-Introspection",
-  "Soul-Searching",
-  "Steady-State",
-];
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
+
+const STAGES_ORDER = STAGE_ORDER;
 
 const OverallOrganizationalHealthScore = () => {
   const { totalEmployees, stageTotals, responsesByStage } = DUMMY_DATA;
