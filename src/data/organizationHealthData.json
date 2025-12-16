@@ -1,0 +1,461 @@
+{
+    "reportInfo": {
+        "title": "ORGANIZATIONAL HEALTH DIAGNOSTIC REPORT",
+        "companySize": 156,
+        "assessmentFramework": "ChaturVima – Four Behavioural Stages",
+        "assessmentCycle": "FY 2024–25",
+        "organization": "XYZ Limited",
+        "reportDate": "December 10, 2025",
+        "overallHealthScore": 3.5,
+        "maxHealthScore": 5.0,
+        "dominantStage": "Honeymoon",
+        "dominantStagePercentage": 62.8,
+        "predominantSubStage": "Excitement & Optimism"
+    },
+    "executiveSummary": [
+        "The organizational health assessment reveals a company in a strong Honeymoon phase, with 62.8% of employees demonstrating high engagement and optimism. This indicates a workforce that is energized, motivated, and aligned with organizational goals.",
+        "The predominant sub-stage of 'Excitement & Optimism' suggests that employees are experiencing high levels of enthusiasm and positive expectations about their roles and the company's future. This creates an excellent foundation for growth and change initiatives.",
+        "While the overall health score of 3.5/5.0 indicates solid organizational performance, there are opportunities for improvement in areas such as change adaptability (3.1) and cultural alignment (3.2), which could further enhance organizational effectiveness."
+    ],
+    "interpretations": {
+        "text": [
+            "The assessment data reveals a workforce predominantly experiencing positive engagement dynamics. The concentration of employees in the Honeymoon stage suggests a period of optimism, high energy, and strong initial commitment to the organization. This pattern typically emerges in organizations experiencing growth, recent positive changes, or successful integration of new team members.",
+            "The company is currently operating in a positive psychological climate marked by enthusiasm, confidence, and future-oriented thinking."
+        ],
+        "employeeExhibits": [
+            "High belief in leadership direction",
+            "Strong emotional engagement",
+            "High willingness to contribute",
+            "Optimism about growth and success"
+        ],
+        "honeymoonRisks": [
+            "Over-confidence in existing strategies",
+            "Limited anticipation of long-term risks",
+            "Early signs of complacency in a few departments"
+        ],
+        "behavioralEnergy": "The dominant behavioural energy is expansionary, not stabilizing - meaning the company is poised for growth but still vulnerable to blind spots."
+    },
+    "overview": {
+        "text": [
+            "This organizational health assessment provides a structured and in-depth evaluation of the company's collective behavioural patterns, cultural dynamics, and operational maturity across all levels of the workforce. Using a scientifically mapped framework of stages and sub-stages, the assessment captures how employees and departments respond to leadership, change, collaboration, performance pressures, and growth expectations. Through a series of structured, perception-based questions, it reveals how the organization currently thinks, feels, and operates as a unified system.",
+            "Beyond stage identification, the assessment integrates emotional, psychological, and performance-related indicators into a single, cohesive organizational report. This unified view highlights the company's dominant behavioural stage, predominant sub-stage, core strengths, structural gaps, and emerging risks. It also provides a clear department-wise view of alignment and maturity, enabling leaders to understand where optimism, reflection, strain, or stability are most concentrated within the organization.",
+            "Overall, this assessment functions as a comprehensive diagnostic and strategic planning framework for the organization. It supports leadership in making informed decisions related to cultural transformation, process maturity, talent strategy, and long-term sustainability by clearly identifying growth opportunities, potential vulnerabilities, and the most effective focus areas for intervention and development."
+        ]
+    },
+    "healthScoreBreakdown": {
+        "categories": [
+            {
+                "name": "Leadership Effectiveness",
+                "score": 3.8,
+                "maxScore": 5.0,
+                "percentage": 76
+            },
+            {
+                "name": "Cultural Alignment",
+                "score": 3.2,
+                "maxScore": 5.0,
+                "percentage": 64
+            },
+            {
+                "name": "Employee Engagement",
+                "score": 3.7,
+                "maxScore": 5.0,
+                "percentage": 74
+            },
+            {
+                "name": "Operational Efficiency",
+                "score": 3.4,
+                "maxScore": 5.0,
+                "percentage": 68
+            },
+            {
+                "name": "Change Adaptability",
+                "score": 3.1,
+                "maxScore": 5.0,
+                "percentage": 62
+            }
+        ]
+    },
+    "stageDistribution": {
+        "data": [
+            {
+                "stage": "Honeymoon",
+                "employeeCount": 98,
+                "percentage": 62.8,
+                "avgStageScore": 4.48,
+                "color": "#4ade80"
+            },
+            {
+                "stage": "Self-Introspection",
+                "employeeCount": 32,
+                "percentage": 20.5,
+                "avgStageScore": 3.72,
+                "color": "#60a5fa"
+            },
+            {
+                "stage": "Soul-Searching",
+                "employeeCount": 18,
+                "percentage": 11.5,
+                "avgStageScore": 3.05,
+                "color": "#f87171"
+            },
+            {
+                "stage": "Steady State",
+                "employeeCount": 8,
+                "percentage": 5.2,
+                "avgStageScore": 2.42,
+                "color": "#a78bfa"
+            }
+        ]
+    },
+    "stageAnalysisDistribution": {
+        "title": "Stage Analysis Distribution",
+        "employeeCount": 156,
+        "dominantStage": "Honeymoon",
+        "dominantStagePercentage": 62.8,
+        "analysis": "This indicates the company is not in distress or stabilization mode - it is in an energized, forward-moving phase with opportunity for rapid scaling."
+    },
+    "stageAnalysis": {
+        "title": "Stage Analysis",
+        "stage": "Honeymoon",
+        "introduction": [
+            "The Company is currently operating in the Honeymoon Stage, which is clearly the dominant emotional and behavioural state based on the dashboard data. This state is characterized by high enthusiasm, optimism, and elevated motivation - traits strongly reflected in the employee's scores."
+        ],
+        "understanding": {
+            "title": "Understanding of Honeymoon stage",
+            "description": [
+                "The Honeymoon State represents the early phase of a transition - such as stepping into a new role, joining a new team, or achieving a major milestone - where individuals feel energized, confident, and deeply optimistic about what lies ahead. This psychological state is especially common among new employees, newly promoted leaders, or high-performing individuals who have recently experienced success.",
+                "During this phase, there is a sense of limitless possibility, where challenges seem manageable and opportunities appear abundant. Individuals rely on their past achievements, believing these successes will naturally extend into the new environment."
+            ]
+        },
+        "stageCharacteristics": {
+            "title": "Stage Characteristics",
+            "definingFeatures": {
+                "title": "Defining Features:",
+                "items": [
+                    "High energy and enthusiasm levels",
+                    "Positive perception of organizational culture",
+                    "Strong willingness to contribute",
+                    "Idealistic view of role and responsibilities",
+                    "Active relationship building with colleagues",
+                    "Eagerness to learn and adapt",
+                    "High tolerance for challenges"
+                ]
+            },
+            "behavioralIndicators": {
+                "title": "Behavioural Indicators:",
+                "items": [
+                    "Employees frequently volunteer for new projects",
+                    "Positive communication in team settings",
+                    "Proactive problem-solving approach",
+                    "Strong attendance and punctuality",
+                    "Engagement in company events and activities"
+                ]
+            }
+        },
+        "subStageAnalysis": {
+            "title": "Sub-Stage Analysis",
+            "introduction": [
+                "Among the 98 Honeymoon-stage employees, the following sub-stage distribution is observed:"
+            ],
+            "predominantSubStage": "Excitement & Optimism",
+            "subStageDistribution": [
+                {
+                    "subStage": "Excitement & Optimism",
+                    "employees": 56,
+                    "percentageOfHoneymoon": 57.1,
+                    "avgScore": 4.71,
+                    "color": "#10b981"
+                },
+                {
+                    "subStage": "Confidence & Over-Reliance on Past Success",
+                    "employees": 22,
+                    "percentageOfHoneymoon": 22.4,
+                    "avgScore": 4.39,
+                    "color": "#3b82f6"
+                },
+                {
+                    "subStage": "Initial Reality Check",
+                    "employees": 14,
+                    "percentageOfHoneymoon": 14.3,
+                    "avgScore": 4.12,
+                    "color": "#f59e0b"
+                },
+                {
+                    "subStage": "Sustained Confidence with Subtle Complacency",
+                    "employees": 6,
+                    "percentageOfHoneymoon": 6.2,
+                    "avgScore": 3.98,
+                    "color": "#ef4444"
+                }
+            ],
+            "overallInsight": [
+                "\"Excitement & Optimism\" is the predominant sub-stage for the organization; the assessment data also indicates the presence of three additional Honeymoon substages. These substages represent important secondary behavioural patterns that add depth to the organizational diagnosis and highlight early transition signals within the growth phase."
+            ],
+            "detailedAnalysis": {
+                "excitementOptimism": {
+                    "title": "1. Excitement & Optimism",
+                    "subtitle": "Predominant Sub-Stage",
+                    "percentage": "57.1%",
+                    "description": [
+                        "This sub-stage represents the highest level of emotional energy and positive momentum within the organization. Employees in this category exhibit strong enthusiasm, belief in leadership direction, and a deep sense of possibility about the company's future. The assessment data indicates that these individuals feel motivated, valued, and confident that their efforts will lead to meaningful outcomes. There is a visible \"can-do\" mindset, where challenges are viewed more as opportunities than obstacles.",
+                        "Workplace behavior in this sub-stage is characterized by high initiative, proactive collaboration, and strong emotional engagement. Employees willingly go beyond formal role boundaries, show readiness to experiment, and demonstrate a strong desire to contribute to organizational success. Trust in management and confidence in strategic goals are particularly high in this group, which significantly amplifies overall organizational morale.",
+                        "However, the data also suggests that such heightened optimism can occasionally lead to underestimation of operational risks, timelines, or resource constraints. Because belief in success is strong, there is a natural tendency to assume that outcomes will align smoothly with intent. While this does not yet pose a critical risk, it does highlight the importance of balancing emotional momentum with disciplined execution and structured planning."
+                    ],
+                    "organizationalImplication": "This sub-stage offers a powerful window of maximum change readiness. The organization is currently best positioned to introduce transformation initiatives, cultural shifts, and strategic interventions with minimal resistance. Leadership must capitalize on this momentum by institutionalizing systems, strengthening governance, and channeling emotional energy into sustainable performance, before natural market realities begin to temper the current optimism."
+                },
+                "confidenceOverReliance": {
+                    "title": "2. Confidence & Over-Reliance on Past Success",
+                    "percentage": "22.4%",
+                    "description": [
+                        "A significant portion of employees demonstrate strong confidence rooted in prior achievements and proven methods. These individuals rely heavily on strategies, systems, and approaches that have worked well in the past and expect similar success to continue. This reflects institutional memory and experience-driven certainty, which is a valuable organizational asset.",
+                        "However, the data also indicates a risk of reduced experimentation and innovation within this group. There is a tendency to apply \"what worked before\" rather than exploring new models suited to changing market conditions. While this substage provides stability, predictability, and execution discipline, it can limit future agility if not balanced with fresh thinking."
+                    ],
+                    "organizationalImplication": "The company benefits from strong execution capability and proven success models, but leadership must ensure that confidence does not convert into strategic rigidity."
+                },
+                "initialRealityCheck": {
+                    "title": "3. Initial Reality Check",
+                    "percentage": "14.3%",
+                    "description": [
+                        "This group has begun to experience the first practical challenges of execution. While overall confidence remains high, employees in this substage are starting to recognize that certain goals, timelines, or assumptions may require adjustment. Early signals such as workload pressure, process inefficiencies, or coordination gaps are becoming visible.",
+                        "These individuals still remain committed and motivated, but they are now seeing the gap between aspiration and execution. This substage plays an important diagnostic role because it reflects the organization's first touch with operational complexity."
+                    ],
+                    "organizationalImplication": "This group acts as an early warning system for leadership, indicating where optimism must be supported by stronger structure, resources, and prioritization."
+                },
+                "sustainedConfidenceComplacency": {
+                    "title": "4. Sustained Confidence with Subtle Complacency",
+                    "percentage": "6.2%",
+                    "description": [
+                        "A smaller but strategically important segment of the workforce shows signs of sustained success combined with reduced urgency for improvement. These employees feel secure due to consistent results and past achievements, leading to a gradual softening of innovation, critical questioning, and proactive improvement.",
+                        "While performance remains stable, the data suggests early complacency risk, particularly in repetitive or mature functions. The energy level here is lower than in the Excitement & Optimism group, though not yet problematic."
+                    ],
+                    "organizationalImplication": "If left unaddressed, this substage can become the gateway to stagnation. Proactive leadership intervention is required to re-ignite challenge, stretch goals, and continuous improvement mindsets."
+                }
+            },
+            "integrationInsight": {
+                "title": "Overall Sub-Stage Integration Insight",
+                "description": [
+                    "The sub-stage distribution within the Honeymoon stage shows a natural organizational progression from high excitement toward early realism and emerging comfort zones. The presence of all four Honeymoon substages indicates that the organization is not uniformly positioned at one emotional level but is instead moving dynamically across the Honeymoon spectrum."
+                ],
+                "keyPoints": [
+                    "The dominant excitement fuels growth and momentum.",
+                    "The confidence from past success provides execution strength.",
+                    "The initial reality check flags where structure is required.",
+                    "The subtle complacency signals areas requiring cultural re-energization."
+                ],
+                "conclusion": "Together, these patterns confirm that the organization is in a high-potential but time-sensitive growth window, where the right leadership actions can determine whether it successfully transitions into healthy long-term stability or future reactive phases."
+            }
+        }
+    },
+    "departmentBreakdown": [
+        {
+            "department": "Sales",
+            "employeeCount": 42,
+            "healthScore": 3.52,
+            "dominantStage": "Honeymoon",
+            "interpretation": "Aggressive growth mindset, high optimism, strong target belief"
+        },
+        {
+            "department": "Operations",
+            "employeeCount": 38,
+            "healthScore": 4.16,
+            "dominantStage": "Honeymoon",
+            "interpretation": "Stable enthusiasm but early fatigue signals"
+        },
+        {
+            "department": "Information Technology",
+            "employeeCount": 24,
+            "healthScore": 3.7,
+            "dominantStage": "Self-Reflection",
+            "interpretation": "Process gaps emerging, growing self-review"
+        },
+        {
+            "department": "Human Resources",
+            "employeeCount": 18,
+            "healthScore": 3.47,
+            "dominantStage": "Honeymoon",
+            "interpretation": "Strong cultural anchoring & onboarding sentiment"
+        },
+        {
+            "department": "Finance",
+            "employeeCount": 14,
+            "healthScore": 3.73,
+            "dominantStage": "Self-Reflection",
+            "interpretation": "Caution rising due to cost & risk sensitivity"
+        },
+        {
+            "department": "Marketing",
+            "employeeCount": 20,
+            "healthScore": 4.1,
+            "dominantStage": "Honeymoon",
+            "interpretation": "High creative energy and future optimism"
+        }
+    ],
+    "keyDepartmentalInsights": {
+        "title": "Key Departmental Insights",
+        "insights": [
+            {
+                "department": "Sales",
+                "title": "Strong Growth Energy but Slight Emotional Volatility",
+                "analysis": [
+                    "High enthusiasm and target-driven optimism.",
+                    "However, lower average score (3.52) for a Honeymoon stage suggests early emotional dips, possibly due to pressure or fast-paced goals."
+                ]
+            },
+            {
+                "department": "Operations",
+                "title": "Stable but Showing Early Fatigue Signals",
+                "analysis": [
+                    "High score (4.16) places the team in Honeymoon, indicating good momentum.",
+                    "But the narrative hints at early burnout/complacency, meaning team energy may soon plateau if not supported."
+                ]
+            },
+            {
+                "department": "Information Technology",
+                "title": "Transitioning into Self-Reflection",
+                "analysis": [
+                    "Avg score 3.7 clearly shows the team is moving from enthusiasm into introspection.",
+                    "Signals: process gaps, growing self-awareness, need for system improvements.",
+                    "This department is at a critical inflection point."
+                ]
+            },
+            {
+                "department": "Human Resources",
+                "title": "Strong Cultural Anchoring",
+                "analysis": [
+                    "Despite a modest score (3.47), HR remains in Honeymoon stage.",
+                    "Indicates high emotional bonding, onboarding positivity, and strong cultural alignment.",
+                    "HR is a key emotional stabilizer in the organization."
+                ]
+            },
+            {
+                "department": "Finance",
+                "title": "Heightened Risk & Cost Sensitivity",
+                "analysis": [
+                    "Avg score 3.73 places Finance squarely in Self-Reflection.",
+                    "Indicates rising caution, higher risk-awareness, and more analytical emotional patterns.",
+                    "This group needs confidence-building and clarity on future expectations."
+                ]
+            },
+            {
+                "department": "Marketing",
+                "title": "High Creative Momentum",
+                "analysis": [
+                    "Score of 4.1 keeps Marketing in the Honeymoon stage.",
+                    "This team is fuelled by innovation, optimism, and future-driven thinking.",
+                    "Strong alignment to strategic growth themes."
+                ]
+            }
+        ]
+    },
+    "swotAnalysis": {
+        "title": "SWOT Analysis",
+        "strengths": [
+            "High employee engagement and morale",
+            "Strong belief in leadership",
+            "High adaptability during early change",
+            "Positive cultural identity",
+            "Strong short-term execution energy"
+        ],
+        "weaknesses": [
+            "Over-confidence in legacy methods",
+            "Limited long-term risk preparedness",
+            "Dependency on a few high-performing teams",
+            "Inconsistent process maturity across departments"
+        ],
+        "opportunities": [
+            "Leadership development scalability",
+            "Process digitization",
+            "Cross-department collaboration",
+            "Talent acceleration programs",
+            "Culture-driven employer branding"
+        ],
+        "threats": [
+            "Market volatility shock",
+            "Attrition of key high-energy performers",
+            "Strategic blind spots due to optimism bias",
+            "Operational strain during rapid scaling"
+        ]
+    },
+    "recommendations": {
+        "title": "Recommendations",
+        "items": [
+            {
+                "id": 1,
+                "title": "Convert Emotional Momentum into Structural Strength",
+                "description": "Lock excitement into systems, SOPs, and governance."
+            },
+            {
+                "id": 2,
+                "title": "Introduce Controlled Reality-Check Mechanisms",
+                "description": "Quarterly strategic stress tests."
+            },
+            {
+                "id": 3,
+                "title": "Strengthen Departments Entering Self-Reflection",
+                "description": "Target IT & Finance with process maturity programs."
+            },
+            {
+                "id": 4,
+                "title": "Prevent \"Success Hangover\"",
+                "description": "Future-strategy workshops for top management."
+            },
+            {
+                "id": 5,
+                "title": "Balance Energy with Predictability",
+                "description": "Move selected functions toward Steady State stability."
+            }
+        ]
+    },
+    "actionPlan": {
+        "title": "Action Plan (90-Day Execution Roadmap)",
+        "phases": [
+            {
+                "id": 1,
+                "title": "Phase 1: Stabilize Optimism",
+                "duration": "0–30 Days",
+                "color": "#10b981",
+                "actions": [
+                    "Leadership alignment workshop",
+                    "Process baseline documentation",
+                    "Department-wise risk mapping"
+                ]
+            },
+            {
+                "id": 2,
+                "title": "Phase 2: Structural Conversion",
+                "duration": "31–60 Days",
+                "color": "#3b82f6",
+                "actions": [
+                    "IT & Finance process redesign",
+                    "KPI realignment across Sales & Operations",
+                    "Introduce cross-functional project squads"
+                ]
+            },
+            {
+                "id": 3,
+                "title": "Phase 3: Sustainability & Future Readiness",
+                "duration": "61–90 Days",
+                "color": "#8b5cf6",
+                "actions": [
+                    "Innovation governance framework",
+                    "Leadership succession mapping",
+                    "Cultural sustainability policy",
+                    "Organization-wide \"Reality Audit\" survey"
+                ]
+            }
+        ]
+    },
+    "conclusion": {
+        "title": "Conclusion",
+        "mainText": "The organization is currently in a high-potential Honeymoon phase dominated by Excitement & Optimism, which is the most powerful growth window in the entire ChaturVima lifecycle. If leveraged with discipline and foresight, this phase can be converted into long-term operational excellence and strategic stability.",
+        "riskWarning": {
+            "title": "Failure to structurally support this optimism may result in:",
+            "risks": [
+                "Future disillusionment",
+                "Reactive Self-Reflection",
+                "Or abrupt Soul-Searching triggered by market shocks"
+            ]
+        }
+    }
+}

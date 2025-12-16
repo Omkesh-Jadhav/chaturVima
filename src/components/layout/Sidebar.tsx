@@ -15,6 +15,7 @@ import {
   Crown,
   LayoutDashboard,
   CalendarDays,
+  BarChart3,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -77,6 +78,13 @@ const NAV_ITEMS: NavItem[] = [
     label: "Assessment Cycles",
     path: "/hr/assessment-cycles",
     icon: <CalendarDays className="h-5 w-5" />,
+    roles: ["hr-admin"],
+  },
+  {
+    id: "hr-organization-health-report",
+    label: "Organization Health Report",
+    path: "/hr/organization-health-report",
+    icon: <BarChart3 className="h-5 w-5" />,
     roles: ["hr-admin"],
   },
   {
