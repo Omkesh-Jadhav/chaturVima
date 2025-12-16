@@ -1,25 +1,14 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
-import { SectionHeader } from "@/components/assessmentDashboard";
-import {
-  MOCK_CATEGORY_DISTRIBUTION,
-  MOCK_EMOTIONAL_STAGE_ASSESSMENT,
-} from "@/data/assessmentDashboard";
-import type {
-  EmotionalStageAssessment as EmotionalStageAssessmentType,
-  StageDatum,
-} from "@/data/assessmentDashboard";
+import { MOCK_EMOTIONAL_STAGE_ASSESSMENT } from "@/data/assessmentDashboard";
+import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
 import { calculatePercentage, findMaxByKey } from "@/utils/assessmentUtils";
-import { getStagePieColor } from "@/utils/assessmentConfig";
 import {
   STATUS_STYLES,
   ANIMATION_DELAYS,
-  PIE_GRADIENTS,
-  PIE_FILL,
 } from "@/components/assessmentDashboard";
-import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+import Aura from "./aura";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -33,7 +22,6 @@ const EmotionalStageAssessment = ({
   onStageSelect,
   selectedStage,
 }: EmotionalStageAssessmentProps) => {
-  const categoryDistribution = MOCK_CATEGORY_DISTRIBUTION;
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
   const dominantStage = emotionalStageAssessment.find(
@@ -53,11 +41,11 @@ const EmotionalStageAssessment = ({
   };
 
   return (
-    <div className="relative z-10 grid gap-6 xl:grid-cols-3">
+    <div className="relative z-10 grid gap-6 xl:grid-cols-5">
       <AnimatedContainer
         animation="fadeInUp"
         transitionPreset="slow"
-        className={`${CARD_BASE_CLASSES} xl:col-span-2`}
+        className={`${CARD_BASE_CLASSES} xl:col-span-3`}
       >
         <div className="mb-3">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -138,43 +126,7 @@ const EmotionalStageAssessment = ({
         </div>
       </AnimatedContainer>
 
-      <AnimatedContainer
-        animation="fadeInUp"
-        transitionPreset="slow"
-        delay="xs"
-        className={`${CARD_BASE_CLASSES} p-5`}
-      >
-        <SectionHeader
-          title="Stage Distribution"
-          description="Current sentiment spread across stages"
-        />
-        <div className="mt-4 h-72">
-          <ResponsivePie
-            data={categoryDistribution}
-            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            innerRadius={0.65}
-            padAngle={2}
-            cornerRadius={6}
-            activeOuterRadiusOffset={10}
-            colors={(d: StageDatum) => getStagePieColor(d.label)}
-            enableArcLinkLabels={false}
-            arcLabelsSkipAngle={10}
-            arcLabel={(d: StageDatum) => `${d.value}%`}
-            arcLabelsTextColor={{
-              from: "color",
-              modifiers: [["darker", 2.2]],
-            }}
-            arcLabelsRadiusOffset={0.55}
-            defs={PIE_GRADIENTS}
-            fill={PIE_FILL}
-            theme={pieChartTheme}
-            animate
-            motionConfig="gentle"
-          />
-        </div>
-      </AnimatedContainer>
-
-      {/* <Aura data={emotionalStageAssessment}/> */}
+      <Aura data={emotionalStageAssessment} />
     </div>
   );
 };

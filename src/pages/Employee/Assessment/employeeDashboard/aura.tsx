@@ -1,193 +1,134 @@
 import { useState } from "react";
+import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
+import type {
+  EmotionalStageAssessment,
+  StageDatum,
+} from "@/data/assessmentDashboard";
+import { getStagePieColor } from "@/utils/assessmentConfig";
+import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
+import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 interface AuraProps {
-    data: EmotionalStageAssessment[];
+  data: EmotionalStageAssessment[];
 }
 
 const Aura = ({ data }: AuraProps) => {
-    const [hoveredStage, setHoveredStage] = useState<EmotionalStageAssessment | null>(null);
+  const [hoveredStage, setHoveredStage] =
+    useState<EmotionalStageAssessment | null>(null);
 
-    // Calculate total and percentages
-    console.log(data)
-    const total = data.reduce((sum, item) => sum + item.score, 0);
-    const padAngle = 4;
-    const totalPadding = padAngle * data.length;
-    const availableAngle = 360 - totalPadding;
-    
-    const dataWithAngles = data.map((item, index) => {
-        const percentage = (item.score / total) * 100;
-        const angle = (item.score / total) * availableAngle; // Use available angle after padding
-        const startAngle = data.slice(0, index).reduce((sum, d) => {
-            const segmentAngle = (d.score / total) * availableAngle;
-            return sum + segmentAngle + padAngle; // Add padding after each segment
-        }, 0);
-        return { ...item, percentage, angle, startAngle };
-    });
+  // Calculate total and percentages for pie chart data
+  const total = data.reduce((sum, item) => sum + item.score, 0);
 
-    // SVG dimensions
-    const size = 400;
-    const center = size / 2;
-    const outerRadius = 150;
-    const innerRadius = 100;
+  // Convert EmotionalStageAssessment to StageDatum format for ResponsivePie
+  const pieData: StageDatum[] = data.map((item) => ({
+    id: item.stage,
+    label: item.stage,
+    value: Math.round((item.score / total) * 100),
+  }));
 
-    // Function to create arc path
-    const createArc = (startAngle: number, endAngle: number, innerR: number, outerR: number) => {
-        const startRad = (startAngle - 90) * (Math.PI / 180);
-        const endRad = (endAngle - 90) * (Math.PI / 180);
-
-        const x1 = center + outerR * Math.cos(startRad);
-        const y1 = center + outerR * Math.sin(startRad);
-        const x2 = center + outerR * Math.cos(endRad);
-        const y2 = center + outerR * Math.sin(endRad);
-        const x3 = center + innerR * Math.cos(endRad);
-        const y3 = center + innerR * Math.sin(endRad);
-        const x4 = center + innerR * Math.cos(startRad);
-        const y4 = center + innerR * Math.sin(startRad);
-
-        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-
-        return `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+  // Calculate percentages for gradient - use same order as pieData
+  const dataWithPercentages = pieData.map((pieItem) => {
+    const originalItem = data.find((d) => d.stage === pieItem.label);
+    return {
+      ...originalItem!,
+      percentage: pieItem.value, // Use the rounded percentage from pie chart
     };
+  });
 
-    // Function to calculate label position for each segment
-    const getLabelPosition = (startAngle: number, angle: number) => {
-        const midAngle = startAngle + angle / 2;
-        const labelRadius = (outerRadius + innerRadius) / 2;
-        const rad = (midAngle - 90) * (Math.PI / 180);
-        return {
-            x: center + labelRadius * Math.cos(rad),
-            y: center + labelRadius * Math.sin(rad)
-        };
-    };
+  return (
+    <AnimatedContainer
+      animation="fadeInUp"
+      transitionPreset="slow"
+      delay="xs"
+      className={`${CARD_BASE_CLASSES} p-5 xl:col-span-2`}
+    >
+      <SectionHeader
+        title="Stage Distribution"
+        description="Current sentiment spread across stages"
+      />
+      <div className="mt-4 h-72 relative">
+        {/* Pie Chart */}
+        <ResponsivePie
+          data={pieData}
+          margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          innerRadius={0.65}
+          padAngle={2}
+          cornerRadius={6}
+          activeOuterRadiusOffset={10}
+          colors={(d: StageDatum) => getStagePieColor(d.label)}
+          enableArcLinkLabels={false}
+          arcLabelsSkipAngle={10}
+          arcLabel={(d: StageDatum) => `${d.value}%`}
+          arcLabelsTextColor={{
+            from: "color",
+            modifiers: [["darker", 2.2]],
+          }}
+          arcLabelsRadiusOffset={0.55}
+          defs={PIE_GRADIENTS}
+          fill={PIE_FILL}
+          theme={pieChartTheme}
+          animate
+          motionConfig="gentle"
+          onMouseEnter={(datum: StageDatum) => {
+            const stage = data.find((d) => d.stage === datum.label);
+            if (stage) setHoveredStage(stage);
+          }}
+          onMouseLeave={() => setHoveredStage(null)}
+        />
 
-    return (
-        <AnimatedContainer
-            animation="fadeInUp"
-            transitionPreset="slow"
-            delay="xs"
-            className={`${CARD_BASE_CLASSES} p-4`}
-        >
-            <SectionHeader
-                title="Emotional Aura"
-                description="Interactive visualization of emotional stage distribution"
-            />
-            <div className="flex items-center justify-center -mt-12">
-                <div className="relative">
-                    <svg width={size} height={size} className="drop-shadow-2xl">
-                        <defs>
-                            {/* Glow filters */}
-                            <filter id="glow">
-                                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
+        {/* Human Figure Overlay - Centered */}
+        {!hoveredStage && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <svg width="154" height="154" viewBox="0 0 154 154">
+              <defs>
+                <filter id="strongGlow">
+                  <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
 
-                            <filter id="strongGlow">
-                                <feGaussianBlur stdDeviation="8" result="coloredBlur" />
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
+                {/* Dynamic holographic gradient for human figure based on data */}
+                <linearGradient
+                  id="holoGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  {/* Start with first color at 0% */}
+                  <stop
+                    offset="0%"
+                    stopColor={dataWithPercentages[0]?.color}
+                    stopOpacity="0.8"
+                  />
+                  {/* Add stops at cumulative percentages for each stage */}
+                  {dataWithPercentages.map((item, index) => {
+                    const cumulativePercentage = dataWithPercentages
+                      .slice(0, index + 1)
+                      .reduce((sum, d) => sum + d.percentage, 0);
+                    return (
+                      <stop
+                        key={index}
+                        offset={`${cumulativePercentage}%`}
+                        stopColor={item.color}
+                        stopOpacity="0.8"
+                      />
+                    );
+                  })}
+                </linearGradient>
+              </defs>
 
-                        {/* Dynamic holographic gradient for human figure based on data */}
-                        <linearGradient id="holoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            {dataWithAngles.map((item, index) => {
-                                const cumulativePercentage = dataWithAngles
-                                    .slice(0, index + 1)
-                                    .reduce((sum, d) => sum + d.percentage, 0);
-                                return (
-                                    <stop 
-                                        key={index}
-                                        offset={`${cumulativePercentage}%`} 
-                                        stopColor={item.color} 
-                                        stopOpacity="0.8" 
-                                    />
-                                );
-                            })}
-                        </linearGradient>
-
-                        {/* Radial gradient for concentric circles */}
-                        <radialGradient id="circleGradient">
-                            <stop offset="0%" stopColor="#00d4ff" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#00d4ff" stopOpacity="0" />
-                        </radialGradient>
-                    </defs>
-
-                    {/* Background concentric circles */}
-                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                        <circle
-                            key={`circle-${i}`}
-                            cx={center}
-                            cy={center}
-                            r={20 + i * 18}
-                            fill="none"
-                            stroke="url(#circleGradient)"
-                            strokeWidth="1"
-                            opacity={0.3 - i * 0.04}
-                        />
-                    ))}
-
-                    {/* Donut segments */}
-                    {dataWithAngles.map((item, index) => {
-                        const endAngle = item.startAngle + item.angle;
-                        const labelPos = getLabelPosition(item.startAngle, item.angle);
-                        const percentage = item.percentage.toFixed(1);
-                        
-                        const isHovered = hoveredStage?.stage === item.stage;
-                        const scale = isHovered ? 1.1 : 1;
-                        
-                        return (
-                            <g 
-                                key={index}
-                                transform={`translate(${center}, ${center}) scale(${scale}) translate(${-center}, ${-center})`}
-                                className="transition-transform duration-600 ease-out"
-                            >
-                                <path
-                                    d={createArc(item.startAngle, endAngle, innerRadius, outerRadius)}
-                                    fill={item.color}
-                                    stroke={item.color}
-                                    strokeWidth="2"
-                                    opacity={isHovered ? "1" : "0.85"}
-                                    className="transition-all duration-300 hover:opacity-100 cursor-pointer"
-                                    onMouseEnter={() => setHoveredStage(item)}
-                                    onMouseLeave={() => setHoveredStage(null)}
-                                />
-                                {/* Percentage label on segment */}
-                                <text
-                                    x={labelPos.x}
-                                    y={labelPos.y}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                    fill="white"
-                                    fontSize="14"
-                                    fontWeight="bold"
-                                    className="pointer-events-none drop-shadow-lg"
-                                    style={{
-                                        textShadow: `0 0 4px ${item.color}, 0 0 8px rgba(0,0,0,0.8)`
-                                    }}
-                                >
-                                    {percentage}%
-                                </text>
-                            </g>
-                        );
-                    })}
-
-                    {/* Holographic human figure using provided SVG - only show when not hovering */}
-                    {!hoveredStage && (
-                        <g transform={`translate(${center}, ${center})`} filter="url(#strongGlow)">
-                            {/* Scale and position the human SVG */}
-                            <g transform="translate(-77, -77) scale(0.75)">
-                                <path
-                                    d="M104.265,117.959c-0.304,3.58,2.126,22.529,3.38,29.959c0.597,3.52,2.234,9.255,1.645,12.3
+              <g transform="translate(77, 77)" filter="url(#strongGlow)">
+                <g transform="translate(-77, -77) scale(0.75)">
+                  <path
+                    d="M104.265,117.959c-0.304,3.58,2.126,22.529,3.38,29.959c0.597,3.52,2.234,9.255,1.645,12.3
                 c-0.841,4.244-1.084,9.736-0.621,12.934c0.292,1.942,1.211,10.899-0.104,14.175c-0.688,1.718-1.949,10.522-1.949,10.522
                 c-3.285,8.294-1.431,7.886-1.431,7.886c1.017,1.248,2.759,0.098,2.759,0.098c1.327,0.846,2.246-0.201,2.246-0.201
                 c1.139,0.943,2.467-0.116,2.467-0.116c1.431,0.743,2.758-0.627,2.758-0.627c0.822,0.414,1.023-0.109,1.023-0.109
@@ -218,57 +159,60 @@ const Aura = ({ data }: AuraProps) => {
                 c0,0,0.91,1.047,2.237,0.201c0,0,1.742,1.175,2.777-0.098c0,0,1.839,0.408-1.435-7.886c0,0-1.254-8.793-1.945-10.522
                 c-1.318-3.275-0.387-12.251-0.106-14.175c0.453-3.216,0.21-8.695-0.618-12.934c-0.606-3.038,1.035-8.774,1.641-12.3
                 c1.245-7.423,3.685-26.373,3.38-29.959l1.008,0.354C103.809,118.312,104.265,117.959,104.265,117.959z"
-                                    fill="url(#holoGradient)"
-                                    stroke="url(#holoGradient)"
-                                    strokeWidth="1"
-                                    opacity="0.9"
-                                />
-                            </g>
-                        </g>
-                    )}
+                    fill="url(#holoGradient)"
+                    stroke="url(#holoGradient)"
+                    strokeWidth="1"
+                    opacity="0.9"
+                  />
+                </g>
+              </g>
+            </svg>
+          </div>
+        )}
 
-                </svg>
-
-                {/* Hover Details */}
-                {hoveredStage && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[120px] max-w-[156px] z-10">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div
-                                className="w-4 h-4 rounded-sm shadow-lg"
-                                style={{
-                                    backgroundColor: hoveredStage.color,
-                                    boxShadow: `0 0 10px ${hoveredStage.color}`,
-                                }}
-                            />
-                            <h3 className="font-bold text-base">{hoveredStage.stage}</h3>
-                        </div>
-                        
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-300">Score:</span>
-                                <span className="font-semibold">{hoveredStage.score.toFixed(2)}</span>
-                            </div>
-                            
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-300">Percentage:</span>
-                                <span className="font-semibold">{((hoveredStage.score / total) * 100).toFixed(1)}%</span>
-                            </div>
-                            
-                            {hoveredStage.status && (
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-300">Status:</span>
-                                    <span className="px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
-                                        {hoveredStage.status}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+        {/* Hover Details */}
+        {hoveredStage && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[120px] max-w-[156px] z-10 pointer-events-none">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className="w-4 h-4 rounded-sm shadow-lg"
+                style={{
+                  backgroundColor: hoveredStage.color,
+                  boxShadow: `0 0 10px ${hoveredStage.color}`,
+                }}
+              />
+              <h3 className="font-bold text-base">{hoveredStage.stage}</h3>
             </div>
-        </div>
-        </AnimatedContainer>
-    );
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Score:</span>
+                <span className="font-semibold">
+                  {hoveredStage.score.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Percentage:</span>
+                <span className="font-semibold">
+                  {((hoveredStage.score / total) * 100).toFixed(1)}%
+                </span>
+              </div>
+
+              {hoveredStage.status && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">Status:</span>
+                  <span className="px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
+                    {hoveredStage.status}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </AnimatedContainer>
+  );
 };
 
 export default Aura;
