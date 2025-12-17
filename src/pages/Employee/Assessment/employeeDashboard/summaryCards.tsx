@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { CheckCircle, AlertTriangle, TrendingUp } from "lucide-react";
-import { SummaryCard } from "@/components/assessmentDashboard";
+import { MetricCard } from "@/components/common";
 import {
   MOCK_PENDING_ASSESSMENTS,
   MOCK_COMPLETED_ASSESSMENTS,
@@ -17,23 +17,26 @@ const SummaryCards = () => {
 
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      <SummaryCard
+      <MetricCard
+        variant="compact"
         label="Assessments Completed"
         value={totalCompleted}
         icon={CheckCircle}
-        gradient="bg-linear-to-b from-brand-teal to-brand-navy"
+        gradient="bg-gradient-to-br from-brand-teal to-brand-navy"
       />
-      <SummaryCard
+      <MetricCard
+        variant="compact"
         label="Pending Assessments"
         value={totalPending}
         icon={AlertTriangle}
-        gradient="bg-linear-to-b from-amber-500 to-orange-600"
+        gradient="bg-gradient-to-br from-amber-500 to-orange-600"
       />
-      <SummaryCard
+      <MetricCard
+        variant="compact"
         label="Completion Rate"
         value={`${completionRate}%`}
         icon={TrendingUp}
-        gradient="bg-linear-to-b from-purple-500 to-indigo-600"
+        gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
       />
     </div>
   );

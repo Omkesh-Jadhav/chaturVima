@@ -1,3 +1,4 @@
+// List of recent assessment activities with timestamps and stage information
 import {
   Card,
   CardContent,

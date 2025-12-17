@@ -1,6 +1,6 @@
 /**
  * Confirmation Modal Component
- * 
+ *
  * Displays a confirmation dialog before submitting assessment answers.
  * Shows answered count and warns about final submission.
  */
@@ -53,7 +53,9 @@ const ConfirmationModal = ({
               <Check className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">Ready to Submit?</h2>
+              <h2 className="text-2xl font-bold text-white">
+                Ready to Submit?
+              </h2>
               <p className="text-sm text-white/90 mt-1">
                 Please review your answers before final submission
               </p>
@@ -70,15 +72,20 @@ const ConfirmationModal = ({
               </p>
               <p className="text-sm text-orange-800 leading-relaxed">
                 Once you submit, your answers will be locked and{" "}
-                <span className="font-bold text-orange-900">cannot be changed</span>.
-                Please double-check that all your responses are correct before proceeding.
+                <span className="font-bold text-orange-900">
+                  cannot be changed
+                </span>
+                . Please double-check that all your responses are correct before
+                proceeding.
               </p>
             </div>
           </div>
 
           <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Questions Answered</span>
+              <span className="text-sm font-medium text-gray-700">
+                Questions Answered
+              </span>
               <span className="text-lg font-bold text-brand-teal">
                 {answeredCount} / {totalQuestions}
               </span>
@@ -87,7 +94,9 @@ const ConfirmationModal = ({
               <motion.div
                 className="absolute inset-y-0 left-0 bg-gradient-to-r from-brand-teal to-brand-navy rounded-full"
                 initial={{ width: 0 }}
-                animate={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
+                animate={{
+                  width: `${(answeredCount / totalQuestions) * 100}%`,
+                }}
                 transition={{ duration: 0.4 }}
               />
             </div>
@@ -119,4 +128,3 @@ const ConfirmationModal = ({
 };
 
 export default ConfirmationModal;
-

@@ -1,3 +1,4 @@
+// Fuel gauge visualization component displaying value on 0-5 scale with animated pump
 import { motion } from "framer-motion";
 import {
   RESPONSE_LEVELS,

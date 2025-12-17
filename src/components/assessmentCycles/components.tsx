@@ -1,12 +1,6 @@
-/**
- * Assessment Cycles Shared Components
- * Reusable components for assessment cycle management
- */
-
+// Shared components for assessment cycle management
 import { cn } from "@/utils/cn";
 import { getInitials } from "@/utils/commonUtils";
-
-// Department Badge Component
 interface DepartmentBadgeProps {
   department: string;
   isActive: boolean;
@@ -43,7 +37,6 @@ export const DepartmentBadge = ({
   );
 };
 
-// Department Selector Component
 interface DepartmentSelectorProps {
   departments: string[];
   selected: string[];
@@ -95,7 +88,6 @@ export const DepartmentSelector = ({
   );
 };
 
-// Employee Card Component
 interface Employee {
   id: string;
   name: string;

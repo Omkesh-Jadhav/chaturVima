@@ -1,19 +1,11 @@
-/**
- * Section Header Component
- * Reusable header for dashboard sections
- */
-
+// Reusable section header component with title, description, and optional actions
 interface SectionHeaderProps {
   title: string;
   description?: string | React.ReactNode;
   actions?: React.ReactNode;
 }
 
-export const SectionHeader = ({
-  title,
-  description,
-  actions,
-}: SectionHeaderProps) => (
+export const SectionHeader = ({ title, description, actions }: SectionHeaderProps) => (
   <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
     <div>
       <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -22,3 +14,4 @@ export const SectionHeader = ({
     {actions && <div>{actions}</div>}
   </div>
 );
+

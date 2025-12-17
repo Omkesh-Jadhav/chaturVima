@@ -1,3 +1,4 @@
+// Grid layout displaying department health scores and stage distributions
 import {
   Card,
   CardContent,

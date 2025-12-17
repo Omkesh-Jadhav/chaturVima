@@ -1,7 +1,4 @@
-/**
- * UI Components Export
- * Central export for all reusable UI components
- */
+// Reusable UI components for forms, cards, inputs, and interactive elements
 export { default as Button } from "./Button";
 export {
   default as Card,

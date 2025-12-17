@@ -1,9 +1,4 @@
-/**
- * Animated Background Component
- * Floating gradient orbs for dashboard background
- * Uses centralized theme colors by default
- */
-
+// Floating gradient orbs for dashboard background using centralized theme colors
 import { motion } from "framer-motion";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 

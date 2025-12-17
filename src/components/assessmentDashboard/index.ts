@@ -1,11 +1,7 @@
-/**
- * Assessment Dashboard Components
- * Centralized exports for all dashboard components
- */
-
-export { SummaryCard } from "./SummaryCard";
-export { SectionHeader } from "./SectionHeader";
+// Assessment dashboard components
 export { AnimatedBackground } from "./AnimatedBackground";
 export { default as FuelGauge } from "./FuelGauge";
+export { MetricCard } from "../common/MetricCard";
+export { SectionHeader } from "../common/SectionHeader";
 export * from "./hooks";
 export * from "./constants";

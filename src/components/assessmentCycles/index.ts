@@ -1,8 +1,4 @@
-/**
- * Assessment Cycles Components
- * Centralized exports for all assessment cycle components
- */
-
+// Assessment cycle management components
 export { default as CycleDrawer } from "./CycleDrawer";
 export { default as CycleTable } from "./CycleTable";
 export { default as ShareDrawer } from "./ShareDrawer";

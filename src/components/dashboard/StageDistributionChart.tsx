@@ -1,3 +1,4 @@
+// Pie chart visualization for stage distribution across organization
 import {
   Card,
   CardContent,

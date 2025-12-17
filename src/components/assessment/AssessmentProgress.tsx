@@ -1,6 +1,6 @@
 /**
  * Assessment Progress Component
- * 
+ *
  * Displays progress bar with milestone celebrations and visual indicators.
  * Shows completion percentage and celebrates milestones at 25%, 50%, 75%, and 100%.
  */
