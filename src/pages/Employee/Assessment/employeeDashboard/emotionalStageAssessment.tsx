@@ -23,34 +23,23 @@ const EmotionalStageAssessment = ({
 }: EmotionalStageAssessmentProps) => {
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
-  const totalScore = emotionalStageAssessment.reduce(
-    (sum, stage) => sum + stage.score,
+
+  // Find the stage with the highest score
+  const maxScoreValue = Math.max(
+    ...emotionalStageAssessment.map((stage) => stage.score),
     0
   );
 
-  // Calculate percentages and ensure only one Dominant stage
+  // Calculate status based on highest score (not percentage)
   const stagesWithStatus = emotionalStageAssessment.map((stage) => {
-    const percentageOfTotal = totalScore > 0 ? (stage.score / totalScore) * 100 : 0;
-    // Use status from data if available, otherwise calculate (only Dominant if >= 30%)
-    let status = stage.status;
-    if (!status) {
-      status = percentageOfTotal >= 30 ? "Dominant" : undefined;
-    }
-    return { ...stage, percentageOfTotal, calculatedStatus: status };
-  });
+    // Mark as Dominant if it has the highest score
+    const calculatedStatus =
+      stage.score === maxScoreValue && maxScoreValue > 0
+        ? "Dominant"
+        : undefined;
 
-  // Ensure only one Dominant - if multiple, keep only the highest percentage
-  const dominantStages = stagesWithStatus.filter((s) => s.calculatedStatus === "Dominant");
-  if (dominantStages.length > 1) {
-    // Sort by percentage and keep only the highest as Dominant
-    dominantStages.sort((a, b) => b.percentageOfTotal - a.percentageOfTotal);
-    stagesWithStatus.forEach((stage) => {
-      if (stage.calculatedStatus === "Dominant" && stage !== dominantStages[0]) {
-        // Remove Dominant status from others
-        stage.calculatedStatus = undefined;
-      }
-    });
-  }
+    return { ...stage, calculatedStatus };
+  });
 
   const dominantStage = stagesWithStatus.find(
     (s) => s.calculatedStatus === "Dominant"

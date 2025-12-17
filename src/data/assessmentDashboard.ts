@@ -212,12 +212,12 @@ export const MOCK_EMOTIONAL_INTENSITY_HEATMAP: EmotionalIntensityRow[] = [
 export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
   {
     stage: "Steady-State",
-    score: 118.73,
+    score: 200.73,
     color: getStagePieColor("Steady-State"),
   },
   {
     stage: "Honeymoon",
-    score: 153.73,
+    score: 110,
     color: getStagePieColor("Honeymoon"),
     status: "Dominant",
   },

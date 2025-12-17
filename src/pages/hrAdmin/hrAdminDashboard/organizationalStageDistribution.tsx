@@ -27,25 +27,56 @@ const OrganizationalStageDistribution = ({
   selectedStage,
 }: OrganizationalStageDistributionProps) => {
   const stageDistribution = useMemo(() => {
-    const stageCount: Record<string, number> = Object.fromEntries(
-      STAGE_ORDER.map((stage) => [stage, 0])
-    );
+    const stageData: Record<string, { count: number; scoreSum: number }> =
+      Object.fromEntries(
+        STAGE_ORDER.map((stage) => [stage, { count: 0, scoreSum: 0 }])
+      );
 
     hrDashboardData.employee.forEach((employee) => {
       const stage = employee.stageDetails.stage;
-      if (stage in stageCount) stageCount[stage]++;
+      if (stage in stageData) {
+        stageData[stage].count++;
+        stageData[stage].scoreSum += employee.stageDetails.score || 0;
+      }
     });
 
-    const total = Object.values(stageCount).reduce(
-      (sum, count) => sum + count,
+    const total = Object.values(stageData).reduce(
+      (sum, data) => sum + data.count,
       0
     );
-    const maxCount = Math.max(...Object.values(stageCount));
 
-    const distribution: StageGaugeData[] = STAGE_ORDER.map((stage) => {
-      const count = stageCount[stage];
-      const scoreOnScale = maxCount > 0 ? (count / maxCount) * 5 : 0;
-      const percentage = total > 0 ? (count / total) * 100 : 0;
+    // Calculate average scores for each stage
+    const avgScores = STAGE_ORDER.map((stage) => {
+      const data = stageData[stage];
+      return data.count > 0 ? data.scoreSum / data.count : 0;
+    });
+    const maxAvgScore = Math.max(...avgScores, 1); // Avoid division by zero
+
+    // Calculate scoreOnScale for all stages first
+    const stagesWithScores = STAGE_ORDER.map((stage, idx) => {
+      const avgScore = avgScores[idx];
+      const scoreOnScale = maxAvgScore > 0 ? (avgScore / maxAvgScore) * 5 : 0;
+      return { stage, scoreOnScale };
+    });
+
+    // Find the maximum scoreOnScale
+    const maxScoreOnScale = Math.max(
+      ...stagesWithScores.map((s) => s.scoreOnScale),
+      0
+    );
+
+    const distribution: StageGaugeData[] = STAGE_ORDER.map((stage, idx) => {
+      const data = stageData[stage];
+      const count = data.count;
+      // Calculate average score and normalize to 0-5 scale
+      const avgScore = avgScores[idx];
+      const scoreOnScale = maxAvgScore > 0 ? (avgScore / maxAvgScore) * 5 : 0;
+
+      // Mark as Dominant if it has the highest scoreOnScale
+      const status =
+        scoreOnScale === maxScoreOnScale && maxScoreOnScale > 0
+          ? "Dominant"
+          : undefined;
 
       return {
         stage,
@@ -53,7 +84,7 @@ const OrganizationalStageDistribution = ({
         score: scoreOnScale,
         scoreOnScale,
         color: getStagePieColor(stage),
-        status: percentage >= 30 ? "Dominant" : undefined,
+        status,
       };
     });
 
