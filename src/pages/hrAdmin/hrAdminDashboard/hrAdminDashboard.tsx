@@ -18,13 +18,13 @@ import {
 import { useState } from "react";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 
-interface StageGaugeData extends EmotionalStageAssessment {
+interface StageDistributionData extends EmotionalStageAssessment {
   count: number;
   scoreOnScale: number;
 }
 
 const HrAdminDashboard = () => {
-  const [selectedStage, setSelectedStage] = useState<StageGaugeData | null>(
+  const [selectedStage, setSelectedStage] = useState<StageDistributionData | null>(
     null
   );
   return (

@@ -9,13 +9,13 @@ import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-4";
 
-interface StageGaugeData extends EmotionalStageAssessment {
+interface StageDistributionData extends EmotionalStageAssessment {
   count: number;
   scoreOnScale: number;
 }
 
 interface OrganizationalSubStagesBreakdownProps {
-  selectedStage: StageGaugeData | null;
+  selectedStage: StageDistributionData | null;
 }
 
 const OrganizationalSubStagesBreakdown = ({

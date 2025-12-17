@@ -12,14 +12,14 @@ import hrDashboardData from "@/data/hrDashboardData.json";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 import { CARD_SHADOWS, CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 
-interface StageGaugeData extends EmotionalStageAssessment {
+interface StageDistributionData extends EmotionalStageAssessment {
   count: number;
   scoreOnScale: number;
 }
 
 interface OrganizationalStageDistributionProps {
-  onStageSelect?: (stage: StageGaugeData | null) => void;
-  selectedStage?: StageGaugeData | null;
+  onStageSelect?: (stage: StageDistributionData | null) => void;
+  selectedStage?: StageDistributionData | null;
 }
 
 const OrganizationalStageDistribution = ({
@@ -65,28 +65,30 @@ const OrganizationalStageDistribution = ({
       0
     );
 
-    const distribution: StageGaugeData[] = STAGE_ORDER.map((stage, idx) => {
-      const data = stageData[stage];
-      const count = data.count;
-      // Calculate average score and normalize to 0-5 scale
-      const avgScore = avgScores[idx];
-      const scoreOnScale = maxAvgScore > 0 ? (avgScore / maxAvgScore) * 5 : 0;
+    const distribution: StageDistributionData[] = STAGE_ORDER.map(
+      (stage, idx) => {
+        const data = stageData[stage];
+        const count = data.count;
+        // Calculate average score and normalize to 0-5 scale
+        const avgScore = avgScores[idx];
+        const scoreOnScale = maxAvgScore > 0 ? (avgScore / maxAvgScore) * 5 : 0;
 
-      // Mark as Dominant if it has the highest scoreOnScale
-      const status =
-        scoreOnScale === maxScoreOnScale && maxScoreOnScale > 0
-          ? "Dominant"
-          : undefined;
+        // Mark as Dominant if it has the highest scoreOnScale
+        const status =
+          scoreOnScale === maxScoreOnScale && maxScoreOnScale > 0
+            ? "Dominant"
+            : undefined;
 
-      return {
-        stage,
-        count,
-        score: scoreOnScale,
-        scoreOnScale,
-        color: getStagePieColor(stage),
-        status,
-      };
-    });
+        return {
+          stage,
+          count,
+          score: scoreOnScale,
+          scoreOnScale,
+          color: getStagePieColor(stage),
+          status,
+        };
+      }
+    );
 
     return { distribution, total };
   }, []);
@@ -108,7 +110,7 @@ const OrganizationalStageDistribution = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleStageClick = (stage: StageGaugeData) => {
+  const handleStageClick = (stage: StageDistributionData) => {
     if (onStageSelect) {
       onStageSelect(selectedStage?.stage === stage.stage ? null : stage);
     }
