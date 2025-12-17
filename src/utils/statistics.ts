@@ -60,54 +60,6 @@ export const correlation = (x: number[], y: number[]): number => {
   return numerator / Math.sqrt(denomX * denomY);
 };
 
-/**
- * Calculate Euclidean distance between two points
- */
-export const euclideanDistance = (p1: number[], p2: number[]): number => {
-  if (p1.length !== p2.length) throw new Error('Points must have same dimensions');
-
-  let sum = 0;
-  for (let i = 0; i < p1.length; i++) {
-    sum += Math.pow(p1[i] - p2[i], 2);
-  }
-  return Math.sqrt(sum);
-};
-
-/**
- * Normalize array to 0-1 scale
- */
-export const normalize = (values: number[]): number[] => {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min;
-
-  if (range === 0) return values.map(() => 0.5);
-  return values.map(v => (v - min) / range);
-};
-
-/**
- * Normalize matrix (2D array) column-wise
- */
-export const normalizeMatrix = (matrix: number[][]): number[][] => {
-  if (matrix.length === 0) return matrix;
-
-  const numCols = matrix[0].length;
-  const normalized: number[][] = Array(matrix.length).fill(0).map(() => Array(numCols).fill(0));
-
-  // Normalize each column
-  for (let col = 0; col < numCols; col++) {
-    const column = matrix.map(row => row[col]);
-    const min = Math.min(...column);
-    const max = Math.max(...column);
-    const range = max - min;
-
-    for (let row = 0; row < matrix.length; row++) {
-      normalized[row][col] = range === 0 ? 0.5 : (matrix[row][col] - min) / range;
-    }
-  }
-
-  return normalized;
-};
 
 /**
  * Clamp value between min and max

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { captureChartsFromPage } from "@/utils/chartCapture";
+import { captureChartsFromPage } from "@/utils/comprehensivePdfGenerator";
 import { generateComprehensivePDF } from "@/utils/comprehensivePdfGenerator";
 import assessmentData from "@/data/assessmentReportData.json";
 

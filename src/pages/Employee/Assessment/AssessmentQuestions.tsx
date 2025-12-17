@@ -29,17 +29,13 @@ import {
   saveSubmissionStatus,
   loadSubmissionStatus,
   clearPageStorage,
-} from "../../../utils/assessmentStorage";
-import {
   getPaginationButtons,
   getProgressEmoji,
   getProgressMessage,
-} from "../../../utils/paginationUtils";
-import {
   filterQuestionsByTypes,
   getCompletionByType,
   areAllTypesComplete,
-} from "../../../utils/assessmentTypeUtils";
+} from "../../../utils/assessmentUtils";
 import { ASSESSMENT_CONFIG } from "../../../data/assessmentConstants";
 import type { AssessmentType } from "../../../data/assessmentDashboard";
 

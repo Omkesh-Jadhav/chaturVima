@@ -1,6 +1,5 @@
 /**
  * SWOT Analysis Utility Functions
- * Helper functions for generating SWOT analysis data
  */
 
 export type SWOTRating = "HIGH" | "MEDIUM" | "CRITICAL";
@@ -24,11 +23,7 @@ export type StageDatum = {
 };
 
 /**
- * Generate SWOT analysis based on assessment data
- * @param categoryDistribution - Distribution of stages/categories
- * @param completionRate - Completion rate percentage
- * @param highPriorityPending - Number of high priority pending assessments
- * @returns SWOT analysis quadrants
+ * Generate SWOT analysis
  */
 export const generateSWOTAnalysis = (
   _categoryDistribution: StageDatum[],

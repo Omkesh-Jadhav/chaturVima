@@ -17,7 +17,7 @@ export * from "./dateUtils";
 export * from "./assessmentUtils";
 export * from "./assessmentConfig";
 
-// Statistics
+// Statistics (used by mockEmployees)
 export * from "./statistics";
 
 // Animations
@@ -25,6 +25,7 @@ export * from "./animations";
 
 // Domain-specific utilities
 export * from "./swotUtils";
-export * from "./clustering";
 export * from "./roleRoutes";
+export * from "./gaugeStyles";
+export * from "./comprehensivePdfGenerator";
 

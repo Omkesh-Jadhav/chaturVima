@@ -6,8 +6,8 @@ import {
   getGaugeColor,
   getActiveLevel,
   calculateHoseRibPosition,
-} from "@/utils/gaugeUtils";
-import { GAUGE_SHADOWS } from "@/utils/gaugeStyles";
+  GAUGE_SHADOWS,
+} from "@/utils/gaugeStyles";
 
 interface FuelGaugeProps {
   value: number;
