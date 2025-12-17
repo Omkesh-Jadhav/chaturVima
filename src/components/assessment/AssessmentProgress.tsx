@@ -1,6 +1,8 @@
 /**
- * AssessmentProgress Component
- * Progress bar with milestone celebrations
+ * Assessment Progress Component
+ * 
+ * Displays progress bar with milestone celebrations and visual indicators.
+ * Shows completion percentage and celebrates milestones at 25%, 50%, 75%, and 100%.
  */
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -13,12 +15,13 @@ interface AssessmentProgressProps {
   percentage: number;
 }
 
+// ==================== Constants ====================
 const MILESTONES = [
   { value: 25, label: "Great start!", icon: Sparkles, color: "text-blue-500" },
   { value: 50, label: "Halfway there!", icon: Award, color: "text-purple-500" },
   { value: 75, label: "Almost done!", icon: Rocket, color: "text-orange-500" },
   { value: 100, label: "Complete!", icon: Trophy, color: "text-green-500" },
-];
+] as const;
 
 const AssessmentProgress = ({
   current,

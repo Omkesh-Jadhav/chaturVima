@@ -1,6 +1,8 @@
 /**
- * CelebrationConfetti Component
- * Shows confetti animation at milestones
+ * Celebration Confetti Component
+ * 
+ * Displays confetti animation for milestone celebrations.
+ * Uses react-confetti library for animated particle effects.
  */
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";

@@ -1,3 +1,9 @@
+/**
+ * Success Modal Component
+ * 
+ * Displays a celebration modal after successful assessment submission.
+ * Shows confetti animation and achievement badges.
+ */
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Sparkles, Target, Star, Zap } from "lucide-react";

@@ -1,6 +1,8 @@
 /**
- * EnergyBreak Component
- * Fun facts and energy bar shown every 5 questions
+ * Energy Break Component
+ * 
+ * Displays motivational breaks with fun facts and energy restoration visuals.
+ * Shown every 5 questions to maintain engagement during assessment.
  */
 import { motion } from "framer-motion";
 import { Coffee, Zap, Heart, Star } from "lucide-react";
@@ -11,6 +13,7 @@ interface EnergyBreakProps {
   onContinue: () => void;
 }
 
+// ==================== Constants ====================
 const FUN_FACTS = [
   "Did you know? Taking short breaks improves focus by 20%! ☕",
   "You're doing great! Studies show self-reflection leads to better performance 🌟",
@@ -18,7 +21,7 @@ const FUN_FACTS = [
   "Keep going! Honest self-assessment is the first step to growth 🚀",
   "Research shows that purposeful work increases productivity by 30%! ⚡",
   "Almost there! Your insights will help create a better workplace 🎯",
-];
+] as const;
 
 const ENERGY_MESSAGES = [
   {
@@ -41,7 +44,7 @@ const ENERGY_MESSAGES = [
     message: "Shine on! Your input matters!",
     color: "text-purple-500",
   },
-];
+] as const;
 
 const EnergyBreak = ({ questionNumber, onContinue }: EnergyBreakProps) => {
   const factIndex = Math.floor(questionNumber / 5) % FUN_FACTS.length;

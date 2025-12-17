@@ -1,6 +1,14 @@
+/**
+ * Emotional Stage Transition Lab Component
+ *
+ * Displays historical assessment data showing transitions between emotional stages
+ * across multiple assessment cycles.
+ */
 import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { formatDisplayDate } from "@/utils/dateUtils";
+import { getStagePieColor } from "@/utils/assessmentConfig";
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
 
 export type HistoricalAssessment = {
   id: string;
@@ -58,9 +66,6 @@ const MOCK_HISTORICAL_ASSESSMENTS: HistoricalAssessment[] = [
     score: 461.88,
   },
 ];
-
-import { getStagePieColor } from "@/utils/assessmentConfig";
-import { STAGE_ORDER } from "@/data/assessmentDashboard";
 
 interface EmotionalStageTransitionLabProps {
   historicalAssessments?: HistoricalAssessment[];

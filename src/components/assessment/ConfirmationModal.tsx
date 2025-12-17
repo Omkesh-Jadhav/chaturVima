@@ -1,3 +1,9 @@
+/**
+ * Confirmation Modal Component
+ * 
+ * Displays a confirmation dialog before submitting assessment answers.
+ * Shows answered count and warns about final submission.
+ */
 import { motion } from "framer-motion";
 import { Check, AlertCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui";

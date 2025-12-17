@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronRight, Target, Shield, TrendingUp, AlertTriangle, BarChart3 } from 'lucide-react';
 
+/**
+ * Interactive Mind Map Component
+ * 
+ * Displays an expandable/collapsible mind map of recommendation sections.
+ * Allows users to explore recommendations in an organized, hierarchical structure.
+ */
 interface Recommendation {
   title: string;
   description: string;
@@ -17,7 +23,7 @@ interface MindMapProps {
   sections: RecommendationSection[];
 }
 
-const InteractiveMindMap: React.FC<MindMapProps> = ({ sections }) => {
+const InteractiveMindMap = ({ sections }: MindMapProps) => {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [expandedRecommendations, setExpandedRecommendations] = useState<Set<string>>(new Set());
 
@@ -76,7 +82,6 @@ const InteractiveMindMap: React.FC<MindMapProps> = ({ sections }) => {
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
-
       {/* Recommendation Sections arranged in a single column */}
       <div className="relative">
         <div className="grid grid-cols-1 gap-6">
