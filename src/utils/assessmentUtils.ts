@@ -132,3 +132,20 @@ export const getCycleStatusColor = (
     ? `${colors.bg} ${colors.text} ${colors.border || ""}`
     : `${colors.bg} ${colors.text}`;
 };
+
+/**
+ * Sort stages by score/percentage in descending order (high to low)
+ * @param stages - Array of stages with score or percentage
+ * @param scoreKey - Key to use for sorting (default: 'score', can be 'scoreOnScale', 'score', etc.)
+ * @returns Sorted array of stages (highest to lowest)
+ */
+export const sortStagesByScore = <T extends { [key: string]: any }>(
+  stages: T[],
+  scoreKey: keyof T = "score" as keyof T
+): T[] => {
+  return [...stages].sort((a, b) => {
+    const scoreA = typeof a[scoreKey] === "number" ? a[scoreKey] : 0;
+    const scoreB = typeof b[scoreKey] === "number" ? b[scoreKey] : 0;
+    return scoreB - scoreA; // Descending order (high to low)
+  });
+};

@@ -3,7 +3,11 @@ import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
 import { MOCK_EMOTIONAL_STAGE_ASSESSMENT } from "@/data/assessmentDashboard";
 import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
-import { calculatePercentage, findMaxByKey } from "@/utils/assessmentUtils";
+import {
+  calculatePercentage,
+  findMaxByKey,
+  sortStagesByScore,
+} from "@/utils/assessmentUtils";
 import {
   STATUS_STYLES,
   ANIMATION_DELAYS,
@@ -41,7 +45,10 @@ const EmotionalStageAssessment = ({
     return { ...stage, calculatedStatus };
   });
 
-  const dominantStage = stagesWithStatus.find(
+  // Sort by score (high to low)
+  const sortedStagesWithStatus = sortStagesByScore(stagesWithStatus, "score");
+
+  const dominantStage = sortedStagesWithStatus.find(
     (s) => s.calculatedStatus === "Dominant"
   );
 
@@ -74,7 +81,7 @@ const EmotionalStageAssessment = ({
         </div>
 
         <div className="space-y-1.5">
-          {stagesWithStatus.map((stage, idx) => {
+          {sortedStagesWithStatus.map((stage, idx) => {
             const percentage = calculatePercentage(stage.score, maxScore);
             const statusStyle = stage.calculatedStatus === "Dominant"
               ? STATUS_STYLES["Dominant"]

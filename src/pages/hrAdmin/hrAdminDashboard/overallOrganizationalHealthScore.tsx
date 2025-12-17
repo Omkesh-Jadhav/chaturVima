@@ -6,6 +6,7 @@ import { getStagePieColor } from "@/utils/assessmentConfig";
 import { MOCK_SUB_STAGES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import { motion } from "framer-motion";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 const DUMMY_DATA = {
   totalEmployees: 156,
@@ -371,8 +372,13 @@ const OverallOrganizationalHealthScore = () => {
           </h3>
         </div>
         <div className="space-y-3">
-          {STAGES_ORDER.map((stage, idx) => {
-            const score = animatedStageScores[stage] || stageScores[stage] || 0;
+          {sortStagesByScore(
+            STAGES_ORDER.map((stage) => ({
+              stage,
+              score: animatedStageScores[stage] || stageScores[stage] || 0,
+            })),
+            "score"
+          ).map(({ stage, score }, idx) => {
             const color = getStagePieColor(stage);
             const isDominant = stage === dominantStage.stage;
             const barWidth = (score / maxScore) * 100;

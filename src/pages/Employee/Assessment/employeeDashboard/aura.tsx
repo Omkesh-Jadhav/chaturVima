@@ -9,6 +9,7 @@ import type {
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -21,11 +22,14 @@ const Aura = ({ data }: AuraProps) => {
   const [hoveredStage, setHoveredStage] =
     useState<EmotionalStageAssessment | null>(null);
 
+  // Sort data by score (high to low)
+  const sortedData = sortStagesByScore(data, "score");
+
   // Calculate total and percentages for pie chart data
-  const total = data.reduce((sum, item) => sum + item.score, 0);
+  const total = sortedData.reduce((sum, item) => sum + item.score, 0);
 
   // Convert EmotionalStageAssessment to StageDatum format for ResponsivePie
-  const pieData: StageDatum[] = data.map((item) => ({
+  const pieData: StageDatum[] = sortedData.map((item) => ({
     id: item.stage,
     label: item.stage,
     value: Math.round((item.score / total) * 100),
@@ -33,7 +37,7 @@ const Aura = ({ data }: AuraProps) => {
 
   // Calculate percentages for gradient - use same order as pieData
   const dataWithPercentages = pieData.map((pieItem) => {
-    const originalItem = data.find((d) => d.stage === pieItem.label);
+    const originalItem = sortedData.find((d) => d.stage === pieItem.label);
     return {
       ...originalItem!,
       percentage: pieItem.value, // Use the rounded percentage from pie chart
@@ -75,7 +79,7 @@ const Aura = ({ data }: AuraProps) => {
           animate
           motionConfig="gentle"
           onMouseEnter={(datum: StageDatum) => {
-            const stage = data.find((d) => d.stage === datum.label);
+            const stage = sortedData.find((d) => d.stage === datum.label);
             if (stage) setHoveredStage(stage);
           }}
           onMouseLeave={() => setHoveredStage(null)}

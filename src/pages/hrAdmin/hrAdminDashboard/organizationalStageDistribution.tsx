@@ -11,6 +11,7 @@ import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 import { CARD_SHADOWS, CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 interface StageDistributionData extends EmotionalStageAssessment {
   count: number;
@@ -90,7 +91,10 @@ const OrganizationalStageDistribution = ({
       }
     );
 
-    return { distribution, total };
+    // Sort by scoreOnScale (high to low)
+    const sortedDistribution = sortStagesByScore(distribution, "scoreOnScale");
+
+    return { distribution: sortedDistribution, total };
   }, []);
 
   const { distribution, total } = stageDistribution;

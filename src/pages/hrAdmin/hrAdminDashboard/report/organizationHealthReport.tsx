@@ -2,6 +2,7 @@ import React from "react";
 // import { ResponsiveRadialBar } from "@nivo/radial-bar";
 import { ResponsivePie } from "@nivo/pie";
 import organizationHealthData from "@/data/organizationHealthData.json";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 const OrganizationHealthReport: React.FC = () => {
   // Extract data from JSON
@@ -10,7 +11,7 @@ const OrganizationHealthReport: React.FC = () => {
     executiveSummary,
     interpretations,
     overview: { text: overviewText },
-    stageDistribution: { data: stageDistribution },
+    stageDistribution: { data: stageDistributionRaw },
     stageAnalysisDistribution,
     stageAnalysis,
     departmentBreakdown,
@@ -20,6 +21,12 @@ const OrganizationHealthReport: React.FC = () => {
     actionPlan,
     conclusion
   } = organizationHealthData;
+
+  // Sort stage distribution by employeeCount (high to low)
+  const stageDistribution = sortStagesByScore(
+    stageDistributionRaw,
+    "employeeCount"
+  );
 
   // Dynamic color palette for departments
   const colorPalette = [

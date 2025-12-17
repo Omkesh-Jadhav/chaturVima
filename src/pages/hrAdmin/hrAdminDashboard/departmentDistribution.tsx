@@ -7,6 +7,7 @@ import { SectionHeader } from "@/components/assessmentDashboard";
 import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import hrDashboardData from "@/data/hrDashboardData.json";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -228,9 +229,14 @@ const DepartmentDistribution = () => {
 
                   {/* Stage Distribution */}
                   <div className="space-y-2">
-                    {STAGES.map((stage) => {
-                      const count = dept.stageDistribution[stage];
-                      const stageColorValue = getStagePieColor(stage);
+                    {sortStagesByScore(
+                      STAGES.map((stage) => ({
+                        stage,
+                        count: dept.stageDistribution[stage],
+                        color: getStagePieColor(stage),
+                      })),
+                      "count"
+                    ).map(({ stage, count, color: stageColorValue }) => {
                       const barWidth =
                         maxStageCount > 0 ? (count / maxStageCount) * 100 : 0;
 

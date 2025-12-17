@@ -9,6 +9,7 @@ import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
 import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
 import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
+import { sortStagesByScore } from "@/utils/assessmentUtils";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -72,15 +73,18 @@ const StageDistributionHealth = () => {
       color: getStagePieColor(stage),
     }));
 
+    // Sort by value (high to low)
+    const sortedData = sortStagesByScore(data, "value");
+
     // Calculate totals
-    const total = data.reduce((sum, item) => sum + item.value, 0);
-    const dominant = data.reduce(
+    const total = sortedData.reduce((sum, item) => sum + item.value, 0);
+    const dominant = sortedData.reduce(
       (max, item) => (item.value > max.value ? item : max),
-      data[0]
+      sortedData[0]
     );
 
     return {
-      stageData: data,
+      stageData: sortedData,
       totalEmployees: total,
       dominantStage: dominant,
     };
