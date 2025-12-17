@@ -18,7 +18,9 @@ const levelToAssessmentType: Record<string, AssessmentType> = {
 /**
  * Get assessment type from question level
  */
-export const getAssessmentTypeFromQuestion = (question: Question): AssessmentType => {
+export const getAssessmentTypeFromQuestion = (
+  question: Question
+): AssessmentType => {
   return levelToAssessmentType[question.level] || "Employee Self Assessment";
 };
 
@@ -52,20 +54,29 @@ export const filterQuestionsByTypes = (
 export const getCompletionByType = (
   questionsByType: Record<AssessmentType, Question[]>,
   answers: Record<string, number>
-): Record<AssessmentType, { answered: number; total: number; isComplete: boolean }> => {
+): Record<
+  AssessmentType,
+  { answered: number; total: number; isComplete: boolean }
+> => {
   const completion: Record<
     AssessmentType,
     { answered: number; total: number; isComplete: boolean }
   > = {
     "Employee Self Assessment": { answered: 0, total: 0, isComplete: false },
-    "Manager Relationship Assessment": { answered: 0, total: 0, isComplete: false },
+    "Manager Relationship Assessment": {
+      answered: 0,
+      total: 0,
+      isComplete: false,
+    },
     "Department Assessment": { answered: 0, total: 0, isComplete: false },
     "Company Assessment": { answered: 0, total: 0, isComplete: false },
   };
 
   Object.entries(questionsByType).forEach(([type, questions]) => {
     const total = questions.length;
-    const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+    const answered = questions.filter(
+      (q) => answers[q.id] !== undefined
+    ).length;
     completion[type as AssessmentType] = {
       answered,
       total,
@@ -81,8 +92,10 @@ export const getCompletionByType = (
  */
 export const areAllTypesComplete = (
   assignedTypes: AssessmentType[],
-  completion: Record<AssessmentType, { answered: number; total: number; isComplete: boolean }>
+  completion: Record<
+    AssessmentType,
+    { answered: number; total: number; isComplete: boolean }
+  >
 ): boolean => {
   return assignedTypes.every((type) => completion[type]?.isComplete ?? false);
 };
-

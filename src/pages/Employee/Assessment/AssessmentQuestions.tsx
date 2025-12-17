@@ -296,7 +296,7 @@ const AssessmentQuestions = () => {
                   </motion.h1>
 
                   {/* Assessment Type Tabs */}
-                  <div className="flex gap-1 border border-gray-200 rounded-lg p-0.5 bg-gray-50 overflow-x-auto custom-scrollbar-horizontal">
+                  <div className="flex gap-1 overflow-x-auto custom-scrollbar-horizontal">
                     {assignedTypes.map((type) => {
                       const completion = completionByType[type];
                       const isSelected = selectedType === type;
