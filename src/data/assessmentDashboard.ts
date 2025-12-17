@@ -1,10 +1,34 @@
 /**
- * Assessment Dashboard Mock Data
- * Contains all mock data used in the Assessment Dashboard component
+ * Assessment Dashboard Mock Data and Constants
+ * Contains all mock data and constants used in the Assessment Dashboard component
  * Colors are imported from centralized theme configuration
  */
 
 import { getStagePieColor } from "@/utils/assessmentConfig";
+
+// ==================== Assessment Constants ====================
+export const ASSESSMENT_CONFIG = {
+  questionsPerPage: 5,
+  maxVisiblePagination: 10,
+  autoAdvanceDelay: 300,
+  scrollOffset: 20,
+  toastDuration: 3000,
+} as const;
+
+export const ACHIEVEMENT_BADGES = [
+  { icon: "Target", label: "Completed", color: "text-blue-600" },
+  { icon: "Star", label: "Thoughtful", color: "text-yellow-600" },
+  { icon: "Zap", label: "Valuable", color: "text-purple-600" },
+] as const;
+
+export const CONFETTI_COLORS = [
+  "#2BC6B4",
+  "#1E3A5F",
+  "#FF6347",
+  "#EF4444",
+  "#6A5ACD",
+  "#FFD700",
+] as const;
 
 // Centralized Stage Order - Use this across the entire project
 export const STAGE_ORDER = [

@@ -36,8 +36,7 @@ import {
   getCompletionByType,
   areAllTypesComplete,
 } from "../../../utils/assessmentUtils";
-import { ASSESSMENT_CONFIG } from "../../../data/assessmentConstants";
-import type { AssessmentType } from "../../../data/assessmentDashboard";
+import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();

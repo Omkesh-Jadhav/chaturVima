@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Trophy, Sparkles, Target, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/utils/cn";
-import { CONFETTI_COLORS, ACHIEVEMENT_BADGES } from "@/data/assessmentConstants";
+import { CONFETTI_COLORS, ACHIEVEMENT_BADGES } from "@/data/assessmentDashboard";
 
 interface SuccessModalProps {
   isOpen: boolean;

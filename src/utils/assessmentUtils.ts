@@ -36,17 +36,20 @@ export const CYCLE_STATUS_COLORS: Record<
 };
 
 // ==================== Assessment Storage ====================
-const getStorageKey = (type: "page" | "answers" | "submitted", email?: string): string => {
+const getStorageKey = (
+  type: "page" | "answers" | "submitted",
+  email?: string
+): string => {
   const baseKey = email
     ? email.toLowerCase().replace(/[^a-z0-9]/g, "_")
     : "anonymous";
-  
+
   const keys = {
     page: `chaturvima_assessment_page_${baseKey}`,
     answers: `chaturvima_assessment_answers_${baseKey}`,
     submitted: `chaturvima_assessment_submitted_${baseKey}`,
   };
-  
+
   return keys[type];
 };
 
@@ -67,9 +70,15 @@ export const loadPage = (email?: string): number => {
   }
 };
 
-export const saveAnswers = (answers: Record<string, number>, email?: string): void => {
+export const saveAnswers = (
+  answers: Record<string, number>,
+  email?: string
+): void => {
   try {
-    localStorage.setItem(getStorageKey("answers", email), JSON.stringify(answers));
+    localStorage.setItem(
+      getStorageKey("answers", email),
+      JSON.stringify(answers)
+    );
   } catch (error) {
     console.error("Error saving answers:", error);
   }
@@ -84,9 +93,15 @@ export const loadAnswers = (email?: string): Record<string, number> => {
   }
 };
 
-export const saveSubmissionStatus = (submitted: boolean, email?: string): void => {
+export const saveSubmissionStatus = (
+  submitted: boolean,
+  email?: string
+): void => {
   try {
-    localStorage.setItem(getStorageKey("submitted", email), submitted.toString());
+    localStorage.setItem(
+      getStorageKey("submitted", email),
+      submitted.toString()
+    );
   } catch (error) {
     console.error("Error saving submission status:", error);
   }
@@ -167,7 +182,9 @@ const levelToAssessmentType: Record<string, AssessmentType> = {
   company: "Company Assessment",
 };
 
-export const getAssessmentTypeFromQuestion = (question: Question): AssessmentType => {
+export const getAssessmentTypeFromQuestion = (
+  question: Question
+): AssessmentType => {
   return levelToAssessmentType[question.level] || "Employee Self Assessment";
 };
 
@@ -204,7 +221,11 @@ export const getCompletionByType = (
     { answered: number; total: number; isComplete: boolean }
   > = {
     "Employee Self Assessment": { answered: 0, total: 0, isComplete: false },
-    "Manager Relationship Assessment": { answered: 0, total: 0, isComplete: false },
+    "Manager Relationship Assessment": {
+      answered: 0,
+      total: 0,
+      isComplete: false,
+    },
     "Department Assessment": { answered: 0, total: 0, isComplete: false },
     "Company Assessment": { answered: 0, total: 0, isComplete: false },
   };
