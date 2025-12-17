@@ -219,19 +219,16 @@ export const MOCK_EMOTIONAL_STAGE_ASSESSMENT: EmotionalStageAssessment[] = [
     stage: "Honeymoon",
     score: 110,
     color: getStagePieColor("Honeymoon"),
-    status: "Dominant",
   },
   {
     stage: "Self-Introspection",
     score: 122.47,
     color: getStagePieColor("Self-Introspection"),
-    status: "Secondary",
   },
   {
     stage: "Soul-Searching",
     score: 121.07,
     color: getStagePieColor("Soul-Searching"),
-    status: "Transitional",
   },
 ];
 
