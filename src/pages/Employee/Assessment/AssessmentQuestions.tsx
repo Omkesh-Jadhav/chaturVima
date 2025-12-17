@@ -35,20 +35,34 @@ import {
   getProgressEmoji,
   getProgressMessage,
 } from "../../../utils/paginationUtils";
+import {
+  filterQuestionsByTypes,
+  getCompletionByType,
+  areAllTypesComplete,
+} from "../../../utils/assessmentTypeUtils";
 import { ASSESSMENT_CONFIG } from "../../../data/assessmentConstants";
+import type { AssessmentType } from "../../../data/assessmentDashboard";
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
-  const {
-    progress,
-    questions,
-    answers,
-    answerQuestion,
-    submitAssessment,
-    isComplete,
-  } = useAssessment();
+  const { questions, answers, answerQuestion, submitAssessment, isComplete } =
+    useAssessment();
   const { user } = useUser();
 
+  // Always show all 4 assessment types (assigned by backend)
+  const assignedTypes: AssessmentType[] = useMemo(
+    () => [
+      "Employee Self Assessment",
+      "Manager Relationship Assessment",
+      "Department Assessment",
+      "Company Assessment",
+    ],
+    []
+  );
+
+  const [selectedType, setSelectedType] = useState<AssessmentType>(
+    assignedTypes[0] || "Employee Self Assessment"
+  );
   const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -58,8 +72,20 @@ const AssessmentQuestions = () => {
     () => loadSubmissionStatus(user?.email) || isComplete
   );
 
+  // Filter questions by assessment type
+  const questionsByType = useMemo(
+    () => filterQuestionsByTypes(questions, assignedTypes),
+    [questions, assignedTypes]
+  );
+
+  // Get questions for selected type
+  const filteredQuestions = useMemo(
+    () => questionsByType[selectedType] || [],
+    [questionsByType, selectedType]
+  );
+
   const totalPages = Math.ceil(
-    questions.length / ASSESSMENT_CONFIG.questionsPerPage
+    filteredQuestions.length / ASSESSMENT_CONFIG.questionsPerPage
   );
   const questionsContainerRef = useRef<HTMLDivElement>(null);
   const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -67,11 +93,24 @@ const AssessmentQuestions = () => {
   const currentPageQuestions = useMemo(() => {
     const start = currentPage * ASSESSMENT_CONFIG.questionsPerPage;
     const end = start + ASSESSMENT_CONFIG.questionsPerPage;
-    return questions.slice(start, end);
-  }, [questions, currentPage]);
+    return filteredQuestions.slice(start, end);
+  }, [filteredQuestions, currentPage]);
 
-  const allAnswered = Object.keys(answers).length === questions.length;
-  const answeredCount = Object.keys(answers).length;
+  // Track completion per assessment type
+  const completionByType = useMemo(
+    () => getCompletionByType(questionsByType, answers),
+    [questionsByType, answers]
+  );
+
+  // Check if all assigned types are complete
+  const allTypesComplete = useMemo(
+    () => areAllTypesComplete(assignedTypes, completionByType),
+    [assignedTypes, completionByType]
+  );
+
+  const answeredCount = filteredQuestions.filter(
+    (q) => answers[q.id] !== undefined
+  ).length;
 
   useEffect(() => {
     const savedPage = loadPage(user?.email);
@@ -108,12 +147,12 @@ const AssessmentQuestions = () => {
         setShowSavedToast(false);
       }
 
-      const currentQuestionIndex = questions.findIndex(
+      const currentQuestionIndex = filteredQuestions.findIndex(
         (q) => q.id === questionId
       );
       if (
         currentQuestionIndex === -1 ||
-        currentQuestionIndex >= questions.length - 1
+        currentQuestionIndex >= filteredQuestions.length - 1
       )
         return;
 
@@ -121,7 +160,7 @@ const AssessmentQuestions = () => {
       const nextPage = Math.floor(
         nextQuestionIndex / ASSESSMENT_CONFIG.questionsPerPage
       );
-      const nextQuestion = questions[nextQuestionIndex];
+      const nextQuestion = filteredQuestions[nextQuestionIndex];
 
       if (nextPage === currentPage) {
         scrollToQuestion(nextQuestion.id);
@@ -140,7 +179,7 @@ const AssessmentQuestions = () => {
       isSubmitted,
       answerQuestion,
       isSaved,
-      questions,
+      filteredQuestions,
       currentPage,
       totalPages,
       user?.email,
@@ -162,13 +201,47 @@ const AssessmentQuestions = () => {
     setIsSaved(true);
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), ASSESSMENT_CONFIG.toastDuration);
-  }, [currentPage, answers, user?.email]);
+
+    // Check if current tab is complete and auto-advance to next incomplete tab
+    const currentCompletion = completionByType[selectedType];
+    if (currentCompletion?.isComplete) {
+      // Find next incomplete tab
+      const currentIndex = assignedTypes.findIndex(
+        (type) => type === selectedType
+      );
+      const nextIncompleteTab = assignedTypes
+        .slice(currentIndex + 1)
+        .find((type) => {
+          const completion = completionByType[type];
+          return completion && !completion.isComplete && completion.total > 0;
+        });
+
+      if (nextIncompleteTab) {
+        setTimeout(() => {
+          setSelectedType(nextIncompleteTab);
+          setCurrentPage(0);
+          savePage(0, user?.email);
+          questionsContainerRef.current?.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        }, 500); // Small delay to show the save toast
+      }
+    }
+  }, [
+    currentPage,
+    answers,
+    user?.email,
+    selectedType,
+    completionByType,
+    assignedTypes,
+  ]);
 
   const handleSubmit = useCallback(() => {
-    if (allAnswered && isSaved && !isSubmitted) {
+    if (allTypesComplete && isSaved && !isSubmitted) {
       setShowConfirmationModal(true);
     }
-  }, [allAnswered, isSaved, isSubmitted]);
+  }, [allTypesComplete, isSaved, isSubmitted]);
 
   const handleConfirmSubmit = useCallback(() => {
     setShowConfirmationModal(false);
@@ -185,6 +258,11 @@ const AssessmentQuestions = () => {
   }, [navigate]);
 
   useEffect(() => {
+    setCurrentPage(0);
+    questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedType]);
+
+  useEffect(() => {
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
 
@@ -195,29 +273,90 @@ const AssessmentQuestions = () => {
           <div className="grid lg:grid-cols-4 gap-4 h-full min-h-0 flex-1 overflow-hidden">
             {/* Main Questions Area */}
             <div className="lg:col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
-              <div className="flex-shrink-0 space-y-3 mb-4">
+              <div className="flex-shrink-0 space-y-2 mb-3">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/assessment")}
-                  className="cursor-pointer text-xs py-1.5 h-auto"
+                  className="cursor-pointer text-xs py-1 h-auto"
                   size="sm"
                 >
                   <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
                   Back to Assessment
                 </Button>
-                <motion.h1
-                  className="text-2xl md:text-3xl font-bold text-gray-900"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  Assessment Questions
-                </motion.h1>
+
+                {/* Header */}
+                <div className="space-y-2">
+                  <motion.h1
+                    className="text-xl md:text-2xl font-bold text-gray-900"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    Q4 2024 Assessment Cycle
+                  </motion.h1>
+
+                  {/* Assessment Type Tabs */}
+                  <div className="flex gap-1 border border-gray-200 rounded-lg p-0.5 bg-gray-50 overflow-x-auto custom-scrollbar-horizontal">
+                    {assignedTypes.map((type) => {
+                      const completion = completionByType[type];
+                      const isSelected = selectedType === type;
+                      const isComplete = completion?.isComplete ?? false;
+
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => !isSubmitted && setSelectedType(type)}
+                          disabled={isSubmitted}
+                          className={cn(
+                            "relative px-2.5 py-1.5 text-xs font-medium transition-all rounded-md whitespace-nowrap shrink-0",
+                            isSubmitted
+                              ? "cursor-not-allowed opacity-60"
+                              : "cursor-pointer",
+                            isComplete
+                              ? "bg-green-500 text-white shadow-sm hover:bg-green-600"
+                              : isSelected
+                              ? "bg-brand-teal text-white shadow-sm"
+                              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          )}
+                          title={type}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate max-w-[140px]">
+                              {type}
+                            </span>
+                            {isComplete && (
+                              <Check
+                                className={cn(
+                                  "h-3 w-3 shrink-0",
+                                  isSelected || isComplete
+                                    ? "text-white"
+                                    : "text-green-600"
+                                )}
+                              />
+                            )}
+                            {completion && completion.total > 0 && (
+                              <span
+                                className={cn(
+                                  "text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0",
+                                  isSelected || isComplete
+                                    ? "bg-white/20 text-white"
+                                    : "bg-gray-200 text-gray-600"
+                                )}
+                              >
+                                {completion.answered}/{completion.total}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div
                 ref={questionsContainerRef}
-                className="flex-1 overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar space-y-4"
+                className="flex-1 overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar space-y-3"
               >
                 <AnimatePresence mode="wait">
                   {currentPageQuestions.map((question, idx) => {
@@ -276,18 +415,18 @@ const AssessmentQuestions = () => {
                               : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
                           )}
                         >
-                          <CardContent className="p-6 relative z-10">
-                            <div className="flex items-start justify-between mb-4">
+                          <CardContent className="p-4 relative z-10">
+                            <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
                                 <span className="text-xs text-gray-500">
                                   Question {questionNumber} of{" "}
-                                  {questions.length}
+                                  {filteredQuestions.length}
                                 </span>
-                                <h3 className="text-base font-medium text-gray-900 mt-1">
+                                <h3 className="text-sm font-medium text-gray-900 mt-0.5">
                                   {question.text}
                                 </h3>
                                 {question.description && (
-                                  <p className="text-xs text-gray-600 mt-1">
+                                  <p className="text-xs text-gray-600 mt-0.5">
                                     {question.description}
                                   </p>
                                 )}
@@ -334,7 +473,7 @@ const AssessmentQuestions = () => {
                               </AnimatePresence>
                             </div>
 
-                            <div className="space-y-2 mt-4">
+                            <div className="space-y-2 mt-3">
                               {question.options.map((option, optionIndex) => {
                                 const isSelected =
                                   selectedAnswer === optionIndex;
@@ -364,7 +503,7 @@ const AssessmentQuestions = () => {
                                       isSubmitted ? {} : { scale: 0.98 }
                                     }
                                     className={cn(
-                                      "w-full text-left p-3 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm",
+                                      "w-full text-left p-2.5 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm",
                                       isSubmitted
                                         ? "cursor-not-allowed opacity-60"
                                         : "cursor-pointer",
@@ -442,7 +581,7 @@ const AssessmentQuestions = () => {
               </div>
 
               {/* Navigation */}
-              <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t border-gray-200 mt-4">
+              <div className="flex-shrink-0 flex items-center justify-between pt-3 border-t border-gray-200 mt-3">
                 <Button
                   variant="outline"
                   onClick={() => changePage(currentPage - 1)}
@@ -533,10 +672,10 @@ const AssessmentQuestions = () => {
                       <>
                         <Button
                           onClick={handleSubmit}
-                          disabled={!allAnswered}
+                          disabled={!allTypesComplete}
                           className={cn(
                             "text-xs py-1.5 h-auto",
-                            allAnswered
+                            allTypesComplete
                               ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer"
                               : "bg-gray-200 border border-gray-300 text-gray-700 cursor-not-allowed"
                           )}
@@ -590,55 +729,133 @@ const AssessmentQuestions = () => {
 
             {/* Progress Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-4">
-                <Card variant="elevated" className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <div className="sticky top-4 space-y-3">
+                <Card variant="elevated" className="p-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <Target className="h-4 w-4 text-brand-teal" />
                     Your Progress
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
+                    {/* Current Type Progress */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700">
-                          Overall Completion
+                          {selectedType}
                         </span>
                         <motion.span
                           className="text-3xl"
-                          key={progress.percentComplete}
+                          key={`${selectedType}-${answeredCount}`}
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", duration: 0.5 }}
                         >
-                          {getProgressEmoji(progress.percentComplete)}
+                          {getProgressEmoji(
+                            filteredQuestions.length > 0
+                              ? Math.round(
+                                  (answeredCount / filteredQuestions.length) *
+                                    100
+                                )
+                              : 0
+                          )}
                         </motion.span>
                       </div>
                       <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                         <motion.div
                           className="absolute inset-y-0 left-0 bg-gradient-to-r from-brand-teal to-brand-navy rounded-full"
                           initial={{ width: 0 }}
-                          animate={{ width: `${progress.percentComplete}%` }}
+                          animate={{
+                            width: `${
+                              filteredQuestions.length > 0
+                                ? (answeredCount / filteredQuestions.length) *
+                                  100
+                                : 0
+                            }%`,
+                          }}
                           transition={{ duration: 0.6, ease: "easeOut" }}
                         />
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-gray-500">
-                          {getProgressMessage(progress.percentComplete)}
+                          {getProgressMessage(
+                            filteredQuestions.length > 0
+                              ? Math.round(
+                                  (answeredCount / filteredQuestions.length) *
+                                    100
+                                )
+                              : 0
+                          )}
                         </span>
                         <span className="text-xs font-semibold text-brand-teal">
-                          {answeredCount} / {questions.length}
+                          {answeredCount} / {filteredQuestions.length}
                         </span>
                       </div>
                     </div>
+
+                    {/* Overall Progress Across All Types */}
+                    {assignedTypes.length > 1 && (
+                      <div className="pt-2 border-t border-gray-200">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-medium text-gray-700">
+                            Overall Completion
+                          </span>
+                          <span className="text-xs font-semibold text-brand-teal">
+                            {
+                              assignedTypes.filter(
+                                (type) => completionByType[type]?.isComplete
+                              ).length
+                            }{" "}
+                            / {assignedTypes.length} Types
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {assignedTypes.map((type) => {
+                            const completion = completionByType[type];
+                            if (!completion || completion.total === 0)
+                              return null;
+                            return (
+                              <div key={type} className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] text-gray-600 truncate">
+                                    {type.split(" ")[0]}
+                                  </span>
+                                  <span className="text-[10px] font-medium text-gray-700">
+                                    {completion.answered}/{completion.total}
+                                  </span>
+                                </div>
+                                <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                  <motion.div
+                                    className={`absolute inset-y-0 left-0 rounded-full ${
+                                      completion.isComplete
+                                        ? "bg-green-500"
+                                        : "bg-gray-400"
+                                    }`}
+                                    initial={{ width: 0 }}
+                                    animate={{
+                                      width: `${
+                                        (completion.answered /
+                                          completion.total) *
+                                        100
+                                      }%`,
+                                    }}
+                                    transition={{ duration: 0.4 }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Card>
 
-                <Card variant="elevated" className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <Card variant="elevated" className="p-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">
                     Quick Navigation
                   </h3>
-                  <div className="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                     <div className="grid grid-cols-5 gap-1.5">
-                      {questions.map((question, idx) => {
+                      {filteredQuestions.map((question, idx) => {
                         const isAnswered = answers[question.id] !== undefined;
                         const isCurrent =
                           idx >=
@@ -682,13 +899,13 @@ const AssessmentQuestions = () => {
                   </div>
                 </Card>
 
-                {allAnswered && (
+                {allTypesComplete && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-lg p-4 border border-green-200"
+                    className="rounded-lg p-3 border border-green-200"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{
@@ -696,12 +913,12 @@ const AssessmentQuestions = () => {
                           repeat: Infinity,
                           repeatDelay: 2,
                         }}
-                        className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                        className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
                       >
-                        <Check className="h-6 w-6 text-white" />
+                        <Check className="h-5 w-5 text-white" />
                       </motion.div>
                       <div>
-                        <p className="font-semibold text-green-900">
+                        <p className="text-sm font-semibold text-green-900">
                           All Questions Answered!
                         </p>
                         <p className="text-xs text-green-700">
@@ -721,7 +938,7 @@ const AssessmentQuestions = () => {
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleConfirmSubmit}
-        answeredCount={answeredCount}
+        answeredCount={Object.keys(answers).length}
         totalQuestions={questions.length}
       />
 
