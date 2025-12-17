@@ -6,5 +6,6 @@
 export { SummaryCard } from "./SummaryCard";
 export { SectionHeader } from "./SectionHeader";
 export { AnimatedBackground } from "./AnimatedBackground";
+export { default as FuelGauge } from "./FuelGauge";
 export * from "./hooks";
 export * from "./constants";

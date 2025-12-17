@@ -8,7 +8,7 @@ import ActiveAssessmentCycles from "./activeAssessmentCycles";
 import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
 import OrganizationSetupInfo from "./organizationSetupInfo";
-import OrganizationalStageGauges from "./organizationalStageGauges";
+import OrganizationalStageDistribution from "./organizationalStageDistribution";
 import OrganizationalSubStagesBreakdown from "./organizationalSubStagesBreakdown";
 // import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
 import {
@@ -48,8 +48,8 @@ const HrAdminDashboard = () => {
         {/* Overall Organizational Health Score */}
         {/* <OverallOrganizationalHealthScore /> */}
 
-        {/* Organizational Stage Gauges */}
-        <OrganizationalStageGauges
+        {/* Organizational Stage Distribution */}
+        <OrganizationalStageDistribution
           onStageSelect={setSelectedStage}
           selectedStage={selectedStage}
         />
