@@ -4,7 +4,7 @@ import { SearchInput, Button } from "@/components/ui";
 import { MOCK_COMPLETED_ASSESSMENTS } from "@/data/assessmentDashboard";
 import { formatDisplayDate } from "@/utils/dateUtils";
 import { getCategoryPalette } from "@/utils/assessmentConfig";
-import { useAssessmentSearch } from "@/components/assessmentDashboard";
+import { useAssessmentSearch } from "@/hooks/useAssessmentHooks";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";

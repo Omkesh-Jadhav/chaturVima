@@ -1,7 +1,4 @@
-/**
- * Sidebar Component
- * Collapsible navigation sidebar
- */
+// Collapsible navigation sidebar with role-based menu items
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../utils/cn";

@@ -1,3 +1,4 @@
+// Table component displaying assessment cycles with actions for HR and department heads
 import { motion } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";

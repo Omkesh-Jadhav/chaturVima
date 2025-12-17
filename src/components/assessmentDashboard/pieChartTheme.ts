@@ -1,7 +1,4 @@
-/**
- * Pie Chart Theme Configuration
- */
-
+// Pie chart theme configuration for Nivo charts
 import { colors } from "@/utils/theme";
 
 export const pieChartTheme = {

@@ -1,3 +1,4 @@
+// Drawer component for sharing assessment cycles with department heads
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";

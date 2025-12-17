@@ -1,8 +1,4 @@
-/**
- * Cycle Drawer Constants
- * Configuration and default values for the cycle drawer
- */
-
+// Configuration and default values for assessment cycle drawer
 import type { CycleFormPayload } from "@/types/assessmentCycles";
 
 export const DEFAULT_PAYLOAD: CycleFormPayload = {

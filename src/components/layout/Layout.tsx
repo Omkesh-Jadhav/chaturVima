@@ -1,7 +1,4 @@
-/**
- * Main Layout Component
- * Wraps pages with sidebar navigation and navbar
- */
+// Main layout wrapper with sidebar navigation and navbar
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";

@@ -1,7 +1,4 @@
-/**
- * Navbar Component
- * Top navigation bar with role switching and user menu
- */
+// Top navigation bar with role switching and user menu
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

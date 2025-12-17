@@ -1,8 +1,6 @@
 import { useState } from "react";
-import {
-  AnimatedBackground,
-  BACKGROUND_COLORS,
-} from "@/components/assessmentDashboard";
+import { AnimatedBackground } from "@/components/common";
+import { BACKGROUND_COLORS } from "@/components/assessmentDashboard";
 import SummaryCards from "./summaryCards";
 import SubStagesBreakdown from "./subStagesBreakdown";
 import SWOTAnalysis from "./swotAnalysis";

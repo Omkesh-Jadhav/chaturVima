@@ -1,7 +1,5 @@
-// Assessment dashboard components
-export { AnimatedBackground } from "./AnimatedBackground";
+// Assessment dashboard components and configurations
 export { default as FuelGauge } from "./FuelGauge";
-export { MetricCard } from "../common/MetricCard";
-export { SectionHeader } from "../common/SectionHeader";
-export * from "./hooks";
+export { SectionHeader } from "../common/SectionHeader"; // Re-export for backward compatibility
 export * from "./constants";
+export { pieChartTheme } from "./pieChartTheme";

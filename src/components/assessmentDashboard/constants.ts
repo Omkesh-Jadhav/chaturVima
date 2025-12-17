@@ -1,8 +1,4 @@
-/**
- * Assessment Dashboard Constants
- * Static configurations and constants used across dashboard components
- */
-
+// Static configurations and constants for assessment dashboard components
 import {
   CheckCircle,
   XCircle,
@@ -16,9 +12,6 @@ import type { Priority } from "@/data/assessmentDashboard";
 import type { SWOTRating } from "@/utils/swotUtils";
 import { getStageColor } from "@/utils/assessmentConfig";
 
-/**
- * SWOT Quadrant Configuration
- */
 export const SWOT_CONFIG = {
   Strengths: {
     icon: CheckCircle,
@@ -50,18 +43,12 @@ export const SWOT_CONFIG = {
   },
 } as const;
 
-/**
- * SWOT Rating Colors
- */
 export const SWOT_RATING_COLORS: Record<SWOTRating, string> = {
   HIGH: "bg-green-500 text-white",
   MEDIUM: "bg-yellow-500 text-white",
   CRITICAL: "bg-red-600 text-white",
 };
 
-/**
- * Status Styles for Emotional Stage Assessment
- */
 export const STATUS_STYLES: Record<
   "Dominant" | "Secondary" | "Transitional",
   { bg: string; text: string }
@@ -71,9 +58,6 @@ export const STATUS_STYLES: Record<
   Transitional: { bg: "bg-orange-50", text: "text-orange-700" },
 };
 
-/**
- * Priority Filter Button Colors
- */
 export const PRIORITY_BUTTON_COLORS = {
   All: {
     active: "bg-gray-600 text-white",
@@ -93,27 +77,18 @@ export const PRIORITY_BUTTON_COLORS = {
   },
 } as const;
 
-/**
- * Priority Icons
- */
 export const PRIORITY_ICONS: Record<Priority, typeof AlertTriangle> = {
   High: AlertTriangle,
   Medium: Clock,
   Low: CheckCircle2,
 };
 
-/**
- * Intensity Level Styles
- */
 export const INTENSITY_STYLES = {
   high: "bg-green-100 text-green-700",
   medium: "bg-amber-100 text-amber-700",
   low: "bg-gray-100 text-gray-600",
 } as const;
 
-/**
- * Animation Delays
- */
 export const ANIMATION_DELAYS = {
   stageCard: 0.05,
   subStage: 0.08,
@@ -124,9 +99,6 @@ export const ANIMATION_DELAYS = {
   historyRow: 0.05,
 } as const;
 
-/**
- * Pie Chart Gradients Configuration (uses centralized theme colors)
- */
 export const PIE_GRADIENTS = [
   {
     id: "gradHoney",
@@ -162,9 +134,6 @@ export const PIE_GRADIENTS = [
   },
 ];
 
-/**
- * Pie Chart Fill Configuration
- */
 export const PIE_FILL = [
   { match: { id: "Honeymoon" }, id: "gradHoney" },
   { match: { id: "Self-Introspection" }, id: "gradSelf" },
@@ -172,9 +141,6 @@ export const PIE_FILL = [
   { match: { id: "Steady-State" }, id: "gradSteady" },
 ];
 
-/**
- * Background Animation Colors (uses centralized theme colors)
- */
 export const BACKGROUND_COLORS = [
   getStageColor("Honeymoon", "main"),
   getStageColor("Self-Introspection", "main"),

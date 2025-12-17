@@ -11,10 +11,8 @@ import OrganizationSetupInfo from "./organizationSetupInfo";
 import OrganizationalStageDistribution from "./organizationalStageDistribution";
 import OrganizationalSubStagesBreakdown from "./organizationalSubStagesBreakdown";
 // import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
-import {
-  AnimatedBackground,
-  BACKGROUND_COLORS,
-} from "@/components/assessmentDashboard";
+import { AnimatedBackground } from "@/components/common";
+import { BACKGROUND_COLORS } from "@/components/assessmentDashboard";
 import { useState } from "react";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 

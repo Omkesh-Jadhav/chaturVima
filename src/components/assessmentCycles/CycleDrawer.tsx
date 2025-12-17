@@ -1,3 +1,4 @@
+// Drawer component for creating and scheduling assessment cycles
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
