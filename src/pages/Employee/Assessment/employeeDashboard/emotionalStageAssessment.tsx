@@ -8,10 +8,9 @@ import {
   STATUS_STYLES,
   ANIMATION_DELAYS,
 } from "@/components/assessmentDashboard";
+import { CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 import Aura from "./aura";
 
-const CARD_BASE_CLASSES =
-  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 interface EmotionalStageAssessmentProps {
   onStageSelect: (stage: EmotionalStageAssessmentType | null) => void;
@@ -24,8 +23,37 @@ const EmotionalStageAssessment = ({
 }: EmotionalStageAssessmentProps) => {
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
-  const dominantStage = emotionalStageAssessment.find(
-    (s) => s.status === "Dominant"
+  const totalScore = emotionalStageAssessment.reduce(
+    (sum, stage) => sum + stage.score,
+    0
+  );
+
+  // Calculate percentages and ensure only one Dominant stage
+  const stagesWithStatus = emotionalStageAssessment.map((stage) => {
+    const percentageOfTotal = totalScore > 0 ? (stage.score / totalScore) * 100 : 0;
+    // Use status from data if available, otherwise calculate (only Dominant if >= 30%)
+    let status = stage.status;
+    if (!status) {
+      status = percentageOfTotal >= 30 ? "Dominant" : undefined;
+    }
+    return { ...stage, percentageOfTotal, calculatedStatus: status };
+  });
+
+  // Ensure only one Dominant - if multiple, keep only the highest percentage
+  const dominantStages = stagesWithStatus.filter((s) => s.calculatedStatus === "Dominant");
+  if (dominantStages.length > 1) {
+    // Sort by percentage and keep only the highest as Dominant
+    dominantStages.sort((a, b) => b.percentageOfTotal - a.percentageOfTotal);
+    stagesWithStatus.forEach((stage) => {
+      if (stage.calculatedStatus === "Dominant" && stage !== dominantStages[0]) {
+        // Remove Dominant status from others
+        stage.calculatedStatus = undefined;
+      }
+    });
+  }
+
+  const dominantStage = stagesWithStatus.find(
+    (s) => s.calculatedStatus === "Dominant"
   );
 
   useEffect(() => {
@@ -57,10 +85,10 @@ const EmotionalStageAssessment = ({
         </div>
 
         <div className="space-y-1.5">
-          {emotionalStageAssessment.map((stage, idx) => {
+          {stagesWithStatus.map((stage, idx) => {
             const percentage = calculatePercentage(stage.score, maxScore);
-            const statusStyle = stage.status
-              ? STATUS_STYLES[stage.status]
+            const statusStyle = stage.calculatedStatus
+              ? STATUS_STYLES[stage.calculatedStatus]
               : null;
             const isSelected = selectedStage?.stage === stage.stage;
 
@@ -94,7 +122,7 @@ const EmotionalStageAssessment = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {stage.status && (
+                    {stage.calculatedStatus === "Dominant" && (
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                           statusStyle
@@ -102,7 +130,7 @@ const EmotionalStageAssessment = ({
                             : ""
                         }`}
                       >
-                        {stage.status}
+                        Dominant
                       </span>
                     )}
                     <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">

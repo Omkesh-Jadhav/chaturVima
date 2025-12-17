@@ -7,15 +7,23 @@ import { ANIMATION_DELAYS } from "@/components/assessmentDashboard";
 import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
-
-const CARD_BASE_CLASSES =
-  "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
-
-const STAGES = STAGE_ORDER;
+import {
+  RESPONSE_LEVELS,
+  HOSE_PATH,
+  HOSE_RIBS,
+  getGaugeColor,
+  getActiveLevel,
+  calculateHoseRibPosition,
+} from "@/utils/gaugeUtils";
+import {
+  GAUGE_SHADOWS,
+  CARD_SHADOWS,
+  CARD_BASE_CLASSES,
+} from "@/utils/gaugeStyles";
 
 interface StageGaugeData extends EmotionalStageAssessment {
   count: number;
-  scoreOnScale: number; // 0-5 scale
+  scoreOnScale: number;
 }
 
 interface OrganizationalStageGaugesProps {
@@ -27,18 +35,14 @@ const OrganizationalStageGauges = ({
   onStageSelect,
   selectedStage,
 }: OrganizationalStageGaugesProps) => {
-  // Calculate stage distribution from HR dashboard data
   const stageDistribution = useMemo(() => {
     const stageCount: Record<string, number> = Object.fromEntries(
-      STAGES.map((stage) => [stage, 0])
+      STAGE_ORDER.map((stage) => [stage, 0])
     );
 
-    // Count employees per stage
     hrDashboardData.employee.forEach((employee) => {
       const stage = employee.stageDetails.stage;
-      if (stage in stageCount) {
-        stageCount[stage]++;
-      }
+      if (stage in stageCount) stageCount[stage]++;
     });
 
     const total = Object.values(stageCount).reduce(
@@ -47,18 +51,10 @@ const OrganizationalStageGauges = ({
     );
     const maxCount = Math.max(...Object.values(stageCount));
 
-    // Convert counts to 0-5 scale
-    const distribution: StageGaugeData[] = STAGES.map((stage) => {
+    const distribution: StageGaugeData[] = STAGE_ORDER.map((stage) => {
       const count = stageCount[stage];
-      // Normalize count to 0-5 scale
       const scoreOnScale = maxCount > 0 ? (count / maxCount) * 5 : 0;
-
-      // Determine status based on count percentage
       const percentage = total > 0 ? (count / total) * 100 : 0;
-      let status: "Dominant" | "Secondary" | "Transitional" | undefined;
-      if (percentage >= 30) status = "Dominant";
-      else if (percentage >= 20) status = "Secondary";
-      else if (percentage >= 15) status = "Transitional";
 
       return {
         stage,
@@ -66,7 +62,7 @@ const OrganizationalStageGauges = ({
         score: scoreOnScale,
         scoreOnScale,
         color: getStagePieColor(stage),
-        status,
+        status: percentage >= 30 ? "Dominant" : undefined,
       };
     });
 
@@ -75,14 +71,12 @@ const OrganizationalStageGauges = ({
 
   const { distribution, total } = stageDistribution;
 
-  // Calculate average of all stages (0-5 scale)
-  const averageScore = useMemo(() => {
-    const sum = distribution.reduce(
-      (acc, stage) => acc + stage.scoreOnScale,
-      0
-    );
-    return sum / distribution.length;
-  }, [distribution]);
+  const averageScore = useMemo(
+    () =>
+      distribution.reduce((acc, stage) => acc + stage.scoreOnScale, 0) /
+      distribution.length,
+    [distribution]
+  );
 
   useEffect(() => {
     if (!selectedStage && onStageSelect) {
@@ -94,56 +88,37 @@ const OrganizationalStageGauges = ({
 
   const handleStageClick = (stage: StageGaugeData) => {
     if (onStageSelect) {
-      const newSelection = selectedStage?.stage === stage.stage ? null : stage;
-      onStageSelect(newSelection);
+      onStageSelect(selectedStage?.stage === stage.stage ? null : stage);
     }
   };
 
-  // Professional Design: pH Scale Style Response Levels + Average Score
-  const ProfessionalGauge = ({ value }: { value: number }) => {
-    // Clamp value to valid range (0-5)
-    const clampedValue = Math.max(0, Math.min(5, value));
-
-    // Determine color based on average score
-    let gaugeColor = "#10b981";
-    if (clampedValue < 2) {
-      gaugeColor = "#ef4444";
-    } else if (clampedValue < 3) {
-      gaugeColor = "#f59e0b";
-    } else if (clampedValue < 4) {
-      gaugeColor = "#3b82f6";
+  const handleCardHover = (
+    e: React.MouseEvent<HTMLDivElement>,
+    isSelected: boolean
+  ) => {
+    if (!isSelected) {
+      e.currentTarget.style.boxShadow = CARD_SHADOWS.hover;
     }
+  };
 
-    const responseLevels = [
-      {
-        label: "Strongly Disagree",
-        threshold: [0, 1],
-        color: "#ef4444",
-      },
-      { label: "Disagree", threshold: [1, 2], color: "#f97316" },
-      { label: "Neutral", threshold: [2, 3], color: "#f59e0b" },
-      { label: "Agree", threshold: [3, 4], color: "#3b82f6" },
-      {
-        label: "Strongly Agree",
-        threshold: [4, 5],
-        color: "#10b981",
-      },
-    ];
+  const handleCardLeave = (
+    e: React.MouseEvent<HTMLDivElement>,
+    isSelected: boolean
+  ) => {
+    if (!isSelected) {
+      e.currentTarget.style.boxShadow = CARD_SHADOWS.default;
+    }
+  };
 
-    // Find active response level
-    const activeLevel =
-      responseLevels.find(
-        (level) =>
-          clampedValue >= level.threshold[0] &&
-          (clampedValue < level.threshold[1] ||
-            (clampedValue === 5 && level.threshold[1] === 5))
-      ) || responseLevels[responseLevels.length - 1];
+  const ProfessionalGauge = ({ value }: { value: number }) => {
+    const clampedValue = Math.max(0, Math.min(5, value));
+    const gaugeColor = getGaugeColor(clampedValue);
+    const activeLevel = getActiveLevel(clampedValue);
+    const fillHeight = (clampedValue / 5) * 100;
 
     return (
       <div className="w-full space-y-3">
-        {/* Fuel Tank with Response Levels Integrated */}
         <div className="flex flex-col items-center justify-center space-y-3">
-          {/* 3D Realistic Gas Pump */}
           <div
             className="relative w-full max-w-[280px] mx-auto overflow-visible"
             style={{ perspective: "1200px" }}
@@ -154,25 +129,18 @@ const OrganizationalStageGauges = ({
               transition={{ delay: 0.4, duration: 0.8 }}
               style={{ transformStyle: "preserve-3d" }}
             >
-              {/* Gas Pump Body */}
               <div className="relative mx-auto w-[200px] h-[360px]">
                 <div
                   className="relative w-[180px] h-[340px] rounded-2xl bg-gradient-to-br from-[#1e293b] via-[#020617] to-[#1e293b]"
-                  style={{
-                    boxShadow:
-                      "inset 0 0 40px rgba(0,0,0,0.8), inset -10px 0 25px rgba(0,0,0,0.5), inset 10px 0 25px rgba(255,255,255,0.03), 0 35px 70px rgba(0,0,0,0.7), 0 0 0 3px #374151, 0 0 0 6px #1f2937",
-                  }}
+                  style={{ boxShadow: GAUGE_SHADOWS.pumpBody }}
                 >
-                  {/* 3D Highlights */}
                   <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-r from-white/8 via-transparent to-transparent" />
                   <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-l from-black/40 via-transparent to-transparent" />
 
                   {/* Display Screen */}
                   <div
                     className="absolute top-4 left-4 right-4 h-[100px] rounded-lg bg-black border-[3px] border-[#1e293b]"
-                    style={{
-                      boxShadow: `inset 0 0 30px rgba(0,0,0,0.9), inset 0 4px 12px rgba(0,0,0,0.7), 0 0 20px ${gaugeColor}20, 0 4px 8px rgba(0,0,0,0.5)`,
-                    }}
+                    style={{ boxShadow: GAUGE_SHADOWS.screen(gaugeColor) }}
                   >
                     <div
                       className="absolute inset-0 opacity-[0.05] rounded-lg pointer-events-none"
@@ -183,7 +151,7 @@ const OrganizationalStageGauges = ({
                       }}
                     />
                     <div className="relative z-10 p-3 h-full flex flex-col justify-center items-center">
-                      <div className="flex items-baseline justify-center gap-1 mb-1">
+                      <div className="flex items-baseline justify-center mb-1">
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -195,9 +163,9 @@ const OrganizationalStageGauges = ({
                           className="text-3xl font-black leading-none"
                           style={{
                             color: gaugeColor,
-                            textShadow: `0 0 12px ${gaugeColor}90, 0 0 24px ${gaugeColor}70, 0 2px 4px rgba(0,0,0,0.9)`,
+                            textShadow: `0 0 8px ${gaugeColor}80, 0 0 16px ${gaugeColor}50, 0 1px 2px rgba(0,0,0,0.8)`,
                             fontFamily: "'LCD', 'Courier New', monospace",
-                            letterSpacing: "2px",
+                            letterSpacing: "-0.5px",
                           }}
                         >
                           {clampedValue.toFixed(2)}
@@ -211,7 +179,7 @@ const OrganizationalStageGauges = ({
                           className="w-2 h-2 rounded-full"
                           style={{
                             backgroundColor: activeLevel.color,
-                            boxShadow: `0 0 8px ${activeLevel.color}80`,
+                            boxShadow: `0 0 6px ${activeLevel.color}70`,
                           }}
                         />
                         <div
@@ -230,13 +198,9 @@ const OrganizationalStageGauges = ({
                   {/* Fuel Gauge Area */}
                   <div
                     className="absolute top-28 left-6 right-6 bottom-6 rounded-lg overflow-visible bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#0f172a] border-2 border-[#1e293b]"
-                    style={{
-                      boxShadow:
-                        "inset 0 0 20px rgba(0,0,0,0.8), inset 0 2px 6px rgba(0,0,0,0.6)",
-                    }}
+                    style={{ boxShadow: GAUGE_SHADOWS.gaugeArea }}
                   >
-                    {/* Response Segments Background */}
-                    {responseLevels.map((level, idx) => (
+                    {RESPONSE_LEVELS.map((level, idx) => (
                       <div
                         key={idx}
                         className="absolute left-0 right-0"
@@ -258,10 +222,9 @@ const OrganizationalStageGauges = ({
                       />
                     ))}
 
-                    {/* Fuel Fill */}
                     <motion.div
                       initial={{ height: "0%" }}
-                      animate={{ height: `${(clampedValue / 5) * 100}%` }}
+                      animate={{ height: `${fillHeight}%` }}
                       transition={{
                         delay: 0.6,
                         duration: 2.5,
@@ -269,12 +232,10 @@ const OrganizationalStageGauges = ({
                       }}
                       className="absolute bottom-0 left-0 right-0 rounded-b-lg overflow-hidden"
                       style={{
-                        background: `linear-gradient(to top, ${responseLevels
-                          .map(
-                            (l, i) => `${l.color}ee ${i * 20}% ${(i + 1) * 20}%`
-                          )
-                          .join(", ")})`,
-                        boxShadow: `inset 0 -25px 40px rgba(0,0,0,0.5), inset 0 15px 30px rgba(255,255,255,0.15), 0 0 40px ${gaugeColor}60`,
+                        background: `linear-gradient(to top, ${RESPONSE_LEVELS.map(
+                          (l, i) => `${l.color}ee ${i * 20}% ${(i + 1) * 20}%`
+                        ).join(", ")})`,
+                        boxShadow: GAUGE_SHADOWS.fuelFill(gaugeColor),
                       }}
                     >
                       <motion.div
@@ -296,10 +257,10 @@ const OrganizationalStageGauges = ({
                     <div className="absolute inset-0 flex flex-col justify-between py-3 pl-2 pointer-events-none">
                       {[5, 4, 3, 2, 1, 0].map((mark) => {
                         const level =
-                          responseLevels.find(
+                          RESPONSE_LEVELS.find(
                             (l) =>
                               mark >= l.threshold[0] && mark < l.threshold[1]
-                          ) || responseLevels[4];
+                          ) || RESPONSE_LEVELS[4];
                         const isActive = clampedValue >= mark;
                         return (
                           <div key={mark} className="flex items-center">
@@ -310,7 +271,7 @@ const OrganizationalStageGauges = ({
                                   ? level.color
                                   : "#6b7280",
                                 boxShadow: isActive
-                                  ? `0 0 6px ${level.color}60`
+                                  ? `0 0 4px ${level.color}60`
                                   : "none",
                               }}
                             />
@@ -319,8 +280,8 @@ const OrganizationalStageGauges = ({
                               style={{
                                 color: isActive ? "#ffffff" : "#9ca3af",
                                 textShadow: isActive
-                                  ? `0 0 6px ${level.color}80, 0 1px 2px rgba(0,0,0,0.8)`
-                                  : "0 1px 2px rgba(0,0,0,0.5)",
+                                  ? `0 0 4px ${level.color}70, 0 1px 2px rgba(0,0,0,0.7)`
+                                  : "0 1px 1px rgba(0,0,0,0.4)",
                               }}
                             >
                               {mark}
@@ -332,12 +293,11 @@ const OrganizationalStageGauges = ({
 
                     {/* Response Labels */}
                     <div className="absolute inset-0 pointer-events-none py-3">
-                      {responseLevels
-                        .slice()
+                      {RESPONSE_LEVELS.slice()
                         .reverse()
                         .map((level, idx) => {
                           const segmentCenter =
-                            (responseLevels.length - 1 - idx) * 20 + 10;
+                            (RESPONSE_LEVELS.length - 1 - idx) * 20 + 10;
                           const isActive =
                             clampedValue >= level.threshold[0] &&
                             (clampedValue < level.threshold[1] ||
@@ -362,7 +322,12 @@ const OrganizationalStageGauges = ({
                                   border: isActive
                                     ? `1.5px solid ${level.color}80`
                                     : "1px solid rgba(255,255,255,0.25)",
-                                  textShadow: `0 0 8px ${level.color}90, 0 1px 2px rgba(0,0,0,0.9)`,
+                                  textShadow: isActive
+                                    ? `0 0 4px ${level.color}70, 0 1px 2px rgba(0,0,0,0.7)`
+                                    : `0 1px 1px rgba(0,0,0,0.5)`,
+                                  boxShadow: isActive
+                                    ? `0 1px 3px rgba(0,0,0,0.3)`
+                                    : `0 1px 2px rgba(0,0,0,0.2)`,
                                 }}
                               >
                                 {level.label}
@@ -374,7 +339,7 @@ const OrganizationalStageGauges = ({
                   </div>
                 </div>
 
-                {/* Gas Pump Nozzle & Hose - Fits in Card, Lifted from Bottom */}
+                {/* Gas Pump Nozzle & Hose */}
                 <div className="absolute left-[180px] top-0 w-[75px] h-[360px] z-10">
                   <svg
                     width="75"
@@ -396,69 +361,33 @@ const OrganizationalStageGauges = ({
                       </linearGradient>
                     </defs>
 
-                    {/* Realistic Hose - Enhanced 3D effect */}
                     <path
-                      d="M 0 280 L 0 260 Q 0 240, 10 230 Q 20 220, 20 200 Q 20 160, 24 120 Q 28 80, 35 65 Q 42 50, 50 45 Q 58 40, 60 35 Q 62 30, 62 50"
+                      d={HOSE_PATH}
                       fill="none"
                       stroke="#0a0e14"
                       strokeWidth="13"
                       strokeLinecap="round"
                       style={{
-                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.9))",
+                        filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4))",
                       }}
                     />
                     <path
-                      d="M 0 280 L 0 260 Q 0 240, 10 230 Q 20 220, 20 200 Q 20 160, 24 120 Q 28 80, 35 65 Q 42 50, 50 45 Q 58 40, 60 35 Q 62 30, 62 50"
+                      d={HOSE_PATH}
                       fill="none"
                       stroke="url(#hoseGradient)"
                       strokeWidth="11"
                       strokeLinecap="round"
                     />
-                    {/* Inner hose highlight for depth */}
                     <path
-                      d="M 0 280 L 0 260 Q 0 240, 10 230 Q 20 220, 20 200 Q 20 160, 24 120 Q 28 80, 35 65 Q 42 50, 50 45 Q 58 40, 60 35 Q 62 30, 62 50"
+                      d={HOSE_PATH}
                       fill="none"
                       stroke="rgba(255,255,255,0.08)"
                       strokeWidth="9"
                       strokeLinecap="round"
                     />
-                    {/* Hose Ribs */}
-                    {[
-                      280, 270, 260, 250, 240, 220, 200, 180, 160, 140, 120,
-                      100, 80, 65, 50, 45, 40, 35, 30,
-                    ].map((t) => {
-                      let x, y;
-                      if (t >= 260) {
-                        x = 0;
-                        y = t;
-                      } else if (t >= 240) {
-                        const progress = (260 - t) / 20;
-                        x = 0 + progress * 10;
-                        y = 260 - progress * 30;
-                      } else if (t >= 200) {
-                        const progress = (240 - t) / 40;
-                        x = 10 + progress * 10;
-                        y = 230 - progress * 30;
-                      } else if (t >= 120) {
-                        const progress = (200 - t) / 80;
-                        x = 20;
-                        y = 200 - progress * 80;
-                      } else if (t >= 65) {
-                        const progress = (120 - t) / 55;
-                        x = 20 + progress * 15;
-                        y = 120 - progress * 55;
-                      } else if (t >= 45) {
-                        const progress = (65 - t) / 20;
-                        x = 35 + progress * 25;
-                        y = 65 - progress * 20;
-                      } else if (t >= 30) {
-                        const progress = (45 - t) / 15;
-                        x = 60;
-                        y = 45 - progress * 15;
-                      } else {
-                        x = 62;
-                        y = 50;
-                      }
+
+                    {HOSE_RIBS.map((t) => {
+                      const { x, y } = calculateHoseRibPosition(t);
                       return (
                         <circle
                           key={t}
@@ -468,14 +397,14 @@ const OrganizationalStageGauges = ({
                           fill="#475569"
                           opacity="0.8"
                           style={{
-                            filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))",
+                            filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
                           }}
                         />
                       );
                     })}
-                    {/* Hose Highlight */}
+
                     <path
-                      d="M 0 280 L 0 260 Q 0 240, 10 230 Q 20 220, 20 200 Q 20 160, 24 120 Q 28 80, 35 65 Q 42 50, 50 45 Q 58 40, 60 35 Q 62 30, 62 50"
+                      d={HOSE_PATH}
                       fill="none"
                       stroke="rgba(255,255,255,0.15)"
                       strokeWidth="7"
@@ -483,7 +412,7 @@ const OrganizationalStageGauges = ({
                       strokeDasharray="4 4"
                     />
 
-                    {/* Realistic Nozzle - Enhanced 3D with better details */}
+                    {/* Nozzle */}
                     <g transform="translate(45, 30) scale(0.5)">
                       <defs>
                         <linearGradient
@@ -513,7 +442,6 @@ const OrganizationalStageGauges = ({
                         </linearGradient>
                       </defs>
 
-                      {/* Nozzle - Main Body with 3D effect */}
                       <rect
                         x="0"
                         y="0"
@@ -524,10 +452,9 @@ const OrganizationalStageGauges = ({
                         stroke="#475569"
                         strokeWidth="2.5"
                         style={{
-                          filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.7))",
+                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
                         }}
                       />
-                      {/* Top highlight */}
                       <rect
                         x="2"
                         y="2"
@@ -536,7 +463,6 @@ const OrganizationalStageGauges = ({
                         rx="2"
                         fill="url(#nozzleHighlight)"
                       />
-                      {/* Side shadow */}
                       <rect
                         x="0"
                         y="0"
@@ -546,7 +472,6 @@ const OrganizationalStageGauges = ({
                         fill="rgba(0,0,0,0.3)"
                       />
 
-                      {/* Nozzle - Handle with 3D depth */}
                       <path
                         d="M 10 50 L 10 65 Q 10 75, 20 75 Q 30 75, 30 65 L 30 50"
                         fill="none"
@@ -554,7 +479,7 @@ const OrganizationalStageGauges = ({
                         strokeWidth="5"
                         strokeLinecap="round"
                         style={{
-                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
+                          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.3))",
                         }}
                       />
                       <path
@@ -563,7 +488,6 @@ const OrganizationalStageGauges = ({
                         stroke="#64748b"
                         strokeWidth="2.5"
                       />
-                      {/* Handle inner shadow */}
                       <path
                         d="M 10 50 L 10 65 Q 10 75, 20 75 Q 30 75, 30 65 L 30 50"
                         fill="none"
@@ -572,7 +496,6 @@ const OrganizationalStageGauges = ({
                         strokeLinecap="round"
                       />
 
-                      {/* Nozzle - Trigger with depth */}
                       <rect
                         x="15"
                         y="60"
@@ -581,8 +504,8 @@ const OrganizationalStageGauges = ({
                         rx="1"
                         fill="#64748b"
                         style={{
-                          filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.6))",
-                          boxShadow: "inset 0 1px 2px rgba(0,0,0,0.5)",
+                          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.3))",
+                          boxShadow: "inset 0 1px 2px rgba(0,0,0,0.4)",
                         }}
                       />
                       <rect
@@ -594,7 +517,6 @@ const OrganizationalStageGauges = ({
                         fill="rgba(255,255,255,0.1)"
                       />
 
-                      {/* Nozzle - Spout with metallic look */}
                       <path
                         d="M 0 0 Q -15 -5, -25 0 Q -35 5, -40 15"
                         fill="none"
@@ -602,7 +524,7 @@ const OrganizationalStageGauges = ({
                         strokeWidth="6"
                         strokeLinecap="round"
                         style={{
-                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
+                          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.3))",
                         }}
                       />
                       <path
@@ -612,7 +534,6 @@ const OrganizationalStageGauges = ({
                         strokeWidth="4.5"
                         strokeLinecap="round"
                       />
-                      {/* Spout highlight */}
                       <path
                         d="M 0 0 Q -12 -4, -20 0 Q -28 4, -35 12"
                         fill="none"
@@ -628,10 +549,9 @@ const OrganizationalStageGauges = ({
                         stroke="#475569"
                         strokeWidth="2.5"
                         style={{
-                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.6))",
+                          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.3))",
                         }}
                       />
-                      {/* Spout tip highlight */}
                       <circle
                         cx="-40"
                         cy="15"
@@ -668,7 +588,6 @@ const OrganizationalStageGauges = ({
           }
         />
 
-        {/* Temperature Strip Visualization - Fills Full Vertical Space */}
         <div className="flex flex-col h-[calc(100%-80px)] gap-1.5">
           {distribution.map((stage, idx) => {
             const percentage = (stage.scoreOnScale / 5) * 100;
@@ -682,19 +601,25 @@ const OrganizationalStageGauges = ({
                 delay={idx * ANIMATION_DELAYS.stageCard}
                 transitionPreset="normal"
                 onClick={() => handleStageClick(stage)}
-                className={`group relative cursor-pointer transition-all rounded-xl border-2 overflow-hidden flex-1 flex items-center ${
+                className={`group relative cursor-pointer transition-all duration-300 rounded-xl border-2 overflow-hidden flex-1 flex items-center ${
                   isSelected
-                    ? "ring-2 ring-offset-2 ring-brand-teal border-brand-teal/40 shadow-xl bg-brand-teal/5"
-                    : "border-gray-200 hover:border-gray-300 hover:shadow-lg"
+                    ? "ring-2 ring-offset-2 ring-brand-teal border-brand-teal/40 bg-brand-teal/5"
+                    : "border-gray-200 hover:border-gray-300"
                 } ${
                   isDominant
                     ? "bg-gradient-to-r from-white via-gray-50/50 to-white"
                     : "bg-white"
                 }`}
+                style={{
+                  boxShadow: isSelected
+                    ? CARD_SHADOWS.selected
+                    : CARD_SHADOWS.default,
+                }}
+                onMouseEnter={(e) => handleCardHover(e, isSelected)}
+                onMouseLeave={(e) => handleCardLeave(e, isSelected)}
               >
                 <div className="p-3 w-full">
                   <div className="flex items-center gap-3">
-                    {/* Stage Name - Better Readable */}
                     <div className="w-32 shrink-0">
                       <h3
                         className={`text-sm font-bold mb-1 ${
@@ -710,9 +635,10 @@ const OrganizationalStageGauges = ({
                       )}
                     </div>
 
-                    {/* Temperature Strip - Fills full height */}
-                    <div className="flex-1 relative h-full min-h-[36px] bg-gray-100 rounded-full overflow-hidden shadow-inner">
-                      {/* Scale markers - Better Readable */}
+                    <div
+                      className="flex-1 relative h-full min-h-[36px] bg-gray-100 rounded-full overflow-hidden"
+                      style={{ boxShadow: GAUGE_SHADOWS.tempStrip }}
+                    >
                       <div className="absolute inset-0 flex items-center justify-between px-1.5">
                         {[0, 1, 2, 3, 4, 5].map((mark) => (
                           <div
@@ -739,7 +665,6 @@ const OrganizationalStageGauges = ({
                         ))}
                       </div>
 
-                      {/* Filled temperature with gradient */}
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
@@ -751,17 +676,15 @@ const OrganizationalStageGauges = ({
                         className="absolute left-0 top-0 bottom-0 rounded-full"
                         style={{
                           background: `linear-gradient(to right, ${stage.color}, ${stage.color}cc)`,
-                          boxShadow: `inset 0 0 20px ${stage.color}50, 0 0 25px ${stage.color}40`,
+                          boxShadow: GAUGE_SHADOWS.tempFill(stage.color),
                         }}
                       >
-                        {/* Shine effect */}
                         <div
                           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"
                           style={{ width: "60%", marginLeft: "20%" }}
                         />
                       </motion.div>
 
-                      {/* Value indicator dot */}
                       <motion.div
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -773,24 +696,23 @@ const OrganizationalStageGauges = ({
                         }}
                       >
                         <div
-                          className="w-3.5 h-3.5 rounded-full border-3 border-white shadow-2xl"
+                          className="w-3.5 h-3.5 rounded-full border-3 border-white"
                           style={{
                             backgroundColor: stage.color,
                             borderWidth: "3px",
-                            boxShadow: `0 0 20px ${stage.color}80, 0 3px 6px rgba(0,0,0,0.25)`,
+                            boxShadow: GAUGE_SHADOWS.indicator(stage.color),
                           }}
                         />
                       </motion.div>
                     </div>
 
-                    {/* Score and Count - Compact */}
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
                         <div
                           className="text-xl font-black leading-none"
                           style={{
                             color: stage.color,
-                            textShadow: `0 0 10px ${stage.color}40`,
+                            textShadow: `0 0 6px ${stage.color}50`,
                           }}
                         >
                           {stage.scoreOnScale.toFixed(1)}
@@ -804,16 +726,21 @@ const OrganizationalStageGauges = ({
                           {stage.count}
                         </div>
                         <div className="text-sm text-gray-500 font-medium">
-                          employees
+                          Employees
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Selection glow */}
                 {isSelected && (
-                  <div className="absolute inset-0 bg-brand-teal/10 rounded-xl pointer-events-none" />
+                  <div
+                    className="absolute inset-0 rounded-xl pointer-events-none"
+                    style={{
+                      background:
+                        "radial-gradient(circle at center, rgba(20,184,166,0.1) 0%, rgba(20,184,166,0.03) 50%, transparent 100%)",
+                    }}
+                  />
                 )}
               </AnimatedContainer>
             );
