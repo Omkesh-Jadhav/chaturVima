@@ -92,7 +92,10 @@ const OrganizationalStageDistribution = ({
     );
 
     // Sort by scoreOnScale (high to low)
-    const sortedDistribution = sortStagesByScore(distribution, "scoreOnScale");
+    const sortedDistribution = sortStagesByScore<StageDistributionData>(
+      distribution,
+      "scoreOnScale"
+    );
 
     return { distribution: sortedDistribution, total };
   }, []);

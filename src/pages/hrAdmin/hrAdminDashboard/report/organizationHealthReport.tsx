@@ -23,10 +23,13 @@ const OrganizationHealthReport: React.FC = () => {
   } = organizationHealthData;
 
   // Sort stage distribution by employeeCount (high to low)
-  const stageDistribution = sortStagesByScore(
-    stageDistributionRaw,
-    "employeeCount"
-  );
+  const stageDistribution = sortStagesByScore<{
+    stage: string;
+    employeeCount: number;
+    percentage: number;
+    color: string;
+    avgStageScore?: number;
+  }>(stageDistributionRaw, "employeeCount");
 
   // Dynamic color palette for departments
   const colorPalette = [

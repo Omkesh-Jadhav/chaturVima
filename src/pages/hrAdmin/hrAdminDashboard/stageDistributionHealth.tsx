@@ -74,7 +74,7 @@ const StageDistributionHealth = () => {
     }));
 
     // Sort by value (high to low)
-    const sortedData = sortStagesByScore(data, "value");
+    const sortedData = sortStagesByScore<StageData>(data, "value");
 
     // Calculate totals
     const total = sortedData.reduce((sum, item) => sum + item.value, 0);

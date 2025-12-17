@@ -299,11 +299,11 @@ export const getCycleStatusColor = (
 
 export const sortStagesByScore = <T extends Record<string, unknown>>(
   stages: T[],
-  scoreKey: keyof T = "score" as keyof T
+  scoreKey: keyof T
 ): T[] => {
   return [...stages].sort((a, b) => {
-    const scoreA = typeof a[scoreKey] === "number" ? a[scoreKey] : 0;
-    const scoreB = typeof b[scoreKey] === "number" ? b[scoreKey] : 0;
+    const scoreA = Number(a[scoreKey]) || 0;
+    const scoreB = Number(b[scoreKey]) || 0;
     return scoreB - scoreA;
   });
 };

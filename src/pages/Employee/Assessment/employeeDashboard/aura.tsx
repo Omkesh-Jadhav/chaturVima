@@ -23,7 +23,7 @@ const Aura = ({ data }: AuraProps) => {
     useState<EmotionalStageAssessment | null>(null);
 
   // Sort data by score (high to low)
-  const sortedData = sortStagesByScore(data, "score");
+  const sortedData = sortStagesByScore<EmotionalStageAssessment>(data, "score");
 
   // Calculate total and percentages for pie chart data
   const total = sortedData.reduce((sum, item) => sum + item.score, 0);

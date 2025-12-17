@@ -372,7 +372,7 @@ const OverallOrganizationalHealthScore = () => {
           </h3>
         </div>
         <div className="space-y-3">
-          {sortStagesByScore(
+          {sortStagesByScore<{ stage: string; score: number }>(
             STAGES_ORDER.map((stage) => ({
               stage,
               score: animatedStageScores[stage] || stageScores[stage] || 0,

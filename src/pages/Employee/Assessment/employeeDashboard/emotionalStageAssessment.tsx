@@ -46,7 +46,9 @@ const EmotionalStageAssessment = ({
   });
 
   // Sort by score (high to low)
-  const sortedStagesWithStatus = sortStagesByScore(stagesWithStatus, "score");
+  const sortedStagesWithStatus = sortStagesByScore<
+    EmotionalStageAssessmentType & { calculatedStatus?: "Dominant" }
+  >(stagesWithStatus, "score");
 
   const dominantStage = sortedStagesWithStatus.find(
     (s) => s.calculatedStatus === "Dominant"

@@ -30,7 +30,7 @@ const AssessmentProgress = ({
 }: AssessmentProgressProps) => {
   const [showMilestone, setShowMilestone] = useState(false);
   const [currentMilestone, setCurrentMilestone] = useState<
-    (typeof MILESTONES)[0] | null
+    (typeof MILESTONES)[number] | null
   >(null);
 
   useEffect(() => {

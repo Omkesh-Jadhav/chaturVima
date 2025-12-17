@@ -229,7 +229,11 @@ const DepartmentDistribution = () => {
 
                   {/* Stage Distribution */}
                   <div className="space-y-2">
-                    {sortStagesByScore(
+                    {sortStagesByScore<{
+                      stage: string;
+                      count: number;
+                      color: string;
+                    }>(
                       STAGES.map((stage) => ({
                         stage,
                         count: dept.stageDistribution[stage],
