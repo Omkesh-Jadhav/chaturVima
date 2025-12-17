@@ -297,13 +297,13 @@ export const getCycleStatusColor = (
     : `${colors.bg} ${colors.text}`;
 };
 
-export const sortStagesByScore = <T extends Record<string, unknown>>(
+export const sortStagesByScore = <T extends object>(
   stages: T[],
   scoreKey: keyof T
 ): T[] => {
   return [...stages].sort((a, b) => {
-    const scoreA = Number(a[scoreKey]) || 0;
-    const scoreB = Number(b[scoreKey]) || 0;
+    const scoreA = Number((a as Record<string, unknown>)[scoreKey as string]) || 0;
+    const scoreB = Number((b as Record<string, unknown>)[scoreKey as string]) || 0;
     return scoreB - scoreA;
   });
 };
