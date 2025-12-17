@@ -1,10 +1,18 @@
 /**
- * Assessment Dashboard Mock Data and Constants
- * Contains all mock data and constants used in the Assessment Dashboard component
+ * Assessment Dashboard Data and Stage Configuration
+ *
+ * Centralized file for all assessment-related data and configuration:
+ * - Stage configuration (STAGES, THEME_CONFIG, helper functions)
+ * - Assessment constants (config, badges, colors)
+ * - Assessment types and priorities
+ * - Mock assessment data (pending, completed, emotional stages, sub-stages)
+ *
  * Colors are imported from centralized theme configuration
  */
 
 import { getStagePieColor } from "@/utils/assessmentConfig";
+import type { Stage, StageType, ThemeConfig } from "@/types";
+import { colors } from "@/utils/theme";
 
 // ==================== Assessment Constants ====================
 export const ASSESSMENT_CONFIG = {
@@ -30,7 +38,62 @@ export const CONFETTI_COLORS = [
   "#FFD700",
 ] as const;
 
-// Centralized Stage Order - Use this across the entire project
+// ==================== Stage Configuration ====================
+export const STAGES: Record<StageType, Stage> = {
+  honeymoon: {
+    id: "honeymoon",
+    name: "Honeymoon",
+    description:
+      "Establishing trust, alignment, and initial performance clarity",
+    color: colors.stages.honeymoon,
+    shape: "square",
+    icon: "■",
+  },
+  "self-reflection": {
+    id: "self-reflection",
+    name: "Self-Reflection",
+    description: "Identifying strengths, gaps, and opportunities for growth",
+    color: colors.stages.selfReflection,
+    shape: "triangle",
+    icon: "▲",
+  },
+  "soul-searching": {
+    id: "soul-searching",
+    name: "Soul-Searching",
+    description:
+      "Confronting deeper structural, cultural, or leadership challenges",
+    color: colors.stages.soulSearching,
+    shape: "circle",
+    icon: "●",
+  },
+  "steady-state": {
+    id: "steady-state",
+    name: "Steady-State",
+    description: "Achieving balance, stability, and sustained innovation",
+    color: colors.stages.steadyState,
+    shape: "diamond",
+    icon: "♦",
+  },
+};
+
+export const THEME_CONFIG: ThemeConfig = {
+  variant: "3b",
+  stages: STAGES,
+  brandColors: {
+    navy: "#FF6700",
+    teal: "#4160F0",
+  },
+};
+
+// Stage order for internal use (StageType format)
+export const STAGE_ORDER_TYPES: StageType[] = [
+  "honeymoon",
+  "self-reflection",
+  "soul-searching",
+  "steady-state",
+];
+
+// Stage order for display (display names)
 export const STAGE_ORDER = [
   "Steady-State",
   "Honeymoon",
@@ -40,6 +103,33 @@ export const STAGE_ORDER = [
 
 export type StageName = (typeof STAGE_ORDER)[number];
 
+// Stage helper functions
+export const getStage = (stageId: StageType): Stage => {
+  return STAGES[stageId];
+};
+
+export const getStageColor = (
+  stageId: StageType,
+  shade: "main" | "light" | "dark" = "main"
+): string => {
+  return STAGES[stageId].color[shade];
+};
+
+export const getStageShapeClass = (stageId: StageType): string => {
+  const shapeMap = {
+    square: "shape-square",
+    triangle: "shape-triangle",
+    circle: "shape-circle",
+    diamond: "shape-diamond",
+  };
+  return shapeMap[STAGES[stageId].shape];
+};
+
+export const getAllStages = (): Stage[] => {
+  return Object.values(STAGES);
+};
+
+// ==================== Assessment Types and Priorities ====================
 export type AssessmentType =
   | "Employee Self Assessment"
   | "Manager Relationship Assessment"
@@ -47,6 +137,16 @@ export type AssessmentType =
   | "Company Assessment";
 
 export type Priority = "High" | "Medium" | "Low";
+
+export const ASSESSMENT_TYPES: AssessmentType[] = [
+  "Employee Self Assessment",
+  "Manager Relationship Assessment",
+  "Department Assessment",
+  "Company Assessment",
+];
+
+// Re-export for convenience (used in assessmentCycles and manualAssessments)
+export const assessmentTypeOptions = ASSESSMENT_TYPES;
 
 export type PendingAssessment = {
   id: string;
@@ -174,20 +274,13 @@ export const MOCK_COMPLETED_ASSESSMENTS: CompletedAssessment[] = [
   },
 ];
 
+// ==================== Mock Assessment Data ====================
 // Category Distribution Data
 export const MOCK_CATEGORY_DISTRIBUTION: StageDatum[] = [
   { id: "Honeymoon", label: "Honeymoon", value: 42 },
   { id: "Self-Introspection", label: "Self-Introspection", value: 25 },
   { id: "Soul-Searching", label: "Soul-Searching", value: 20 },
   { id: "Steady-State", label: "Steady-State", value: 13 },
-];
-
-// Assessment Types
-export const ASSESSMENT_TYPES: AssessmentType[] = [
-  "Employee Self Assessment",
-  "Manager Relationship Assessment",
-  "Department Assessment",
-  "Company Assessment",
 ];
 
 // Emotional Intensity Heatmap Data - Stages vs Assessment Types (ordered by STAGE_ORDER)

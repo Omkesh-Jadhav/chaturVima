@@ -1,6 +1,12 @@
 /**
  * Mock Assessment Questions
- * 25 questions distributed across 4 assessment types
+ * 
+ * 25 questions distributed across 4 assessment types:
+ * - Employee Self Assessment (q1-q7)
+ * - Manager Relationship Assessment (q8-q13)
+ * - Department Assessment (q14-q19)
+ * - Company Assessment (q20-q25)
+ * 
  * Based on the ChaturVima framework's 4 stages
  */
 import type { Question } from "@/types";
@@ -416,13 +422,3 @@ export const MOCK_QUESTIONS: Question[] = [
     category: "Job Satisfaction",
   },
 ];
-
-// Get questions by stage
-export const getQuestionsByStage = (stage: string) => {
-  return MOCK_QUESTIONS.filter((q) => q.stage === stage);
-};
-
-// Get total questions
-export const getTotalQuestions = () => {
-  return MOCK_QUESTIONS.length;
-};

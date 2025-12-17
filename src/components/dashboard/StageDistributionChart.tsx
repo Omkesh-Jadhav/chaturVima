@@ -14,7 +14,7 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { STAGES } from "../../data/stages";
+import { STAGES } from "../../data/assessmentDashboard";
 import type { StageDistribution, StageType } from "../../types";
 
 interface StageDistributionChartProps {

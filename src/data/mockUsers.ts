@@ -1,6 +1,8 @@
 /**
  * Mock User Data
- * Sample users for different roles and departments
+ * 
+ * Sample users for different roles and departments.
+ * Used for authentication and user context.
  */
 import type { User } from '@/types';
 

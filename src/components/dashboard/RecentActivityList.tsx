@@ -8,7 +8,7 @@ import {
 import { Badge } from "../ui";
 import { motion } from "framer-motion";
 import { Clock, User } from "lucide-react";
-import { STAGES } from "../../data/stages";
+import { STAGES } from "../../data/assessmentDashboard";
 import type { AssessmentActivity } from "../../data/mockAnalytics";
 
 interface RecentActivityListProps {

@@ -1,31 +1,27 @@
+/**
+ * Mock Employee Data Generator
+ *
+ * Generates realistic employee data with demographics, career metrics, and stage distributions.
+ * Used for testing and development purposes.
+ */
+
 import type { StageDistribution, StageType } from "../types";
 import type { DepartmentType } from "./mockAnalytics";
 import { SeededRandom, clamp } from "../utils/statistics";
 
-// Employee age groups
+// ==================== Type Definitions ====================
 export type AgeGroup = "22-30" | "31-40" | "41-50" | "51-60" | "60+";
-
-// Gender options
 export type Gender = "Male" | "Female" | "Non-binary" | "Prefer not to say";
-
-// Tenure groups
 export type TenureGroup = "0-1yr" | "1-3yr" | "3-5yr" | "5-10yr" | "10+yr";
-
-// Experience groups
 export type ExperienceGroup =
   | "0-5yr"
   | "5-10yr"
   | "10-15yr"
   | "15-20yr"
   | "20+yr";
-
-// Role levels
 export type RoleLevel = "Junior" | "Mid" | "Senior" | "Lead" | "Executive";
-
-// Work location
 export type WorkLocation = "Remote" | "Hybrid" | "On-site";
 
-// Complete employee interface
 export interface EmployeeDetailed {
   // Identity
   id: string;
@@ -59,7 +55,7 @@ export interface EmployeeDetailed {
   avgCompletionTime: number;
 }
 
-// Helper functions
+// ==================== Helper Functions ====================
 const getAgeGroup = (age: number): AgeGroup => {
   if (age <= 30) return "22-30";
   if (age <= 40) return "31-40";
@@ -191,7 +187,6 @@ const getDominantStage = (dist: StageDistribution): StageType => {
   return entries.reduce((max, curr) => (curr[1] > max[1] ? curr : max))[0];
 };
 
-// Custom weighted choice using random value
 const weightedChoice = <T>(
   options: T[],
   weights: number[],
@@ -200,14 +195,12 @@ const weightedChoice = <T>(
   let cumulative = 0;
   for (let i = 0; i < options.length; i++) {
     cumulative += weights[i];
-    if (randomValue <= cumulative) {
-      return options[i];
-    }
+    if (randomValue <= cumulative) return options[i];
   }
   return options[options.length - 1];
 };
 
-// First names (diverse)
+// ==================== Name Data ====================
 const firstNames = {
   Male: [
     "James",
@@ -299,9 +292,7 @@ const lastNames = [
   "Robinson",
 ];
 
-/**
- * Generate 175 realistic employees with demographics
- */
+// ==================== Employee Generator ====================
 export const generateRealisticEmployees = (
   count: number = 175
 ): EmployeeDetailed[] => {
@@ -445,28 +436,5 @@ export const generateRealisticEmployees = (
   return employees;
 };
 
-// Generate and export employees
+// ==================== Exported Data ====================
 export const MOCK_EMPLOYEES = generateRealisticEmployees(250);
-
-// Helper to filter employees
-export const getEmployeesByDepartment = (
-  dept: DepartmentType
-): EmployeeDetailed[] => {
-  return MOCK_EMPLOYEES.filter((e) => e.department === dept);
-};
-
-export const getEmployeesByAgeGroup = (
-  ageGroup: AgeGroup
-): EmployeeDetailed[] => {
-  return MOCK_EMPLOYEES.filter((e) => e.ageGroup === ageGroup);
-};
-
-export const getEmployeesByGender = (gender: Gender): EmployeeDetailed[] => {
-  return MOCK_EMPLOYEES.filter((e) => e.gender === gender);
-};
-
-export const getEmployeesByRoleLevel = (
-  roleLevel: RoleLevel
-): EmployeeDetailed[] => {
-  return MOCK_EMPLOYEES.filter((e) => e.roleLevel === roleLevel);
-};

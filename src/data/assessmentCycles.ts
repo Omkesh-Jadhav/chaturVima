@@ -3,13 +3,10 @@ import type {
   DepartmentHeadAccess,
   ShareMatrix,
 } from "@/types/assessmentCycles";
+import { assessmentTypeOptions } from "./assessmentDashboard";
 
-export const assessmentTypeOptions = [
-  "Employee Self Assessment",
-  "Manager Relationship Assessment",
-  "Department Assessment",
-  "Company Assessment",
-];
+// Re-export for backward compatibility
+export { assessmentTypeOptions };
 
 export const SHARE_MATRIX_STORAGE_KEY = "cv_hr_share_matrix_v1";
 export const CYCLES_STORAGE_KEY = "cv_hr_assessment_cycles_v1";

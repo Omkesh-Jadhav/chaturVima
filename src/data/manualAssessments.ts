@@ -15,12 +15,8 @@ export interface ManualDepartment {
   employees: ManualEmployee[];
 }
 
-export const manualAssessmentTypes = [
-  "Employee Self Assessment",
-  "Manager Relationship Assessment",
-  "Department Assessment",
-  "Company Assessment",
-];
+// Re-export assessment types from centralized location
+export { assessmentTypeOptions as manualAssessmentTypes } from "./assessmentDashboard";
 
 export const manualDepartments: ManualDepartment[] = [
   {

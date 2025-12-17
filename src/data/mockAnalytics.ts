@@ -1,6 +1,15 @@
+/**
+ * Analytics and Department Data
+ *
+ * Contains analytics-related data structures and mock department data:
+ * - Department types and interfaces
+ * - Mock department data with health scores and stage distributions
+ * - Assessment activity interface
+ */
+
 import type { StageDistribution, StageType } from "@/types";
 
-// Department types
+// ==================== Types and Interfaces ====================
 export type DepartmentType =
   | "engineering"
   | "sales"
@@ -18,15 +27,6 @@ export interface Department {
   stageDistribution: StageDistribution;
 }
 
-// Time-series data point
-export interface TimeSeriesDataPoint {
-  date: string; // ISO date string
-  timestamp: number;
-  stageDistribution: StageDistribution;
-  participationRate: number; // percentage
-  avgCompletionTime: number; // minutes
-}
-
 // Assessment activity
 export interface AssessmentActivity {
   id: string;
@@ -40,18 +40,7 @@ export interface AssessmentActivity {
   completionTime: number; // minutes
 }
 
-// Organization-wide metrics
-export interface OrganizationMetrics {
-  totalEmployees: number;
-  assessmentsCompleted: number;
-  assessmentCompletionRate: number; // percentage
-  avgHealthScore: number; // 0-100
-  avgCompletionTime: number; // minutes
-  activeUsers30Days: number;
-  stageDistribution: StageDistribution;
-}
-
-// Mock Departments Data
+// ==================== Mock Data ====================
 export const MOCK_DEPARTMENTS: Department[] = [
   {
     id: "engineering",

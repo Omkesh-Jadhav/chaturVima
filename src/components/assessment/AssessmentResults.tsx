@@ -11,7 +11,7 @@ import {
   CardTitle,
   Button,
 } from "../../components/ui";
-import { getAllStages, getStage } from "../../data/stages";
+import { getAllStages, getStage } from "../../data/assessmentDashboard";
 import type { AssessmentResult } from "../../types";
 import { Trophy, TrendingUp, CheckCircle } from "lucide-react";
 
