@@ -48,7 +48,6 @@ const OrganizationalSubStagesBreakdown = ({
 
   if (!selectedStage || selectedSubStages.length === 0) return null;
 
-  const totalInStage = selectedSubStages.reduce((sum, s) => sum + s.count, 0);
   const maxCount = Math.max(...selectedSubStages.map((s) => s.count), 1);
 
   return (

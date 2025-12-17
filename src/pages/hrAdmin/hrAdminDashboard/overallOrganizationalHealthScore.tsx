@@ -54,8 +54,6 @@ const getStageFromScore = (score: number) => {
   };
 };
 
-import { STAGE_ORDER } from "@/data/assessmentDashboard";
-
 const STAGES_ORDER = STAGE_ORDER;
 
 const OverallOrganizationalHealthScore = () => {

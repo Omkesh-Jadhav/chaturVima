@@ -33,7 +33,7 @@ const EmotionalStageAssessment = ({
   // Calculate status based on highest score (not percentage)
   const stagesWithStatus = emotionalStageAssessment.map((stage) => {
     // Mark as Dominant if it has the highest score
-    const calculatedStatus =
+    const calculatedStatus: "Dominant" | undefined =
       stage.score === maxScoreValue && maxScoreValue > 0
         ? "Dominant"
         : undefined;
@@ -76,8 +76,8 @@ const EmotionalStageAssessment = ({
         <div className="space-y-1.5">
           {stagesWithStatus.map((stage, idx) => {
             const percentage = calculatePercentage(stage.score, maxScore);
-            const statusStyle = stage.calculatedStatus
-              ? STATUS_STYLES[stage.calculatedStatus]
+            const statusStyle = stage.calculatedStatus === "Dominant"
+              ? STATUS_STYLES["Dominant"]
               : null;
             const isSelected = selectedStage?.stage === stage.stage;
 
