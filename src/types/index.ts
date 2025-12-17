@@ -103,7 +103,8 @@ export type UserRole =
   | "employee"
   | "hr-admin"
   | "department-head"
-  | "super-admin";
+  | "super-admin"
+  | "hr-doctorate";
 // | "manager"
 
 export interface User {

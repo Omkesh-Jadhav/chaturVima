@@ -17,6 +17,7 @@ import {
   Crown,
   X,
   Check,
+  GraduationCap,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 import type { UserRole } from "../../types";
@@ -46,6 +47,11 @@ const ROLE_CONFIG: Partial<
     icon: <Crown className="h-4 w-4" />,
     color: "text-amber-600 bg-amber-50",
   },
+  "hr-doctorate": {
+    label: "HR Doctorate",
+    icon: <GraduationCap className="h-4 w-4" />,
+    color: "text-purple-600 bg-purple-50",
+  },
 };
 
 const Navbar = () => {
@@ -69,6 +75,7 @@ const Navbar = () => {
     "hr-admin",
     "department-head",
     "super-admin",
+    "hr-doctorate",
   ];
   const availableRoles = allRoles.filter(
     (role): role is UserRole => role !== user.role && Boolean(ROLE_CONFIG[role])

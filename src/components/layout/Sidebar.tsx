@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   BarChart3,
+  GraduationCap,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -85,7 +86,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Organization Health Report",
     path: "/hr/organization-health-report",
     icon: <BarChart3 className="h-5 w-5" />,
-    roles: ["hr-admin"],
+    roles: ["hr-admin", "hr-doctorate"],
   },
   {
     id: "department-head-cycles",
@@ -138,6 +139,11 @@ const ROLE_CONFIG: Record<
     label: "Super Admin",
     icon: <Crown className="h-3 w-3" />,
     color: "text-amber-600 bg-amber-50",
+  },
+  "hr-doctorate": {
+    label: "HR Doctorate",
+    icon: <GraduationCap className="h-3 w-3" />,
+    color: "text-purple-600 bg-purple-50",
   },
 };
 
