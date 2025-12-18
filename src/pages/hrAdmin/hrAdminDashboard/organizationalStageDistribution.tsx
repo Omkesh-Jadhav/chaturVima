@@ -155,9 +155,14 @@ const OrganizationalStageDistribution = ({
           title="Organizational Stage Distribution"
           description={
             <>
-              Employee distribution across emotional stages (0-5 scale) -{" "}
-              <span className="font-bold text-gray-900">
-                {total} total employees
+              <span className="text-gray-700">
+                Employee distribution across emotional stages (0-5 scale) -{" "}
+                <span className="font-bold text-gray-900">
+                  {total} total employees
+                </span>
+              </span>{" "}
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-900 ring-1 ring-amber-200">
+                👇 Click a stage to view sub-stages
               </span>
             </>
           }

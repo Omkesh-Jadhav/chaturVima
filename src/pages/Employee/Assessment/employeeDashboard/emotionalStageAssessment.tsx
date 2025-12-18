@@ -15,7 +15,6 @@ import {
 import { CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 import Aura from "./aura";
 
-
 interface EmotionalStageAssessmentProps {
   onStageSelect: (stage: EmotionalStageAssessmentType | null) => void;
   onStageClick?: (stage: EmotionalStageAssessmentType | null) => void;
@@ -77,21 +76,30 @@ const EmotionalStageAssessment = ({
         transitionPreset="slow"
         className={`${CARD_BASE_CLASSES} xl:col-span-3`}
       >
-        <div className="mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Emotional Stage Assessment
-          </h2>
-          <p className="text-xs text-gray-500">
-            Current emotional state distribution
-          </p>
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h2 className="text-lg font-extrabold tracking-tight text-gray-900">
+              Emotional Stage Assessment
+            </h2>
+            <p className="mt-0.5 text-xs text-gray-600">
+              Click a stage to show its sub-stages.
+            </p>
+          </div>
+
+          <div className="shrink-0">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-900 ring-1 ring-amber-200">
+              👇 Click a stage to view sub-stages
+            </span>
+          </div>
         </div>
 
         <div className="space-y-1.5">
           {sortedStagesWithStatus.map((stage, idx) => {
             const percentage = calculatePercentage(stage.score, maxScore);
-            const statusStyle = stage.calculatedStatus === "Dominant"
-              ? STATUS_STYLES["Dominant"]
-              : null;
+            const statusStyle =
+              stage.calculatedStatus === "Dominant"
+                ? STATUS_STYLES["Dominant"]
+                : null;
             const isSelected = selectedStage?.stage === stage.stage;
 
             return (
@@ -101,51 +109,92 @@ const EmotionalStageAssessment = ({
                 delay={idx * ANIMATION_DELAYS.stageCard}
                 transitionPreset="normal"
                 onClick={() => handleStageClick(stage)}
-                className={`group rounded-lg border p-3 transition-all cursor-pointer ${
-                  statusStyle
-                    ? `${statusStyle.bg} border-gray-200`
-                    : "bg-white border-gray-200"
-                } ${
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleStageClick(stage);
+                  }
+                }}
+                className={`group relative overflow-hidden rounded-xl border-2 p-2.5 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal focus-visible:ring-offset-2 ${
                   isSelected
-                    ? "ring-2 ring-offset-2 ring-brand-teal shadow-md"
-                    : "hover:shadow-sm"
+                    ? "border-brand-teal/40 bg-brand-teal/5 shadow-md"
+                    : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
                 }`}
               >
+                {/* subtle sheen */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="absolute -left-10 -top-10 h-24 w-24 rounded-full bg-white/60 blur-xl" />
+                  <div className="absolute -bottom-10 -right-10 h-24 w-24 rounded-full bg-white/40 blur-xl" />
+                </div>
+
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900">
-                      {stage.stage}
-                    </h3>
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
                     <div
-                      className="text-lg font-bold leading-none mt-0.5"
-                      style={{ color: stage.color }}
+                      className="h-9 w-9 shrink-0 rounded-xl border border-white shadow-sm"
+                      style={{
+                        background: `linear-gradient(135deg, ${stage.color}22, ${stage.color}10)`,
+                      }}
                     >
-                      {stage.score.toFixed(2)}
+                      <div
+                        className="mx-auto mt-3 h-4 w-4 rounded-full shadow-sm"
+                        style={{ backgroundColor: stage.color }}
+                      />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-sm font-extrabold text-gray-900">
+                          {stage.stage}
+                        </h3>
+                        {stage.calculatedStatus === "Dominant" && (
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                              statusStyle
+                                ? `${statusStyle.text} ${statusStyle.bg}`
+                                : "bg-amber-50 text-amber-900"
+                            }`}
+                          >
+                            Dominant
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <span
+                          className="inline-flex items-center gap-2 rounded-lg bg-white px-2 py-1 text-xs font-bold text-gray-900 ring-1 ring-gray-200"
+                          title="Final value"
+                        >
+                          <span className="text-[11px] font-extrabold text-gray-600">
+                            Final Value
+                          </span>
+                          <span
+                            className="text-base font-black leading-none"
+                            style={{ color: stage.color }}
+                          >
+                            {stage.score.toFixed(2)}
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {stage.calculatedStatus === "Dominant" && (
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                          statusStyle
-                            ? `${statusStyle.text} ${statusStyle.bg}`
-                            : ""
-                        }`}
-                      >
-                        Dominant
-                      </span>
-                    )}
-                    <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+
+                  <div className="shrink-0">
+                    <div className="relative h-2 w-24 overflow-hidden rounded-full bg-gray-200 shadow-inner">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
                         transition={{
-                          duration: 0.6,
-                          delay: idx * 0.1 + 0.2,
-                          ease: "easeOut",
+                          duration: 0.8,
+                          delay: idx * 0.08 + 0.2,
+                          ease: [0.43, 0.13, 0.23, 0.96],
                         }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: stage.color }}
+                        className="absolute left-0 top-0 h-full rounded-full"
+                        style={{
+                          background: `linear-gradient(90deg, ${stage.color}, ${stage.color}dd)`,
+                          boxShadow: `0 0 10px ${stage.color}30`,
+                        }}
                       />
                     </div>
                   </div>

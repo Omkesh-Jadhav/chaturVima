@@ -71,7 +71,7 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
               Detailed breakdown of sub-stage performance
             </span>{" "}
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-900 ring-1 ring-amber-200">
-              👆 Tip: Click a stage above to view
+              👇 Click a stage above to view
             </span>
           </>
         }
