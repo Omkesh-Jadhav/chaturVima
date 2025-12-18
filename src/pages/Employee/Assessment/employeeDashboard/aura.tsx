@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import type {
-  EmotionalStageAssessment,
-  StageDatum,
-} from "@/data/assessmentDashboard";
+import type { StageDatum } from "@/data/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
 import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
@@ -14,25 +11,52 @@ import { sortStagesByScore } from "@/utils/assessmentUtils";
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
+export type AuraStage = {
+  stage: string;
+  value: number;
+  color: string;
+  status?: string;
+};
+
 interface AuraProps {
-  data: EmotionalStageAssessment[];
+  data: AuraStage[];
+  /** "card" keeps the old look (own container + header). "embed" renders only the chart area. */
+  variant?: "card" | "embed";
+  title?: string;
+  description?: string;
+  valueLabel?: string;
+  /** Show the share (%) line in the hover card */
+  showShare?: boolean;
+  className?: string;
+  heightClassName?: string;
 }
 
-const Aura = ({ data }: AuraProps) => {
-  const [hoveredStage, setHoveredStage] =
-    useState<EmotionalStageAssessment | null>(null);
+const Aura = ({
+  data,
+  variant = "card",
+  title = "Stage Distribution",
+  description = "Visual overview of your distribution across stages",
+  valueLabel = "Final Value",
+  showShare = false,
+  className,
+  heightClassName,
+}: AuraProps) => {
+  const [hoveredStage, setHoveredStage] = useState<AuraStage | null>(null);
 
-  // Sort data by score (high to low)
-  const sortedData = sortStagesByScore<EmotionalStageAssessment>(data, "score");
+  // Sort data by value (high to low)
+  const sortedData = useMemo(
+    () => sortStagesByScore<AuraStage>(data, "value"),
+    [data]
+  );
 
   // Calculate total and percentages for pie chart data
-  const total = sortedData.reduce((sum, item) => sum + item.score, 0);
+  const total = sortedData.reduce((sum, item) => sum + item.value, 0);
 
   // Convert EmotionalStageAssessment to StageDatum format for ResponsivePie
   const pieData: StageDatum[] = sortedData.map((item) => ({
     id: item.stage,
     label: item.stage,
-    value: Math.round((item.score / total) * 100),
+    value: total > 0 ? Math.round((item.value / total) * 100) : 0,
   }));
 
   // Calculate percentages for gradient - use same order as pieData
@@ -45,50 +69,106 @@ const Aura = ({ data }: AuraProps) => {
   });
 
   return (
-    <AnimatedContainer
-      animation="fadeInUp"
-      transitionPreset="slow"
-      delay="xs"
-      className={`${CARD_BASE_CLASSES} p-5 xl:col-span-2`}
-    >
-      <SectionHeader
-        title="Stage Distribution"
-        description="Current sentiment spread across stages"
-      />
-      <div className="mt-4 h-72 relative">
-        {/* Pie Chart */}
-        <ResponsivePie
-          data={pieData}
-          margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-          innerRadius={0.65}
-          padAngle={2}
-          cornerRadius={6}
-          activeOuterRadiusOffset={10}
-          colors={(d: StageDatum) => getStagePieColor(d.label)}
-          enableArcLinkLabels={false}
-          arcLabelsSkipAngle={10}
-          arcLabel={(d: StageDatum) => `${d.value}%`}
-          arcLabelsTextColor={{
-            from: "color",
-            modifiers: [["darker", 2.2]],
-          }}
-          arcLabelsRadiusOffset={0.55}
-          defs={PIE_GRADIENTS}
-          fill={PIE_FILL}
-          theme={pieChartTheme}
-          animate
-          motionConfig="gentle"
-          onMouseEnter={(datum: StageDatum) => {
-            const stage = sortedData.find((d) => d.stage === datum.label);
-            if (stage) setHoveredStage(stage);
-          }}
-          onMouseLeave={() => setHoveredStage(null)}
-        />
+    <>
+      {variant === "card" && (
+        <AnimatedContainer
+          animation="fadeInUp"
+          transitionPreset="slow"
+          delay="xs"
+          className={`${CARD_BASE_CLASSES} p-5 xl:col-span-2 ${className ?? ""}`}
+        >
+          <SectionHeader title={title} description={description} />
+          <div className={`mt-4 relative overflow-hidden rounded-xl ${heightClassName ?? "h-72"}`}>
+            <AuraChart
+              pieData={pieData}
+              dataWithPercentages={dataWithPercentages}
+              sortedData={sortedData}
+              hoveredStage={hoveredStage}
+              setHoveredStage={setHoveredStage}
+              total={total}
+              valueLabel={valueLabel}
+              showShare={showShare}
+            />
+          </div>
+        </AnimatedContainer>
+      )}
 
-        {/* Human Figure Overlay - Centered */}
-        {!hoveredStage && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <svg width="154" height="154" viewBox="0 0 154 154">
+      {variant === "embed" && (
+        <div className={`relative overflow-hidden rounded-xl ${heightClassName ?? "h-full"} ${className ?? ""}`}>
+          <AuraChart
+            pieData={pieData}
+            dataWithPercentages={dataWithPercentages}
+            sortedData={sortedData}
+            hoveredStage={hoveredStage}
+            setHoveredStage={setHoveredStage}
+            total={total}
+            valueLabel={valueLabel}
+            showShare={showShare}
+          />
+        </div>
+      )}
+    </>
+  );
+};
+
+function AuraChart({
+  pieData,
+  dataWithPercentages,
+  sortedData,
+  hoveredStage,
+  setHoveredStage,
+  total,
+  valueLabel,
+  showShare,
+}: {
+  pieData: StageDatum[];
+  dataWithPercentages: Array<AuraStage & { percentage: number }>;
+  sortedData: AuraStage[];
+  hoveredStage: AuraStage | null;
+  setHoveredStage: (s: AuraStage | null) => void;
+  total: number;
+  valueLabel: string;
+  showShare: boolean;
+}) {
+  const hoveredPercent =
+    hoveredStage && total > 0 ? (hoveredStage.value / total) * 100 : 0;
+
+  return (
+    <>
+      <ResponsivePie
+        data={pieData}
+        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        innerRadius={0.65}
+        padAngle={2}
+        cornerRadius={6}
+        activeOuterRadiusOffset={10}
+        colors={(d: StageDatum) => getStagePieColor(d.label)}
+        enableArcLinkLabels={false}
+        arcLabelsSkipAngle={10}
+        arcLabel={(d: StageDatum) => `${d.value}%`}
+        arcLabelsTextColor={{
+          from: "color",
+          modifiers: [["darker", 2.2]],
+        }}
+        arcLabelsRadiusOffset={0.55}
+        defs={PIE_GRADIENTS}
+        fill={PIE_FILL}
+        theme={pieChartTheme}
+        animate
+        motionConfig="gentle"
+        onMouseEnter={(datum: StageDatum) => {
+          const stage = sortedData.find((d) => d.stage === datum.label);
+          if (stage) setHoveredStage(stage);
+        }}
+        onMouseLeave={() => setHoveredStage(null)}
+        tooltip={() => null}
+      />
+
+      {/* Human Figure Overlay - Centered */}
+      {!hoveredStage && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-36 h-36 max-w-[70%] max-h-[70%]">
+            <svg className="w-full h-full" viewBox="0 0 154 154">
               <defs>
                 <filter id="strongGlow">
                   <feGaussianBlur stdDeviation="8" result="coloredBlur" />
@@ -106,13 +186,11 @@ const Aura = ({ data }: AuraProps) => {
                   x2="0%"
                   y2="100%"
                 >
-                  {/* Start with first color at 0% */}
                   <stop
                     offset="0%"
                     stopColor={dataWithPercentages[0]?.color}
                     stopOpacity="0.8"
                   />
-                  {/* Add stops at cumulative percentages for each stage */}
                   {dataWithPercentages.map((item, index) => {
                     const cumulativePercentage = dataWithPercentages
                       .slice(0, index + 1)
@@ -172,51 +250,95 @@ const Aura = ({ data }: AuraProps) => {
               </g>
             </svg>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Hover Details */}
-        {hoveredStage && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-sm border border-white/30 rounded-lg p-4 text-white shadow-2xl min-w-[120px] max-w-[156px] z-10 pointer-events-none">
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-4 h-4 rounded-sm shadow-lg"
-                style={{
-                  backgroundColor: hoveredStage.color,
-                  boxShadow: `0 0 10px ${hoveredStage.color}`,
-                }}
-              />
-              <h3 className="font-bold text-base">{hoveredStage.stage}</h3>
-            </div>
+      {/* Hover Details */}
+      {hoveredStage && (
+        <div
+          className="absolute left-1/2 top-1/2 w-[min(210px,92%)] -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-black/70 px-3 py-2.5 text-white shadow-2xl backdrop-blur-md z-10 pointer-events-none overflow-hidden"
+          style={{
+            borderColor: `${hoveredStage.color}55`,
+            boxShadow: `0 18px 40px rgba(0,0,0,0.35), 0 0 22px ${hoveredStage.color}35`,
+          }}
+        >
+          {/* color accent */}
+          <div
+            className="absolute inset-x-0 top-0 h-0.5"
+            style={{
+              background: `linear-gradient(90deg, ${hoveredStage.color}, ${hoveredStage.color}00)`,
+            }}
+          />
+          <div
+            className="absolute -right-16 -top-16 h-36 w-36 rounded-full blur-2xl opacity-60"
+            style={{ backgroundColor: hoveredStage.color }}
+          />
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Score:</span>
-                <span className="font-semibold">
-                  {hoveredStage.score.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Percentage:</span>
-                <span className="font-semibold">
-                  {((hoveredStage.score / total) * 100).toFixed(1)}%
-                </span>
+          <div className="relative">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: hoveredStage.color,
+                      boxShadow: `0 0 12px ${hoveredStage.color}AA`,
+                    }}
+                  />
+                  <h3 className="truncate text-sm font-extrabold leading-tight">
+                    {hoveredStage.stage}
+                  </h3>
+                </div>
               </div>
 
               {hoveredStage.status && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Status:</span>
-                  <span className="px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
-                    {hoveredStage.status}
+                <span
+                  className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
+                  style={{
+                    backgroundColor: `${hoveredStage.color}26`,
+                    border: `1px solid ${hoveredStage.color}55`,
+                    color: "white",
+                  }}
+                >
+                  {hoveredStage.status}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-2 grid gap-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-semibold text-white/70">
+                  {valueLabel}
+                </span>
+                <span className="text-base font-black leading-none">
+                  {Number.isFinite(hoveredStage.value)
+                    ? hoveredStage.value.toLocaleString()
+                    : hoveredStage.value}
+                  {!showShare && (
+                    <span className="ml-1.5 text-[11px] font-extrabold text-white/70">
+                      ({hoveredPercent.toFixed(1)}%)
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              {showShare && (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] font-semibold text-white/70">
+                    Share
+                  </span>
+                  <span className="text-sm font-black">
+                    {total > 0 ? hoveredPercent.toFixed(1) : "0.0"}
+                    %
                   </span>
                 </div>
               )}
             </div>
           </div>
-        )}
-      </div>
-    </AnimatedContainer>
+        </div>
+      )}
+    </>
   );
-};
+}
 
 export default Aura;

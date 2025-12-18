@@ -1,27 +1,18 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Users, TrendingUp } from "lucide-react";
-import { ResponsivePie } from "@nivo/pie";
 import { AnimatedContainer } from "@/components/ui";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import { getStagePieColor } from "@/utils/assessmentConfig";
-import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
-import { PIE_GRADIENTS, PIE_FILL } from "@/components/assessmentDashboard";
 import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import hrDashboardData from "@/data/hrDashboardData.json";
 import { sortStagesByScore } from "@/utils/assessmentUtils";
+import Aura from "@/pages/Employee/Assessment/employeeDashboard/aura";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const STAGES = STAGE_ORDER;
-
-interface PieDatum {
-  id: string;
-  label: string;
-  value: number;
-  color: string;
-}
 
 interface StageData {
   id: string;
@@ -112,43 +103,16 @@ const StageDistributionHealth = () => {
 
       <div className="grid gap-3 md:grid-cols-3 mt-3">
         <div className="md:col-span-2 h-60">
-          <ResponsivePie
-            data={stageData}
-            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            innerRadius={0.6}
-            padAngle={2}
-            cornerRadius={6}
-            activeOuterRadiusOffset={8}
-            colors={(d: { label: string }) => getStagePieColor(d.label)}
-            enableArcLinkLabels={false}
-            arcLabelsSkipAngle={10}
-            arcLabel={(d: { value: number }) => `${d.value}`}
-            arcLabelsTextColor={{
-              from: "color",
-              modifiers: [["darker", 2.2]],
-            }}
-            arcLabelsRadiusOffset={0.5}
-            defs={PIE_GRADIENTS}
-            fill={PIE_FILL}
-            theme={pieChartTheme}
-            animate
-            motionConfig="gentle"
-            tooltip={({ datum }: { datum: PieDatum }) => (
-              <div className="bg-white px-3 py-2 shadow-xl rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: datum.color }}
-                  />
-                  <span className="font-semibold text-sm text-gray-900">
-                    {datum.label}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-600">
-                  {datum.value} {datum.value === 1 ? "employee" : "employees"}
-                </div>
-              </div>
-            )}
+          <Aura
+            variant="embed"
+            heightClassName="h-60"
+            valueLabel="Employees"
+            showShare
+            data={stageData.map((s) => ({
+              stage: s.label,
+              value: s.value,
+              color: s.color,
+            }))}
           />
         </div>
 

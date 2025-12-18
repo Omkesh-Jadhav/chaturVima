@@ -205,7 +205,14 @@ const EmotionalStageAssessment = ({
         </div>
       </AnimatedContainer>
 
-      <Aura data={emotionalStageAssessment} />
+      <Aura
+        data={emotionalStageAssessment.map((s) => ({
+          stage: s.stage,
+          value: s.score,
+          color: s.color,
+          status: s.status,
+        }))}
+      />
     </div>
   );
 };
