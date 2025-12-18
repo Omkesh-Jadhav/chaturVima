@@ -13,7 +13,9 @@ import AssessmentProgress from "../../../components/assessment/AssessmentProgres
 import EnergyBreak from "../../../components/assessment/EnergyBreak";
 import AssessmentResults from "../../../components/assessment/AssessmentResults";
 import CelebrationConfetti from "../../../components/assessment/CelebrationConfetti";
-import { PlayCircle, Check } from "lucide-react";
+import { Check, Clock, Lock, PlayCircle, Target, HelpCircle } from "lucide-react";
+import { AnimatedBackground } from "@/components/common";
+import { BACKGROUND_COLORS } from "@/components/assessmentDashboard";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -136,160 +138,317 @@ const Assessment = () => {
   // Not started state (or submitted state - show welcome screen with disabled button)
   if (isAssessmentSubmitted || (!hasStarted && !isComplete)) {
     return (
-      <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex justify-center mb-6"
-            >
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-brand-teal via-brand-navy to-purple-600 flex items-center justify-center shadow-lg">
-                  <PlayCircle className="w-20 h-20 text-white" />
-                </div>
+      <div className="relative">
+        <AnimatedBackground colors={[...BACKGROUND_COLORS]} />
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Hero Section */}
+            <div className="grid gap-4 lg:grid-cols-2 lg:gap-6 mb-6">
+              <div className="text-left">
                 <motion.div
-                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-green-500 border-4 border-white"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.15, duration: 0.5 }}
+                  className="mb-3 inline-flex items-center gap-3"
+                >
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-brand-teal via-brand-navy to-purple-600 flex items-center justify-center shadow-lg ring-1 ring-white/50">
+                      <PlayCircle className="w-7 h-7 text-white" />
+                    </div>
+                    <motion.div
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-green-500 border-2 border-white"
+                      animate={{ scale: [1, 1.25, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-gray-800 ring-1 ring-white/60 backdrop-blur-sm">
+                    10–15 minutes • Auto-saved
+                  </span>
+                </motion.div>
+
+                <h1 className="text-2xl md:text-4xl font-extrabold leading-[1.12] tracking-tight">
+                  <span className="bg-linear-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent">
+                    Organizational Health Assessment
+                  </span>
+                </h1>
+
+                <p className="mt-2.5 text-sm md:text-base text-gray-700 leading-relaxed">
+                  A quick, structured assessment that turns your responses into a
+                  clear stage view and practical next steps.
+                </p>
+
+                <div className="mt-3.5 grid gap-2 text-sm text-gray-800">
+                  {[
+                    "Stage distribution across the four emotional stages",
+                    "Sub-stage breakdown to pinpoint what’s driving it",
+                    "Action-oriented insights tailored to your results",
+                  ].map((t) => (
+                    <div key={t} className="flex items-start gap-2">
+                      <span className="mt-0.5 text-brand-teal font-black">✓</span>
+                      <span>{t}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                  {isAssessmentSubmitted ? (
+                    <Button
+                      disabled
+                      size="lg"
+                      className="px-10 py-5 text-base bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
+                    >
+                      <Check className="mr-2 h-5 w-5" />
+                      Test Submitted
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleStart}
+                      size="lg"
+                      className="px-9 py-4 text-base bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                    >
+                      <PlayCircle className="mr-2 h-5 w-5" />
+                      {hasExistingAnswers ? "Continue Assessment" : "Start Assessment"}
+                    </Button>
+                  )}
+                </div>
+
+                {isAssessmentSubmitted ? (
+                  <p className="mt-3 text-sm text-green-700 font-medium">
+                    Your assessment has been submitted. No further edits are allowed.
+                  </p>
+                ) : hasExistingAnswers ? (
+                  <p className="mt-3 text-sm text-brand-teal font-medium">
+                    Your previous progress has been saved.
+                  </p>
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">
+                    Your progress is saved automatically — you can continue anytime.
+                  </p>
+                )}
               </div>
-            </motion.div>
 
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
-              <span
-                className="inline-block bg-gradient-to-r from-brand-navy to-brand-teal bg-clip-text text-transparent"
-                style={{ paddingBottom: "0.15em", lineHeight: "1.1" }}
-              >
-                Organizational Health Assessment
-              </span>
-            </h1>
+              {/* Right side preview card */}
+              <div className="rounded-2xl border border-white/60 bg-white/70 shadow-lg backdrop-blur-sm overflow-hidden">
+                <div className="relative p-4">
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-brand-teal/15 blur-3xl" />
+                    <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-brand-navy/15 blur-3xl" />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-gray-900">
+                        Results preview
+                      </div>
+                      <div className="text-[11px] text-gray-600 mt-0.5">
+                        Your stage distribution, sub-stages, and recommended actions
+                      </div>
+                    </div>
+                    <div className="text-xs font-bold text-gray-500">Preview</div>
+                  </div>
 
-            <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto leading-relaxed">
-              Evaluate your organizational health across four key stages of
-              engagement and discover your current position in the workplace
-              journey
-            </p>
-            <p className="text-base text-gray-500 max-w-2xl mx-auto">
-              Built on the ChaturVima framework - a validated model for
-              understanding employee experience, organizational alignment, and
-              workplace satisfaction
-            </p>
-          </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-gray-200 bg-white p-3">
+                      <div className="text-[11px] font-bold text-gray-500">
+                        Stage distribution
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full bg-brand-teal" />
+                        <div className="h-2.5 w-2.5 rounded-full bg-brand-navy" />
+                        <div className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                        <div className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                      </div>
+                      <div className="mt-3 h-2 rounded-full bg-gray-200 overflow-hidden">
+                        <div className="h-full w-2/3 bg-linear-to-r from-brand-teal to-brand-navy" />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white p-3">
+                      <div className="text-[11px] font-bold text-gray-500">
+                        Sub-stages
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-gray-400" />
+                            <div className="h-2 flex-1 rounded-full bg-gray-200 overflow-hidden">
+                              <div
+                                className="h-full bg-brand-teal/60"
+                                style={{ width: `${25 + i * 15}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-xl bg-linear-to-r from-brand-teal/10 via-brand-navy/10 to-purple-50 border border-brand-teal/20 p-3">
+                    <div className="text-xs font-bold text-gray-900">
+                      How it works
+                    </div>
+                    <div className="mt-2 grid grid-cols-4 gap-2 text-center">
+                      {[
+                        { t: "Answer", i: "✍️" },
+                        { t: "Saved", i: "💾" },
+                        { t: "Review", i: "📋" },
+                        { t: "Results", i: "📊" },
+                      ].map((s) => (
+                        <div
+                          key={s.t}
+                          className="rounded-lg bg-white/70 ring-1 ring-white/60 py-2"
+                        >
+                          <div className="text-base">{s.i}</div>
+                          <div className="text-[10px] font-bold text-gray-700">
+                            {s.t}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-4 gap-4 mb-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
+              className="p-5 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">25</p>
-                <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
-                  <span className="text-2xl">❓</span>
+              <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-blue-50/50 via-transparent to-transparent" />
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-2xl font-extrabold text-gray-900 leading-none">
+                    25
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-gray-900">
+                    Questions
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Quick, structured assessment
+                  </p>
+                </div>
+                <div className="w-11 h-11 rounded-2xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center shrink-0">
+                  <HelpCircle className="h-5 w-5 text-blue-700" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-blue-900">Questions</p>
-              <p className="text-xs text-blue-700 mt-1">
-                Multi-dimensional evaluation
-              </p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-shadow"
+              className="p-5 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-purple-600">10-15</p>
-                <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center">
-                  <span className="text-2xl">⏱️</span>
+              <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-purple-50/50 via-transparent to-transparent" />
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-2xl font-extrabold text-gray-900 leading-none">
+                    10–15
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-gray-900">
+                    Minutes
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Complete at your own pace
+                  </p>
+                </div>
+                <div className="w-11 h-11 rounded-2xl bg-purple-50 ring-1 ring-purple-100 flex items-center justify-center shrink-0">
+                  <Clock className="h-5 w-5 text-purple-700" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-purple-900">Minutes</p>
-              <p className="text-xs text-purple-700 mt-1">At your own pace</p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:shadow-lg transition-shadow"
+              className="p-5 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-green-600">4</p>
-                <div className="w-12 h-12 rounded-full bg-green-200 flex items-center justify-center">
-                  <span className="text-2xl">🎯</span>
+              <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-emerald-50/50 via-transparent to-transparent" />
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-2xl font-extrabold text-gray-900 leading-none">
+                    4
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-gray-900">Stages</p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Covers all core stages
+                  </p>
+                </div>
+                <div className="w-11 h-11 rounded-2xl bg-emerald-50 ring-1 ring-emerald-100 flex items-center justify-center shrink-0">
+                  <Target className="h-5 w-5 text-emerald-700" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-green-900">Stages</p>
-              <p className="text-xs text-green-700 mt-1">
-                Comprehensive evaluation
-              </p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:shadow-lg transition-shadow"
+              className="p-5 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-amber-600">100%</p>
-                <div className="w-12 h-12 rounded-full bg-amber-200 flex items-center justify-center">
-                  <span className="text-2xl">🔒</span>
+              <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-amber-50/50 via-transparent to-transparent" />
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-2xl font-extrabold text-gray-900 leading-none">
+                    Private
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-gray-900">
+                    Your responses
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Saved locally & securely
+                  </p>
+                </div>
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 ring-1 ring-amber-100 flex items-center justify-center shrink-0">
+                  <Lock className="h-5 w-5 text-amber-700" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-amber-900">Private</p>
-              <p className="text-xs text-amber-700 mt-1">Your data secured</p>
             </motion.div>
           </div>
 
           {/* Information Cards */}
-          <div className="grid md:grid-cols-2 gap-6 mb-10">
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="p-6 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-200"
+              className="p-6 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm"
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">📊</span>
+                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-50 to-blue-50 ring-1 ring-indigo-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl font-black text-indigo-700">📊</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    What You'll Discover
+                  <h3 className="text-base font-extrabold text-gray-900 mb-1">
+                    What you’ll get
                   </h3>
-                  <ul className="space-y-1.5 text-sm text-gray-700">
+                  <p className="text-xs text-gray-600 mb-3">
+                    Clear outputs you can use immediately.
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      Your primary organizational stage (Honeymoon,
-                      Self-Reflection, Soul-Searching, or Steady-State)
+                      <span className="text-brand-teal font-black">✓</span>
+                      Your primary stage and distribution
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      Stage-by-stage breakdown showing your responses across all
-                      four dimensions
+                      <span className="text-brand-teal font-black">✓</span>
+                      Sub-stage breakdown (deeper clarity)
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      Insights into engagement levels, trust, alignment, and
-                      satisfaction
+                      <span className="text-brand-teal font-black">✓</span>
+                      Personalized insights and recommendations
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      Actionable recommendations based on your assessment
-                      results
+                      <span className="text-brand-teal font-black">✓</span>
+                      Suggested actions tailored to your stage
                     </li>
                   </ul>
                 </div>
@@ -300,36 +459,35 @@ const Assessment = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
-              className="p-6 bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border border-rose-200"
+              className="p-6 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm"
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">💡</span>
+                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-rose-50 to-pink-50 ring-1 ring-rose-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl font-black text-rose-700">💡</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Tips for Best Results
+                  <h3 className="text-base font-extrabold text-gray-900 mb-1">
+                    How to answer
                   </h3>
-                  <ul className="space-y-1.5 text-sm text-gray-700">
+                  <p className="text-xs text-gray-600 mb-3">
+                    For accurate results, use your real experience.
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-center gap-2">
-                      <span className="text-blue-500">•</span>
-                      Answer based on your genuine experience - there are no
-                      wrong answers
+                      <span className="text-brand-navy font-black">•</span>
+                      There are no wrong answers
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-blue-500">•</span>
-                      You can review and edit your answers anytime before
-                      submitting
+                      <span className="text-brand-navy font-black">•</span>
+                      You can review and edit before submitting
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-blue-500">•</span>
-                      Your progress is automatically saved - return anytime to
-                      continue
+                      <span className="text-brand-navy font-black">•</span>
+                      Progress is auto-saved
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-blue-500">•</span>
-                      Use the quick navigation sidebar to jump to specific
-                      questions
+                      <span className="text-brand-navy font-black">•</span>
+                      You can jump to specific questions anytime
                     </li>
                   </ul>
                 </div>
@@ -342,102 +500,73 @@ const Assessment = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mb-10 p-6 bg-gradient-to-r from-brand-teal/10 via-brand-navy/10 to-purple-50 rounded-xl border border-brand-teal/20"
+            className="mb-8 p-6 rounded-2xl border border-gray-200 bg-white/70 backdrop-blur-sm shadow-sm"
           >
-            <h3 className="font-semibold text-gray-900 mb-4 text-center">
-              Assessment Process
-            </h3>
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-gray-900">
+                  Assessment flow
+                </h3>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Simple steps — you can pause anytime.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-gray-500">
+                Step-by-step
+              </span>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
                   step: "1",
-                  title: "Complete 25 Questions",
+                  title: "Answer questions",
                   icon: "✍️",
-                  desc: "Multi-stage evaluation",
+                  desc: "Fast and simple",
                 },
                 {
                   step: "2",
-                  title: "Auto-saved Progress",
+                  title: "Auto-save",
                   icon: "💾",
-                  desc: "Never lose your work",
+                  desc: "Continue anytime",
                 },
                 {
                   step: "3",
-                  title: "Review Your Answers",
+                  title: "Review",
                   icon: "📋",
-                  desc: "Edit before submitting",
+                  desc: "Edit before submit",
                 },
                 {
                   step: "4",
-                  title: "Get Detailed Results",
+                  title: "Get results",
                   icon: "📊",
-                  desc: "Insights & recommendations",
+                  desc: "Insights & actions",
                 },
               ].map((item, idx) => (
-                <div key={idx} className="text-center">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-white border-2 border-brand-teal flex items-center justify-center mb-2 shadow-sm">
-                    <span className="text-2xl">{item.icon}</span>
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-gray-200 bg-white p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-gray-500">
+                      Step {item.step}
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-linear-to-br from-brand-teal/15 to-brand-navy/15 flex items-center justify-center ring-1 ring-brand-teal/15">
+                      <span className="text-lg">{item.icon}</span>
+                    </div>
                   </div>
-                  <div className="text-xs font-medium text-brand-teal mb-1">
-                    Step {item.step}
-                  </div>
-                  <div className="text-sm font-medium text-gray-900 mb-0.5">
+                  <div className="mt-2 text-sm font-extrabold text-gray-900">
                     {item.title}
                   </div>
-                  <div className="text-xs text-gray-600">{item.desc}</div>
+                  <div className="mt-0.5 text-xs text-gray-600">{item.desc}</div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="text-center"
-          >
-            {isAssessmentSubmitted ? (
-              <>
-                <Button
-                  disabled
-                  size="lg"
-                  className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
-                >
-                  <Check className="mr-2 h-6 w-6" />
-                  Test Submitted
-                </Button>
-                <p className="mt-4 text-sm text-green-600 font-medium">
-                  Your assessment has been successfully submitted. No further
-                  edits are allowed.
-                </p>
-              </>
-            ) : (
-              <>
-                <Button
-                  onClick={handleStart}
-                  size="lg"
-                  className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                >
-                  <PlayCircle className="mr-2 h-6 w-6" />
-                  {hasExistingAnswers
-                    ? "Continue Assessment"
-                    : "Start Assessment"}
-                </Button>
-                {hasExistingAnswers ? (
-                  <p className="mt-4 text-sm text-brand-teal font-medium">
-                    Your previous progress has been saved
-                  </p>
-                ) : (
-                  <p className="mt-4 text-sm text-gray-500">
-                    Estimated completion time: 10-15 minutes • Your responses
-                    are automatically saved!
-                  </p>
-                )}
-              </>
-            )}
-          </motion.div>
+          {/* CTA is now part of the hero for clearer conversion */}
         </motion.div>
+        </div>
       </div>
     );
   }
@@ -450,36 +579,39 @@ const Assessment = () => {
 
   // Assessment in progress
   return (
-    <div className="space-y-6">
-      <CelebrationConfetti trigger={showConfetti} />
+    <div className="relative">
+      <AnimatedBackground colors={[...BACKGROUND_COLORS]} />
+      <div className="relative z-10 space-y-6 px-4 sm:px-6">
+        <CelebrationConfetti trigger={showConfetti} />
 
-      {/* Progress Bar */}
-      <AssessmentProgress
-        current={progress.currentQuestionIndex}
-        total={progress.totalQuestions}
-        percentage={progress.percentComplete}
-      />
+        {/* Progress Bar */}
+        <AssessmentProgress
+          current={progress.currentQuestionIndex}
+          total={progress.totalQuestions}
+          percentage={progress.percentComplete}
+        />
 
-      {/* Question or Energy Break */}
-      <AnimatePresence mode="wait">
-        {showEnergyBreak ? (
-          <EnergyBreak
-            key="energy-break"
-            questionNumber={progress.currentQuestionIndex}
-            onContinue={handleContinueFromBreak}
-          />
-        ) : currentQuestion ? (
-          <QuestionCard
-            key={currentQuestion.id}
-            question={currentQuestion}
-            questionNumber={progress.currentQuestionIndex + 1}
-            totalQuestions={progress.totalQuestions}
-            onAnswer={handleAnswer}
-            onPrevious={goToPreviousQuestion}
-            canGoPrevious={progress.currentQuestionIndex > 0}
-          />
-        ) : null}
-      </AnimatePresence>
+        {/* Question or Energy Break */}
+        <AnimatePresence mode="wait">
+          {showEnergyBreak ? (
+            <EnergyBreak
+              key="energy-break"
+              questionNumber={progress.currentQuestionIndex}
+              onContinue={handleContinueFromBreak}
+            />
+          ) : currentQuestion ? (
+            <QuestionCard
+              key={currentQuestion.id}
+              question={currentQuestion}
+              questionNumber={progress.currentQuestionIndex + 1}
+              totalQuestions={progress.totalQuestions}
+              onAnswer={handleAnswer}
+              onPrevious={goToPreviousQuestion}
+              canGoPrevious={progress.currentQuestionIndex > 0}
+            />
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
