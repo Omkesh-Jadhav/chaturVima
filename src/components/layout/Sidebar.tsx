@@ -80,7 +80,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     id: "hr-organization-health-report",
-    label: "Organization Health Report",
+    label: "Organization Report",
     path: "/hr/organization-health-report",
     icon: <BarChart3 className="h-5 w-5" />,
     roles: ["hr-admin", "hr-doctorate"],
