@@ -20,11 +20,13 @@ interface StageDistributionData extends EmotionalStageAssessment {
 
 interface OrganizationalStageDistributionProps {
   onStageSelect?: (stage: StageDistributionData | null) => void;
+  onStageClick?: (stage: StageDistributionData | null) => void;
   selectedStage?: StageDistributionData | null;
 }
 
 const OrganizationalStageDistribution = ({
   onStageSelect,
+  onStageClick,
   selectedStage,
 }: OrganizationalStageDistributionProps) => {
   const stageDistribution = useMemo(() => {
@@ -118,9 +120,10 @@ const OrganizationalStageDistribution = ({
   }, []);
 
   const handleStageClick = (stage: StageDistributionData) => {
-    if (onStageSelect) {
-      onStageSelect(selectedStage?.stage === stage.stage ? null : stage);
-    }
+    // Always select the clicked stage (no toggle-off) so user can immediately
+    // see the corresponding sub-stages.
+    onStageSelect?.(stage);
+    onStageClick?.(stage);
   };
 
   const handleCardHover = (
@@ -179,7 +182,7 @@ const OrganizationalStageDistribution = ({
                     : "border-gray-200 hover:border-gray-300"
                 } ${
                   isDominant
-                    ? "bg-gradient-to-r from-white via-gray-50/50 to-white"
+                    ? "bg-linear-to-r from-white via-gray-50/50 to-white"
                     : "bg-white"
                 }`}
                 style={{
@@ -255,7 +258,7 @@ const OrganizationalStageDistribution = ({
                         }}
                       >
                         <div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"
+                          className="absolute inset-0 bg-linear-to-r from-transparent via-white/50 to-transparent rounded-full"
                           style={{ width: "60%", marginLeft: "20%" }}
                         />
                       </motion.div>

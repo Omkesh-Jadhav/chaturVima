@@ -67,9 +67,11 @@ const SubStagesBreakdown = ({ selectedStage }: SubStagesBreakdownProps) => {
         title={`${selectedStage.stage} Sub-Stages`}
         description={
           <>
-            Detailed breakdown of sub-stage performance{" "}
-            <span className="font-bold text-gray-900">
-              (click any stage above to view)
+            <span className="text-gray-600">
+              Detailed breakdown of sub-stage performance
+            </span>{" "}
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-900 ring-1 ring-amber-200">
+              👆 Tip: Click a stage above to view
             </span>
           </>
         }

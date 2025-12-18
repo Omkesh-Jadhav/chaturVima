@@ -18,11 +18,13 @@ import Aura from "./aura";
 
 interface EmotionalStageAssessmentProps {
   onStageSelect: (stage: EmotionalStageAssessmentType | null) => void;
+  onStageClick?: (stage: EmotionalStageAssessmentType | null) => void;
   selectedStage: EmotionalStageAssessmentType | null;
 }
 
 const EmotionalStageAssessment = ({
   onStageSelect,
+  onStageClick,
   selectedStage,
 }: EmotionalStageAssessmentProps) => {
   const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
@@ -62,8 +64,10 @@ const EmotionalStageAssessment = ({
   }, []);
 
   const handleStageClick = (stage: EmotionalStageAssessmentType) => {
-    const newSelection = selectedStage?.stage === stage.stage ? null : stage;
-    onStageSelect(newSelection);
+    // Always select the clicked stage (no toggle-off) so user can immediately
+    // see the corresponding sub-stages.
+    onStageSelect(stage);
+    onStageClick?.(stage);
   };
 
   return (

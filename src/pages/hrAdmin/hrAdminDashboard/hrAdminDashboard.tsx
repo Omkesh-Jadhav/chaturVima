@@ -13,7 +13,7 @@ import OrganizationalSubStagesBreakdown from "./organizationalSubStagesBreakdown
 // import OverallOrganizationalHealthScore from "./overallOrganizationalHealthScore";
 import { AnimatedBackground } from "@/components/common";
 import { BACKGROUND_COLORS } from "@/components/assessmentDashboard";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EmotionalStageAssessment } from "@/data/assessmentDashboard";
 
 interface StageDistributionData extends EmotionalStageAssessment {
@@ -25,6 +25,17 @@ const HrAdminDashboard = () => {
   const [selectedStage, setSelectedStage] = useState<StageDistributionData | null>(
     null
   );
+  const subStagesRef = useRef<HTMLDivElement | null>(null);
+  const [pendingScrollToSubStages, setPendingScrollToSubStages] =
+    useState(false);
+
+  useEffect(() => {
+    if (!pendingScrollToSubStages) return;
+    if (!selectedStage) return;
+    subStagesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setPendingScrollToSubStages(false);
+  }, [pendingScrollToSubStages, selectedStage]);
+
   return (
     <div className="space-y-6 relative">
       <AnimatedBackground colors={[...BACKGROUND_COLORS]} />
@@ -49,9 +60,12 @@ const HrAdminDashboard = () => {
         {/* Organizational Stage Distribution */}
         <OrganizationalStageDistribution
           onStageSelect={setSelectedStage}
+          onStageClick={(stage) => setPendingScrollToSubStages(Boolean(stage))}
           selectedStage={selectedStage}
         />
-        <OrganizationalSubStagesBreakdown selectedStage={selectedStage} />
+        <div ref={subStagesRef} className="scroll-mt-24">
+          <OrganizationalSubStagesBreakdown selectedStage={selectedStage} />
+        </div>
 
         {/* Organization Setup Section */}
         <div className="grid gap-4 md:grid-cols-2">

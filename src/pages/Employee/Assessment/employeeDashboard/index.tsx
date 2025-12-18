@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatedBackground } from "@/components/common";
 import { BACKGROUND_COLORS } from "@/components/assessmentDashboard";
 import SummaryCards from "./summaryCards";
@@ -15,6 +15,19 @@ import EmotionalStageAssessment from "./emotionalStageAssessment";
 const EmployeeDashboard = () => {
   const [selectedStage, setSelectedStage] =
     useState<EmotionalStageAssessmentType | null>(null);
+  const subStagesRef = useRef<HTMLDivElement | null>(null);
+  const [pendingScrollToSubStages, setPendingScrollToSubStages] =
+    useState(false);
+
+  useEffect(() => {
+    if (!pendingScrollToSubStages) return;
+    if (!selectedStage) return;
+    subStagesRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    setPendingScrollToSubStages(false);
+  }, [pendingScrollToSubStages, selectedStage]);
 
   return (
     <div className="space-y-6 relative">
@@ -35,9 +48,12 @@ const EmployeeDashboard = () => {
 
         <EmotionalStageAssessment
           onStageSelect={setSelectedStage}
+          onStageClick={(stage) => setPendingScrollToSubStages(Boolean(stage))}
           selectedStage={selectedStage}
         />
-        <SubStagesBreakdown selectedStage={selectedStage} />
+        <div ref={subStagesRef} className="scroll-mt-24">
+          <SubStagesBreakdown selectedStage={selectedStage} />
+        </div>
 
         <SWOTAnalysis />
         <EmotionalIntensityHeatmap />
