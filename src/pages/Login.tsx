@@ -26,27 +26,18 @@ import {
 } from "lucide-react";
 import logoImage from "../assets/chaturvima-logo.png";
 import { getRoleLandingRoute } from "../utils/roleRoutes";
+import { loginUser } from "../api/api-functions/authentication";
 
 type LoginStep = "credentials" | "success";
 
-const LOGIN_DELAY = 1500;
 const REDIRECT_DELAY = 1500;
-
-// Dummy credentials for validation - Multiple test users supported
-const VALID_CREDENTIALS = [
-  { email: "user@example.com", password: "password123", name: "Test User" },
-  { email: "admin@example.com", password: "admin123", name: "Admin User" },
-  { email: "hr@example.com", password: "hr123", name: "HR User" },
-  { email: "manager@example.com", password: "manager123", name: "Manager User" },
-  { email: "super-admin@example.com", password: "superadmin123", name: "Super Admin" },
-];
 
 const Login = () => {
   const navigate = useNavigate();
   const { loginWithOTP } = useUser();
   const [step, setStep] = useState<LoginStep>("credentials");
-  const [email, setEmail] = useState("hr@example.com");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("saajan.more@mannlowe.com");
+  const [password, setPassword] = useState("Saajan@987");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -75,42 +66,43 @@ const Login = () => {
         return;
       }
 
-      // Validate credentials against hardcoded values
-      const normalizedEmail = email.toLowerCase().trim();
-      const user = VALID_CREDENTIALS.find(
-        (cred) => cred.email.toLowerCase() === normalizedEmail && cred.password === password
-      );
-
-      if (!user) {
-        setError("Invalid email or password. Please check your credentials.");
-        return;
-      }
-
       setIsLoading(true);
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, LOGIN_DELAY));
+        // Call the real authentication API
+        const result = await loginUser(email, password);
 
-        // Login user with email/password
-        await loginWithOTP(email, "", user.name);
-        setStep("success");
+        if (result.success) {
+          // Extract user information from API response
+          const userData = result.data;
+          
+          // Login user with API response data
+          // Note: You may need to adjust this based on the actual API response structure
+          const userName = userData.full_name || userData.name || email.split('@')[0];
+          await loginWithOTP(email, "", userName);
+          
+          setStep("success");
 
-        // Redirect to appropriate page after showing success message
-        setTimeout(() => {
-          let role: UserRole | undefined;
-          const storedUser = localStorage.getItem("chaturvima_user");
-          if (storedUser) {
-            try {
-              const parsed = JSON.parse(storedUser);
-              role = parsed.role as UserRole;
-            } catch {
-              role = undefined;
+          // Redirect to appropriate page after showing success message
+          setTimeout(() => {
+            let role: UserRole | undefined;
+            const storedUser = localStorage.getItem("chaturvima_user");
+            if (storedUser) {
+              try {
+                const parsed = JSON.parse(storedUser);
+                role = parsed.role as UserRole;
+              } catch {
+                role = undefined;
+              }
             }
-          }
-          navigate(getRoleLandingRoute(role));
-        }, REDIRECT_DELAY);
-      } catch {
+            navigate(getRoleLandingRoute(role));
+          }, REDIRECT_DELAY);
+        } else {
+          // Handle API error response
+          setError(result.error || "Invalid email or password. Please check your credentials.");
+        }
+      } catch (error) {
+        console.error("Login error:", error);
         setError("Login failed. Please try again.");
       } finally {
         setIsLoading(false);

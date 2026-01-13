@@ -1,43 +1,29 @@
-import axios from "axios";
-import { API_ENDPOINTS } from "../endpoints";
+import api from "../axios-setup";
 
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.LOG_IN, {
-      usr: email,
-      pwd: password,
+    const response = await api({
+      method: 'POST',
+      url: '/api/method/chaturvima_api.api.auth.login',
+      data: {
+        username: email,
+        password: password,
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (response.data) {
-      let apiData;
-
-      if (response.data.message) {
-        const { message, home_page, full_name } = response.data;
-
-        apiData = {
-          success_key: message.success_key,
-          message: message.message,
-          sid: message.sid,
-          api_key: message.api_key,
-          api_secret: message.api_secret,
-        };
-      } else if (response.data.api_key) {
-        // Structure: { api_key, api_secret, full_name, ... } (direct structure)
-        apiData = response.data;
-      } else {
-        console.error("Unrecognized response structure:", response.data);
-        throw new Error("Invalid response format: missing expected fields");
-      }
-
-      // Return structured response matching what AuthContext expects
+      // Return structured response for successful login
       return {
         success: true,
-        data: apiData,
+        data: response.data,
       };
     }
 
     throw new Error("Invalid response format");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
 
     if (error.response) {
@@ -55,3 +41,4 @@ export const loginUser = async (email: string, password: string) => {
     };
   }
 };
+
