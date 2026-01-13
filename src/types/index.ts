@@ -108,20 +108,18 @@ export type UserRole =
 // | "manager"
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  department: string;
-  avatar?: string;
-  managerId?: string;
+  user: string; // email from API
+  full_name: string;
+  role_profile: string[]; // Array of roles from API
+  access_token: string;
+  refresh_token: string;
 }
 
 export interface UserContext {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginWithOTP: (email: string, mobile: string, name?: string) => Promise<void>;
+  loginWithOTP: (email: string, mobile: string, name?: string, apiResponse?: any) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
   updateProfile: (profileData: Partial<User>) => void;

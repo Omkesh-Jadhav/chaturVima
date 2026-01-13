@@ -47,7 +47,7 @@ const Assessment = () => {
 
     try {
       // Use user-specific storage key
-      const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const storageKey = `chaturvima_assessment_answers_${emailKey}`;
       const savedAnswers = localStorage.getItem(storageKey);
       return savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
@@ -61,7 +61,7 @@ const Assessment = () => {
     if (!user) return isComplete;
 
     try {
-      const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const submissionKey = `chaturvima_assessment_submitted_${emailKey}`;
       const savedSubmissionStatus = localStorage.getItem(submissionKey);
       return savedSubmissionStatus === "true" || isComplete;
@@ -103,7 +103,7 @@ const Assessment = () => {
 
     try {
       // Use user-specific storage key
-      const emailKey = user.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const storageKey = `chaturvima_assessment_answers_${emailKey}`;
       const savedAnswers = localStorage.getItem(storageKey);
       const hasExistingAnswers =

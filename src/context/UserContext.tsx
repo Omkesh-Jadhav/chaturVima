@@ -5,7 +5,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User, UserContext as UserContextType, UserRole } from "../types";
-import { getUserByEmail } from "../data/mockUsers";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -45,7 +44,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   const loginWithOTP = async (
     email: string,
     _mobile: string,
-    name?: string
+    name?: string,
+    apiResponse?: any // Accept actual API response
   ): Promise<void> => {
     // Simulate API call delay for OTP verification
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -53,45 +53,29 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     // Note: _mobile parameter is kept for API compatibility but not used in mock implementation
     // In production, this would be used for OTP verification
 
-    // Try to find existing user by email
-    let foundUser = getUserByEmail(email);
+    // Create user object from actual API response or mock data
+    const apiUser: User = apiResponse?.message ? {
+      user: apiResponse.message.user,
+      full_name: apiResponse.message.full_name,
+      role_profile: apiResponse.message.role_profile, // Now an array
+      access_token: apiResponse.message.access_token,
+      refresh_token: apiResponse.message.refresh_token
+    } : {
+      // Fallback for mock/development
+      user: email.toLowerCase(),
+      full_name: name || email.split("@")[0].split(/[._-]/).map(
+        (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+      ).join(" ") || "User",
+      role_profile: ["Employee"], // Default role as array
+      access_token: `mock_token_${Date.now()}`,
+      refresh_token: `mock_refresh_${Date.now()}`
+    };
 
-    // If user doesn't exist, create a new user dynamically
-    if (!foundUser) {
-      // Use provided name, or extract from email, or use "User" as fallback
-      let userName = name;
-      if (!userName || userName.trim() === "") {
-        // Extract name from email (e.g., "john.doe@example.com" -> "John Doe")
-        userName = email
-          .split("@")[0]
-          .split(/[._-]/)
-          .map(
-            (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-          )
-          .join(" ");
-      }
-
-      // Generate avatar based on email
-      const avatarSeed = email.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-      foundUser = {
-        id: `user-${Date.now()}`,
-        name: userName || "User",
-        email: email.toLowerCase(),
-        role: "employee", // Default role
-        department: "General",
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
-      };
-    } else if (name && name.trim() !== "" && foundUser.name !== name) {
-      // Update name if provided and different
-      foundUser = { ...foundUser, name: name.trim() };
-    }
-
-    setUser(foundUser);
+    setUser(apiUser);
     setIsAuthenticated(true);
 
-    // Persist user to localStorage
-    localStorage.setItem("chaturvima_user", JSON.stringify(foundUser));
+    // Persist user to localStorage - only the 5 required fields
+    localStorage.setItem("chaturvima_user", JSON.stringify(apiUser));
   };
 
   const logout = () => {
@@ -102,7 +86,14 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const switchRole = (newRole: UserRole) => {
     if (!user) return;
-    const updatedUser = { ...user, role: newRole };
+    // Update role_profile array - replace first role or add new role
+    const updatedRoles = [...user.role_profile];
+    if (updatedRoles.length > 0) {
+      updatedRoles[0] = newRole; // Replace primary role
+    } else {
+      updatedRoles.push(newRole); // Add if no roles exist
+    }
+    const updatedUser = { ...user, role_profile: updatedRoles };
     setUser(updatedUser);
     setIsAuthenticated(true);
     localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));

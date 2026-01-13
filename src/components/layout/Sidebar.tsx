@@ -149,12 +149,12 @@ const Sidebar = () => {
   const location = useLocation();
   const { user } = useUser();
 
-  const currentRoleConfig = user ? ROLE_CONFIG[user.role] : null;
+  const currentRoleConfig = user && user.role_profile?.length > 0 ? ROLE_CONFIG[user.role_profile[0] as UserRole] : null;
 
   // Filter navigation items based on user role
   const getVisibleNavItems = () => {
     if (!user) return [];
-    return NAV_ITEMS.filter((item) => item.roles.includes(user.role));
+    return NAV_ITEMS.filter((item) => user.role_profile?.length > 0 && item.roles.includes(user.role_profile[0] as UserRole));
   };
 
   const visibleNavItems = getVisibleNavItems();
@@ -211,7 +211,7 @@ const Sidebar = () => {
           <div className="flex items-center gap-3">
             <div className="shrink-0">
               <div className="w-10 h-10 rounded-full bg-linear-to-br from-stages-self-reflection to-stages-steady-state flex items-center justify-center text-white font-semibold">
-                {user.name.charAt(0)}
+                {user.full_name?.charAt(0) || 'U'}
               </div>
             </div>
             <AnimatePresence mode="wait">
@@ -225,7 +225,7 @@ const Sidebar = () => {
                   className="flex-1 min-w-0"
                 >
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name}
+                    {user.full_name || 'User'}
                   </p>
                   {currentRoleConfig && (
                     <div className="flex items-center gap-1.5 mt-1">

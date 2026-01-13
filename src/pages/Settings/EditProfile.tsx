@@ -158,11 +158,11 @@ const EditProfile = () => {
     if (!user) return;
     setFormData((prev) => ({
       ...prev,
-      ...(user.avatar && { profilePhoto: user.avatar }),
-      ...(user.name && { name: user.name }),
-      ...(user.role && { designation: user.role }),
-      ...(user.department && { department: user.department }),
-      ...(user.email && { emailAddress: user.email }),
+      profilePhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user.replace(/[^a-z0-9]/g, '')}`,
+      name: user.full_name,
+      designation: user.role_profile[0] || "Employee", // Use first role
+      department: "General", // Default department since it's not in API response
+      emailAddress: user.user,
     }));
   }, [user]);
 
@@ -221,10 +221,9 @@ const EditProfile = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       updateProfile?.({
-        name: formData.name.trim(),
-        email: formData.emailAddress.trim(),
-        department: formData.department,
-        avatar: formData.profilePhoto,
+        full_name: formData.name.trim(),
+        user: formData.emailAddress.trim(),
+        role_profile: [formData.designation], // Convert to array
       });
 
       setShowSuccess(true);

@@ -75,7 +75,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
       return { answers: {}, index: 0 };
     }
 
-    const storageKeys = getStorageKeys(user.email);
+    const storageKeys = getStorageKeys(user.user);
     try {
       const savedAnswers = localStorage.getItem(storageKeys.answers);
       const savedIndex = localStorage.getItem(storageKeys.index);
@@ -103,7 +103,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
     const savedState = loadSavedState();
     setAnswers(savedState.answers);
     setCurrentQuestionIndex(savedState.index);
-  }, [user?.email]); // Reload when user email changes
+  }, [user?.user]); // Reload when user email changes
 
   const totalQuestions = MOCK_QUESTIONS.length;
   const answeredCount = Object.keys(answers).length;
@@ -210,7 +210,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
     setResult(null);
     // Clear saved state when starting new assessment
     if (user) {
-      const storageKeys = getStorageKeys(user.email);
+      const storageKeys = getStorageKeys(user.user);
       try {
         localStorage.removeItem(storageKeys.answers);
         localStorage.removeItem(storageKeys.index);
@@ -229,7 +229,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
         };
         // Auto-save to localStorage
         if (user) {
-          const storageKeys = getStorageKeys(user.email);
+          const storageKeys = getStorageKeys(user.user);
           try {
             localStorage.setItem(
               storageKeys.answers,
@@ -251,7 +251,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
         setCurrentQuestionIndex(index);
         // Save current page index
         if (user) {
-          const storageKeys = getStorageKeys(user.email);
+          const storageKeys = getStorageKeys(user.user);
           try {
             localStorage.setItem(storageKeys.index, index.toString());
           } catch (error) {
@@ -267,7 +267,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
     setCurrentQuestionIndex((prev) => {
       const newIndex = Math.max(0, prev - 1);
       if (user) {
-        const storageKeys = getStorageKeys(user.email);
+        const storageKeys = getStorageKeys(user.user);
         try {
           localStorage.setItem(storageKeys.index, newIndex.toString());
         } catch (error) {
@@ -282,7 +282,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
     setCurrentQuestionIndex((prev) => {
       const newIndex = Math.min(totalQuestions - 1, prev + 1);
       if (user) {
-        const storageKeys = getStorageKeys(user.email);
+        const storageKeys = getStorageKeys(user.user);
         try {
           localStorage.setItem(storageKeys.index, newIndex.toString());
         } catch (error) {
@@ -294,6 +294,8 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
   }, [totalQuestions, user]);
 
   const submitAssessment = useCallback(() => {
+    if (!user) return;
+    
     const answerArray: Answer[] = Object.entries(answers).map(
       ([questionId, selectedOption]) => ({
         questionId,
@@ -307,7 +309,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
 
     setIsComplete(true);
     setResult({
-      userId: user?.id || "unknown",
+      userId: user.user,
       level: "employee",
       stageDistribution: distribution,
       dominantStage,
@@ -319,7 +321,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
 
     // Clear saved state after successful submission
     if (user) {
-      const storageKeys = getStorageKeys(user.email);
+      const storageKeys = getStorageKeys(user.user);
       try {
         localStorage.removeItem(storageKeys.answers);
         localStorage.removeItem(storageKeys.index);
@@ -336,7 +338,7 @@ export const AssessmentProvider = ({ children }: AssessmentProviderProps) => {
     setResult(null);
     // Clear saved state when resetting
     if (user) {
-      const storageKeys = getStorageKeys(user.email);
+      const storageKeys = getStorageKeys(user.user);
       try {
         localStorage.removeItem(storageKeys.answers);
         localStorage.removeItem(storageKeys.index);

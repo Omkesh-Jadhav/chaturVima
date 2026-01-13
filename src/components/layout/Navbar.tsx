@@ -61,8 +61,12 @@ const Navbar = () => {
 
   if (!user) return null;
 
-  const currentRoleConfig = ROLE_CONFIG[user.role] ?? {
-    label: user.role,
+  const currentRoleConfig = user.role_profile?.length > 0 ? ROLE_CONFIG[user.role_profile[0] as UserRole] ?? {
+    label: user.role_profile[0],
+    icon: <User className="h-4 w-4" />,
+    color: "text-gray-700 bg-gray-100",
+  } : {
+    label: "User",
     icon: <User className="h-4 w-4" />,
     color: "text-gray-700 bg-gray-100",
   };
@@ -76,7 +80,7 @@ const Navbar = () => {
     "hr-doctorate",
   ];
   const availableRoles = allRoles.filter(
-    (role): role is UserRole => role !== user.role && Boolean(ROLE_CONFIG[role])
+    (role): role is UserRole => user.role_profile?.length > 0 && role !== user.role_profile[0] && Boolean(ROLE_CONFIG[role])
   );
 
   const handleRoleSwitch = (newRole: UserRole) => {
@@ -297,8 +301,8 @@ const Navbar = () => {
               className="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-gray-100"
             >
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user?.replace(/[^a-z0-9]/g, '') || 'default'}`}
+                alt={user.full_name || 'User'}
                 className="h-8 w-8 rounded-full border-2 border-gray-200"
               />
               <ChevronDown className="hidden h-4 w-4 text-gray-500 sm:block" />
@@ -323,16 +327,16 @@ const Navbar = () => {
                       <div className="mb-2 rounded-lg bg-linear-to-r from-brand-teal/10 to-brand-navy/10 p-3">
                         <div className="flex items-center gap-3">
                           <img
-                            src={user.avatar}
-                            alt={user.name}
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user?.replace(/[^a-z0-9]/g, '') || 'default'}`}
+                            alt={user.full_name || 'User'}
                             className="h-10 w-10 rounded-full border-2 border-white"
                           />
                           <div className="flex-1">
                             <div className="text-sm font-semibold text-gray-900">
-                              {user.name}
+                              {user.full_name || 'User'}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {user.email}
+                              {user.user || 'user@example.com'}
                             </div>
                             <div className="mt-1 flex items-center gap-1">
                               <div

@@ -77,9 +77,9 @@ const Login = () => {
           const userData = result.data;
           
           // Login user with API response data
-          // Note: You may need to adjust this based on the actual API response structure
-          const userName = userData.full_name || userData.name || email.split('@')[0];
-          await loginWithOTP(email, "", userName);
+          // Pass the actual API response to get real tokens and role_profile
+          const userName = userData.message?.full_name || userData.full_name || userData.name || email.split('@')[0];
+          await loginWithOTP(email, "", userName, userData);
           
           setStep("success");
 
@@ -90,7 +90,7 @@ const Login = () => {
             if (storedUser) {
               try {
                 const parsed = JSON.parse(storedUser);
-                role = parsed.role as UserRole;
+                role = parsed.role_profile?.[0] as UserRole; // Use first role from array
               } catch {
                 role = undefined;
               }
