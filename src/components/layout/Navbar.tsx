@@ -17,6 +17,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
+import { LogoutUser } from "../../api/api-functions/authentication";
 import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
 import { getRoleLandingRoute } from "../../utils/roleRoutes";
@@ -84,9 +85,33 @@ const Navbar = () => {
     navigate(getRoleLandingRoute(newRole));
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      // Call the logout API which will clear tokens and invalidate session
+      const result = await LogoutUser();
+      
+      if (result.success) {
+        // Successfully logged out from backend
+        logout(); // Clear local user data
+        navigate("/login");
+      } else {
+        // Backend logout failed, but still clear local session
+        console.warn("Backend logout failed:", result.error);
+        // Clear tokens and local data anyway for security
+        localStorage.removeItem('apiKey');
+        localStorage.removeItem('apiSecret');
+        logout();
+        navigate("/login");
+      }
+    } catch (error) {
+      // Network error or other issues - still logout locally for security
+      console.error("Logout error:", error);
+      // Clear tokens and local data anyway for security
+      localStorage.removeItem('apiKey');
+      localStorage.removeItem('apiSecret');
+      logout();
+      navigate("/login");
+    }
   };
 
   return (
