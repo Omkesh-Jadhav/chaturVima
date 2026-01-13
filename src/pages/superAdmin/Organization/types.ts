@@ -17,6 +17,11 @@ export interface Department {
   id: string;
   name: string;
   code: string;
+  department_name?: string;
+  custom_department_code?: string;
+  company?: string;
+  custom_department_head?: string | null;
+  department_head_name?: string | null;
 }
 
 export interface Employee {
