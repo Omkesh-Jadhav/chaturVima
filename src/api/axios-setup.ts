@@ -9,18 +9,26 @@ const api = axios.create({
         "Content-Type": "application/json",
         "Accept": "application/json",
     },
-    // Removed withCredentials to avoid CORS preflight issues
-    // withCredentials: true,
 });
 
-// Add a request interceptor to include Authorization header and log requests
+// request interceptor to include Authorization header and log requests
 api.interceptors.request.use(
     (config) => {
-        const apiKey = localStorage.getItem("apiKey");
-        const apiSecret = localStorage.getItem("apiSecret");
+        // access token from chaturvima_user object
+        const storedUser = localStorage.getItem("chaturvima_user");
+        let accessToken = "";
+        
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                accessToken = user.access_token;
+            } catch (error) {
+                console.error("Error parsing user data:", error);
+            }
+        }
 
-        if (apiKey && apiSecret) {
-            config.headers["Authorization"] = `token ${apiKey}:${apiSecret}`;
+        if (accessToken) {
+            config.headers["Authorization"] = `Token ${accessToken}`;
         }
 
         // Log the request for debugging
@@ -39,7 +47,7 @@ api.interceptors.request.use(
     }
 );
 
-// Add a response interceptor to handle responses and errors
+// response interceptor to handle responses and errors
 api.interceptors.response.use(
     (response) => {
         console.log('API Response:', {
