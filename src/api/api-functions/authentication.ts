@@ -1,10 +1,11 @@
 import api from "../axios-setup";
+import { API_ENDPOINTS } from "../endpoints";
 
 export const loginUser = async (email: string, password: string) => {
   try {
     const response = await api({
       method: 'POST',
-      url: '/api/method/chaturvima_api.api.auth.login',
+      url: API_ENDPOINTS.AUTH.LOG_IN,
       data: {
         username: email,
         password: password,
@@ -46,7 +47,7 @@ export const LogoutUser = async () => {
   try {
     const response = await api({
       method: 'POST',
-      url: '/api/method/chaturvima_api.api.auth.logout',
+      url: API_ENDPOINTS.AUTH.LOG_OUT,
       headers: {
         'Content-Type': 'application/json',
       }

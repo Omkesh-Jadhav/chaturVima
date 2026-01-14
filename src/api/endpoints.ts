@@ -2,8 +2,8 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const API_ENDPOINTS = {
     AUTH: {
-        LOG_IN: `${API_BASE_URL}/api/method/chaturvima_api.api.auth.login`,
-        LOG_OUT: `${API_BASE_URL}/api/method/chaturvima_api.api.auth.logout`,
+        LOG_IN: `/api/method/chaturvima_api.api.auth.login`,
+        LOG_OUT: `/api/method/chaturvima_api.api.auth.logout`,
     },
     
     ASSESSMENT: {
@@ -15,7 +15,10 @@ export const API_ENDPOINTS = {
     },
 
     ORGANIZATION: {
-        
+        GET_ALL_DEPARTMENTS: `/api/method/chaturvima_api.api.department.list_departments`,
+        CREATE_DEPARTMENT: `/api/resource/Department`,
+        UPDATE_DEPARTMENT: `/api/resource/Department/Technical - CV`,
+        DELETE_DEPARTMENT: `/api/resource/Department`,
     },
 
     REPORT: {
