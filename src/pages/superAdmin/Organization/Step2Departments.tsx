@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
+import { getAllDepartments } from "@/api/api-functions/organization-setup";
 
 
 interface Step2DepartmentsProps {
@@ -67,6 +68,10 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     setEditingId(null);
   };
 
+  useEffect(() => {
+    getAllDepartments();
+  }, []);
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-2xl font-semibold mb-6 text-gray-900">
@@ -129,7 +134,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Department Name
+                    Department Nameeeeee
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Department Code

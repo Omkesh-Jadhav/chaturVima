@@ -69,9 +69,9 @@ api.interceptors.response.use(
         // Handle specific error cases
         if (error.response?.status === 401) {
             // Unauthorized - clear auth data
-            localStorage.removeItem('apiKey');
-            localStorage.removeItem('apiSecret');
-            localStorage.removeItem('chaturvima_user');
+            // localStorage.removeItem('apiKey');
+            // localStorage.removeItem('apiSecret');
+            // localStorage.removeItem('chaturvima_user');
         }
 
         return Promise.reject(error);
