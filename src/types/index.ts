@@ -108,11 +108,12 @@ export type UserRole =
 // | "manager"
 
 export interface User {
-  user: string; // email from API
+  user: string;
   full_name: string;
-  role_profile: string[]; // Array of roles from API
-  access_token: string;
-  refresh_token: string;
+  role_profile: string[];
+  api_key: string;
+  api_secret: string;
+  authorization_header: string;
 }
 
 export interface UserContext {
