@@ -5,7 +5,6 @@ export const getAllDepartments = async() => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);
         console.log("SUCCESS - getAllDepartments response:", response);
-        console.log("SUCCESS - Response data:", response.data);
         return response.data;
     } catch (error: any) {
         console.error("ERROR - getAllDepartments failed:", error);

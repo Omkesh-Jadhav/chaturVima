@@ -16,7 +16,7 @@ export const API_ENDPOINTS = {
 
     ORGANIZATION: {
         // GET_ALL_DEPARTMENTS: `/api/method/chaturvima_api.api.department.list_departments`,
-        GET_ALL_DEPARTMENTS: `/api/resource/Department?fields=["name","department_name","custom_department_code","company","custom_department_head"]`,
+        GET_ALL_DEPARTMENTS: `/api/method/chaturvima_api.api.department.list_departments`,
         CREATE_DEPARTMENT: `/api/resource/Department`,
         UPDATE_DEPARTMENT: `/api/resource/Department/Technical - CV`,
         DELETE_DEPARTMENT: `/api/resource/Department`,

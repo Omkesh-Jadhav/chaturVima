@@ -19,6 +19,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const [departmentHead, setDepartmentHead] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
 
   const handleAddDepartment = async () => {
     if (!departmentName.trim()) return;
@@ -33,7 +34,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
       };
 
       const response = await createDepartment(departmentData);
-      
+
       // Create local department object for UI update
       const newDepartment: Department = {
         id: response.id || Date.now().toString(),
@@ -47,7 +48,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
 
       const updatedDepartments = [...departments, newDepartment];
       onUpdate(updatedDepartments);
-      
+
       // Clear form fields
       setDepartmentName("");
       setDepartmentCode("");
@@ -97,7 +98,35 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   };
 
   useEffect(() => {
-    getAllDepartments();
+    const fetchDepartments = async () => {
+      try {
+        const response = await getAllDepartments();
+
+        // Transform API response to match Department interface
+        if (response?.message && Array.isArray(response.message)) {
+          const transformedDepartments: Department[] = response.message
+            .filter((dept: any) => dept.department_name !== "All Departments") // Filter out "All Departments"
+            .map((dept: any) => ({
+              id: dept.name, // Using 'name' as unique identifier
+              name: dept.department_name,
+              code: dept.custom_department_code || "",
+              department_name: dept.department_name,
+              custom_department_code: dept.custom_department_code,
+              company: dept.company,
+              custom_department_head: dept.custom_department_head,
+              department_head_name: dept.department_head_name
+            }));
+
+          setFetchedDepartments(transformedDepartments);
+          // Update parent component with fetched departments
+          onUpdate(transformedDepartments);
+        }
+      } catch (error) {
+        console.error("Failed to fetch departments:", error);
+      }
+    };
+
+    fetchDepartments();
   }, []);
 
   return (
@@ -159,9 +188,9 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             </Button>
           </div>
         ) : (
-          <Button 
-            onClick={handleAddDepartment} 
-            variant="gradient" 
+          <Button
+            onClick={handleAddDepartment}
+            variant="gradient"
             size="sm"
             disabled={isLoading || !departmentName.trim()}
           >
@@ -178,7 +207,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Department Nameeeeee
+                    Department Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Department Code
