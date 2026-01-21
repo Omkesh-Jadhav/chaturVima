@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
-import { getAllDepartments, createDepartment } from "@/api/api-functions/organization-setup";
+import { useDepartments, useCreateDepartment } from "@/hooks/useDepartments";
 
 
 interface Step2DepartmentsProps {
@@ -18,13 +18,14 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const [departmentCode, setDepartmentCode] = useState("");
   const [departmentHead, setDepartmentHead] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
+
+  // React Query hooks
+  const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
+  const createDepartmentMutation = useCreateDepartment();
 
   const handleAddDepartment = async () => {
     if (!departmentName.trim()) return;
 
-    setIsLoading(true);
     try {
       const departmentData = {
         department_name: departmentName.trim(),
@@ -33,31 +34,15 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
         custom_department_head: departmentHead.trim() || ""
       };
 
-      const response = await createDepartment(departmentData);
+      await createDepartmentMutation.mutateAsync(departmentData);
 
-      // Create local department object for UI update
-      const newDepartment: Department = {
-        id: response.id || Date.now().toString(),
-        name: departmentName.trim(),
-        code: departmentCode.trim(),
-        department_name: departmentName.trim(),
-        custom_department_code: departmentCode.trim(),
-        company: "Chaturvima",
-        custom_department_head: departmentHead.trim() || null
-      };
-
-      const updatedDepartments = [...departments, newDepartment];
-      onUpdate(updatedDepartments);
-
-      // Clear form fields
+      // Clear form fields on success
       setDepartmentName("");
       setDepartmentCode("");
       setDepartmentHead("");
     } catch (error) {
       console.error("Failed to create department:", error);
       // You might want to show a toast notification here
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -97,43 +82,27 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     setEditingId(null);
   };
 
+  // Update parent component when fetched departments change
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const response = await getAllDepartments();
-
-        // Transform API response to match Department interface
-        if (response?.message && Array.isArray(response.message)) {
-          const transformedDepartments: Department[] = response.message
-            .filter((dept: any) => dept.department_name !== "All Departments") // Filter out "All Departments"
-            .map((dept: any) => ({
-              id: dept.name, // Using 'name' as unique identifier
-              name: dept.department_name,
-              code: dept.custom_department_code || "",
-              department_name: dept.department_name,
-              custom_department_code: dept.custom_department_code,
-              company: dept.company,
-              custom_department_head: dept.custom_department_head,
-              department_head_name: dept.department_head_name
-            }));
-
-          setFetchedDepartments(transformedDepartments);
-          // Update parent component with fetched departments
-          onUpdate(transformedDepartments);
-        }
-      } catch (error) {
-        console.error("Failed to fetch departments:", error);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
+    if (fetchedDepartments.length > 0) {
+      onUpdate(fetchedDepartments);
+    }
+  }, [fetchedDepartments, onUpdate]);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-2xl font-semibold mb-6 text-gray-900">
         Department Setup
       </h2>
+
+      {isFetchingDepartments && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+            <span className="text-sm text-blue-700">Loading departments...</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
@@ -192,10 +161,10 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             onClick={handleAddDepartment}
             variant="gradient"
             size="sm"
-            disabled={isLoading || !departmentName.trim()}
+            disabled={createDepartmentMutation.isPending || !departmentName.trim()}
           >
             <Plus className="w-4 h-4" />
-            {isLoading ? "Adding..." : "Add Department"}
+            {createDepartmentMutation.isPending ? "Adding..." : "Add Department"}
           </Button>
         )}
       </div>
