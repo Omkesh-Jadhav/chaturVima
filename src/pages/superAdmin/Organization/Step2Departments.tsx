@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
+import { useDepartments, useCreateDepartment, useUpdateDepartment } from "@/hooks/useDepartments";
 
 
 interface Step2DepartmentsProps {
@@ -15,21 +16,35 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
 }) => {
   const [departmentName, setDepartmentName] = useState("");
   const [departmentCode, setDepartmentCode] = useState("");
+  const [departmentHead, setDepartmentHead] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleAddDepartment = () => {
+  // React Query hooks
+  const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
+  const createDepartmentMutation = useCreateDepartment();
+  const updateDepartmentMutation = useUpdateDepartment();
+
+  const handleAddDepartment = async () => {
     if (!departmentName.trim()) return;
 
-    const newDepartment: Department = {
-      id: Date.now().toString(),
-      name: departmentName.trim(),
-      code: departmentCode.trim(),
-    };
+    try {
+      const departmentData = {
+        department_name: departmentName.trim(),
+        custom_department_code: departmentCode.trim() || `DEPT_${Date.now()}`,
+        company: "Chaturvima", // You can make this dynamic if needed
+        custom_department_head: departmentHead.trim() || ""
+      };
 
-    const updatedDepartments = [...departments, newDepartment];
-    onUpdate(updatedDepartments);
-    setDepartmentName("");
-    setDepartmentCode("");
+      await createDepartmentMutation.mutateAsync(departmentData);
+
+      // Clear form fields on success
+      setDepartmentName("");
+      setDepartmentCode("");
+      setDepartmentHead("");
+    } catch (error) {
+      console.error("Failed to create department:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleEditDepartment = (id: string) => {
@@ -37,23 +52,34 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     if (department) {
       setDepartmentName(department.name);
       setDepartmentCode(department.code);
+      setDepartmentHead(department.custom_department_head || "");
       setEditingId(id);
     }
   };
 
-  const handleUpdateDepartment = () => {
+  const handleUpdateDepartment = async () => {
     if (!departmentName.trim() || !editingId) return;
 
-    const updatedDepartments = departments.map((dept) =>
-      dept.id === editingId
-        ? { ...dept, name: departmentName.trim(), code: departmentCode.trim() }
-        : dept
-    );
+    try {
+      const departmentData = {
+        name: editingId, // name is treated as id
+        department_name: departmentName.trim(),
+        custom_department_code: departmentCode.trim(),
+        company: "Chaturvima",
+        custom_department_head: departmentHead.trim() || ""
+      };
 
-    onUpdate(updatedDepartments);
-    setDepartmentName("");
-    setDepartmentCode("");
-    setEditingId(null);
+      await updateDepartmentMutation.mutateAsync(departmentData);
+
+      // Clear form fields on success
+      setDepartmentName("");
+      setDepartmentCode("");
+      setDepartmentHead("");
+      setEditingId(null);
+    } catch (error) {
+      console.error("Failed to update department:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleDeleteDepartment = (id: string) => {
@@ -64,8 +90,16 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const cancelEdit = () => {
     setDepartmentName("");
     setDepartmentCode("");
+    setDepartmentHead("");
     setEditingId(null);
   };
+
+  // Update parent component when fetched departments change
+  useEffect(() => {
+    if (fetchedDepartments.length > 0) {
+      onUpdate(fetchedDepartments);
+    }
+  }, [fetchedDepartments, onUpdate]);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -73,7 +107,16 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
         Department Setup
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {isFetchingDepartments && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+            <span className="text-sm text-blue-700">Loading departments...</span>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department Name
@@ -94,8 +137,19 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             type="text"
             value={departmentCode}
             onChange={(e) => setDepartmentCode(e.target.value)}
-            // className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-stages-self-reflection"
             placeholder="e.g., PROD, SALES"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Department Head (Optional)
+          </label>
+          <Input
+            type="text"
+            value={departmentHead}
+            onChange={(e) => setDepartmentHead(e.target.value)}
+            placeholder="e.g., John Doe"
           />
         </div>
       </div>
@@ -107,17 +161,23 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
               onClick={handleUpdateDepartment}
               variant="gradient"
               size="sm"
+              disabled={updateDepartmentMutation.isPending || !departmentName.trim()}
             >
-              Update Department
+              {updateDepartmentMutation.isPending ? "Updating..." : "Update Department"}
             </Button>
             <Button onClick={cancelEdit} variant="outline" size="sm">
               Cancel
             </Button>
           </div>
         ) : (
-          <Button onClick={handleAddDepartment} variant="gradient" size="sm">
+          <Button
+            onClick={handleAddDepartment}
+            variant="gradient"
+            size="sm"
+            disabled={createDepartmentMutation.isPending || !departmentName.trim()}
+          >
             <Plus className="w-4 h-4" />
-            Add Department
+            {createDepartmentMutation.isPending ? "Adding..." : "Add Department"}
           </Button>
         )}
       </div>

@@ -58,8 +58,9 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       user: apiResponse.message.user,
       full_name: apiResponse.message.full_name,
       role_profile: apiResponse.message.role_profile, // Now an array
-      access_token: apiResponse.message.access_token,
-      refresh_token: apiResponse.message.refresh_token
+      api_key: apiResponse.message.api_key,
+      api_secret: apiResponse.message.api_secret,
+      authorization_header: apiResponse.message.authorization_header
     } : {
       // Fallback for mock/development
       user: email.toLowerCase(),
@@ -67,8 +68,9 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
       ).join(" ") || "User",
       role_profile: ["Employee"], // Default role as array
-      access_token: `mock_token_${Date.now()}`,
-      refresh_token: `mock_refresh_${Date.now()}`
+      api_key: `mock_token_${Date.now()}`,
+      api_secret: `mock_refresh_${Date.now()}`,
+      authorization_header: `mock_refresh_${Date.now()}`
     };
 
     setUser(apiUser);

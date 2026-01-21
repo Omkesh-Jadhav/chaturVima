@@ -16,7 +16,9 @@ export const loginUser = async (email: string, password: string) => {
     });
 
     if (response.data) {
-      // Return structured response for successful login
+      localStorage.setItem('chaturvima_user', JSON.stringify(response.data));
+      console.log(localStorage.getItem('chaturvima_user'));
+      
       return {
         success: true,
         data: response.data,
@@ -54,9 +56,9 @@ export const LogoutUser = async () => {
     });
 
     if (response.data) {
-      // Clear authentication tokens on successful logout
       localStorage.removeItem('apiKey');
       localStorage.removeItem('apiSecret');
+      localStorage.removeItem('chaturvima_user');
       
       return {
         success: true,
@@ -83,4 +85,3 @@ export const LogoutUser = async () => {
     };
   }
 }
-

@@ -5,27 +5,27 @@ export const API_ENDPOINTS = {
         LOG_IN: `/api/method/chaturvima_api.api.auth.login`,
         LOG_OUT: `/api/method/chaturvima_api.api.auth.logout`,
     },
-    
+
     ASSESSMENT: {
-        
+
     },
 
     EMPLOYEE: {
-        
+
     },
 
     ORGANIZATION: {
         GET_ALL_DEPARTMENTS: `/api/method/chaturvima_api.api.department.list_departments`,
         CREATE_DEPARTMENT: `/api/resource/Department`,
-        UPDATE_DEPARTMENT: `/api/resource/Department/Technical - CV`,
+        UPDATE_DEPARTMENT: `/api/resource/Department`,
         DELETE_DEPARTMENT: `/api/resource/Department`,
     },
 
     REPORT: {
-        
+
     },
 
     USER: {
-        
+
     }
 }
