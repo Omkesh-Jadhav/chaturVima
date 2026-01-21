@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
-import { useDepartments, useCreateDepartment } from "@/hooks/useDepartments";
+import { useDepartments, useCreateDepartment, useUpdateDepartment } from "@/hooks/useDepartments";
 
 
 interface Step2DepartmentsProps {
@@ -22,6 +22,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   // React Query hooks
   const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
   const createDepartmentMutation = useCreateDepartment();
+  const updateDepartmentMutation = useUpdateDepartment();
 
   const handleAddDepartment = async () => {
     if (!departmentName.trim()) return;
@@ -51,23 +52,34 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     if (department) {
       setDepartmentName(department.name);
       setDepartmentCode(department.code);
+      setDepartmentHead(department.custom_department_head || "");
       setEditingId(id);
     }
   };
 
-  const handleUpdateDepartment = () => {
+  const handleUpdateDepartment = async () => {
     if (!departmentName.trim() || !editingId) return;
 
-    const updatedDepartments = departments.map((dept) =>
-      dept.id === editingId
-        ? { ...dept, name: departmentName.trim(), code: departmentCode.trim() }
-        : dept
-    );
+    try {
+      const departmentData = {
+        name: editingId, // name is treated as id
+        department_name: departmentName.trim(),
+        custom_department_code: departmentCode.trim(),
+        company: "Chaturvima",
+        custom_department_head: departmentHead.trim() || ""
+      };
 
-    onUpdate(updatedDepartments);
-    setDepartmentName("");
-    setDepartmentCode("");
-    setEditingId(null);
+      await updateDepartmentMutation.mutateAsync(departmentData);
+
+      // Clear form fields on success
+      setDepartmentName("");
+      setDepartmentCode("");
+      setDepartmentHead("");
+      setEditingId(null);
+    } catch (error) {
+      console.error("Failed to update department:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleDeleteDepartment = (id: string) => {
@@ -149,8 +161,9 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
               onClick={handleUpdateDepartment}
               variant="gradient"
               size="sm"
+              disabled={updateDepartmentMutation.isPending || !departmentName.trim()}
             >
-              Update Department
+              {updateDepartmentMutation.isPending ? "Updating..." : "Update Department"}
             </Button>
             <Button onClick={cancelEdit} variant="outline" size="sm">
               Cancel

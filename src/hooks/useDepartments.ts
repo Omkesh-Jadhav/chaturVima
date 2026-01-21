@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAllDepartments, createDepartment } from "@/api/api-functions/organization-setup";
+import { getAllDepartments, createDepartment, updateDepartment } from "@/api/api-functions/organization-setup";
 import type { Department } from "@/pages/superAdmin/Organization/types";
 
 // Query keys
@@ -51,6 +51,27 @@ export const useCreateDepartment = () => {
             custom_department_head: string;
         }) => {
             return await createDepartment(departmentData);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch departments list
+            queryClient.invalidateQueries({ queryKey: departmentKeys.list() });
+        },
+    });
+};
+
+// Hook to update a department
+export const useUpdateDepartment = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (departmentData: {
+            name: string;
+            department_name: string;
+            custom_department_code: string;
+            company: string;
+            custom_department_head: string;
+        }) => {
+            return await updateDepartment(departmentData);
         },
         onSuccess: () => {
             // Invalidate and refetch departments list
