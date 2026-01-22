@@ -115,3 +115,16 @@ export const createEmployee = async (employeeData: {
         throw error;
     }
 }
+
+export const getEmployeeDetails = async (name: string) => {
+    try {
+        const response = await api.get(`${API_ENDPOINTS.ORGANIZATION.GET_EMPLOYEE_DETAILS}/${name}`);
+        console.log("SUCCESS - getEmployeeDetails response:", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - getEmployeeDetails failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}

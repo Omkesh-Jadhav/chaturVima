@@ -11,6 +11,7 @@ import { validateEmail } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees } from "@/hooks/useEmployees";
+import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 
 
 interface Step3EmployeesMappingProps {
@@ -42,6 +43,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // React Query hooks
@@ -252,6 +255,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     return employees.filter(
       (emp) => emp.id !== editingId && emp.role === "HoD"
     );
+  };
+
+  const handleEmployeeNameClick = (employeeName: string) => {
+    setSelectedEmployeeName(employeeName);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEmployeeName("");
   };
 
   // Map API response to Employee format
@@ -642,7 +655,12 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.employeeId}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-900">
-                      {employee.name}
+                      <button
+                        onClick={() => handleEmployeeNameClick(employee.employeeId)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        {employee.name}
+                      </button>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       {employee.email}
@@ -690,6 +708,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           </div>
         </div>
       )}
+
+      {/* Employee Details Modal */}
+      <EmployeeDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        employeeName={selectedEmployeeName}
+      />
     </div>
   );
 };
