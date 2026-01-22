@@ -63,6 +63,27 @@ export const updateDepartment = async (departmentData: {
     }
 }
 
+export const getEmployees = async (department?: string) => {
+    try {
+        const fields = ["name", /* "email", */ "designation", "employee_name", "user_id", "department"];
+        let url = `${API_ENDPOINTS.ORGANIZATION.GET_EMPLOYEES}?fields=${JSON.stringify(fields)}`;
+        
+        if (department) {
+            const filters = [["department", "=", department]];
+            url += `&filters=${JSON.stringify(filters)}`;
+        }
+        
+        const response = await api.get(url);
+        console.log("SUCCESS - getEmployees response:", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - getEmployees failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const createEmployee = async (employeeData: {
     first_name: string,
     last_name: string,
