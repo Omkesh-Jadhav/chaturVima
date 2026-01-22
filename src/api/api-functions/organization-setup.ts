@@ -62,3 +62,35 @@ export const updateDepartment = async (departmentData: {
         throw error;
     }
 }
+
+export const createEmployee = async (employeeData: {
+    first_name: string,
+    last_name: string,
+    employee_name: string,
+    company: string,
+    email: string,
+    gender: string,
+    designation: string,
+    role_profile: string,
+    department: string,
+    date_of_birth: string,
+    date_of_joining: string,
+    reportingTo: string
+}) => {
+    try {
+        const payload = {
+            data: employeeData
+        }
+
+        const response = await api.post(API_ENDPOINTS.ORGANIZATION.CREATE_EMPLOYEE, payload);
+        console.log("SUCCESS - createEmployee response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+
+    } catch (error: any) {
+        console.error("ERROR - Create department failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}

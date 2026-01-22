@@ -10,6 +10,7 @@ import {
 import { validateEmail } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
+import { useCreateEmployee } from "@/hooks/useEmployees";
 
 
 interface Step3EmployeesMappingProps {
@@ -24,9 +25,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState({
-    employeeId: "",
+    firstName: "",
+    lastName: "",
     name: "",
     email: "",
+    gender: "",
+    dateOfBirth: "",
+    dateOfJoining: "",
     designation: "",
     department: "",
     boss: "",
@@ -38,8 +43,22 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // React Query hooks
+  const createEmployeeMutation = useCreateEmployee();
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+
+      // Auto-populate name field when firstName or lastName changes
+      if (field === "firstName" || field === "lastName") {
+        const firstName = field === "firstName" ? value : prev.firstName;
+        const lastName = field === "lastName" ? value : prev.lastName;
+        updated.name = `${firstName} ${lastName}`.trim();
+      }
+
+      return updated;
+    });
     // Clear field error when user starts typing
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
@@ -65,71 +84,82 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           }
         }
         break;
-      case "employeeId":
-        if (value) {
-          // Check for duplicate employee IDs
-          const isDuplicate = employees.some(
-            (emp) => emp.id !== editingId && emp.employeeId === value
-          );
-          if (isDuplicate) {
-            error = "This employee ID is already in use";
-          }
-        }
-        break;
     }
 
     setFieldErrors((prev) => ({ ...prev, [field]: error }));
     return error === "";
   };
 
-  const handleAddEmployee = () => {
+  const handleAddEmployee = async () => {
     if (
-      !formData.employeeId.trim() ||
-      !formData.name.trim() ||
+      !formData.firstName.trim() ||
+      !formData.lastName.trim() ||
       !formData.email.trim()
     )
       return;
 
     // Validate all fields before adding
     const emailValid = validateField("email", formData.email);
-    const employeeIdValid = validateField("employeeId", formData.employeeId);
 
-    if (!emailValid || !employeeIdValid) {
+    if (!emailValid) {
       return;
     }
 
-    const newEmployee: Employee = {
-      id: Date.now().toString(),
-      employeeId: formData.employeeId.trim(),
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      designation: formData.designation.trim(),
-      department: formData.department,
-      boss: formData.boss,
-      role: formData.role,
-    };
+    try {
+      const employeeData = {
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        employee_name: formData.name.trim(),
+        company: "Chaturvima",
+        email: formData.email.trim(),
+        department: formData.department,
+        gender: formData.gender,
+        role_profile: formData.role,
+        designation: formData.designation.trim() || "Employee",
+        date_of_birth: formData.dateOfBirth,
+        date_of_joining: formData.dateOfJoining,
+        reportingTo: formData.boss || ""
+      };
 
-    const updatedEmployees = [...employees, newEmployee];
-    onUpdate(updatedEmployees);
-    setFormData({
-      employeeId: "",
-      name: "",
-      email: "",
-      designation: "",
-      department: "",
-      boss: "",
-      role: "Employee",
-    });
-    setFieldErrors({});
+      await createEmployeeMutation.mutateAsync(employeeData);
+
+      // Clear form fields on success
+      setFormData({
+        firstName: "",
+        lastName: "",
+        name: "",
+        email: "",
+        gender: "",
+        dateOfBirth: "",
+        dateOfJoining: "",
+        designation: "",
+        department: "",
+        boss: "",
+        role: "Employee",
+      });
+      setFieldErrors({});
+    } catch (error) {
+      console.error("Failed to create employee:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleEditEmployee = (id: string) => {
     const employee = employees.find((e) => e.id === id);
     if (employee) {
+      // Parse name into first and last name (simple split)
+      const nameParts = employee.name.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
       setFormData({
-        employeeId: employee.employeeId,
+        firstName: firstName,
+        lastName: lastName,
         name: employee.name,
         email: employee.email,
+        gender: "", // These fields might not exist in old data
+        dateOfBirth: "",
+        dateOfJoining: "",
         designation: employee.designation,
         department: employee.department,
         boss: employee.boss,
@@ -140,7 +170,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
   const handleUpdateEmployee = () => {
-    if (!formData.employeeId || !formData.name || !formData.email || !editingId)
+    if (!formData.firstName || !formData.lastName || !formData.email || !editingId)
       return;
 
     const updatedEmployees = employees.map((emp) =>
@@ -149,9 +179,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
     onUpdate(updatedEmployees);
     setFormData({
-      employeeId: "",
+      firstName: "",
+      lastName: "",
       name: "",
       email: "",
+      gender: "",
+      dateOfBirth: "",
+      dateOfJoining: "",
       designation: "",
       department: "",
       boss: "",
@@ -167,9 +201,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const resetForm = () => {
     setFormData({
-      employeeId: "",
+      firstName: "",
+      lastName: "",
       name: "",
       email: "",
+      gender: "",
+      dateOfBirth: "",
+      dateOfJoining: "",
       designation: "",
       department: "",
       boss: "",
@@ -293,27 +331,32 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Employee ID
+                First Name *
               </label>
               <Input
                 type="text"
-                value={formData.employeeId}
+                value={formData.firstName}
                 onChange={(e) =>
-                  handleInputChange("employeeId", e.target.value)
+                  handleInputChange("firstName", e.target.value)
                 }
-                onBlur={(e) => validateField("employeeId", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  fieldErrors.employeeId
-                    ? "border-red-300 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-brand-teal"
-                }`}
-                placeholder="e.g., EMP001"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                placeholder="e.g., John"
               />
-              {fieldErrors.employeeId && (
-                <p className="mt-1 text-sm text-red-600">
-                  {fieldErrors.employeeId}
-                </p>
-              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Last Name *
+              </label>
+              <Input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) =>
+                  handleInputChange("lastName", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                placeholder="e.g., Doe"
+              />
             </div>
 
             <div>
@@ -323,31 +366,76 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <Input
                 type="text"
                 value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                placeholder="e.g., John Doe"
+                readOnly
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                placeholder="Auto-generated from first and last name"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                Email *
               </label>
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 onBlur={(e) => validateField("email", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  fieldErrors.email
-                    ? "border-red-300 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-brand-teal"
-                }`}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${fieldErrors.email
+                  ? "border-red-300 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-brand-teal"
+                  }`}
                 placeholder="e.g., john.doe@company.com"
               />
               {fieldErrors.email && (
                 <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender
+              </label>
+              <FilterSelect
+                value={formData.gender || "Select Gender"}
+                onChange={(value) =>
+                  handleInputChange(
+                    "gender",
+                    value === "Select Gender" ? "" : value
+                  )
+                }
+                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                options={["Select Gender", "Male", "Female", "Other"]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Birth
+              </label>
+              <Input
+                type="date"
+                value={formData.dateOfBirth}
+                onChange={(e) =>
+                  handleInputChange("dateOfBirth", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Joining
+              </label>
+              <Input
+                type="date"
+                value={formData.dateOfJoining}
+                onChange={(e) =>
+                  handleInputChange("dateOfJoining", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+              />
             </div>
 
             <div>
@@ -435,9 +523,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 </Button>
               </div>
             ) : (
-              <Button onClick={handleAddEmployee} variant="gradient" size="sm">
+              <Button
+                onClick={handleAddEmployee}
+                variant="gradient"
+                size="sm"
+                disabled={createEmployeeMutation.isPending || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
+              >
                 <Plus className="w-4 h-4" />
-                Add Employee
+                {createEmployeeMutation.isPending ? "Adding..." : "Add Employee"}
               </Button>
             )}
           </div>
@@ -487,11 +580,10 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          employee.role === "HoD"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {employee.role}
                       </span>

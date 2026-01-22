@@ -139,13 +139,13 @@ const OrganizationSetup = () => {
         <Button
           onClick={handleSave}
           disabled={
-            user?.role === "hr-admin" ||
+            user?.role_profile?.includes("hr-admin") ||
             !validateOverallSetup(organizationInfo, departments, employees)
           }
           variant="gradient"
           size="md"
         >
-          {user?.role === "hr-admin" ? "Save" : "Save"}
+          {user?.role_profile?.includes("hr-admin") ? "Save" : "Save"}
         </Button>
       </div>
     </div>

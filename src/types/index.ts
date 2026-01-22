@@ -110,6 +110,7 @@ export type UserRole =
 export interface User {
   user: string;
   full_name: string;
+  email: string;
   role_profile: string[];
   api_key: string;
   api_secret: string;

@@ -8,44 +8,40 @@ import type { User } from '@/types';
 
 export const MOCK_USERS: User[] = [
   {
-    id: 'user-1',
-    name: 'Priya Sharma',
+    user: 'priya.sharma@example.com',
+    full_name: 'Priya Sharma',
     email: 'priya.sharma@example.com',
-    role: 'employee',
-    department: 'Engineering',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+    role_profile: ['Employee'],
+    api_key: 'mock_key_1',
+    api_secret: 'mock_secret_1',
+    authorization_header: 'mock_auth_1',
   },
-  // {
-  //   id: 'user-2',
-  //   name: 'Raj Patel',
-  //   email: 'raj.patel@example.com',
-  //   role: 'manager',
-  //   department: 'Engineering',
-  //   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Raj',
-  // },
   {
-    id: 'user-3',
-    name: 'Anita Desai',
+    user: 'anita.desai@example.com',
+    full_name: 'Anita Desai',
     email: 'anita.desai@example.com',
-    role: 'hr-admin',
-    department: 'Human Resources',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anita',
+    role_profile: ['hr-admin'],
+    api_key: 'mock_key_3',
+    api_secret: 'mock_secret_3',
+    authorization_header: 'mock_auth_3',
   },
   {
-    id: 'user-4',
-    name: 'Vikram Singh',
+    user: 'vikram.singh@example.com',
+    full_name: 'Vikram Singh',
     email: 'vikram.singh@example.com',
-    role: 'department-head',
-    department: 'Executive',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
+    role_profile: ['department-head'],
+    api_key: 'mock_key_4',
+    api_secret: 'mock_secret_4',
+    authorization_header: 'mock_auth_4',
   },
   {
-    id: 'user-5',
-    name: 'Meera Reddy',
+    user: 'meera.reddy@example.com',
+    full_name: 'Meera Reddy',
     email: 'meera.reddy@example.com',
-    role: 'super-admin',
-    department: 'Administration',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Meera',
+    role_profile: ['super-admin'],
+    api_key: 'mock_key_5',
+    api_secret: 'mock_secret_5',
+    authorization_header: 'mock_auth_5',
   },
 ];
 
@@ -57,7 +53,7 @@ export const getUserByEmail = (email: string): User | undefined => {
   return MOCK_USERS.find(user => user.email.toLowerCase() === email.toLowerCase());
 };
 
-// Get user by ID
+// Get user by ID (using user email as ID)
 export const getUserById = (id: string): User | undefined => {
-  return MOCK_USERS.find(user => user.id === id);
+  return MOCK_USERS.find(u => u.user === id);
 };
