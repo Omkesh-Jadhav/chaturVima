@@ -10,7 +10,8 @@ import {
 import { validateEmail } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
-import { useCreateEmployee } from "@/hooks/useEmployees";
+import { useCreateEmployee, useGetEmployees } from "@/hooks/useEmployees";
+import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 
 
 interface Step3EmployeesMappingProps {
@@ -41,10 +42,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [departmentFilter, setDepartmentFilter] = useState<string>("");
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // React Query hooks
   const createEmployeeMutation = useCreateEmployee();
+  const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => {
@@ -250,6 +255,50 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     return employees.filter(
       (emp) => emp.id !== editingId && emp.role === "HoD"
     );
+  };
+
+  const handleEmployeeNameClick = (employeeName: string) => {
+    setSelectedEmployeeName(employeeName);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEmployeeName("");
+  };
+
+  // Map API response to Employee format
+  const mapApiToEmployeeFormat = (apiData: Array<{
+    name: string;
+    employee_name: string;
+    user_id: string | null;
+    email?: string;
+    designation: string;
+    department?: string;
+  }>) => {
+    return apiData.map((emp, index) => ({
+      id: emp.name || `api-emp-${index}`,
+      employeeId: emp.name || '',
+      name: emp.employee_name || '',
+      email: emp.user_id || emp.email || '',
+      role: 'Employee' as 'Employee' | 'HoD', // Default role, can be enhanced later
+      department: emp.department || '',
+      designation: emp.designation || '',
+      boss: '', // Not available in current API response
+    }));
+  };
+
+  const getFilteredEmployees = () => {
+    // Use API data if available, otherwise fall back to props data
+    if (apiEmployees?.data) {
+      return mapApiToEmployeeFormat(apiEmployees.data);
+    }
+    
+    // Fallback to props data with filter
+    if (!departmentFilter) {
+      return employees;
+    }
+    return employees.filter((employee) => employee.department === departmentFilter);
   };
 
   return (
@@ -537,8 +586,41 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         )}
       </div>
 
-      {employees.length > 0 && (
+      {/* Loading state */}
+      {isLoadingEmployees && (
+        <div className="mb-6 text-center py-8">
+          <div className="text-gray-500">Loading employees...</div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {employeesError && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-800">
+            Error loading employees: {employeesError.message}
+          </div>
+        </div>
+      )}
+
+      {/* Employee table - show if we have API data or fallback prop data */}
+      {(apiEmployees?.data?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
         <div className="mb-6">
+          <div className="mb-4 flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700">
+              Filter by Department:
+            </label>
+            <FilterSelect
+              value={departmentFilter || "All Departments"}
+              onChange={(value) => 
+                setDepartmentFilter(value === "All Departments" ? "" : value)
+              }
+              className="w-64 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+              options={[
+                "All Departments",
+                ...departments.map((dept) => dept.name),
+              ]}
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200 rounded-lg">
               <thead className="bg-gray-50">
@@ -567,13 +649,18 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {employees.map((employee) => (
+                {getFilteredEmployees().map((employee) => (
                   <tr key={employee.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4 text-sm text-gray-900">
                       {employee.employeeId}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-900">
-                      {employee.name}
+                      <button
+                        onClick={() => handleEmployeeNameClick(employee.employeeId)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        {employee.name}
+                      </button>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       {employee.email}
@@ -621,6 +708,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           </div>
         </div>
       )}
+
+      {/* Employee Details Modal */}
+      <EmployeeDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        employeeName={selectedEmployeeName}
+      />
     </div>
   );
 };
