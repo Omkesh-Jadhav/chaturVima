@@ -57,6 +57,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const apiUser: User = apiResponse?.message ? {
       user: apiResponse.message.user,
       full_name: apiResponse.message.full_name,
+      email: apiResponse.message.email || email,
       role_profile: apiResponse.message.role_profile, // Now an array
       api_key: apiResponse.message.api_key,
       api_secret: apiResponse.message.api_secret,
@@ -67,6 +68,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       full_name: name || email.split("@")[0].split(/[._-]/).map(
         (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
       ).join(" ") || "User",
+      email: email,
       role_profile: ["Employee"], // Default role as array
       api_key: `mock_token_${Date.now()}`,
       api_secret: `mock_refresh_${Date.now()}`,

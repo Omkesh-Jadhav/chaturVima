@@ -23,12 +23,12 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
   // Determine if the form should be readonly based on user role
-  const isReadonly = user?.role === "hr-admin";
+  const isReadonly = user?.role_profile?.includes("hr-admin");
 
   const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
     // Prevent changes if user is hr-admin (readonly mode)
     if (isReadonly) return;
-    
+
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);
     onUpdate(updatedData);
@@ -86,11 +86,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
             disabled={isReadonly}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              !formData.name.trim()
-                ? "border-red-300 focus:ring-red-500"
-                : "border-gray-300 focus:ring-brand-teal"
-            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.name.trim()
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300 focus:ring-brand-teal"
+              } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="Enter organization name"
             required
           />
@@ -110,9 +109,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(value) =>
               handleInputChange("type", value === "Select type" ? "" : value)
             }
-            className={`w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal ${
-              isReadonly ? "opacity-50 pointer-events-none" : ""
-            }`}
+            className={`w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
+              }`}
             options={[
               "Select type",
               "Private Limited",
@@ -133,9 +131,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(value) =>
               handleInputChange("size", value === "Select size" ? "" : value)
             }
-            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${
-              isReadonly ? "opacity-50 pointer-events-none" : ""
-            }`}
+            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
+              }`}
             options={[
               "Select size",
               "1-10 employees",
@@ -159,9 +156,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                 value === "Select industry" ? "" : value
               )
             }
-            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${
-              isReadonly ? "opacity-50 pointer-events-none" : ""
-            }`}
+            className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
+              }`}
             options={[
               "Select industry",
               "Technology",
@@ -185,11 +181,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(e) => handleInputChange("website", e.target.value)}
             onBlur={(e) => validateField("website", e.target.value)}
             disabled={isReadonly}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              fieldErrors.website
-                ? "border-red-300 focus:ring-red-500"
-                : "border-gray-300 focus:ring-brand-teal"
-            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${fieldErrors.website
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300 focus:ring-brand-teal"
+              } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="www.example.com"
           />
           {fieldErrors.website && (
@@ -207,11 +202,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(e) => handleInputChange("email", e.target.value)}
             onBlur={(e) => validateField("email", e.target.value)}
             disabled={isReadonly}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              !formData.email.trim() || fieldErrors.email
-                ? "border-red-300 focus:ring-red-500"
-                : "border-gray-300 focus:ring-brand-teal"
-            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.email.trim() || fieldErrors.email
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300 focus:ring-brand-teal"
+              } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="contact@example.com"
             required
           />
@@ -235,11 +229,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             onChange={(e) => handleInputChange("phone", e.target.value)}
             onBlur={(e) => validateField("phone", e.target.value)}
             disabled={isReadonly}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              !formData.phone.trim() || fieldErrors.phone
-                ? "border-red-300 focus:ring-red-500"
-                : "border-gray-300 focus:ring-brand-teal"
-            } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.phone.trim() || fieldErrors.phone
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300 focus:ring-brand-teal"
+              } ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`}
             placeholder="+91 9876543210"
             required
           />

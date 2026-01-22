@@ -36,8 +36,7 @@ const DepartmentAssessmentCycles = () => {
 
   const viewerHead =
     departmentHeadsDirectory.find(
-      (head) =>
-        head.email === user?.email || head.department === user?.department
+      (head) => head.email === user?.email
     ) ?? departmentHeadsDirectory[0];
 
   const allowedCycleIds = useMemo(() => {
@@ -72,14 +71,14 @@ const DepartmentAssessmentCycles = () => {
       const updated = prev.map((cycle) =>
         cycle.id === drawerState.cycle?.id
           ? {
-              ...cycle,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              notes: payload.notes,
-              status: (cycle.status === "Active"
-                ? cycle.status
-                : "Upcoming") as AssessmentCycle["status"],
-            }
+            ...cycle,
+            startDate: payload.startDate,
+            endDate: payload.endDate,
+            notes: payload.notes,
+            status: (cycle.status === "Active"
+              ? cycle.status
+              : "Upcoming") as AssessmentCycle["status"],
+          }
           : cycle
       );
       persistCycles(updated);
