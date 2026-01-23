@@ -1,6 +1,34 @@
 import api from "../axios-setup";
 import { API_ENDPOINTS } from "../endpoints";
 
+export const getOrganizationDetails = async (companyName: string) => {
+    try {
+        const fields = [
+            "name",
+            "company_name", 
+            "custom_organization_type",
+            "custom_organization_size",
+            "custom_industry",
+            "website",
+            "phone_no",
+            "email",
+            "custom_city",
+            "custom_state",
+            "country"
+        ];
+        
+        const url = `${API_ENDPOINTS.ORGANIZATION.GET_ORGANIZATION_DETAILS}/${companyName}?fields=${JSON.stringify(fields)}`;
+        const response = await api.get(url);
+        console.log("SUCCESS - getOrganizationDetails response:", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - getOrganizationDetails failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createEmployee, getEmployees, getEmployeeDetails } from "@/api/api-functions/organization-setup";
+import { createEmployee, getEmployees, getEmployeeDetails, getOrganizationDetails } from "@/api/api-functions/organization-setup";
 
 // Query keys
 export const employeeKeys = {
@@ -7,6 +7,11 @@ export const employeeKeys = {
     list: () => [...employeeKeys.all, "list"] as const,
     byDepartment: (department?: string) => [...employeeKeys.all, "department", department] as const,
     details: (name: string) => [...employeeKeys.all, "details", name] as const,
+};
+
+export const organizationKeys = {
+    all: ["organization"] as const,
+    details: (companyName: string) => [...organizationKeys.all, "details", companyName] as const,
 };
 
 // Hook to create an employee
@@ -52,6 +57,16 @@ export const useGetEmployeeDetails = (name: string, enabled: boolean = true) => 
         queryKey: employeeKeys.details(name),
         queryFn: () => getEmployeeDetails(name),
         enabled: enabled && !!name,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+};
+
+// Hook to fetch organization details
+export const useGetOrganizationDetails = (companyName: string) => {
+    return useQuery({
+        queryKey: organizationKeys.details(companyName),
+        queryFn: () => getOrganizationDetails(companyName),
+        enabled: !!companyName,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 };

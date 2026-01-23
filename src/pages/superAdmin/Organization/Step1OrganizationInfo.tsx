@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   validateEmail,
   validatePhone,
@@ -7,6 +7,7 @@ import {
 import type { OrganizationInfo } from "./types";
 import { FilterSelect, Input } from "@/components/ui";
 import { useUser } from "@/context/UserContext";
+import { useGetOrganizationDetails } from "@/hooks/useEmployees";
 
 
 interface Step1OrganizationInfoProps {
@@ -22,8 +23,33 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   const [formData, setFormData] = useState<OrganizationInfo>(data);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
+  // Fetch organization details from API
+  const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails("Chaturvima");
+
   // Determine if the form should be readonly based on user role
   const isReadonly = user?.role_profile?.includes("hr-admin");
+
+  // Pre-fill form data when organization data is loaded from API
+  useEffect(() => {
+    if (organizationData?.data) {
+      const apiData = organizationData.data;
+      const mappedData: OrganizationInfo = {
+        name: apiData.company_name || "",
+        type: apiData.custom_organization_type || "",
+        size: apiData.custom_organization_size || "",
+        industry: apiData.custom_industry || "",
+        website: apiData.website || "",
+        email: apiData.email || "",
+        phone: apiData.phone_no || "",
+        city: apiData.custom_city || "",
+        state: apiData.custom_state || "",
+        country: apiData.country || "",
+      };
+      
+      setFormData(mappedData);
+      onUpdate(mappedData);
+    }
+  }, [organizationData, onUpdate]);
 
   const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
     // Prevent changes if user is hr-admin (readonly mode)
@@ -69,12 +95,26 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
         <h2 className="text-2xl font-semibold text-gray-900">
           Organization Info
         </h2>
-        {isReadonly && (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-            View Only
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {isLoadingOrg && (
+            <span className="text-sm text-gray-500">Loading organization data...</span>
+          )}
+          {isReadonly && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              View Only
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* Error state for organization data */}
+      {orgError && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="text-yellow-800">
+            <strong>Note:</strong> Could not load existing organization data. You can still enter information manually.
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
