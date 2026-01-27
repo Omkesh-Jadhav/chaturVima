@@ -14,6 +14,14 @@ export const QUESTIONNAIRE_NAME_MAP: Record<string, AssessmentType> = {
   Company: "Company Assessment",
 };
 
+// Reverse mapping: full assessment type name to API questionnaire name
+export const ASSESSMENT_TYPE_TO_API_NAME: Record<AssessmentType, string> = {
+  "Employee Self Assessment": "Self",
+  "Manager Relationship Assessment": "Boss",
+  "Department Assessment": "Department",
+  "Company Assessment": "Company",
+};
+
 // Converts API questionnaire name to full assessment type name
 export const mapQuestionnaireToAssessmentType = (
   apiName: string
@@ -28,6 +36,13 @@ export const mapQuestionnairesToAssessmentTypes = (
   return apiNames
     .map(mapQuestionnaireToAssessmentType)
     .filter((type): type is AssessmentType => type !== undefined);
+};
+
+// Converts full assessment type name to API questionnaire name
+export const mapAssessmentTypeToApiName = (
+  assessmentType: AssessmentType
+): string => {
+  return ASSESSMENT_TYPE_TO_API_NAME[assessmentType];
 };
 
 // ==================== Cycle Status Colors ====================
