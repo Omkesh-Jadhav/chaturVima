@@ -35,8 +35,10 @@ import {
   filterQuestionsByTypes,
   getCompletionByType,
   areAllTypesComplete,
+  mapQuestionnairesToAssessmentTypes,
 } from "../../../utils/assessmentUtils";
 import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
+import { getAssessmentTypes } from "../../../api/api-functions/assessment";
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
@@ -44,20 +46,43 @@ const AssessmentQuestions = () => {
     useAssessment();
   const { user } = useUser();
 
-  // Always show all 4 assessment types (assigned by backend)
-  const assignedTypes: AssessmentType[] = useMemo(
-    () => [
-      "Employee Self Assessment",
-      "Manager Relationship Assessment",
-      "Department Assessment",
-      "Company Assessment",
-    ],
-    []
-  );
+  // State for assessment types from API
+  const [assignedTypes, setAssignedTypes] = useState<AssessmentType[]>([
+    "Employee Self Assessment",
+    "Manager Relationship Assessment",
+    "Department Assessment",
+    "Company Assessment",
+  ]);
+
+  // Fetch assessment types from API
+  useEffect(() => {
+    const fetchAssessmentTypes = async () => {
+      try {
+        const response = await getAssessmentTypes();
+        const apiNames = response.data.map((q: { name: string }) => q.name);
+        const mappedTypes = mapQuestionnairesToAssessmentTypes(apiNames);
+        
+        if (mappedTypes.length > 0) {
+          setAssignedTypes(mappedTypes);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch assessment types:", error);
+      }
+    };
+
+    fetchAssessmentTypes();
+  }, []);
 
   const [selectedType, setSelectedType] = useState<AssessmentType>(
     assignedTypes[0] || "Employee Self Assessment"
   );
+
+  // Update selectedType when assignedTypes change
+  useEffect(() => {
+    if (assignedTypes.length > 0 && !assignedTypes.includes(selectedType)) {
+      setSelectedType(assignedTypes[0]);
+    }
+  }, [assignedTypes, selectedType]);
   const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);

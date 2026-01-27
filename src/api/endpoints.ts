@@ -7,7 +7,7 @@ export const API_ENDPOINTS = {
     },
 
     ASSESSMENT: {
-
+        GET_ASSESSMENT_TYPES: `/api/resource/Questionnaire`,
     },
 
     EMPLOYEE: {
