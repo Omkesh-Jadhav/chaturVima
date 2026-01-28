@@ -32,32 +32,96 @@ import {
   getPaginationButtons,
   getProgressEmoji,
   getProgressMessage,
-  filterQuestionsByTypes,
   getCompletionByType,
   areAllTypesComplete,
+  mapQuestionnairesToAssessmentTypes,
 } from "../../../utils/assessmentUtils";
 import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
+import { getAssessmentTypes, getQuestionsByType } from "../../../api/api-functions/assessment";
+import { mapAssessmentTypeToApiName } from "../../../utils/assessmentUtils";
+import type { Question } from "../../../types";
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
-  const { questions, answers, answerQuestion, submitAssessment, isComplete } =
+  const { answers, answerQuestion, submitAssessment, isComplete } =
     useAssessment();
   const { user } = useUser();
 
-  // Always show all 4 assessment types (assigned by backend)
-  const assignedTypes: AssessmentType[] = useMemo(
-    () => [
-      "Employee Self Assessment",
-      "Manager Relationship Assessment",
-      "Department Assessment",
-      "Company Assessment",
-    ],
-    []
-  );
+  // State for assessment types from API
+  const [assignedTypes, setAssignedTypes] = useState<AssessmentType[]>([
+    "Employee Self Assessment",
+    "Manager Relationship Assessment",
+    "Department Assessment",
+    "Company Assessment",
+  ]);
+
+  // State for questions fetched from API
+  const [questionsByType, setQuestionsByType] = useState<
+    Record<AssessmentType, Question[]>
+  >({
+    "Employee Self Assessment": [],
+    "Manager Relationship Assessment": [],
+    "Department Assessment": [],
+    "Company Assessment": [],
+  });
+  const [loadedTypes, setLoadedTypes] = useState<Set<AssessmentType>>(new Set());
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+
+  // Fetch assessment types from API
+  useEffect(() => {
+    const fetchAssessmentTypes = async () => {
+      try {
+        const response = await getAssessmentTypes();
+        const apiNames = response.data.map((q: { name: string }) => q.name);
+        const mappedTypes = mapQuestionnairesToAssessmentTypes(apiNames);
+        
+        if (mappedTypes.length > 0) {
+          setAssignedTypes(mappedTypes);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch assessment types:", error);
+      }
+    };
+
+    fetchAssessmentTypes();
+  }, []);
 
   const [selectedType, setSelectedType] = useState<AssessmentType>(
     assignedTypes[0] || "Employee Self Assessment"
   );
+
+  // Update selectedType when assignedTypes change
+  useEffect(() => {
+    if (assignedTypes.length > 0 && !assignedTypes.includes(selectedType)) {
+      setSelectedType(assignedTypes[0]);
+    }
+  }, [assignedTypes, selectedType]);
+
+  // Fetch questions for selected type from API
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      if (!selectedType || loadedTypes.has(selectedType)) return;
+
+      try {
+        setIsLoadingQuestions(true);
+        const apiName = mapAssessmentTypeToApiName(selectedType);
+        const questions = await getQuestionsByType(apiName);
+        
+        setQuestionsByType((prev) => ({
+          ...prev,
+          [selectedType]: questions,
+        }));
+        setLoadedTypes((prev) => new Set(prev).add(selectedType));
+      } catch (error: any) {
+        console.error("Failed to fetch questions:", error);
+      } finally {
+        setIsLoadingQuestions(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [selectedType, loadedTypes]);
+
   const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -65,12 +129,6 @@ const AssessmentQuestions = () => {
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(
     () => loadSubmissionStatus(user?.email) || isComplete
-  );
-
-  // Filter questions by assessment type
-  const questionsByType = useMemo(
-    () => filterQuestionsByTypes(questions, assignedTypes),
-    [questions, assignedTypes]
   );
 
   // Get questions for selected type
@@ -353,6 +411,35 @@ const AssessmentQuestions = () => {
                 ref={questionsContainerRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar space-y-3"
               >
+                {isLoadingQuestions ? (
+                  <div className="flex items-center justify-center h-full min-h-[400px]">
+                    <div className="text-center space-y-3">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-12 h-12 border-4 border-brand-teal border-t-transparent rounded-full mx-auto"
+                      />
+                      <p className="text-sm text-gray-600">Loading questions...</p>
+                    </div>
+                  </div>
+                ) : filteredQuestions.length === 0 ? (
+                  <div className="flex items-center justify-center h-full min-h-[400px]">
+                    <div className="text-center space-y-3 max-w-md">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                        className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto"
+                      >
+                        <Target className="w-8 h-8 text-gray-400" />
+                      </motion.div>
+                      <h3 className="text-lg font-semibold text-gray-900">No Questions Available</h3>
+                      <p className="text-sm text-gray-600">
+                        There are no questions available for {selectedType} at the moment. Please try again later.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
                 <AnimatePresence mode="wait">
                   {currentPageQuestions.map((question, idx) => {
                     const questionNumber =
@@ -420,11 +507,6 @@ const AssessmentQuestions = () => {
                                 <h3 className="text-sm font-medium text-gray-900 mt-0.5">
                                   {question.text}
                                 </h3>
-                                {question.description && (
-                                  <p className="text-xs text-gray-600 mt-0.5">
-                                    {question.description}
-                                  </p>
-                                )}
                               </div>
                               <AnimatePresence>
                                 {selectedAnswer !== undefined && (
@@ -573,6 +655,7 @@ const AssessmentQuestions = () => {
                     );
                   })}
                 </AnimatePresence>
+                )}
               </div>
 
               {/* Navigation */}
@@ -934,7 +1017,10 @@ const AssessmentQuestions = () => {
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleConfirmSubmit}
         answeredCount={Object.keys(answers).length}
-        totalQuestions={questions.length}
+        totalQuestions={assignedTypes.reduce(
+          (total, type) => total + (questionsByType[type]?.length || 0),
+          0
+        )}
       />
 
       <SuccessModal
