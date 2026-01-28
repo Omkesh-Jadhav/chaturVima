@@ -233,6 +233,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     email?: string;
     designation: string;
     department?: string;
+    reports_to?: string;
   }>) => {
     return apiData.map((emp, index) => ({
       id: emp.name || `api-emp-${index}`,
@@ -242,7 +243,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       role: 'Employee' as 'Employee' | 'HoD', // Default role, can be enhanced later
       department: emp.department || '',
       designation: emp.designation || '',
-      boss: '', // Not available in current API response
+      reports_to: emp.reports_to || '',
     }));
   };
 
@@ -630,7 +631,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.department}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.boss || "-"}
+                      {employee.reports_to || "-"}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex gap-2">
