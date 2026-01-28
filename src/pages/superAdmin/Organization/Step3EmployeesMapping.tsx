@@ -12,6 +12,7 @@ import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees } from "@/hooks/useEmployees";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
+import EmployeeEditModal from "@/components/EmployeeEditModal";
 
 
 interface Step3EmployeesMappingProps {
@@ -40,13 +41,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     boss: "",
     role: "Employee" as "Employee" | "HoD",
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // React Query hooks
@@ -83,7 +85,6 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           // Check for duplicate emails
           const isDuplicate = employees.some(
             (emp) =>
-              emp.id !== editingId &&
               emp.email.toLowerCase() === value.toLowerCase()
           );
           if (isDuplicate) {
@@ -152,76 +153,21 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
   const handleEditEmployee = (id: string) => {
-    const employee = employees.find((e) => e.id === id);
+    // Find employee from the actual displayed list (API or props)
+    const allEmployees = getFilteredEmployees();
+    const employee = allEmployees.find((e) => e.id === id);
     if (employee) {
-      // Parse name into first and last name (simple split)
-      const nameParts = employee.name.split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-
-      setFormData({
-        firstName: firstName,
-        lastName: lastName,
-        name: employee.name,
-        email: employee.email,
-        gender: "", // These fields might not exist in old data
-        dateOfBirth: "",
-        dateOfJoining: "",
-        designation: employee.designation,
-        department: employee.department,
-        boss: employee.boss,
-        role: employee.role,
-      });
-      setEditingId(id);
+      setEmployeeToEdit(employee);
+      setIsEditModalOpen(true);
     }
   };
 
-  const handleUpdateEmployee = () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !editingId)
-      return;
-
-    const updatedEmployees = employees.map((emp) =>
-      emp.id === editingId ? { ...emp, ...formData } : emp
-    );
-
-    onUpdate(updatedEmployees);
-    setFormData({
-      firstName: "",
-      lastName: "",
-      name: "",
-      email: "",
-      gender: "",
-      dateOfBirth: "",
-      dateOfJoining: "",
-      designation: "",
-      department: "",
-      boss: "",
-      role: "Employee",
-    });
-    setEditingId(null);
-  };
 
   const handleDeleteEmployee = (id: string) => {
     const updatedEmployees = employees.filter((emp) => emp.id !== id);
     onUpdate(updatedEmployees);
   };
 
-  const resetForm = () => {
-    setFormData({
-      firstName: "",
-      lastName: "",
-      name: "",
-      email: "",
-      gender: "",
-      dateOfBirth: "",
-      dateOfJoining: "",
-      designation: "",
-      department: "",
-      boss: "",
-      role: "Employee",
-    });
-    setEditingId(null);
-  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -254,9 +200,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
   const getAvailableBosses = () => {
-    return employees.filter(
-      (emp) => emp.id !== editingId && emp.role === "HoD"
-    );
+    return employees.filter((emp) => emp.role === "HoD");
   };
 
   const handleEmployeeNameClick = (employeeName: string) => {
@@ -267,6 +211,18 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedEmployeeName("");
+  };
+
+  const handleSaveEmployeeEdit = (updatedEmployee: Employee) => {
+    const updatedEmployees = employees.map((emp) =>
+      emp.id === updatedEmployee.id ? updatedEmployee : emp
+    );
+    onUpdate(updatedEmployees);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEmployeeToEdit(null);
   };
 
   // Map API response to Employee format
@@ -568,30 +524,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
         {!showBulkUpload && (
           <div className="mb-6">
-            {editingId ? (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleUpdateEmployee}
-                  variant="gradient"
-                  size="sm"
-                >
-                  Update Employee
-                </Button>
-                <Button onClick={resetForm} variant="outline" size="sm">
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={handleAddEmployee}
-                variant="gradient"
-                size="sm"
-                disabled={createEmployeeMutation.isPending || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
-              >
-                <Plus className="w-4 h-4" />
-                {createEmployeeMutation.isPending ? "Adding..." : "Add Employee"}
-              </Button>
-            )}
+            <Button
+              onClick={handleAddEmployee}
+              variant="gradient"
+              size="sm"
+              disabled={createEmployeeMutation.isPending || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
+            >
+              <Plus className="w-4 h-4" />
+              {createEmployeeMutation.isPending ? "Adding..." : "Add Employee"}
+            </Button>
           </div>
         )}
       </div>
@@ -724,6 +665,17 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         employeeName={selectedEmployeeName}
+      />
+
+      {/* Employee Edit Modal */}
+      <EmployeeEditModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        employee={employeeToEdit}
+        departments={departments}
+        availableBosses={getAvailableBosses()}
+        onSave={handleSaveEmployeeEdit}
+        existingEmployees={getFilteredEmployees()}
       />
     </div>
   );
