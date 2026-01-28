@@ -103,3 +103,82 @@ export const getQuestionsByType = async (assessmentTypeName: string): Promise<Qu
     throw error;
   }
 };
+
+// Interface for assessment submission payload
+export interface AssessmentSubmissionPayload {
+  status?: string;
+  answers: Array<{
+    question: string;
+    rating: string;
+  }>;
+}
+
+// Interface for Assessment Submission response
+export interface AssessmentSubmission {
+  name: string; // Submission ID like "SUB-ASSESSMENT-HR-EMP-00006-2D-0004-Self-0005"
+  employee?: string;
+  questionnaire?: string;
+  [key: string]: unknown;
+}
+
+export interface AssessmentSubmissionsResponse {
+  data: AssessmentSubmission[];
+}
+
+// Fetches Assessment Submissions by employee_id
+export const getAssessmentSubmissionsByEmployee = async (
+  employeeId: string
+): Promise<AssessmentSubmission[]> => {
+  try {
+    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}?filters=[["employee","=","${employeeId}"]]`;
+    const response = await api.get<AssessmentSubmissionsResponse>(url);
+    console.log("SUCCESS - getAssessmentSubmissionsByEmployee response:", response);
+    return response.data.data || [];
+  } catch (error: unknown) {
+    console.error("ERROR - getAssessmentSubmissionsByEmployee failed:", error);
+    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
+    throw error;
+  }
+};
+
+// Submits assessment answers to the API
+export const submitAssessmentAnswers = async (
+  submissionId: string,
+  questions: Question[],
+  answers: Record<string, number>, // questionId -> optionIndex (0-4)
+  status?: string
+): Promise<unknown> => {
+  try {
+    // Map answers to API format
+    const answersPayload = questions
+      .filter((question) => answers[question.id] !== undefined)
+      .map((question) => {
+        const optionIndex = answers[question.id];
+        // Convert 0-4 index to 1-5 rating (as string)
+        const rating = String(optionIndex + 1);
+        return {
+          question: question.text,
+          rating: rating,
+        };
+      });
+
+    const payload: AssessmentSubmissionPayload = {
+      answers: answersPayload,
+    };
+
+    // Add status if provided (e.g., "Submitted" for final submission)
+    if (status) {
+      payload.status = status;
+    }
+
+    const url = `${API_ENDPOINTS.ASSESSMENT.SUBMIT_ASSESSMENT}/${submissionId}`;
+    const response = await api.put(url, payload);
+    console.log("SUCCESS - submitAssessmentAnswers response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("ERROR - submitAssessmentAnswers failed:", error);
+    console.error("ERROR - Error response:", error.response);
+    console.error("ERROR - Error data:", error.response?.data);
+    throw error;
+  }
+};

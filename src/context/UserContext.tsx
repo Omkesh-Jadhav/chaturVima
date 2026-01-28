@@ -58,6 +58,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       user: apiResponse.message.user,
       full_name: apiResponse.message.full_name,
       email: apiResponse.message.email || email,
+      employee_id: apiResponse.message.employee_id,
       role_profile: apiResponse.message.role_profile, // Now an array
       api_key: apiResponse.message.api_key,
       api_secret: apiResponse.message.api_secret,

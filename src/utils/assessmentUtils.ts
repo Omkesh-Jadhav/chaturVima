@@ -11,6 +11,7 @@ export const QUESTIONNAIRE_NAME_MAP: Record<string, AssessmentType> = {
   Self: "Employee Self Assessment",
   Boss: "Manager Relationship Assessment",
   Department: "Department Assessment",
+  DEPT: "Department Assessment", // Handle both "Department" and "DEPT" from API
   Company: "Company Assessment",
 };
 
@@ -18,7 +19,7 @@ export const QUESTIONNAIRE_NAME_MAP: Record<string, AssessmentType> = {
 export const ASSESSMENT_TYPE_TO_API_NAME: Record<AssessmentType, string> = {
   "Employee Self Assessment": "Self",
   "Manager Relationship Assessment": "Boss",
-  "Department Assessment": "Department",
+  "Department Assessment": "DEPT", // API uses "DEPT" not "Department"
   "Company Assessment": "Company",
 };
 
