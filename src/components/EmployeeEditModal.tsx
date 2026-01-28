@@ -3,7 +3,7 @@ import { X, Save, Loader2 } from "lucide-react";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { validateEmail } from "@/pages/superAdmin/Organization/validationUtils";
 import type { Employee, Department } from "@/pages/superAdmin/Organization/types";
-import { useGetEmployeeDetails } from "@/hooks/useEmployees";
+import { useGetEmployeeDetails, useEditEmployeeDetails } from "@/hooks/useEmployees";
 
 interface EmployeeEditModalProps {
   isOpen: boolean;
@@ -44,6 +44,9 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     employee?.employeeId || employee?.id || "",
     isOpen && !!employee
   );
+
+  // Edit employee details mutation
+  const editEmployeeMutation = useEditEmployeeDetails();
 
   // Initialize form data when employee details are fetched
   useEffect(() => {
@@ -135,7 +138,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     return error === "";
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!employee || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
       return;
     }
@@ -147,18 +150,51 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
       return;
     }
 
-    const updatedEmployee: Employee = {
-      ...employee,
-      name: formData.name,
-      email: formData.email,
-      designation: formData.designation,
-      department: formData.department,
-      boss: formData.boss,
-      role: formData.role,
-    };
+    try {
+      // Find the selected boss's employee ID/name for reports_to field
+      const selectedBoss = availableBosses.find(boss => boss.name === formData.boss);
+      const reportsToValue = selectedBoss ? (selectedBoss.employeeId || selectedBoss.id) : "";
 
-    onSave(updatedEmployee);
-    onClose();
+      // Prepare employee data for API
+      const employeeData = {
+        employee_name: formData.name,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        user_id: formData.email,
+        company_email: formData.email,
+        gender: formData.gender,
+        date_of_birth: formData.dateOfBirth,
+        date_of_joining: formData.dateOfJoining,
+        designation: formData.designation,
+        department: formData.department,
+        reports_to: reportsToValue,
+        role_profile: formData.role,
+      };
+
+      // Call the API to update employee details
+      await editEmployeeMutation.mutateAsync({
+        name: employee.employeeId || employee.id,
+        employeeData: employeeData
+      });
+
+      // Create updated employee object for local state update
+      const updatedEmployee: Employee = {
+        ...employee,
+        name: formData.name,
+        email: formData.email,
+        designation: formData.designation,
+        department: formData.department,
+        boss: formData.boss,
+        reports_to: formData.boss,
+        role: formData.role,
+      };
+
+      onSave(updatedEmployee);
+      onClose();
+    } catch (error) {
+      console.error("Failed to update employee:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const handleClose = () => {
@@ -210,6 +246,15 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
             <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="text-red-800">
                 Failed to load employee details. Using basic information.
+              </div>
+            </div>
+          )}
+
+          {/* Save Error State */}
+          {editEmployeeMutation.error && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="text-red-800">
+                Failed to save employee details. Please try again.
               </div>
             </div>
           )}
@@ -408,10 +453,14 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
             onClick={handleSave}
             variant="gradient"
             size="sm"
-            disabled={isLoadingDetails || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
+            disabled={isLoadingDetails || editEmployeeMutation.isPending || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
           >
-            <Save className="w-4 h-4 mr-2" />
-            Save Changes
+            {editEmployeeMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {editEmployeeMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>
