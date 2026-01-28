@@ -29,6 +29,33 @@ export const getOrganizationDetails = async (companyName: string) => {
     }
 }
 
+export const updateOrganizationDetails = async(organizationData: {
+    company_name: string;
+    custom_organization_type: string;
+    custom_organization_size: string;
+    custom_industry: string;
+    website: string;
+    phone_no: string;
+    email: string;
+    custom_city: string;
+    custom_state: string;
+    country: string;
+}) => {
+    try {
+        const payload = {
+            ...organizationData
+        };
+        const response = await api.put(API_ENDPOINTS.ORGANIZATION.UPDATE_ORGANIZATION_DETAILS, payload);
+        console.log("SUCCESS - updateOrganizationDetails response:", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - updateOrganizationDetails failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);
