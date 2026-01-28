@@ -26,6 +26,7 @@ import {
   savePage,
   loadPage,
   saveAnswers,
+  loadAnswers,
   saveSubmissionStatus,
   loadSubmissionStatus,
   clearPageStorage,
@@ -330,6 +331,26 @@ const AssessmentQuestions = () => {
     (q) => answers[q.id] !== undefined
   ).length;
 
+  // Auto-load saved answers from localStorage (per user/email) on first mount
+  useEffect(() => {
+    if (!user?.email) return;
+    // If we already have answers in context, don't overwrite
+    if (Object.keys(answers).length > 0) return;
+
+    try {
+      const storedAnswers = loadAnswers(user.email);
+      if (!storedAnswers || Object.keys(storedAnswers).length === 0) return;
+
+      Object.entries(storedAnswers).forEach(([questionId, optionIndex]) => {
+        // Rehydrate context answers so UI shows them as selected
+        answerQuestion(questionId, optionIndex as number);
+      });
+      console.log("Loaded saved answers from localStorage for:", user.email);
+    } catch (error) {
+      console.error("Failed to load saved answers from localStorage:", error);
+    }
+  }, [user?.email, answers, answerQuestion]);
+
   useEffect(() => {
     const savedPage = loadPage(user?.email);
     if (savedPage >= 0 && savedPage < totalPages && savedPage !== currentPage) {
@@ -359,7 +380,17 @@ const AssessmentQuestions = () => {
     (questionId: string, optionIndex: number) => {
       if (isSubmitted) return;
 
+      // Update context state
       answerQuestion(questionId, optionIndex);
+
+      // Auto-save latest answers snapshot to localStorage (per email)
+      if (user?.email) {
+        const updatedAnswers: Record<string, number> = {
+          ...answers,
+          [questionId]: optionIndex,
+        };
+        saveAnswers(updatedAnswers, user.email);
+      }
       if (isSaved) {
         setIsSaved(false);
         setShowSavedToast(false);
@@ -396,6 +427,7 @@ const AssessmentQuestions = () => {
     [
       isSubmitted,
       answerQuestion,
+      answers,
       isSaved,
       filteredQuestions,
       currentPage,
