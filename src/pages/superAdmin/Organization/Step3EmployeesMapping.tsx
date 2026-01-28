@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Edit,
   Trash2,
@@ -18,12 +18,14 @@ interface Step3EmployeesMappingProps {
   employees: Employee[];
   departments: Department[];
   onUpdate: (employees: Employee[]) => void;
+  onEmployeesChange?: (employees: Employee[]) => void;
 }
 
 const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   employees,
   departments,
   onUpdate,
+  onEmployeesChange,
 }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -288,7 +290,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     }));
   };
 
-  const getFilteredEmployees = () => {
+  const getFilteredEmployees = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
     if (apiEmployees?.data) {
       return mapApiToEmployeeFormat(apiEmployees.data);
@@ -299,7 +301,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       return employees;
     }
     return employees.filter((employee) => employee.department === departmentFilter);
-  };
+  }, [apiEmployees, employees, departmentFilter]);
+
+  // Notify parent component when actual employees change for validation
+  useEffect(() => {
+    const actualEmployees = getFilteredEmployees();
+    if (onEmployeesChange) {
+      onEmployeesChange(actualEmployees);
+    }
+  }, [apiEmployees, employees, departmentFilter, onEmployeesChange, getFilteredEmployees]);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">

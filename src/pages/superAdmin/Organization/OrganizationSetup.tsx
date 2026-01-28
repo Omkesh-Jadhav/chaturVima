@@ -27,6 +27,7 @@ const OrganizationSetup = () => {
   });
   const [departments, setDepartments] = useState<Department[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [actualEmployees, setActualEmployees] = useState<Employee[]>([]);
   const [tabValidations, setTabValidations] = useState<ValidationResult[]>([]);
 
   const handleTabChange = (tab: string) => {
@@ -39,16 +40,16 @@ const OrganizationSetup = () => {
       activeTab,
       organizationInfo,
       departments,
-      employees
+      activeTab === "employees" ? actualEmployees : employees
     );
     setTabValidations(validations);
-  }, [activeTab, organizationInfo, departments, employees]);
+  }, [activeTab, organizationInfo, departments, employees, actualEmployees]);
 
   const handleSave = () => {
     const allValid = validateOverallSetup(
       organizationInfo,
       departments,
-      employees
+      actualEmployees.length > 0 ? actualEmployees : employees
     );
 
     if (!allValid) {
@@ -60,7 +61,7 @@ const OrganizationSetup = () => {
     console.log("Saving organization setup:", {
       organizationInfo,
       departments,
-      employees,
+      employees: actualEmployees.length > 0 ? actualEmployees : employees,
     });
     // You can add API calls or navigation logic here
     alert("Organization setup saved successfully!");
@@ -101,6 +102,7 @@ const OrganizationSetup = () => {
             employees={employees}
             departments={departments}
             onUpdate={setEmployees}
+            onEmployeesChange={setActualEmployees}
           />
         );
       default:
@@ -140,7 +142,7 @@ const OrganizationSetup = () => {
           onClick={handleSave}
           disabled={
             user?.role_profile?.includes("hr-admin") ||
-            !validateOverallSetup(organizationInfo, departments, employees)
+            !validateOverallSetup(organizationInfo, departments, actualEmployees.length > 0 ? actualEmployees : employees)
           }
           variant="gradient"
           size="md"
