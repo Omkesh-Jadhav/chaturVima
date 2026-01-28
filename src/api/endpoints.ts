@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
     ASSESSMENT: {
         GET_ASSESSMENT_TYPES: `/api/resource/Questionnaire`,
         GET_QUESTIONS_BY_TYPE: `/api/resource/Questionnaire`,
+        GET_ASSESSMENT_SUBMISSIONS: `/api/resource/Assessment Submission`,
+        SUBMIT_ASSESSMENT: `/api/resource/Assessment Submission`,
     },
 
     EMPLOYEE: {

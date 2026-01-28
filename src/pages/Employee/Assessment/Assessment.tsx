@@ -14,6 +14,10 @@ import EnergyBreak from "../../../components/assessment/EnergyBreak";
 import AssessmentResults from "../../../components/assessment/AssessmentResults";
 import CelebrationConfetti from "../../../components/assessment/CelebrationConfetti";
 import { PlayCircle, Check } from "lucide-react";
+import {
+  getAssessmentSubmissionsByEmployee,
+  type AssessmentSubmission,
+} from "../../../api/api-functions/assessment";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -40,8 +44,9 @@ const Assessment = () => {
   const [showEnergyBreak, setShowEnergyBreak] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
 
-  // Check if user has existing saved answers
+  // Check if user has existing saved answers (local draft)
   const hasExistingAnswers = useMemo(() => {
     if (!user) return false;
 
@@ -56,19 +61,33 @@ const Assessment = () => {
     }
   }, [answers, user]);
 
-  // Check if assessment is already submitted
-  const isAssessmentSubmitted = useMemo(() => {
-    if (!user) return isComplete;
+  // Check submission status from API instead of localStorage
+  useEffect(() => {
+    const checkSubmissionStatus = async () => {
+      // If we don't have a logged-in user or employee_id, fall back to local context state
+      if (!user?.employee_id) {
+        setIsAssessmentSubmitted(isComplete);
+        return;
+      }
 
-    try {
-      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      const submissionKey = `chaturvima_assessment_submitted_${emailKey}`;
-      const savedSubmissionStatus = localStorage.getItem(submissionKey);
-      return savedSubmissionStatus === "true" || isComplete;
-    } catch {
-      return isComplete;
-    }
-  }, [user, isComplete]);
+      try {
+        const submissions: AssessmentSubmission[] =
+          await getAssessmentSubmissionsByEmployee(user.employee_id);
+
+        // Consider the assessment submitted if there is at least one submission
+        // for this employee (across any questionnaire)
+        const hasAnySubmission = submissions.length > 0;
+
+        setIsAssessmentSubmitted(hasAnySubmission || isComplete);
+      } catch (error) {
+        console.error("Failed to check assessment submission status:", error);
+        // On error, fall back to local completion state
+        setIsAssessmentSubmitted(isComplete);
+      }
+    };
+
+    checkSubmissionStatus();
+  }, [user?.employee_id, isComplete]);
 
   // Check if we should show energy break (every 5 questions, but not at the end)
   useEffect(() => {
@@ -192,7 +211,9 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">25</p>
+                <p className="text-4xl font-bold text-blue-600">
+                145
+                </p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
@@ -209,13 +230,13 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-purple-600">10-15</p>
+                <p className="text-4xl font-bold text-purple-600">No Limit</p>
                 <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center">
                   <span className="text-2xl">⏱️</span>
                 </div>
               </div>
-              <p className="text-sm font-medium text-purple-900">Minutes</p>
-              <p className="text-xs text-purple-700 mt-1">At your own pace</p>
+              <p className="text-sm font-medium text-purple-900">Completion Time</p>
+              <p className="text-xs text-purple-700 mt-1">Work at your own pace</p>
             </motion.div>
 
             <motion.div
@@ -350,7 +371,7 @@ const Assessment = () => {
               {[
                 {
                   step: "1",
-                  title: "Complete 25 Questions",
+                  title: "Complete All Questions",
                   icon: "✍️",
                   desc: "Multi-stage evaluation",
                 },
@@ -403,11 +424,11 @@ const Assessment = () => {
                   className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
                 >
                   <Check className="mr-2 h-6 w-6" />
-                  Test Submitted
+                  Assessment Submitted
                 </Button>
                 <p className="mt-4 text-sm text-green-600 font-medium">
                   Your assessment has been successfully submitted. No further
-                  edits are allowed.
+                  actions are allowed.
                 </p>
               </>
             ) : (
@@ -428,8 +449,7 @@ const Assessment = () => {
                   </p>
                 ) : (
                   <p className="mt-4 text-sm text-gray-500">
-                    Estimated completion time: 10-15 minutes • Your responses
-                    are automatically saved!
+                    Your responses are automatically saved!
                   </p>
                 )}
               </>

@@ -111,6 +111,7 @@ export interface User {
   user: string;
   full_name: string;
   email: string;
+  employee_id?: string;
   role_profile: string[];
   api_key: string;
   api_secret: string;
