@@ -120,7 +120,7 @@ export const updateDepartment = async (departmentData: {
 
 export const getEmployees = async (department?: string) => {
     try {
-        const fields = ["name", /* "email", */ "designation", "employee_name", "user_id", "department"];
+        const fields = ["name", "designation", "employee_name", "user_id", "department", "reports_to", "company_email"];
         let url = `${API_ENDPOINTS.ORGANIZATION.GET_EMPLOYEES}?fields=${JSON.stringify(fields)}`;
         
         if (department) {
@@ -151,7 +151,7 @@ export const createEmployee = async (employeeData: {
     department: string,
     date_of_birth: string,
     date_of_joining: string,
-    reportingTo: string
+    reports_to: string
 }) => {
     try {
         const payload = {
@@ -178,6 +178,25 @@ export const getEmployeeDetails = async (name: string) => {
         return response.data;
     } catch (error: any) {
         console.error("ERROR - getEmployeeDetails failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
+export const editEmployeeDetails = async (name: string, employeeData: any) => {
+    try {
+        const payload = {
+            data: employeeData
+        }
+
+        const response = await api.put(`${API_ENDPOINTS.ORGANIZATION.EDIT_EMPLOYEE_DETAILS}/${name}`, payload);
+        console.log("SUCCESS - editEmployeeDetails response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+
+    } catch (error: any) {
+        console.error("ERROR - Edit employee details failed:", error);
         console.error("ERROR - Error response:", error.response);
         console.error("ERROR - Error data:", error.response?.data);
         throw error;

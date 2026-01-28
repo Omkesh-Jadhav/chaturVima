@@ -31,7 +31,7 @@ export const useCreateEmployee = () => {
             department: string;
             date_of_birth: string;
             date_of_joining: string;
-            reportingTo: string;
+            reports_to: string;
         }) => {
             return await createEmployee(employeeData);
         },

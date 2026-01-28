@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { X, Save } from "lucide-react";
+import { X, Save, Loader2 } from "lucide-react";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { validateEmail } from "@/pages/superAdmin/Organization/validationUtils";
 import type { Employee, Department } from "@/pages/superAdmin/Organization/types";
+import { useGetEmployeeDetails } from "@/hooks/useEmployees";
 
 interface EmployeeEditModalProps {
   isOpen: boolean;
@@ -38,10 +39,37 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
   });
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-  // Initialize form data when employee changes
+  // Fetch employee details from API when modal opens
+  const { data: employeeDetails, isLoading: isLoadingDetails, error: detailsError } = useGetEmployeeDetails(
+    employee?.employeeId || employee?.id || "",
+    isOpen && !!employee
+  );
+
+  // Initialize form data when employee details are fetched
   useEffect(() => {
-    if (employee) {
+    if (employeeDetails?.data) {
+      const details = employeeDetails.data;
       // Parse name into first and last name (simple split)
+      const nameParts = (details.employee_name || employee?.name || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      setFormData({
+        firstName: firstName,
+        lastName: lastName,
+        name: details.employee_name || employee?.name || "",
+        email: details.user_id || employee?.email || "",
+        gender: details.gender || "",
+        dateOfBirth: details.date_of_birth || "",
+        dateOfJoining: details.date_of_joining || "",
+        designation: details.designation || employee?.designation || "",
+        department: details.department || employee?.department || "",
+        boss: details.reports_to || employee?.boss || "",
+        role: details.role_profile || employee?.role || "Employee",
+      });
+      setFieldErrors({});
+    } else if (employee && !isLoadingDetails) {
+      // Fallback to basic employee data if API call fails or no details available
       const nameParts = employee.name.split(" ");
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
@@ -51,7 +79,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
         lastName: lastName,
         name: employee.name,
         email: employee.email,
-        gender: "", // These fields might not exist in old data
+        gender: "",
         dateOfBirth: "",
         dateOfJoining: "",
         designation: employee.designation,
@@ -61,7 +89,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
       });
       setFieldErrors({});
     }
-  }, [employee]);
+  }, [employeeDetails, employee, isLoadingDetails]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => {
@@ -169,7 +197,26 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
         </div>
 
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {/* Loading State */}
+          {isLoadingDetails && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-brand-teal mr-2" />
+              <span className="text-gray-600">Loading employee details...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {detailsError && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="text-red-800">
+                Failed to load employee details. Using basic information.
+              </div>
+            </div>
+          )}
+
+          {/* Form Fields */}
+          {!isLoadingDetails && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 First Name *
@@ -346,6 +393,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
               />
             </div>
           </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
@@ -360,7 +408,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
             onClick={handleSave}
             variant="gradient"
             size="sm"
-            disabled={!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
+            disabled={isLoadingDetails || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()}
           >
             <Save className="w-4 h-4 mr-2" />
             Save Changes

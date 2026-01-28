@@ -33,11 +33,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     lastName: "",
     name: "",
     email: "",
+    company_email: "",
     gender: "",
     dateOfBirth: "",
     dateOfJoining: "",
     designation: "",
     department: "",
+    reports_to: "",
     boss: "",
     role: "Employee" as "Employee" | "HoD",
   });
@@ -120,13 +122,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         employee_name: formData.name.trim(),
         company: "Chaturvima",
         email: formData.email.trim(),
+        company_email: formData.email.trim(),
         department: formData.department,
         gender: formData.gender,
         role_profile: formData.role,
         designation: formData.designation.trim() || "Employee",
         date_of_birth: formData.dateOfBirth,
         date_of_joining: formData.dateOfJoining,
-        reportingTo: formData.boss || ""
+        reports_to: formData.reports_to || ""
       };
 
       await createEmployeeMutation.mutateAsync(employeeData);
@@ -137,11 +140,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         lastName: "",
         name: "",
         email: "",
+        company_email: "",
         gender: "",
         dateOfBirth: "",
         dateOfJoining: "",
         designation: "",
         department: "",
+        reports_to: "",
         boss: "",
         role: "Employee",
       });
@@ -200,7 +205,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
   const getAvailableBosses = () => {
-    return employees.filter((emp) => emp.role === "HoD");
+    // Get all employees (API data or props data)
+    const allEmployees = getFilteredEmployees();
+    return allEmployees.filter((emp) => emp.role === "HoD");
   };
 
   const handleEmployeeNameClick = (employeeName: string) => {
@@ -230,6 +237,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     name: string;
     employee_name: string;
     user_id: string | null;
+    role_profile?: string;
+    company_email?: string;
     email?: string;
     designation: string;
     department?: string;
@@ -239,10 +248,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       id: emp.name || `api-emp-${index}`,
       employeeId: emp.name || '',
       name: emp.employee_name || '',
-      email: emp.user_id || emp.email || '',
-      role: 'Employee' as 'Employee' | 'HoD', // Default role, can be enhanced later
+      email: emp.user_id || emp.company_email || '',
+      role: (emp.role_profile as 'Employee' | 'HoD') || 'HoD',
       department: emp.department || '',
       designation: emp.designation || '',
+      boss: emp.reports_to || '',
       reports_to: emp.reports_to || '',
     }));
   };
@@ -587,6 +597,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     Email
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Designation
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Role
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -618,6 +631,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.email}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
+                      {employee.designation}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-500">
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
                           ? "bg-blue-100 text-blue-800"
@@ -631,7 +647,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.department}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.reports_to || "-"}
+                      {employee.reports_to || employee.boss || "-"}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex gap-2">
