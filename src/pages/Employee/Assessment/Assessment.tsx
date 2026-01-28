@@ -449,8 +449,7 @@ const Assessment = () => {
                   </p>
                 ) : (
                   <p className="mt-4 text-sm text-gray-500">
-                    Estimated completion time: 10-15 minutes • Your responses
-                    are automatically saved!
+                    Your responses are automatically saved!
                   </p>
                 )}
               </>
