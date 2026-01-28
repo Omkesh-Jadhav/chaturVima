@@ -14,6 +14,10 @@ import EnergyBreak from "../../../components/assessment/EnergyBreak";
 import AssessmentResults from "../../../components/assessment/AssessmentResults";
 import CelebrationConfetti from "../../../components/assessment/CelebrationConfetti";
 import { PlayCircle, Check } from "lucide-react";
+import {
+  getAssessmentSubmissionsByEmployee,
+  type AssessmentSubmission,
+} from "../../../api/api-functions/assessment";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -40,8 +44,9 @@ const Assessment = () => {
   const [showEnergyBreak, setShowEnergyBreak] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
 
-  // Check if user has existing saved answers
+  // Check if user has existing saved answers (local draft)
   const hasExistingAnswers = useMemo(() => {
     if (!user) return false;
 
@@ -56,19 +61,33 @@ const Assessment = () => {
     }
   }, [answers, user]);
 
-  // Check if assessment is already submitted
-  const isAssessmentSubmitted = useMemo(() => {
-    if (!user) return isComplete;
+  // Check submission status from API instead of localStorage
+  useEffect(() => {
+    const checkSubmissionStatus = async () => {
+      // If we don't have a logged-in user or employee_id, fall back to local context state
+      if (!user?.employee_id) {
+        setIsAssessmentSubmitted(isComplete);
+        return;
+      }
 
-    try {
-      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      const submissionKey = `chaturvima_assessment_submitted_${emailKey}`;
-      const savedSubmissionStatus = localStorage.getItem(submissionKey);
-      return savedSubmissionStatus === "true" || isComplete;
-    } catch {
-      return isComplete;
-    }
-  }, [user, isComplete]);
+      try {
+        const submissions: AssessmentSubmission[] =
+          await getAssessmentSubmissionsByEmployee(user.employee_id);
+
+        // Consider the assessment submitted if there is at least one submission
+        // for this employee (across any questionnaire)
+        const hasAnySubmission = submissions.length > 0;
+
+        setIsAssessmentSubmitted(hasAnySubmission || isComplete);
+      } catch (error) {
+        console.error("Failed to check assessment submission status:", error);
+        // On error, fall back to local completion state
+        setIsAssessmentSubmitted(isComplete);
+      }
+    };
+
+    checkSubmissionStatus();
+  }, [user?.employee_id, isComplete]);
 
   // Check if we should show energy break (every 5 questions, but not at the end)
   useEffect(() => {
@@ -403,11 +422,11 @@ const Assessment = () => {
                   className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
                 >
                   <Check className="mr-2 h-6 w-6" />
-                  Test Submitted
+                  Assessment Submitted
                 </Button>
                 <p className="mt-4 text-sm text-green-600 font-medium">
                   Your assessment has been successfully submitted. No further
-                  edits are allowed.
+                  actions are allowed.
                 </p>
               </>
             ) : (

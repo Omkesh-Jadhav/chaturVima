@@ -37,7 +37,13 @@ import {
   mapQuestionnairesToAssessmentTypes,
 } from "../../../utils/assessmentUtils";
 import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
-import { getAssessmentTypes, getQuestionsByType, submitAssessmentAnswers, getAssessmentSubmissionsByEmployee, type AssessmentSubmission } from "../../../api/api-functions/assessment";
+import {
+  getAssessmentTypes,
+  getQuestionsByType,
+  submitAssessmentAnswers,
+  getAssessmentSubmissionsByEmployee,
+  type AssessmentSubmission,
+} from "../../../api/api-functions/assessment";
 import { mapAssessmentTypeToApiName } from "../../../utils/assessmentUtils";
 import type { Question } from "../../../types";
 
@@ -76,7 +82,9 @@ const AssessmentQuestions = () => {
   });
   const [loadedTypes, setLoadedTypes] = useState<Set<AssessmentType>>(new Set());
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
-  const [submissionIds, setSubmissionIds] = useState<Record<AssessmentType, string | null>>({
+  const [submissionIds, setSubmissionIds] = useState<
+    Record<AssessmentType, string | null>
+  >({
     "Employee Self Assessment": null,
     "Manager Relationship Assessment": null,
     "Department Assessment": null,
@@ -92,8 +100,10 @@ const AssessmentQuestions = () => {
       }
 
       try {
-        const submissions = await getAssessmentSubmissionsByEmployee(user.employee_id);
-        
+        const submissions = await getAssessmentSubmissionsByEmployee(
+          user.employee_id
+        );
+
         // Map submissions to assessment types
         const mappedIds: Record<AssessmentType, string | null> = {
           "Employee Self Assessment": null,
@@ -111,6 +121,11 @@ const AssessmentQuestions = () => {
 
         setSubmissionIds(mappedIds);
         console.log("Fetched submission IDs:", mappedIds);
+
+        // If there is at least one submission, mark assessment as submitted
+        if (submissions.length > 0) {
+          setIsSubmitted(true);
+        }
       } catch (error: unknown) {
         console.error("Failed to fetch assessment submissions:", error);
       }
@@ -508,8 +523,7 @@ const AssessmentQuestions = () => {
                       return (
                         <button
                           key={type}
-                          onClick={() => !isSubmitted && setSelectedType(type)}
-                          disabled={isSubmitted}
+                          onClick={() => setSelectedType(type)}
                           className={cn(
                             "relative px-2.5 py-1.5 text-xs font-medium transition-all rounded-md whitespace-nowrap shrink-0",
                             isSubmitted
@@ -813,7 +827,7 @@ const AssessmentQuestions = () => {
                 <Button
                   variant="outline"
                   onClick={() => changePage(currentPage - 1)}
-                  disabled={currentPage === 0 || isSubmitted}
+                  disabled={currentPage === 0}
                   className={cn(
                     "text-xs py-1.5 h-auto",
                     isSubmitted
@@ -845,10 +859,9 @@ const AssessmentQuestions = () => {
                       return (
                         <motion.button
                           key={pageIdx}
-                          onClick={() => !isSubmitted && changePage(pageIdx)}
-                          disabled={isSubmitted}
-                          whileHover={isSubmitted ? {} : { scale: 1.15, y: -2 }}
-                          whileTap={isSubmitted ? {} : { scale: 0.9 }}
+                          onClick={() => changePage(pageIdx)}
+                          whileHover={{ scale: 1.15, y: -2 }}
+                          whileTap={{ scale: 0.9 }}
                           className={cn(
                             "w-8 h-8 rounded-lg text-xs font-medium transition-all relative",
                             isSubmitted
@@ -939,7 +952,7 @@ const AssessmentQuestions = () => {
                 ) : (
                   <Button
                     onClick={() => changePage(currentPage + 1)}
-                    disabled={currentPage === totalPages - 1 || isSubmitted}
+                    disabled={currentPage === totalPages - 1}
                     className={cn(
                       "text-xs py-1.5 h-auto",
                       isSubmitted
@@ -1096,13 +1109,11 @@ const AssessmentQuestions = () => {
                           <button
                             key={question.id}
                             onClick={() => {
-                              if (isSubmitted) return;
                               const targetPage = Math.floor(
                                 idx / ASSESSMENT_CONFIG.questionsPerPage
                               );
                               changePage(targetPage);
                             }}
-                            disabled={isSubmitted}
                             className={cn(
                               "w-full h-10 rounded border-2 transition-all flex items-center justify-center text-xs font-medium",
                               isSubmitted

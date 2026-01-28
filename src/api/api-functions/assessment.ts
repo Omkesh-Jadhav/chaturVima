@@ -28,10 +28,11 @@ export const getAssessmentTypes = async () => {
     const response = await api.get(API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_TYPES);
     console.log("SUCCESS - getAssessmentTypes response:", response);
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown } };
     console.error("ERROR - getAssessmentTypes failed:", error);
-    console.error("ERROR - Error response:", error.response);
-    console.error("ERROR - Error data:", error.response?.data);
+    console.error("ERROR - Error response:", err.response);
+    console.error("ERROR - Error data:", err.response?.data);
     throw error;
   }
 };
@@ -96,10 +97,11 @@ export const getQuestionsByType = async (assessmentTypeName: string): Promise<Qu
       .map((q, index) => mapApiQuestionToQuestion(q, index, assessmentTypeName));
     
     return mappedQuestions;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown } };
     console.error("ERROR - getQuestionsByType failed:", error);
-    console.error("ERROR - Error response:", error.response);
-    console.error("ERROR - Error data:", error.response?.data);
+    console.error("ERROR - Error response:", err.response);
+    console.error("ERROR - Error data:", err.response?.data);
     throw error;
   }
 };
@@ -113,11 +115,19 @@ export interface AssessmentSubmissionPayload {
   }>;
 }
 
+// Interface for Assessment Submission answers returned by API
+export interface AssessmentSubmissionAnswer {
+  question: string;
+  rating: string; // "1" - "5"
+}
+
 // Interface for Assessment Submission response
 export interface AssessmentSubmission {
   name: string; // Submission ID like "SUB-ASSESSMENT-HR-EMP-00006-2D-0004-Self-0005"
   employee?: string;
   questionnaire?: string;
+  status?: string;
+  answers?: AssessmentSubmissionAnswer[];
   [key: string]: unknown;
 }
 
@@ -136,6 +146,22 @@ export const getAssessmentSubmissionsByEmployee = async (
     return response.data.data || [];
   } catch (error: unknown) {
     console.error("ERROR - getAssessmentSubmissionsByEmployee failed:", error);
+    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
+    throw error;
+  }
+};
+
+// Fetches a single Assessment Submission with full details (including answers)
+export const getAssessmentSubmissionDetail = async (
+  submissionId: string
+): Promise<AssessmentSubmission> => {
+  try {
+    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}/${submissionId}`;
+    const response = await api.get<{ data: AssessmentSubmission }>(url);
+    console.log("SUCCESS - getAssessmentSubmissionDetail response:", response);
+    return response.data.data;
+  } catch (error: unknown) {
+    console.error("ERROR - getAssessmentSubmissionDetail failed:", error);
     console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
     throw error;
   }
@@ -175,10 +201,11 @@ export const submitAssessmentAnswers = async (
     const response = await api.put(url, payload);
     console.log("SUCCESS - submitAssessmentAnswers response:", response);
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown } };
     console.error("ERROR - submitAssessmentAnswers failed:", error);
-    console.error("ERROR - Error response:", error.response);
-    console.error("ERROR - Error data:", error.response?.data);
+    console.error("ERROR - Error response:", err.response);
+    console.error("ERROR - Error data:", err.response?.data);
     throw error;
   }
 };
