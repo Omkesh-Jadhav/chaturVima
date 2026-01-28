@@ -228,13 +228,13 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-purple-600">10-15</p>
+                <p className="text-4xl font-bold text-purple-600">No Limit</p>
                 <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center">
                   <span className="text-2xl">⏱️</span>
                 </div>
               </div>
-              <p className="text-sm font-medium text-purple-900">Minutes</p>
-              <p className="text-xs text-purple-700 mt-1">At your own pace</p>
+              <p className="text-sm font-medium text-purple-900">Completion Time</p>
+              <p className="text-xs text-purple-700 mt-1">Work at your own pace</p>
             </motion.div>
 
             <motion.div
