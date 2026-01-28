@@ -211,7 +211,9 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">25</p>
+                <p className="text-4xl font-bold text-blue-600">
+                145
+                </p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
@@ -369,7 +371,7 @@ const Assessment = () => {
               {[
                 {
                   step: "1",
-                  title: "Complete 25 Questions",
+                  title: "Complete All Questions",
                   icon: "✍️",
                   desc: "Multi-stage evaluation",
                 },
