@@ -32,6 +32,7 @@ export interface Employee {
   designation: string;
   department: string;
   boss: string;
+  reports_to?: string;
   role: "Employee" | "HoD";
 }
 

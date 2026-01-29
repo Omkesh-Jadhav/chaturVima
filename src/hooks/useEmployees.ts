@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createEmployee, getEmployees, getEmployeeDetails, getOrganizationDetails } from "@/api/api-functions/organization-setup";
+import { createEmployee, getEmployees, getEmployeeDetails, editEmployeeDetails, deleteEmployee, getOrganizationDetails } from "@/api/api-functions/organization-setup";
 
 // Query keys
 export const employeeKeys = {
@@ -31,13 +31,62 @@ export const useCreateEmployee = () => {
             department: string;
             date_of_birth: string;
             date_of_joining: string;
-            reportingTo: string;
+            reports_to: string;
         }) => {
             return await createEmployee(employeeData);
         },
         onSuccess: () => {
             // Invalidate and refetch employees list if needed
             queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+        },
+    });
+};
+
+// Hook to edit employee details
+export const useEditEmployeeDetails = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ name, employeeData }: { 
+            name: string; 
+            employeeData: {
+                employee_name: string;
+                first_name: string;
+                last_name: string;
+                user_id: string;
+                company_email: string;
+                gender: string;
+                date_of_birth: string;
+                date_of_joining: string;
+                designation: string;
+                department: string;
+                reports_to: string;
+                role_profile: string;
+            }
+        }) => {
+            return await editEmployeeDetails(name, employeeData);
+        },
+        onSuccess: (_, variables) => {
+            // Invalidate and refetch employee details and list
+            queryClient.invalidateQueries({ queryKey: employeeKeys.details(variables.name) });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+        },
+    });
+};
+
+// Hook to delete employee
+export const useDeleteEmployee = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (name: string) => {
+            return await deleteEmployee(name);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch employee lists
+            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.all });
         },
     });
 };
