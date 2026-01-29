@@ -69,7 +69,6 @@ export const useUpdateDepartment = () => {
             department_name: string;
             custom_department_code: string;
             company: string;
-            custom_department_head?: string;
         }) => {
             return await updateDepartment(departmentData);
         },

@@ -96,7 +96,6 @@ export const updateDepartment = async (departmentData: {
     department_name: string;
     custom_department_code: string;
     company: string;
-    custom_department_head: string;
 }) => {
     try {
         const payload = {
