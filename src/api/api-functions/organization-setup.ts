@@ -104,7 +104,6 @@ export const updateDepartment = async (departmentData: {
             department_name: departmentData.department_name,
             custom_department_code: departmentData.custom_department_code,
             company: departmentData.company,
-            custom_department_head: departmentData.custom_department_head,
         };
         const response = await api.put(`${API_ENDPOINTS.ORGANIZATION.UPDATE_DEPARTMENT}/${departmentData.name}`, payload);
         console.log("SUCCESS - updateDepartment response:", response);
