@@ -40,7 +40,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     if (organizationData?.data) {
       const apiData = organizationData.data;
       const mappedData: OrganizationInfo = {
-        name: apiData.company_name || "",
+        name: apiData.name || "",
+        company_name: apiData.company_name || "",
         type: apiData.custom_organization_type || "",
         size: apiData.custom_organization_size || "",
         industry: apiData.custom_industry || "",
@@ -169,7 +170,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
     try {
       const updatePayload = {
-        company_name: editFormData.name,
+        name: editFormData.name,
+        company_name: editFormData.company_name,
         custom_organization_type: editFormData.type,
         custom_organization_size: editFormData.size,
         custom_industry: editFormData.industry,

@@ -30,6 +30,7 @@ export const getOrganizationDetails = async (companyName: string) => {
 }
 
 export const updateOrganizationDetails = async(organizationData: {
+    name: string
     company_name: string;
     custom_organization_type: string;
     custom_organization_size: string;
@@ -45,7 +46,7 @@ export const updateOrganizationDetails = async(organizationData: {
         const payload = {
             ...organizationData
         };
-        const response = await api.put(API_ENDPOINTS.ORGANIZATION.UPDATE_ORGANIZATION_DETAILS, payload);
+        const response = await api.put(`${API_ENDPOINTS.ORGANIZATION.UPDATE_ORGANIZATION_DETAILS}/${organizationData.name}`, payload);
         console.log("SUCCESS - updateOrganizationDetails response:", response);
         return response.data;
     } catch (error: any) {
