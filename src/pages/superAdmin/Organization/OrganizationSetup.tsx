@@ -126,15 +126,19 @@ const OrganizationSetup = () => {
 
       <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">{renderActiveTab()}</div>
-
-        <div className="lg:col-span-1">
-          <ValidationStatus
-            validationResults={tabValidations}
-            tabName={getTabDisplayName(activeTab)}
-          />
+      <div className={activeTab === "departments" ? "w-full" : "grid grid-cols-1 lg:grid-cols-3 gap-8"}>
+        <div className={activeTab === "departments" ? "w-full" : "lg:col-span-2"}>
+          {renderActiveTab()}
         </div>
+
+        {activeTab !== "departments" && (
+          <div className="lg:col-span-1">
+            <ValidationStatus
+              validationResults={tabValidations}
+              tabName={getTabDisplayName(activeTab)}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end">
