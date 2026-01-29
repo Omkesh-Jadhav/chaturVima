@@ -158,7 +158,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           />
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department Code (Optional)
           </label>
@@ -168,9 +168,9 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             onChange={(e) => setDepartmentCode(e.target.value)}
             placeholder="e.g., PROD, SALES"
           />
-        </div>
+        </div> */}
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department Head (Optional)
           </label>
@@ -180,7 +180,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             onChange={(e) => setDepartmentHead(e.target.value)}
             placeholder="e.g., John Doe"
           />
-        </div>
+        </div> */}
       </div>
 
       <div className="mb-6">
@@ -220,9 +220,9 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Department Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Department Code
-                  </th>
+                  </th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -234,9 +234,9 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {department.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {department.code || "-"}
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
                         <Button
