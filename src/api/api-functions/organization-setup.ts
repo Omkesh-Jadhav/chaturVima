@@ -202,3 +202,18 @@ export const editEmployeeDetails = async (name: string, employeeData: any) => {
         throw error;
     }
 }
+
+export const deleteEmployee = async (name: string) => {
+    try {
+        const response = await api.delete(`${API_ENDPOINTS.ORGANIZATION.DELETE_EMPLOYEE}/${name}`);
+        console.log("SUCCESS - deleteEmployee response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+
+    } catch (error: any) {
+        console.error("ERROR - Delete employee failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}

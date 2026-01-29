@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
         GET_EMPLOYEES: `/api/resource/Employee`,
         GET_EMPLOYEE_DETAILS: `/api/resource/Employee`,
         EDIT_EMPLOYEE_DETAILS: `/api/resource/Employee`,
+        DELETE_EMPLOYEE: `/api/resource/Employee`
     },
 
     REPORT: {

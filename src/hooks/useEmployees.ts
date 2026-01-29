@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createEmployee, getEmployees, getEmployeeDetails, editEmployeeDetails, getOrganizationDetails } from "@/api/api-functions/organization-setup";
+import { createEmployee, getEmployees, getEmployeeDetails, editEmployeeDetails, deleteEmployee, getOrganizationDetails } from "@/api/api-functions/organization-setup";
 
 // Query keys
 export const employeeKeys = {
@@ -69,6 +69,22 @@ export const useEditEmployeeDetails = () => {
         onSuccess: (_, variables) => {
             // Invalidate and refetch employee details and list
             queryClient.invalidateQueries({ queryKey: employeeKeys.details(variables.name) });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+        },
+    });
+};
+
+// Hook to delete employee
+export const useDeleteEmployee = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (name: string) => {
+            return await deleteEmployee(name);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch employee lists
             queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
             queryClient.invalidateQueries({ queryKey: employeeKeys.all });
         },

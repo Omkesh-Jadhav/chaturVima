@@ -10,7 +10,7 @@ import {
 import { validateEmail } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
-import { useCreateEmployee, useGetEmployees } from "@/hooks/useEmployees";
+import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
 
@@ -55,6 +55,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   // React Query hooks
   const createEmployeeMutation = useCreateEmployee();
+  const deleteEmployeeMutation = useDeleteEmployee();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
 
   const handleInputChange = (field: string, value: string) => {
@@ -168,9 +169,28 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
 
-  const handleDeleteEmployee = (id: string) => {
-    const updatedEmployees = employees.filter((emp) => emp.id !== id);
-    onUpdate(updatedEmployees);
+  const handleDeleteEmployee = async (id: string) => {
+    // Find employee from the actual displayed list (API or props)
+    const allEmployees = getFilteredEmployees();
+    const employee = allEmployees.find((e) => e.id === id);
+    
+    if (!employee) return;
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete ${employee.name}?`);
+    if (!confirmed) return;
+
+    try {
+      // Call API to delete employee using employee name/ID
+      await deleteEmployeeMutation.mutateAsync(employee.employeeId || employee.id);
+
+      // Update local state by removing the employee
+      const updatedEmployees = employees.filter((emp) => emp.id !== id);
+      onUpdate(updatedEmployees);
+    } catch (error) {
+      console.error("Failed to delete employee:", error);
+      // You might want to show a toast notification here
+    }
   };
 
 
@@ -564,6 +584,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         </div>
       )}
 
+      {/* Delete Error State */}
+      {deleteEmployeeMutation.error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-800">
+            Failed to delete employee. Please try again.
+          </div>
+        </div>
+      )}
+
       {/* Employee table - show if we have API data or fallback prop data */}
       {(apiEmployees?.data?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
         <div className="mb-6">
@@ -664,6 +693,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                           variant="ghost"
                           size="xs"
                           className="text-red-600 hover:text-red-800 p-1"
+                          disabled={deleteEmployeeMutation.isPending}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
