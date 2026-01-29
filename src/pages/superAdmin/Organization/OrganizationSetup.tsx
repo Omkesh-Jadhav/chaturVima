@@ -4,14 +4,11 @@ import Step1OrganizationInfo from "./Step1OrganizationInfo";
 import Step2Departments from "./Step2Departments";
 import Step3EmployeesMapping from "./Step3EmployeesMapping";
 import ValidationStatus from "./ValidationStatus";
-import { validateTabSpecific, validateOverallSetup } from "./validationUtils";
+import { validateTabSpecific } from "./validationUtils";
 import type { OrganizationInfo, Department, Employee, ValidationResult } from "./types";
-import { Button } from "@/components/ui";
-import { useUser } from "@/context/UserContext";
 
 
 const OrganizationSetup = () => {
-  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("organization");
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     name: "",
@@ -45,27 +42,6 @@ const OrganizationSetup = () => {
     setTabValidations(validations);
   }, [activeTab, organizationInfo, departments, employees, actualEmployees]);
 
-  const handleSave = () => {
-    const allValid = validateOverallSetup(
-      organizationInfo,
-      departments,
-      actualEmployees.length > 0 ? actualEmployees : employees
-    );
-
-    if (!allValid) {
-      alert("Please fix all validation errors before saving.");
-      return;
-    }
-
-    // Handle final save logic here
-    console.log("Saving organization setup:", {
-      organizationInfo,
-      departments,
-      employees: actualEmployees.length > 0 ? actualEmployees : employees,
-    });
-    // You can add API calls or navigation logic here
-    alert("Organization setup saved successfully!");
-  };
 
   const getTabDisplayName = (tab: string) => {
     switch (tab) {
@@ -137,19 +113,6 @@ const OrganizationSetup = () => {
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={
-            user?.role_profile?.includes("hr-admin") ||
-            !validateOverallSetup(organizationInfo, departments, actualEmployees.length > 0 ? actualEmployees : employees)
-          }
-          variant="gradient"
-          size="md"
-        >
-          {user?.role_profile?.includes("hr-admin") ? "Save" : "Save"}
-        </Button>
-      </div>
     </div>
   );
 };
