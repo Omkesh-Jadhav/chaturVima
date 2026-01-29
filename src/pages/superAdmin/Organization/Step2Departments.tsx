@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Edit, Trash2, Plus, Building2, Check, X, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Department } from "./types";
 import { Button, Input, Card } from "@/components/ui";
 import { useDepartments, useCreateDepartment, useUpdateDepartment, useDeleteDepartment } from "@/hooks/useDepartments";
 import { cn } from "@/utils/cn";
-
 
 interface Step2DepartmentsProps {
   departments: Department[];
@@ -26,8 +25,10 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     departmentName: "",
   });
   const [deleteError, setDeleteError] = useState<string>("");
+  const [recentDepartmentIds, setRecentDepartmentIds] = useState<Set<string>>(new Set());
+  const [recentDepartmentNames, setRecentDepartmentNames] = useState<Set<string>>(new Set());
+  const [validationErrors, setValidationErrors] = useState<{ name?: string; code?: string }>({});
 
-  // React Query hooks
   const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
   const createDepartmentMutation = useCreateDepartment();
   const updateDepartmentMutation = useUpdateDepartment();
@@ -37,30 +38,57 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     return /^[^0-9]*$/.test(name.trim());
   };
 
+  const validateForm = (): boolean => {
+    const errors: { name?: string; code?: string } = {};
+    
+    if (!departmentName.trim()) {
+      errors.name = "Department name is required";
+    } else if (!validateDepartmentName(departmentName)) {
+      errors.name = "Department name cannot contain numbers";
+    }
+    
+    if (!departmentCode.trim()) {
+      errors.code = "Department code is required";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleDepartmentNameChange = (value: string) => {
     if (validateDepartmentName(value) || value === "") {
       setDepartmentName(value);
+      if (validationErrors.name) {
+        setValidationErrors(prev => ({ ...prev, name: undefined }));
+      }
+    }
+  };
+
+  const handleDepartmentCodeChange = (value: string) => {
+    setDepartmentCode(value);
+    if (validationErrors.code) {
+      setValidationErrors(prev => ({ ...prev, code: undefined }));
     }
   };
 
   const handleAddDepartment = async () => {
-    if (!departmentName.trim() || !validateDepartmentName(departmentName)) return;
+    if (!validateForm()) return;
 
+    const deptName = departmentName.trim();
     try {
       const departmentData = {
-        department_name: departmentName.trim(),
+        department_name: deptName,
         custom_department_code: departmentCode.trim(),
         company: "Chaturvima",
         custom_department_head: departmentHead.trim() || ""
       };
 
       await createDepartmentMutation.mutateAsync(departmentData);
-
-      setDepartmentName("");
-      setDepartmentCode("");
-      setDepartmentHead("");
-    } catch (error) {
-      console.error("Failed to create department:", error);
+      setRecentDepartmentNames(prev => new Set(prev).add(deptName));
+      clearForm();
+      setValidationErrors({});
+    } catch {
+      // Error handled by mutation
     }
   };
 
@@ -75,38 +103,34 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   };
 
   const handleUpdateDepartment = async () => {
-    if (!departmentName.trim() || !editingId || !validateDepartmentName(departmentName)) return;
+    if (!editingId || !validateForm()) return;
 
+    const deptName = departmentName.trim();
     try {
       const departmentData = {
         name: editingId,
-        department_name: departmentName.trim(),
+        department_name: deptName,
         custom_department_code: departmentCode.trim(),
         company: "Chaturvima"
       };
 
       await updateDepartmentMutation.mutateAsync(departmentData);
-
-      setDepartmentName("");
-      setDepartmentCode("");
-      setDepartmentHead("");
+      setRecentDepartmentNames(prev => new Set(prev).add(deptName));
+      setRecentDepartmentIds(prev => new Set(prev).add(editingId));
+      clearForm();
       setEditingId(null);
-    } catch (error) {
-      console.error("Failed to update department:", error);
+      setValidationErrors({});
+    } catch {
+      // Error handled by mutation
     }
   };
 
   const handleDeleteClick = (id: string) => {
     const allDepartments = fetchedDepartments.length > 0 ? fetchedDepartments : departments;
     const department = allDepartments.find((dept) => dept.id === id);
-    
     if (department) {
       setDeleteError("");
-      setDeleteConfirmModal({
-        isOpen: true,
-        departmentId: id,
-        departmentName: department.name,
-      });
+      setDeleteConfirmModal({ isOpen: true, departmentId: id, departmentName: department.name });
     }
   };
 
@@ -116,29 +140,71 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     setDeleteError("");
 
     try {
-      await deleteDepartmentMutation.mutateAsync(deleteConfirmModal.departmentId);
-      const updatedDepartments = departments.filter((dept) => dept.id !== deleteConfirmModal.departmentId);
-      onUpdate(updatedDepartments);
+      const departmentId = deleteConfirmModal.departmentId;
+      await deleteDepartmentMutation.mutateAsync(departmentId);
+      onUpdate(departments.filter((dept) => dept.id !== departmentId));
+      
+      setRecentDepartmentIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(departmentId);
+        return newSet;
+      });
+      setRecentDepartmentNames(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(deleteConfirmModal.departmentName);
+        return newSet;
+      });
+      
       setDeleteConfirmModal({ isOpen: false, departmentId: null, departmentName: "" });
     } catch (error: unknown) {
-      console.error("Failed to delete department:", error);
-      
       const errorData = error as { response?: { data?: { exc_type?: string } }; exc_type?: string };
-      
       if (errorData?.response?.data?.exc_type === "LinkExistsError" || errorData?.exc_type === "LinkExistsError") {
         setDeleteError("This department has employees assigned, so it cannot be deleted.");
       }
     }
   };
 
-  const cancelEdit = () => {
+  const clearForm = () => {
     setDepartmentName("");
     setDepartmentCode("");
     setDepartmentHead("");
-    setEditingId(null);
   };
 
-  // Update parent component when fetched departments change
+  const cancelEdit = () => {
+    clearForm();
+    setEditingId(null);
+    setValidationErrors({});
+  };
+
+  useEffect(() => {
+    if (recentDepartmentNames.size === 0 || departments.length === 0) return;
+
+    const newIds = new Set<string>();
+    const remainingNames = new Set<string>();
+
+    recentDepartmentNames.forEach((name) => {
+      const dept = departments.find(d => d.name === name);
+      if (dept) {
+        newIds.add(dept.id);
+      } else {
+        remainingNames.add(name);
+      }
+    });
+
+    if (newIds.size > 0) {
+      setRecentDepartmentIds(prev => new Set([...prev, ...newIds]));
+    }
+    if (remainingNames.size !== recentDepartmentNames.size) {
+      setRecentDepartmentNames(remainingNames);
+    }
+  }, [departments, recentDepartmentNames]);
+
+  const sortedDepartments = useMemo(() => {
+    const recent = departments.filter(dept => recentDepartmentIds.has(dept.id));
+    const others = departments.filter(dept => !recentDepartmentIds.has(dept.id));
+    return [...recent, ...others];
+  }, [departments, recentDepartmentIds]);
+
   useEffect(() => {
     if (fetchedDepartments.length > 0) {
       onUpdate(fetchedDepartments);
@@ -176,39 +242,49 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
         )}
 
         <Card variant="elevated" className="p-4 bg-gradient-to-br from-gray-50 to-white border border-gray-100">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 max-w-md">
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Department Name
+                Department Name <span className="text-red-500">*</span>
               </label>
-              <Input
-                type="text"
-                value={departmentName}
-                onChange={(e) => handleDepartmentNameChange(e.target.value)}
-                placeholder="e.g., Sales & Marketing"
-                className="w-full h-9"
-              />
+              <div>
+                <Input
+                  type="text"
+                  value={departmentName}
+                  onChange={(e) => handleDepartmentNameChange(e.target.value)}
+                  placeholder="e.g., Sales & Marketing"
+                  className={cn("w-full h-9", validationErrors.name && "border-red-500")}
+                />
+                {validationErrors.name && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.name}</p>
+                )}
+              </div>
             </div>
             <div className="flex-1 max-w-md">
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Department Code
+                Department Code <span className="text-red-500">*</span>
               </label>
-              <Input
-                type="text"
-                value={departmentCode}
-                onChange={(e) => setDepartmentCode(e.target.value)}
-                placeholder="e.g., SALES, HR"
-                className="w-full h-9"
-              />
+              <div>
+                <Input
+                  type="text"
+                  value={departmentCode}
+                  onChange={(e) => handleDepartmentCodeChange(e.target.value)}
+                  placeholder="e.g., SALES, HR"
+                  className={cn("w-full h-9", validationErrors.code && "border-red-500")}
+                />
+                {validationErrors.code && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.code}</p>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-end gap-2">
               {editingId ? (
                 <>
                   <Button
                     onClick={handleUpdateDepartment}
                     variant="gradient"
                     size="sm"
-                    disabled={updateDepartmentMutation.isPending || !departmentName.trim() || !validateDepartmentName(departmentName)}
+                    disabled={updateDepartmentMutation.isPending}
                     className="min-w-[110px] h-9 text-xs"
                   >
                     {updateDepartmentMutation.isPending ? (
@@ -238,7 +314,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                   onClick={handleAddDepartment}
                   variant="gradient"
                   size="sm"
-                  disabled={createDepartmentMutation.isPending || !departmentName.trim() || !validateDepartmentName(departmentName)}
+                  disabled={createDepartmentMutation.isPending}
                   className="min-w-[140px] h-9 text-xs"
                 >
                   {createDepartmentMutation.isPending ? (
@@ -258,11 +334,11 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           </div>
         </Card>
 
-        {departments.length > 0 ? (
+        {sortedDepartments.length > 0 ? (
           <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               <AnimatePresence mode="popLayout">
-                {departments.map((department, index) => (
+                {sortedDepartments.map((department, index) => (
                   <motion.div
                     key={department.id}
                     initial={{ opacity: 0, scale: 0.95 }}
