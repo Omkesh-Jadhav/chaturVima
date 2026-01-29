@@ -1,7 +1,4 @@
-/**
- * Assessment Questions Page
- * Optimized multi-question assessment interface with progress sidebar
- */
+// Assessment Questions Page - Optimized multi-question assessment interface with progress sidebar
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,13 +66,8 @@ const AssessmentQuestions = () => {
     useAssessment();
   const { user } = useUser();
 
-  // State for assessment types from API
   const [assignedTypes, setAssignedTypes] = useState<AssessmentType[]>([]);
-
-  // State for questions fetched from API
-  const [questionsByType, setQuestionsByType] = useState<
-    Record<AssessmentType, Question[]>
-  >({
+  const [questionsByType, setQuestionsByType] = useState<Record<AssessmentType, Question[]>>({
     "Employee Self Assessment": [],
     "Manager Relationship Assessment": [],
     "Department Assessment": [],
@@ -83,29 +75,19 @@ const AssessmentQuestions = () => {
   });
   const [loadedTypes, setLoadedTypes] = useState<Set<AssessmentType>>(new Set());
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
-  const [submissionIds, setSubmissionIds] = useState<
-    Record<AssessmentType, string | null>
-  >({
+  const [submissionIds, setSubmissionIds] = useState<Record<AssessmentType, string | null>>({
     "Employee Self Assessment": null,
     "Manager Relationship Assessment": null,
     "Department Assessment": null,
     "Company Assessment": null,
   });
 
-  // Fetch assessment submissions by employee_id
   useEffect(() => {
     const fetchSubmissions = async () => {
-      if (!user?.employee_id) {
-        console.warn("Employee ID not available, cannot fetch submission IDs");
-        return;
-      }
+      if (!user?.employee_id) return;
 
       try {
-        const submissions = await getAssessmentSubmissionsByEmployee(
-          user.employee_id
-        );
-
-        // Map submissions to assessment types
+        const submissions = await getAssessmentSubmissionsByEmployee(user.employee_id);
         const mappedIds: Record<AssessmentType, string | null> = {
           "Employee Self Assessment": null,
           "Manager Relationship Assessment": null,
@@ -121,9 +103,6 @@ const AssessmentQuestions = () => {
         });
 
         setSubmissionIds(mappedIds);
-        console.log("Fetched submission IDs:", mappedIds);
-
-        // If there is at least one submission, mark assessment as submitted
         if (submissions.length > 0) {
           setIsSubmitted(true);
         }
@@ -135,14 +114,12 @@ const AssessmentQuestions = () => {
     fetchSubmissions();
   }, [user?.employee_id]);
 
-  // Fetch assessment types from API
   useEffect(() => {
     const fetchAssessmentTypes = async () => {
       try {
         const response = await getAssessmentTypes();
         const apiNames = response.data.map((q: { name: string }) => q.name);
         const mappedTypes = mapQuestionnairesToAssessmentTypes(apiNames);
-        
         if (mappedTypes.length > 0) {
           setAssignedTypes(mappedTypes);
         }
@@ -157,17 +134,12 @@ const AssessmentQuestions = () => {
   const [selectedType, setSelectedType] = useState<AssessmentType | null>(null);
   const previousTypeRef = useRef<AssessmentType | null>(null);
 
-  // Update selectedType when assignedTypes change - select first type from API
   useEffect(() => {
-    if (assignedTypes.length > 0) {
-      // If no type is selected yet, or current type is not in the list, select the first one
-      if (!selectedType || !assignedTypes.includes(selectedType)) {
-        setSelectedType(assignedTypes[0]);
-      }
+    if (assignedTypes.length > 0 && (!selectedType || !assignedTypes.includes(selectedType))) {
+      setSelectedType(assignedTypes[0]);
     }
   }, [assignedTypes, selectedType]);
 
-  // Fetch questions for selected type from API
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!selectedType || loadedTypes.has(selectedType)) return;
@@ -176,11 +148,7 @@ const AssessmentQuestions = () => {
         setIsLoadingQuestions(true);
         const apiName = mapAssessmentTypeToApiName(selectedType);
         const questions = await getQuestionsByType(apiName);
-        
-        setQuestionsByType((prev) => ({
-          ...prev,
-          [selectedType]: questions,
-        }));
+        setQuestionsByType((prev) => ({ ...prev, [selectedType]: questions }));
         setLoadedTypes((prev) => new Set(prev).add(selectedType));
       } catch (error: any) {
         console.error("Failed to fetch questions:", error);
@@ -201,12 +169,8 @@ const AssessmentQuestions = () => {
     () => loadSubmissionStatus(user?.email) || isComplete
   );
 
-  // Helper function to submit assessment answers for any assessment type
   const submitAssessmentAnswersForType = useCallback((assessmentType: AssessmentType) => {
-    if (isSubmitted) {
-      console.log(`Skipping submission for ${assessmentType} - already submitted`);
-      return;
-    }
+    if (isSubmitted) return;
     
     const questions = questionsByType[assessmentType] || [];
     const typeAnswers = questions.reduce((acc, question) => {
@@ -216,96 +180,55 @@ const AssessmentQuestions = () => {
       return acc;
     }, {} as Record<string, number>);
 
-    console.log(`Attempting to submit ${assessmentType}:`, {
-      hasAnswers: Object.keys(typeAnswers).length > 0,
-      answerCount: Object.keys(typeAnswers).length,
-      submissionId: submissionIds[assessmentType],
-      allSubmissionIds: submissionIds,
-    });
-
-    // Only submit if there are answers for this assessment type
     if (Object.keys(typeAnswers).length > 0) {
       const submissionId = submissionIds[assessmentType];
-      
       if (submissionId) {
-        console.log(`Submitting ${assessmentType} with submission ID: ${submissionId}`);
-        submitAssessmentAnswers(
-          submissionId,
-          questions,
-          typeAnswers
-        )
-        .then(() => {
-          console.log(`Successfully submitted ${assessmentType} answers`);
-        })
-        .catch((error) => {
+        submitAssessmentAnswers(submissionId, questions, typeAnswers).catch((error) => {
           console.error(`Failed to submit ${assessmentType} answers:`, error);
-          // Don't block UI on error, just log it
         });
-      } else {
-        console.warn(`No submission ID found for ${assessmentType}. Available IDs:`, submissionIds);
       }
-    } else {
-      console.log(`No answers to submit for ${assessmentType}`);
     }
   }, [questionsByType, answers, isSubmitted, submissionIds]);
 
-  // Submit answers when tab changes (for all assessment types)
   useEffect(() => {
     const previousType = previousTypeRef.current;
-    
-    // Skip on initial mount
     if (previousType === null) {
       previousTypeRef.current = selectedType;
       return;
     }
-
-    // Submit answers for the previous tab when switching away from it
     if (previousType !== selectedType && previousType) {
-      console.log(`Tab changed from ${previousType} to ${selectedType}. Submitting answers for previous tab.`);
-      console.log(`Current submission IDs:`, submissionIds);
       submitAssessmentAnswersForType(previousType);
     }
-
-    // Update previous type reference
     previousTypeRef.current = selectedType;
-  }, [selectedType, submitAssessmentAnswersForType, submissionIds]);
+  }, [selectedType, submitAssessmentAnswersForType]);
 
-  // Submit answers when page changes (for current assessment type)
-  const previousPageRef = useRef<number>(-1); // Initialize to -1 to detect initial mount
+  const previousPageRef = useRef<number>(-1);
   const previousTypeForPageRef = useRef<AssessmentType | null>(null);
   
   useEffect(() => {
-    // Skip if submitted
     if (isSubmitted || !selectedType) {
       previousPageRef.current = currentPage;
       previousTypeForPageRef.current = selectedType;
       return;
     }
 
-    // Check if this is initial mount (previousPageRef is -1) or tab change (type changed)
     const isInitialMount = previousPageRef.current === -1;
     const isTabChange = previousTypeForPageRef.current !== selectedType;
 
-    // Submit answers when page changes (but not on initial mount or when tab changes)
     if (!isInitialMount && !isTabChange && previousPageRef.current !== currentPage) {
-      console.log(`Page changed from ${previousPageRef.current} to ${currentPage} for ${selectedType}. Submitting answers.`);
       submitAssessmentAnswersForType(selectedType);
     }
 
-    // Update previous page and type references
     previousPageRef.current = currentPage;
     previousTypeForPageRef.current = selectedType;
   }, [currentPage, selectedType, isSubmitted, submitAssessmentAnswersForType]);
 
-  // Get questions for selected type
   const filteredQuestions = useMemo(
     () => (selectedType ? questionsByType[selectedType] || [] : []),
     [questionsByType, selectedType]
   );
 
-  const totalPages = Math.ceil(
-    filteredQuestions.length / ASSESSMENT_CONFIG.questionsPerPage
-  );
+  const totalPages = Math.ceil(filteredQuestions.length / ASSESSMENT_CONFIG.questionsPerPage);
   const questionsContainerRef = useRef<HTMLDivElement>(null);
   const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -315,37 +238,31 @@ const AssessmentQuestions = () => {
     return filteredQuestions.slice(start, end);
   }, [filteredQuestions, currentPage]);
 
-  // Track completion per assessment type
   const completionByType = useMemo(
     () => getCompletionByType(questionsByType, answers),
     [questionsByType, answers]
   );
 
-  // Check if all assigned types are complete
   const allTypesComplete = useMemo(
     () => areAllTypesComplete(assignedTypes, completionByType),
     [assignedTypes, completionByType]
   );
 
-  const answeredCount = filteredQuestions.filter(
-    (q) => answers[q.id] !== undefined
-  ).length;
+  const answeredCount = useMemo(
+    () => filteredQuestions.filter((q) => answers[q.id] !== undefined).length,
+    [filteredQuestions, answers]
+  );
 
-  // Auto-load saved answers from localStorage (per user/email) on first mount
   useEffect(() => {
-    if (!user?.email) return;
-    // If we already have answers in context, don't overwrite
-    if (Object.keys(answers).length > 0) return;
+    if (!user?.email || Object.keys(answers).length > 0) return;
 
     try {
       const storedAnswers = loadAnswers(user.email);
       if (!storedAnswers || Object.keys(storedAnswers).length === 0) return;
 
       Object.entries(storedAnswers).forEach(([questionId, optionIndex]) => {
-        // Rehydrate context answers so UI shows them as selected
         answerQuestion(questionId, optionIndex as number);
       });
-      console.log("Loaded saved answers from localStorage for:", user.email);
     } catch (error) {
       console.error("Failed to load saved answers from localStorage:", error);
     }
@@ -380,35 +297,21 @@ const AssessmentQuestions = () => {
     (questionId: string, optionIndex: number) => {
       if (isSubmitted) return;
 
-      // Update context state
       answerQuestion(questionId, optionIndex);
 
-      // Auto-save latest answers snapshot to localStorage (per email)
       if (user?.email) {
-        const updatedAnswers: Record<string, number> = {
-          ...answers,
-          [questionId]: optionIndex,
-        };
-        saveAnswers(updatedAnswers, user.email);
+        saveAnswers({ ...answers, [questionId]: optionIndex }, user.email);
       }
       if (isSaved) {
         setIsSaved(false);
         setShowSavedToast(false);
       }
 
-      const currentQuestionIndex = filteredQuestions.findIndex(
-        (q) => q.id === questionId
-      );
-      if (
-        currentQuestionIndex === -1 ||
-        currentQuestionIndex >= filteredQuestions.length - 1
-      )
-        return;
+      const currentQuestionIndex = filteredQuestions.findIndex((q) => q.id === questionId);
+      if (currentQuestionIndex === -1 || currentQuestionIndex >= filteredQuestions.length - 1) return;
 
       const nextQuestionIndex = currentQuestionIndex + 1;
-      const nextPage = Math.floor(
-        nextQuestionIndex / ASSESSMENT_CONFIG.questionsPerPage
-      );
+      const nextPage = Math.floor(nextQuestionIndex / ASSESSMENT_CONFIG.questionsPerPage);
       const nextQuestion = filteredQuestions[nextQuestionIndex];
 
       if (nextPage === currentPage) {
@@ -417,24 +320,11 @@ const AssessmentQuestions = () => {
         setTimeout(() => {
           setCurrentPage(nextPage);
           savePage(nextPage, user?.email);
-          questionsContainerRef.current?.scrollTo({
-            top: 0,
-            behavior: "smooth",
-          });
+          questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
         }, ASSESSMENT_CONFIG.autoAdvanceDelay);
       }
     },
-    [
-      isSubmitted,
-      answerQuestion,
-      answers,
-      isSaved,
-      filteredQuestions,
-      currentPage,
-      totalPages,
-      user?.email,
-      scrollToQuestion,
-    ]
+    [isSubmitted, answerQuestion, answers, isSaved, filteredQuestions, currentPage, totalPages, user?.email, scrollToQuestion]
   );
 
   const changePage = useCallback(
@@ -448,22 +338,14 @@ const AssessmentQuestions = () => {
   const handleSave = useCallback(() => {
     if (!selectedType) return;
     
-    // Submit answers for current tab before saving
-    console.log(`Save Progress clicked for ${selectedType}. Submitting answers.`);
     submitAssessmentAnswersForType(selectedType);
-    
     savePage(currentPage, user?.email);
     saveAnswers(answers, user?.email);
     setIsSaved(true);
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), ASSESSMENT_CONFIG.toastDuration);
 
-    // Always go to next tab (if available)
-    const currentIndex = assignedTypes.findIndex(
-      (type) => type === selectedType
-    );
-    
-    // Find next tab (incomplete or complete, doesn't matter)
+    const currentIndex = assignedTypes.findIndex((type) => type === selectedType);
     const nextTab = assignedTypes[currentIndex + 1];
 
     if (nextTab) {
@@ -471,20 +353,10 @@ const AssessmentQuestions = () => {
         setSelectedType(nextTab);
         setCurrentPage(0);
         savePage(0, user?.email);
-        questionsContainerRef.current?.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-      }, 500); // Small delay to show the save toast
+        questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      }, 500);
     }
-  }, [
-    currentPage,
-    answers,
-    user?.email,
-    selectedType,
-    assignedTypes,
-    submitAssessmentAnswersForType,
-  ]);
+  }, [currentPage, answers, user?.email, selectedType, assignedTypes, submitAssessmentAnswersForType]);
 
   const handleSubmit = useCallback(() => {
     if (allTypesComplete && isSaved && !isSubmitted) {
@@ -508,7 +380,7 @@ const AssessmentQuestions = () => {
 
   useEffect(() => {
     setCurrentPage(0);
-    previousPageRef.current = -1; // Reset to -1 so next page change is treated as initial for new tab
+    previousPageRef.current = -1;
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedType]);
 
@@ -521,7 +393,6 @@ const AssessmentQuestions = () => {
       <div className="relative z-10 h-full w-full overflow-hidden px-4 py-3 lg:px-6 lg:py-8">
         <div className="h-full overflow-hidden flex flex-col">
           <div className="grid lg:grid-cols-4 gap-4 h-full min-h-0 flex-1 overflow-hidden">
-            {/* Main Questions Area */}
             <div className="lg:col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
               <div className="flex-shrink-0 space-y-2 mb-3">
                 <Button
@@ -534,7 +405,6 @@ const AssessmentQuestions = () => {
                   Back to Assessment
                 </Button>
 
-                {/* Header */}
                 <div className="space-y-2">
                   <motion.h1
                     className="text-xl md:text-2xl font-bold text-gray-900"
@@ -545,7 +415,6 @@ const AssessmentQuestions = () => {
                     Q4 2024 Assessment Cycle
                   </motion.h1>
 
-                  {/* Assessment Type Tabs */}
                   <div className="flex gap-1 overflow-x-auto custom-scrollbar-horizontal">
                     {assignedTypes.map((type) => {
                       const completion = completionByType[type];
@@ -854,7 +723,6 @@ const AssessmentQuestions = () => {
                 )}
               </div>
 
-              {/* Navigation */}
               <div className="flex-shrink-0 flex items-center justify-between pt-3 border-t border-gray-200 mt-3">
                 <Button
                   variant="outline"
@@ -1000,7 +868,6 @@ const AssessmentQuestions = () => {
               </div>
             </div>
 
-            {/* Progress Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-3">
                 <Card variant="elevated" className="p-3">
@@ -1009,7 +876,6 @@ const AssessmentQuestions = () => {
                     Your Progress
                   </h3>
                   <div className="space-y-2.5">
-                    {/* Current Type Progress */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700">
@@ -1064,7 +930,6 @@ const AssessmentQuestions = () => {
                       </div>
                     </div>
 
-                    {/* Overall Progress Across All Types */}
                     {assignedTypes.length > 1 && (
                       <div className="pt-2 border-t border-gray-200">
                         <div className="flex items-center justify-between mb-1.5">
