@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import type { Department } from "./types";
 import { Button, Input } from "@/components/ui";
-import { useDepartments, useCreateDepartment, useUpdateDepartment } from "@/hooks/useDepartments";
+import { useDepartments, useCreateDepartment, useUpdateDepartment, useDeleteDepartment } from "@/hooks/useDepartments";
 
 
 interface Step2DepartmentsProps {
@@ -23,6 +23,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
   const createDepartmentMutation = useCreateDepartment();
   const updateDepartmentMutation = useUpdateDepartment();
+  const deleteDepartmentMutation = useDeleteDepartment();
 
   const handleAddDepartment = async () => {
     if (!departmentName.trim()) return;
@@ -82,9 +83,28 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     }
   };
 
-  const handleDeleteDepartment = (id: string) => {
-    const updatedDepartments = departments.filter((dept) => dept.id !== id);
-    onUpdate(updatedDepartments);
+  const handleDeleteDepartment = async (id: string) => {
+    // Find department from the actual displayed list
+    const allDepartments = fetchedDepartments.length > 0 ? fetchedDepartments : departments;
+    const department = allDepartments.find((dept) => dept.id === id);
+    
+    if (!department) return;
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete the department "${department.name}"?`);
+    if (!confirmed) return;
+
+    try {
+      // Call API to delete department using department name/ID
+      await deleteDepartmentMutation.mutateAsync(department.id);
+
+      // Update local state by removing the department
+      const updatedDepartments = departments.filter((dept) => dept.id !== id);
+      onUpdate(updatedDepartments);
+    } catch (error) {
+      console.error("Failed to delete department:", error);
+      // You might want to show a toast notification here
+    }
   };
 
   const cancelEdit = () => {
@@ -112,6 +132,15 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
             <span className="text-sm text-blue-700">Loading departments...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Error State */}
+      {deleteDepartmentMutation.error && (
+        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-800">
+            Failed to delete department. Please try again.
           </div>
         </div>
       )}
@@ -223,6 +252,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                           variant="ghost"
                           size="xs"
                           className="text-red-600 hover:text-red-800 p-1"
+                          disabled={deleteDepartmentMutation.isPending}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

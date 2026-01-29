@@ -118,6 +118,20 @@ export const updateDepartment = async (departmentData: {
     }
 }
 
+export const deleteDepartment = async (name: string) => {
+    try {
+        const response = await api.delete(`${API_ENDPOINTS.ORGANIZATION.DELETE_DEPARTMENT}/${name}`);
+        console.log("SUCCESS - deleteDepartment response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - deleteDepartment failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getEmployees = async (department?: string) => {
     try {
         const fields = ["name", "designation", "employee_name", "user_id", "department", "reports_to", "company_email"];
