@@ -11,6 +11,7 @@ import { validateEmail } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
+import { useDepartments } from "@/hooks/useDepartments";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
 
@@ -57,6 +58,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const createEmployeeMutation = useCreateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
+  const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => {
@@ -229,6 +231,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     const allEmployees = getFilteredEmployees();
     return allEmployees.filter((emp) => emp.role === "HoD");
   };
+
+  const getAvailableDepartments = useCallback(() => {
+    // Use API data if available, otherwise fall back to props data
+    if (fetchedDepartments.length > 0) {
+      return fetchedDepartments;
+    }
+    return departments;
+  }, [fetchedDepartments, departments]);
 
   const handleEmployeeNameClick = (employeeName: string) => {
     setSelectedEmployeeName(employeeName);
@@ -526,7 +536,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 options={[
                   "Select Department",
-                  ...departments.map((dept) => dept.name),
+                  ...getAvailableDepartments().map((dept) => dept.name),
                 ]}
               />
             </div>
@@ -569,9 +579,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       </div>
 
       {/* Loading state */}
-      {isLoadingEmployees && (
+      {(isLoadingEmployees || isLoadingDepartments) && (
         <div className="mb-6 text-center py-8">
-          <div className="text-gray-500">Loading employees...</div>
+          <div className="text-gray-500">
+            {isLoadingEmployees && isLoadingDepartments 
+              ? "Loading employees and departments..." 
+              : isLoadingEmployees 
+                ? "Loading employees..." 
+                : "Loading departments..."}
+          </div>
         </div>
       )}
 
@@ -608,7 +624,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               className="w-64 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
               options={[
                 "All Departments",
-                ...departments.map((dept) => dept.name),
+                ...getAvailableDepartments().map((dept) => dept.name),
               ]}
             />
           </div>
@@ -719,7 +735,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         isOpen={isEditModalOpen}
         onClose={handleCloseEditModal}
         employee={employeeToEdit}
-        departments={departments}
+        departments={getAvailableDepartments()}
         availableBosses={getAvailableBosses()}
         onSave={handleSaveEmployeeEdit}
         existingEmployees={getFilteredEmployees()}
