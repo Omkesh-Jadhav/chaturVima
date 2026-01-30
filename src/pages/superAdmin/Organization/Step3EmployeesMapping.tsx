@@ -7,7 +7,7 @@ import {
   Download,
   AlertCircle,
 } from "lucide-react";
-import { validateEmail } from "./validationUtils";
+import { validateEmail, validateTextOnly, validateDesignation } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
@@ -73,9 +73,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
       return updated;
     });
-    // Clear field error when user starts typing
-    if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+    
+    // Validate text fields in real-time
+    if (field === "firstName" || field === "lastName" || field === "designation") {
+      validateField(field, value);
+    } else {
+      // Clear field error when user starts typing for other fields
+      if (fieldErrors[field]) {
+        setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+      }
     }
   };
 
@@ -95,6 +101,21 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           if (isDuplicate) {
             error = "This email address is already in use";
           }
+        }
+        break;
+      case "firstName":
+        if (value && !validateTextOnly(value)) {
+          error = "First name should only contain letters, spaces, hyphens, and apostrophes";
+        }
+        break;
+      case "lastName":
+        if (value && !validateTextOnly(value)) {
+          error = "Last name should only contain letters, spaces, hyphens, and apostrophes";
+        }
+        break;
+      case "designation":
+        if (value && !validateDesignation(value)) {
+          error = "Designation should only contain letters, numbers, spaces, hyphens, and apostrophes";
         }
         break;
     }
@@ -395,9 +416,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 onChange={(e) =>
                   handleInputChange("firstName", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  fieldErrors.firstName
+                    ? "border-red-300 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-brand-teal"
+                }`}
                 placeholder="e.g., John"
               />
+              {fieldErrors.firstName && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.firstName}</p>
+              )}
             </div>
 
             <div>
@@ -410,9 +438,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 onChange={(e) =>
                   handleInputChange("lastName", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  fieldErrors.lastName
+                    ? "border-red-300 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-brand-teal"
+                }`}
                 placeholder="e.g., Doe"
               />
+              {fieldErrors.lastName && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.lastName}</p>
+              )}
             </div>
 
             <div>
@@ -504,9 +539,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 onChange={(e) =>
                   handleInputChange("designation", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  fieldErrors.designation
+                    ? "border-red-300 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-brand-teal"
+                }`}
                 placeholder="e.g., Software Engineer"
               />
+              {fieldErrors.designation && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.designation}</p>
+              )}
             </div>
 
             <div>

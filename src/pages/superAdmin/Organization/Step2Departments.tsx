@@ -220,7 +220,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
             <p className="text-xs text-gray-500 mt-0.5">Manage your organization departments</p>
           </div>
           {departments.length > 0 && (
-            <div className="px-3 py-1.5 bg-gradient-to-r from-brand-teal to-brand-navy text-white rounded-lg shadow-sm">
+            <div className="px-3 py-1.5 bg-linear-to-r from-brand-teal to-brand-navy text-white rounded-lg shadow-sm">
               <span className="text-xs font-semibold">{departments.length} Department{departments.length !== 1 ? 's' : ''}</span>
             </div>
           )}
@@ -241,7 +241,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           </motion.div>
         )}
 
-        <Card variant="elevated" className="p-4 bg-gradient-to-br from-gray-50 to-white border border-gray-100">
+        <Card variant="elevated" className="p-4 bg-linear-to-br from-gray-50 to-white border border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 max-w-md">
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -355,7 +355,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                     >
                       <div className="p-2.5">
                         <div className="flex justify-center mb-1.5">
-                          <div className="p-2.5 bg-gradient-to-br from-brand-teal to-brand-navy rounded-xl shadow-sm">
+                          <div className="p-2.5 bg-linear-to-br from-brand-teal to-brand-navy rounded-xl shadow-sm">
                             <Building2 className="w-5 h-5 text-white" />
                           </div>
                         </div>
@@ -416,7 +416,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-9998 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={() => setDeleteConfirmModal({ isOpen: false, departmentId: null, departmentName: "" })}
         >
           <motion.div
@@ -451,7 +451,7 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
                   className="mb-4 p-3 rounded-lg bg-orange-50 border border-orange-200"
                 >
                   <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
                     <p className="text-xs text-orange-800 font-medium">{deleteError}</p>
                   </div>
                 </motion.div>
