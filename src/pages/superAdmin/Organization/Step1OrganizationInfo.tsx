@@ -3,6 +3,7 @@ import {
   validateEmail,
   validatePhone,
   validateWebsite,
+  validateTextOnly,
 } from "./validationUtils";
 import type { OrganizationInfo } from "./types";
 import { FilterSelect, Input, Button } from "@/components/ui";
@@ -91,6 +92,21 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           error = "Please enter a valid website URL (e.g., www.example.com)";
         }
         break;
+      case "city":
+        if (value && !validateTextOnly(value)) {
+          error = "City should only contain letters, spaces, hyphens, and apostrophes";
+        }
+        break;
+      case "state":
+        if (value && !validateTextOnly(value)) {
+          error = "State should only contain letters, spaces, hyphens, and apostrophes";
+        }
+        break;
+      case "country":
+        if (value && !validateTextOnly(value)) {
+          error = "Country should only contain letters, spaces, hyphens, and apostrophes";
+        }
+        break;
     }
 
     setFieldErrors((prev) => ({ ...prev, [field]: error }));
@@ -98,9 +114,15 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
   const handleEditInputChange = (field: keyof OrganizationInfo, value: string) => {
     setEditFormData(prev => ({ ...prev, [field]: value }));
-    // Clear field error when user starts typing
-    if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+    
+    // Validate text-only fields in real-time
+    if (field === "city" || field === "state" || field === "country") {
+      validateField(field, value);
+    } else {
+      // Clear field error when user starts typing for other fields
+      if (fieldErrors[field]) {
+        setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+      }
     }
   };
 
