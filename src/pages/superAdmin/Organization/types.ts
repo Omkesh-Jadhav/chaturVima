@@ -2,6 +2,7 @@
 
 export interface OrganizationInfo {
   name: string;
+  company_name: string;
   type: string;
   size: string;
   industry: string;
