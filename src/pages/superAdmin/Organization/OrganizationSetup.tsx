@@ -12,6 +12,7 @@ const OrganizationSetup = () => {
   const [activeTab, setActiveTab] = useState("organization");
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
     name: "",
+    company_name: "",
     type: "",
     size: "",
     industry: "",
