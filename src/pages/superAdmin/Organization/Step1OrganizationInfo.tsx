@@ -7,7 +7,6 @@ import {
 } from "./validationUtils";
 import type { OrganizationInfo } from "./types";
 import { FilterSelect, Input, Button } from "@/components/ui";
-import { useUser } from "@/context/UserContext";
 import { useGetOrganizationDetails } from "@/hooks/useEmployees";
 import { updateOrganizationDetails } from "@/api/api-functions/organization-setup";
 import { Edit, X, Save, Loader2 } from "lucide-react";
@@ -22,7 +21,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   data,
   onUpdate,
 }) => {
-  const { user } = useUser();
   const [formData, setFormData] = useState<OrganizationInfo>(data);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -33,8 +31,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   // Fetch organization details from API
   const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails("Chaturvima");
 
-  // Determine if the form should be readonly based on user role
-  const isReadonly = user?.role_profile?.includes("hr-admin");
+  // All fields are readonly by default, editing happens through modal
+  const isReadonly = true;
 
   // Pre-fill form data when organization data is loaded from API
   useEffect(() => {
@@ -59,18 +57,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     }
   }, [organizationData, onUpdate]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
-    // Prevent changes if user is hr-admin (readonly mode)
-    if (isReadonly) return;
-
-    const updatedData = { ...formData, [field]: value };
-    setFormData(updatedData);
-    onUpdate(updatedData);
-
-    // Clear field error when user starts typing
-    if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+    // All fields are readonly, editing happens through modal
+    return;
   };
 
   const validateField = (field: keyof OrganizationInfo, value: string) => {
@@ -243,11 +233,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
         <div className="flex items-center gap-3">
           {isLoadingOrg && (
             <span className="text-sm text-gray-500">Loading organization data...</span>
-          )}
-          {isReadonly && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-              View Only
-            </span>
           )}
         </div>
       </div>
@@ -475,19 +460,17 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
       </div>
 
       {/* Edit Button */}
-      {!isReadonly && (
-        <div className="mt-6 flex justify-end">
-          <Button
-            onClick={openEditModal}
-            variant="gradient"
-            size="sm"
-            className="inline-flex items-center gap-2"
-          >
-            <Edit size={16} />
-            Edit Organization Info
-          </Button>
-        </div>
-      )}
+      <div className="mt-6 flex justify-end">
+        <Button
+          onClick={openEditModal}
+          variant="gradient"
+          size="sm"
+          className="inline-flex items-center gap-2"
+        >
+          <Edit size={16} />
+          Edit Organization Info
+        </Button>
+      </div>
 
       {/* Edit Modal Overlay */}
       {isEditModalOpen && (
