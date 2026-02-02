@@ -57,11 +57,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     }
   }, [organizationData, onUpdate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleInputChange = (field: keyof OrganizationInfo, value: string) => {
-    // All fields are readonly, editing happens through modal
-    return;
-  };
 
   const validateField = (field: keyof OrganizationInfo, value: string) => {
     let error = "";
@@ -254,7 +249,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="text"
             value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
             disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.name.trim()
               ? "border-red-300 focus:ring-red-500"
@@ -276,9 +270,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           </label>
           <FilterSelect
             value={formData.type || "Select type"}
-            onChange={(value) =>
-              handleInputChange("type", value === "Select type" ? "" : value)
-            }
+            onChange={() => {}}
             className={`w-full rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
               }`}
             options={[
@@ -298,9 +290,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           </label>
           <FilterSelect
             value={formData.size || "Select size"}
-            onChange={(value) =>
-              handleInputChange("size", value === "Select size" ? "" : value)
-            }
+            onChange={() => {}}
             className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
               }`}
             options={[
@@ -320,12 +310,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           </label>
           <FilterSelect
             value={formData.industry || "Select industry"}
-            onChange={(value) =>
-              handleInputChange(
-                "industry",
-                value === "Select industry" ? "" : value
-              )
-            }
+            onChange={() => {}}
             className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
               }`}
             options={[
@@ -348,7 +333,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="url"
             value={formData.website}
-            onChange={(e) => handleInputChange("website", e.target.value)}
             onBlur={(e) => validateField("website", e.target.value)}
             disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${fieldErrors.website
@@ -369,7 +353,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="email"
             value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
             onBlur={(e) => validateField("email", e.target.value)}
             disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.email.trim() || fieldErrors.email
@@ -396,7 +379,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="tel"
             value={formData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
             onBlur={(e) => validateField("phone", e.target.value)}
             disabled={isReadonly}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${!formData.phone.trim() || fieldErrors.phone
@@ -423,7 +405,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="text"
             value={formData.city}
-            onChange={(e) => handleInputChange("city", e.target.value)}
             disabled={isReadonly}
             className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter city"
@@ -437,7 +418,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="text"
             value={formData.state}
-            onChange={(e) => handleInputChange("state", e.target.value)}
             disabled={isReadonly}
             className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter state"
@@ -451,7 +431,6 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           <Input
             type="text"
             value={formData.country}
-            onChange={(e) => handleInputChange("country", e.target.value)}
             disabled={isReadonly}
             className={isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}
             placeholder="Enter country"
