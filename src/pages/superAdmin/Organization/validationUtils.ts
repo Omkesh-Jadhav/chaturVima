@@ -23,6 +23,22 @@ export const validateWebsite = (website: string): boolean => {
   return websiteRegex.test(website);
 };
 
+// Text validation - only allows letters, spaces, hyphens, and apostrophes
+export const validateTextOnly = (text: string): boolean => {
+  if (!text) return true; // Optional field
+  // Allow letters (including accented characters), spaces, hyphens, and apostrophes
+  const textRegex = /^[a-zA-ZÀ-ÿ\s\-']+$/;
+  return textRegex.test(text.trim());
+};
+
+// Designation validation - allows letters, numbers, spaces, hyphens, and apostrophes
+export const validateDesignation = (text: string): boolean => {
+  if (!text) return true; // Optional field
+  // Allow letters, numbers, spaces, hyphens, and apostrophes (e.g., "SDE-1", "VP of Engineering")
+  const designationRegex = /^[a-zA-ZÀ-ÿ0-9\s\-']+$/;
+  return designationRegex.test(text.trim());
+};
+
 // Tab-specific validation functions
 
 // Organization Tab Validations
