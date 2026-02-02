@@ -3,8 +3,8 @@ import type { CycleFormPayload } from "@/types/assessmentCycles";
 
 export const DEFAULT_PAYLOAD: CycleFormPayload = {
   name: "",
-  type: "Quarterly",
-  period: "Fiscal",
+  type: "Quarterly" as CycleFormPayload["type"], // Will be overridden with placeholder in create mode
+  period: "Fiscal" as CycleFormPayload["period"], // Will be overridden with placeholder in create mode
   startDate: "",
   endDate: "",
   departments: [],

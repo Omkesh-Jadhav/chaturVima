@@ -107,7 +107,11 @@ const CycleDrawer = ({
         if (matchingDept) setActiveDeptId(matchingDept.id);
       }
     } else if (mode === "create") {
-      setForm(DEFAULT_PAYLOAD);
+      setForm({
+        ...DEFAULT_PAYLOAD,
+        type: "" as unknown as AssessmentCycle["type"], // Empty for "Select Type" placeholder
+        period: "" as unknown as AssessmentCycle["period"], // Empty for "Select Period" placeholder
+      });
       resetManualSelection();
       setHasSaved(false);
     }
@@ -275,6 +279,18 @@ const CycleDrawer = ({
         return;
       }
       
+      // Validate type
+      if (!form.type) {
+        alert("Please select a type.");
+        return;
+      }
+      
+      // Validate period
+      if (!form.period) {
+        alert("Please select a period.");
+        return;
+      }
+      
       const validationError = validateManualSelection();
       if (validationError) {
         alert(validationError);
@@ -301,6 +317,8 @@ const CycleDrawer = ({
 
   const isSubmitDisabled =
     (!form.assessmentType || form.assessmentType === "Select assessment type") ||
+    !form.type ||
+    !form.period ||
     (enableManualSelection &&
     (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0));
 
@@ -379,11 +397,15 @@ const CycleDrawer = ({
                     </label>
                     <FilterSelect
                       label="Type"
-                      value={form.type}
-                      onChange={(value) =>
-                        handleChange("type", value as AssessmentCycle["type"])
-                      }
-                      options={["Quarterly", "Annual", "Adhoc"]}
+                      value={mode === "create" && !form.type ? "Select Type" : form.type || "Select Type"}
+                      onChange={(value) => {
+                        if (value !== "Select Type") {
+                          handleChange("type", value as AssessmentCycle["type"]);
+                        } else if (mode === "create") {
+                          handleChange("type", "" as unknown as AssessmentCycle["type"]);
+                        }
+                      }}
+                      options={["Select Type", "Quarterly", "Annual", "Adhoc"]}
                     />
                   </div>
                   <div className="space-y-2">
@@ -392,14 +414,18 @@ const CycleDrawer = ({
                     </label>
                     <FilterSelect
                       label="Period"
-                      value={form.period}
-                      onChange={(value) =>
-                        handleChange(
-                          "period",
-                          value as AssessmentCycle["period"]
-                        )
-                      }
-                      options={["Fiscal", "Calendar"]}
+                      value={mode === "create" && !form.period ? "Select Period" : form.period || "Select Period"}
+                      onChange={(value) => {
+                        if (value !== "Select Period") {
+                          handleChange(
+                            "period",
+                            value as AssessmentCycle["period"]
+                          );
+                        } else if (mode === "create") {
+                          handleChange("period", "" as unknown as AssessmentCycle["period"]);
+                        }
+                      }}
+                      options={["Select Period", "Fiscal", "Calendar"]}
                     />
                   </div>
                 </div>
@@ -716,6 +742,16 @@ const CycleDrawer = ({
                           // Validate assessment type
                           if (!form.assessmentType || form.assessmentType === "Select assessment type") {
                             alert("Please select an assessment type.");
+                            return;
+                          }
+                          // Validate type
+                          if (!form.type) {
+                            alert("Please select a type.");
+                            return;
+                          }
+                          // Validate period
+                          if (!form.period) {
+                            alert("Please select a period.");
                             return;
                           }
                           const validationError = validateManualSelection();

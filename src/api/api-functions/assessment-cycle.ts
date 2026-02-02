@@ -4,109 +4,60 @@ import type { CycleFormPayload, AssessmentCycle } from "@/types/assessmentCycles
 import { formatDateToAPI } from "@/utils/dateUtils";
 import { getDimensionFromAssessmentType, getAssessmentTypeFromDimension } from "@/utils/assessmentConfig";
 
-/**
- * API payload structure for creating an assessment cycle
- */
+// API payload structure for creating/updating assessment cycle
 export interface CreateCyclePayload {
   cycle_name: string;
-  assessment_type: string; // Cycle type: "Quarterly", "Annual", "Ad hoc" (API format)
+  assessment_type: string; // "Quarterly", "Annual", "Ad hoc"
   period: "Fiscal" | "Calendar";
-  dimension: string; // Converted dimension: "1D", "2D", "3D", "4D"
+  dimension: string; // "1D", "2D", "3D", "4D"
   start_date: string;
   end_date: string;
   email_notes?: string;
-  departments: Array<{
-    department: string;
-    include: number;
-  }>;
-  employees?: Array<{
-    employee: string;
-    include: number;
-  }>;
+  departments: Array<{ department: string; include: number }>;
+  employees?: Array<{ employee: string; include: number }>;
 }
 
-/**
- * Transform cycle type from frontend format to API format
- * Frontend uses "Adhoc", but API expects "Ad hoc"
- */
-const transformCycleTypeToAPI = (type: string): string => {
-  if (type === "Adhoc") {
-    return "Ad hoc";
-  }
-  return type;
-};
+// Transform "Adhoc" to "Ad hoc" for API
+const transformCycleTypeToAPI = (type: string): string => (type === "Adhoc" ? "Ad hoc" : type);
 
-/**
- * Transform cycle type from API format to frontend format
- * API returns "Ad hoc", but frontend uses "Adhoc"
- */
-export const transformCycleTypeFromAPI = (type: string): string => {
-  if (type === "Ad hoc") {
-    return "Adhoc";
-  }
-  return type;
-};
+// Transform "Ad hoc" to "Adhoc" for frontend
+export const transformCycleTypeFromAPI = (type: string): string => (type === "Ad hoc" ? "Adhoc" : type);
 
-/**
- * Transform CycleFormPayload to API payload format
- */
-const transformCyclePayload = (payload: CycleFormPayload): CreateCyclePayload => {
-  const startDate = formatDateToAPI(payload.startDate);
-  const endDate = formatDateToAPI(payload.endDate);
-  
-  if (!startDate || !endDate) {
-    console.error("Missing dates:", { startDate: payload.startDate, endDate: payload.endDate });
-  }
-  
-  return {
-    cycle_name: payload.name,
-    assessment_type: transformCycleTypeToAPI(payload.type),
-    period: payload.period,
-    dimension: getDimensionFromAssessmentType(payload.assessmentType),
-    start_date: startDate,
-    end_date: endDate,
-    email_notes: payload.notes,
-    departments: payload.departments.map((dept) => ({ department: dept, include: 1 })),
-  };
-};
+// Transform form payload to API payload
+const transformCyclePayload = (payload: CycleFormPayload): CreateCyclePayload => ({
+  cycle_name: payload.name,
+  assessment_type: transformCycleTypeToAPI(payload.type),
+  period: payload.period,
+  dimension: getDimensionFromAssessmentType(payload.assessmentType),
+  start_date: formatDateToAPI(payload.startDate),
+  end_date: formatDateToAPI(payload.endDate),
+  email_notes: payload.notes,
+  departments: payload.departments.map((dept) => ({ department: dept, include: 1 })),
+});
 
-/**
- * Create a new assessment cycle
- */
+// Create new assessment cycle
 export const createAssessmentCycle = async (payload: CycleFormPayload) => {
   try {
-    const apiPayload = transformCyclePayload(payload);
-    const response = await api.post(API_ENDPOINTS.ASSESSMENT_CYCLE.CREATE_CYCLE, apiPayload);
+    const response = await api.post(API_ENDPOINTS.ASSESSMENT_CYCLE.CREATE_CYCLE, transformCyclePayload(payload));
     return response.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; response?: { data?: unknown; status?: number } };
-    console.error("ERROR - createAssessmentCycle:", err.message || err);
-    console.error("Status:", err.response?.status, "Data:", err.response?.data);
+    console.error("ERROR - createAssessmentCycle:", error);
     throw error;
   }
 };
 
-/**
- * Update an existing assessment cycle
- */
+// Update existing assessment cycle
 export const updateAssessmentCycle = async (cycleId: string, payload: CycleFormPayload) => {
   try {
-    const apiPayload = transformCyclePayload(payload);
-    const response = await api.put(
-      `${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${cycleId}`,
-      apiPayload
-    );
+    const response = await api.put(`${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${cycleId}`, transformCyclePayload(payload));
     return response.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; response?: { data?: unknown; status?: number } };
-    console.error("ERROR - updateAssessmentCycle:", err.message || err);
+    console.error("ERROR - updateAssessmentCycle:", error);
     throw error;
   }
 };
 
-/**
- * API response structure for assessment cycles with departments
- */
+// API response structure
 export interface AssessmentCycleAPIResponse {
   message: Array<{
     name: string;
@@ -115,76 +66,33 @@ export interface AssessmentCycleAPIResponse {
     dimension: string;
     assessments_linked_count: number;
     progress: number;
-    time_period: {
-      start_date: string;
-      end_date: string;
-      year: number;
-    };
+    time_period: { start_date: string; end_date: string; year: number };
     period?: "Fiscal" | "Calendar";
-    employees?: Array<{
-      name: string;
-      owner?: string;
-      creation?: string;
-      modified?: string;
-      modified_by?: string;
-      docstatus?: number;
-      idx?: number;
-      employee: string;
-      include: number;
-      parent: string;
-      parentfield?: string;
-      parenttype?: string;
-      doctype?: string;
-    }>;
-    departments?: Array<{
-      name?: string;
-      owner?: string;
-      creation?: string;
-      modified?: string;
-      modified_by?: string;
-      docstatus?: number;
-      idx?: number;
-      department: string;
-      include: number;
-      parent?: string;
-      parentfield?: string;
-      parenttype?: string;
-      doctype?: string;
-    }>;
+    employees?: Array<{ employee: string; include: number; [key: string]: unknown }>;
+    departments?: Array<{ department: string; include: number; [key: string]: unknown }>;
     email_notes?: string;
   }>;
 }
 
-/**
- * Query parameters for getting assessment cycles
- */
+// Query parameters for filtering cycles
 export interface GetAssessmentCyclesParams {
-  department?: string[]; // Array of department names
+  department?: string[];
   search?: string;
   status?: string;
   year?: string;
 }
 
-/**
- * Transform API response to AssessmentCycle format
- */
+// Transform API response to frontend format
 const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0]): AssessmentCycle => {
-  // Extract dates from time_period object (API returns YYYY-MM-DD format)
   const timePeriod = apiCycle.time_period || {};
-  const startDate = timePeriod.start_date || "";
-  const endDate = timePeriod.end_date || "";
-  
-  // Extract departments
   const departments = (apiCycle.departments || []).map((d) => d.department);
-  
-  // Map dimension to assessment type (e.g., "2D" -> "Manager Relationship Assessment")
   const assessmentType = getAssessmentTypeFromDimension(apiCycle.dimension || "");
-  
+
   return {
     id: apiCycle.name,
     name: apiCycle.name,
-    startDate,
-    endDate,
+    startDate: timePeriod.start_date || "",
+    endDate: timePeriod.end_date || "",
     type: transformCycleTypeFromAPI(apiCycle.assessment_type) as AssessmentCycle["type"],
     period: (apiCycle.period || "Fiscal") as AssessmentCycle["period"],
     status: (apiCycle.status as AssessmentCycle["status"]) || "Draft",
@@ -197,51 +105,23 @@ const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0
   };
 };
 
-/**
- * Get assessment cycles with optional filters
- */
-export const getAssessmentCycles = async (
-  params?: GetAssessmentCyclesParams
-): Promise<AssessmentCycle[]> => {
+// Get assessment cycles with filters
+export const getAssessmentCycles = async (params?: GetAssessmentCyclesParams): Promise<AssessmentCycle[]> => {
   try {
-    // Build query parameters
     const queryParams: Record<string, string | string[]> = {};
-    
-    // Department filter - pass as array: department: ["HR", "Finance"]
-    if (params?.department?.length) {
-      queryParams.department = params.department;
-    }
-    
-    if (params?.search) {
-      queryParams.search = params.search;
-    }
-    
-    if (params?.status && params.status !== "All Status") {
-      queryParams.status = params.status;
-    }
-    
-    if (params?.year && params.year !== "All Years") {
-      queryParams.year = params.year;
-    }
-    
-    const response = await api.get<AssessmentCycleAPIResponse>(
-      API_ENDPOINTS.ASSESSMENT_CYCLE.GET_CYCLES_WITH_DEPARTMENTS,
-      { 
-        params: queryParams,
-        // Axios will serialize array as: department[]=HR&department[]=Finance
-        // or department=HR&department=Finance depending on paramsSerializer
-        paramsSerializer: {
-          indexes: null, // Serialize as department[]=HR&department[]=Finance
-        }
-      }
-    );
-    
-    const cycles = response.data?.message || [];
-    return cycles.map(transformCycleFromAPI);
+    if (params?.department?.length) queryParams.department = params.department;
+    if (params?.search) queryParams.search = params.search;
+    if (params?.status && params.status !== "All Status") queryParams.status = params.status;
+    if (params?.year && params.year !== "All Years") queryParams.year = params.year;
+
+    const response = await api.get<AssessmentCycleAPIResponse>(API_ENDPOINTS.ASSESSMENT_CYCLE.GET_CYCLES_WITH_DEPARTMENTS, {
+      params: queryParams,
+      paramsSerializer: { indexes: null }, // Serialize arrays as department[]=HR&department[]=Finance
+    });
+
+    return (response.data?.message || []).map(transformCycleFromAPI);
   } catch (error: unknown) {
-    const err = error as { message?: string; response?: { data?: unknown; status?: number } };
-    console.error("ERROR - getAssessmentCycles:", err.message || err);
-    console.error("Status:", err.response?.status, "Data:", err.response?.data);
+    console.error("ERROR - getAssessmentCycles:", error);
     throw error;
   }
 };
