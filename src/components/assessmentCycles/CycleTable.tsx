@@ -113,15 +113,9 @@ const CycleTable = ({
                   </td>
                 )}
                 <td className="px-4 py-4 align-top">
-                  {cycle.assessmentTypes?.length ? (
-                    <div className="text-sm font-semibold text-gray-900">
-                      {cycle.assessmentTypes.length} linked
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-500">
-                      Select assessment types to plan coverage.
-                    </p>
-                  )}
+                  <div className="text-sm font-semibold text-gray-900">
+                    {cycle.linkedTeams} linked
+                  </div>
                 </td>
                 <td className="px-4 py-4 align-top">
                   <div className="text-sm font-semibold text-gray-900">

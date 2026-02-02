@@ -94,6 +94,18 @@ export const getDimensionFromAssessmentType = (assessmentType: string): string =
 };
 
 /**
+ * Get assessment type name from dimension value
+ * @param dimension - The dimension value (e.g., "1D", "2D", "3D", "4D")
+ * @returns Assessment type name or empty string if not found
+ */
+export const getAssessmentTypeFromDimension = (dimension: string): string => {
+  const entry = Object.entries(ASSESSMENT_TYPE_DIMENSIONS).find(
+    ([, dim]) => dim === dimension
+  );
+  return entry ? entry[0] : "";
+};
+
+/**
  * Category palette for history table
  */
 export type CategoryPalette = {

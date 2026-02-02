@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
 import { FilterBar, Button } from "@/components/ui";
-import { createAssessmentCycle } from "@/api/api-functions/assessment-cycle";
+import { createAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
@@ -33,10 +33,41 @@ const AssessmentCycles = () => {
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [cycles, setCycles] = useState<AssessmentCycle[]>(() => loadCycles());
   const [shareMatrix, setShareMatrix] = useState<ShareMatrix>(() =>
     loadShareMatrix()
   );
+  
+  const queryClient = useQueryClient();
+  
+  // Build query params for API
+  const queryParams = useMemo<GetAssessmentCyclesParams>(() => {
+    const params: GetAssessmentCyclesParams = {};
+    
+    if (selectedDepartments.length > 0) {
+      params.department = selectedDepartments;
+    }
+    
+    if (search) {
+      params.search = search;
+    }
+    
+    if (status && status !== "All Status") {
+      params.status = status;
+    }
+    
+    if (year && year !== "All Years") {
+      params.year = year;
+    }
+    
+    return params;
+  }, [selectedDepartments, search, status, year]);
+  
+  // Fetch cycles from API
+  const { data: cycles = [], isLoading: isLoadingCycles, refetch: refetchCycles } = useQuery({
+    queryKey: ["assessmentCycles", queryParams],
+    queryFn: () => getAssessmentCycles(queryParams),
+    staleTime: 30000, // 30 seconds
+  });
 
   // Listen for cycle updates from other tabs/pages
   useEffect(() => {
@@ -80,28 +111,9 @@ const AssessmentCycles = () => {
   // API mutation for creating assessment cycle
   const createCycleMutation = useMutation({
     mutationFn: createAssessmentCycle,
-    onSuccess: (data, variables) => {
-      // Create local cycle object from API response
-      const newCycle: AssessmentCycle = {
-        id: data?.name || `cycle-${Date.now()}`,
-        name: data?.cycle_name || variables.name,
-        startDate: data?.start_date || variables.startDate,
-        endDate: data?.end_date || variables.endDate,
-        type: (data?.assessment_type as AssessmentCycle["type"]) || variables.type,
-        period: (data?.period as AssessmentCycle["period"]) || variables.period,
-        status: "Draft",
-        departments: variables.departments,
-        assessmentTypes: variables.assessmentType ? [variables.assessmentType] : [],
-        participants: 0,
-        owner: "HR Ops",
-        linkedTeams: 0,
-        notes: variables.notes,
-      };
-      setCycles((prev) => {
-        const updated = [newCycle, ...prev];
-        persistCycles(updated);
-        return updated;
-      });
+    onSuccess: () => {
+      // Invalidate and refetch cycles after creation
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
       closeDrawer();
     },
     onError: (error) => {
@@ -115,67 +127,20 @@ const AssessmentCycles = () => {
   };
 
   const handleSave = (payload: CycleFormPayload) => {
-    if (!drawerState.cycle) return;
-    setCycles((prev) => {
-      const updated = prev.map((cycle) =>
-        cycle.id === drawerState.cycle?.id
-          ? {
-              ...cycle,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : cycle.assessmentTypes,
-              notes: payload.notes,
-            }
-          : cycle
-      );
-      persistCycles(updated);
-      return updated;
-    });
-    // Don't close drawer on save, just update the cycle
+    // Save is handled locally for now - will be updated when UPDATE API is integrated
+    // Don't close drawer on save, just update the cycle locally
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
   };
 
   const handleSchedule = (payload: CycleFormPayload) => {
-    if (!drawerState.cycle) return;
-    setCycles((prev) => {
-      const updated = prev.map((cycle) =>
-        cycle.id === drawerState.cycle?.id
-          ? {
-              ...cycle,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              status: cycle.status === "Draft" ? "Upcoming" : cycle.status,
-              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : cycle.assessmentTypes,
-              notes: payload.notes,
-            }
-          : cycle
-      );
-      persistCycles(updated);
-      return updated;
-    });
+    // Schedule will update the cycle status - will be integrated with UPDATE API
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
   };
 
   const handleEdit = (payload: CycleFormPayload) => {
-    if (!drawerState.cycle) return;
-    setCycles((prev) => {
-      const updated = prev.map((cycle) =>
-        cycle.id === drawerState.cycle?.id
-          ? {
-              ...cycle,
-              name: payload.name,
-              type: payload.type,
-              period: payload.period,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              departments: payload.departments,
-              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : [],
-              notes: payload.notes,
-            }
-          : cycle
-      );
-      persistCycles(updated);
-      return updated;
-    });
+    // Edit will update the cycle - will be integrated with UPDATE API
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
   };
 
@@ -192,26 +157,8 @@ const AssessmentCycles = () => {
     });
   };
 
-  const filteredCycles = useMemo(() => {
-    return cycles.filter((cycle) => {
-      const matchesSearch =
-        !search ||
-        cycle.name.toLowerCase().includes(search.toLowerCase()) ||
-        cycle.departments.some((dept) =>
-          dept.toLowerCase().includes(search.toLowerCase())
-        );
-      const matchesStatus = status === "All Status" || cycle.status === status;
-      const matchesDepartments =
-        selectedDepartments.length === 0 ||
-        cycle.departments.some((dept) => selectedDepartments.includes(dept));
-      const matchesYear =
-        year === "All Years" ||
-        new Date(cycle.startDate).getFullYear().toString() === year;
-      return (
-        matchesSearch && matchesStatus && matchesDepartments && matchesYear
-      );
-    });
-  }, [cycles, search, status, selectedDepartments, year]);
+  // API handles filtering, so we just use the cycles directly
+  const filteredCycles = cycles;
 
   const handleClearFilters = () => {
     setStatus(statusFilters[0]);
@@ -232,7 +179,7 @@ const AssessmentCycles = () => {
             Manage cycle lifecycle and track participation across your organization.
           </p>
         </div>
-        <div className="flex items-center justify-end flex-shrink-0">
+        <div className="flex items-center justify-end shrink-0">
           <Button
             onClick={openCreateDrawer}
             variant="gradient"
@@ -278,12 +225,18 @@ const AssessmentCycles = () => {
         onClearFilters={handleClearFilters}
       />
 
-      <CycleTable
-        data={filteredCycles}
-        onSchedule={openScheduleDrawer}
-        onShare={openShareDrawer}
-        variant="hr"
-      />
+      {isLoadingCycles ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">Loading assessment cycles...</div>
+        </div>
+      ) : (
+        <CycleTable
+          data={filteredCycles}
+          onSchedule={openScheduleDrawer}
+          onShare={openShareDrawer}
+          variant="hr"
+        />
+      )}
 
       <CycleDrawer
         open={drawerState.open}

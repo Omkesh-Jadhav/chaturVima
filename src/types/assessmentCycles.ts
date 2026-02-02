@@ -1,4 +1,4 @@
-export type CycleStatus = "Active" | "Upcoming" | "Completed" | "Draft";
+export type CycleStatus = "Active" | "Draft" | "Completed";
 
 export interface AssessmentCycle {
   id: string;
