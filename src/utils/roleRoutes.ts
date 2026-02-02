@@ -1,12 +1,12 @@
 import type { UserRole } from "@/types";
 
 const roleLandingRoutes: Record<UserRole, string> = {
-  employee: "/assessment",
+  "Employee": "/assessment",
   // manager: "/assessment-dashboard",
-  "hr-admin": "/hr/dashboard",
-  "department-head": "/department-head/assessment-cycles",
-  "super-admin": "/organization-setup",
-  "hr-doctorate": "/hr/organization-health-report",
+  "HR Admin": "/hr/dashboard",
+  "Department Head": "/department-head/assessment-cycles",
+  "Superadmin": "/organization-setup",
+  "HR Doctorate": "/hr/organization-health-report",
 };
 
 export const getRoleLandingRoute = (role: UserRole | undefined) => {

@@ -22,30 +22,28 @@ import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
 import { getRoleLandingRoute } from "../../utils/roleRoutes";
 
-const ROLE_CONFIG: Partial<
-  Record<UserRole, { label: string; icon: React.ReactNode; color: string }>
-> = {
-  employee: {
+const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; color: string }> = {
+  "Employee": {
     label: "Employee",
     icon: <User className="h-4 w-4" />,
     color: "text-blue-600 bg-blue-50",
   },
-  "hr-admin": {
+  "HR Admin": {
     label: "HR Admin",
     icon: <Shield className="h-4 w-4" />,
     color: "text-green-600 bg-green-50",
   },
-  "department-head": {
+  "Department Head": {
     label: "Department Head",
     icon: <UserCog className="h-4 w-4" />,
     color: "text-orange-600 bg-orange-50",
   },
-  "super-admin": {
+  "Superadmin": {
     label: "Super Admin",
     icon: <Crown className="h-4 w-4" />,
     color: "text-amber-600 bg-amber-50",
   },
-  "hr-doctorate": {
+  "HR Doctorate": {
     label: "HR Doctorate",
     icon: <GraduationCap className="h-4 w-4" />,
     color: "text-purple-600 bg-purple-50",
@@ -73,11 +71,11 @@ const Navbar = () => {
 
   // Get all available roles that the user can switch to
   const allRoles: UserRole[] = [
-    "employee",
-    "hr-admin",
-    "department-head",
-    "super-admin",
-    "hr-doctorate",
+    "Employee",
+    "HR Admin",
+    "Department Head",
+    "Superadmin",
+    "HR Doctorate",
   ];
   const availableRoles = allRoles.filter(
     (role): role is UserRole => user.role_profile?.length > 0 && role !== user.role_profile[0] && Boolean(ROLE_CONFIG[role])

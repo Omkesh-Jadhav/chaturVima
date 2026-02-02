@@ -100,11 +100,11 @@ export interface AssessmentResult {
 // ============================================================================
 
 export type UserRole =
-  | "employee"
-  | "hr-admin"
-  | "department-head"
-  | "super-admin"
-  | "hr-doctorate";
+  | "Employee"
+  | "HR Admin"
+  | "Department Head"
+  | "Superadmin"
+  | "HR Doctorate";
 // | "manager"
 
 export interface User {
@@ -122,7 +122,7 @@ export interface UserContext {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginWithOTP: (email: string, mobile: string, name?: string, apiResponse?: any) => Promise<void>;
+  loginWithOTP: (email: string, mobile: string, name?: string, apiResponse?: unknown) => Promise<void>;
   logout: () => void;
   switchRole: (newRole: UserRole) => void;
   updateProfile: (profileData: Partial<User>) => void;

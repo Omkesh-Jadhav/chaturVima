@@ -41,14 +41,14 @@ const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     path: "/assessment-dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["employee"],
+    roles: ["Employee"],
   },
   {
     id: "hr-admin-dashboard",
     label: "Dashboard",
     path: "/hr/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
-    roles: ["hr-admin"],
+    roles: ["HR Admin"],
   },
   // {
   //   id: "manager-dashboard",
@@ -62,35 +62,35 @@ const NAV_ITEMS: NavItem[] = [
     label: "Assessment",
     path: "/assessment",
     icon: <FileText className="h-5 w-5" />,
-    roles: ["employee"],
+    roles: ["Employee"],
   },
   {
     id: "organization-setup",
     label: "Organization Setup",
     path: "/organization-setup",
     icon: <FileText className="h-5 w-5" />,
-    roles: ["super-admin", "hr-admin"],
+    roles: ["Superadmin", "HR Admin"],
   },
   {
     id: "hr-assessment-cycles",
     label: "Assessment Cycles",
     path: "/hr/assessment-cycles",
     icon: <CalendarDays className="h-5 w-5" />,
-    roles: ["hr-admin"],
+    roles: ["HR Admin"],
   },
   {
     id: "hr-organization-health-report",
     label: "Organization Report",
     path: "/hr/organization-health-report",
     icon: <BarChart3 className="h-5 w-5" />,
-    roles: ["hr-admin", "hr-doctorate"],
+    roles: ["HR Admin", "HR Doctorate"],
   },
   {
     id: "department-head-cycles",
     label: "Assessment Cycles",
     path: "/department-head/assessment-cycles",
     icon: <CalendarDays className="h-5 w-5" />,
-    roles: ["department-head"],
+    roles: ["Department Head"],
   },
   // {
   //   id: "employee-setup",
@@ -112,7 +112,7 @@ const ROLE_CONFIG: Record<
   UserRole,
   { label: string; icon: React.ReactNode; color: string }
 > = {
-  employee: {
+  "Employee": {
     label: "Employee",
     icon: <User className="h-3 w-3" />,
     color: "text-blue-600 bg-blue-50",
@@ -122,22 +122,22 @@ const ROLE_CONFIG: Record<
   //   icon: <UserCog className="h-3 w-3" />,
   //   color: "text-purple-600 bg-purple-50",
   // },
-  "hr-admin": {
+  "HR Admin": {
     label: "HR Admin",
     icon: <Shield className="h-3 w-3" />,
     color: "text-green-600 bg-green-50",
   },
-  "department-head": {
+  "Department Head": {
     label: "Department Head",
     icon: <UserCog className="h-3 w-3" />,
     color: "text-orange-600 bg-orange-50",
   },
-  "super-admin": {
+  "Superadmin": {
     label: "Super Admin",
     icon: <Crown className="h-3 w-3" />,
     color: "text-amber-600 bg-amber-50",
   },
-  "hr-doctorate": {
+  "HR Doctorate": {
     label: "HR Doctorate",
     icon: <GraduationCap className="h-3 w-3" />,
     color: "text-purple-600 bg-purple-50",
