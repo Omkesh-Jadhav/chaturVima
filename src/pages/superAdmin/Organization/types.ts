@@ -34,6 +34,7 @@ export interface Employee {
   department: string;
   boss: string;
   reports_to?: string;
+  reports_to_name?: string;
   role: "Employee" | "HoD";
 }
 

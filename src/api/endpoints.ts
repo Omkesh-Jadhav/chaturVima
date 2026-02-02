@@ -28,7 +28,8 @@ export const API_ENDPOINTS = {
         DELETE_DEPARTMENT: `/api/resource/Department`,
 
         CREATE_EMPLOYEE: `/api/method/chaturvima_api.api.user_employee.create_user_and_employee`,
-        GET_EMPLOYEES: `/api/resource/Employee`,
+        // GET_EMPLOYEES: `/api/resource/Employee`,
+        GET_EMPLOYEES: `/api/method/chaturvima_api.api.user_employee.get_employee_list`,
         GET_EMPLOYEE_DETAILS: `/api/resource/Employee`,
         EDIT_EMPLOYEE_DETAILS: `/api/resource/Employee`,
         DELETE_EMPLOYEE: `/api/resource/Employee`

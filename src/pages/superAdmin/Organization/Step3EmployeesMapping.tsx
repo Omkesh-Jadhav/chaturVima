@@ -58,6 +58,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const createEmployeeMutation = useCreateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
+  console.log("apiEmployees", apiEmployees);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
   const handleInputChange = (field: string, value: string) => {
@@ -153,7 +154,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         designation: formData.designation.trim() || "Employee",
         date_of_birth: formData.dateOfBirth,
         date_of_joining: formData.dateOfJoining,
-        reports_to: formData.reports_to || ""
+        reports_to: getEmployeeIdFromName(formData.reports_to) || ""
       };
 
       await createEmployeeMutation.mutateAsync(employeeData);
@@ -253,6 +254,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     return allEmployees.filter((emp) => emp.role === "HoD");
   };
 
+  // Helper function to get employee ID from name
+  const getEmployeeIdFromName = (name: string) => {
+    const allEmployees = getFilteredEmployees();
+    const employee = allEmployees.find((emp) => emp.name === name);
+    return employee?.employeeId || employee?.id || "";
+  };
+
+
   const getAvailableDepartments = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
     if (fetchedDepartments.length > 0) {
@@ -294,6 +303,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     designation: string;
     department?: string;
     reports_to?: string;
+    reports_to_name?: string;
   }>) => {
     return apiData.map((emp, index) => ({
       id: emp.name || `api-emp-${index}`,
@@ -303,15 +313,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       role: (emp.role_profile as 'Employee' | 'HoD') || 'HoD',
       department: emp.department || '',
       designation: emp.designation || '',
-      boss: emp.reports_to || '',
+      boss: emp.reports_to_name || emp.reports_to || '',
       reports_to: emp.reports_to || '',
+      reports_to_name: emp.reports_to_name || '',
     }));
   };
 
   const getFilteredEmployees = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
-    if (apiEmployees?.data) {
-      return mapApiToEmployeeFormat(apiEmployees.data);
+    if (apiEmployees?.message) {
+      return mapApiToEmployeeFormat(apiEmployees.message);
     }
     
     // Fallback to props data with filter
@@ -590,11 +601,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 Reporting To
               </label>
               <FilterSelect
-                value={formData.boss || "Select Manager"}
+                value={formData.reports_to || "Select Manager"}
                 onChange={(value) =>
                   handleInputChange(
-                    "boss",
-                    value === "Select Reporting Manager" ? "" : value
+                    "reports_to",
+                    value === "Select Manager" ? "" : value
                   )
                 }
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
@@ -656,7 +667,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       )}
 
       {/* Employee table - show if we have API data or fallback prop data */}
-      {(apiEmployees?.data?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
+      {(apiEmployees?.message?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
         <div className="mb-6">
           <div className="mb-4 flex items-center gap-4">
             <label className="text-sm font-medium text-gray-700">
@@ -740,7 +751,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.department}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.reports_to || employee.boss || "-"}
+                      {employee.reports_to_name || employee.reports_to || "-"}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex gap-2">

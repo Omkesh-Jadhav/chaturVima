@@ -146,7 +146,7 @@ export const deleteDepartment = async (name: string) => {
 
 export const getEmployees = async (department?: string) => {
     try {
-        const fields = ["name", "designation", "employee_name", "user_id", "department", "reports_to", "company_email"];
+        const fields = ["name", "designation", "employee_name", "user_id", "department", "reports_to_name", "company_email"];
         let url = `${API_ENDPOINTS.ORGANIZATION.GET_EMPLOYEES}?fields=${JSON.stringify(fields)}`;
         
         if (department) {
