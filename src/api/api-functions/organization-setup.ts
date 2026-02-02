@@ -19,7 +19,7 @@ export const getOrganizationDetails = async (companyName: string) => {
         
         const url = `${API_ENDPOINTS.ORGANIZATION.GET_ORGANIZATION_DETAILS}/${companyName}?fields=${JSON.stringify(fields)}`;
         const response = await api.get(url);
-        console.log("SUCCESS - getOrganizationDetails response:", response);
+        // console.log("SUCCESS - getOrganizationDetails response:", response);
         return response.data;
     } catch (error: any) {
         console.error("ERROR - getOrganizationDetails failed:", error);
@@ -60,7 +60,7 @@ export const updateOrganizationDetails = async(organizationData: {
 export const getAllIndustries = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_INDUSTRIES);
-        console.log("SUCCESS - GET_ALL_INDUSTRIES: ", response);
+        // console.log("SUCCESS - GET_ALL_INDUSTRIES: ", response);
         return response.data;
     } catch (error: any) {
         console.error("ERROR - GET_ALL_INDUSTRIES failed:", error);
@@ -73,7 +73,7 @@ export const getAllIndustries = async () => {
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);
-        console.log("SUCCESS - getAllDepartments response:", response);
+        // console.log("SUCCESS - getAllDepartments response:", response);
         return response.data;
     } catch (error: any) {
         console.error("ERROR - getAllDepartments failed:", error);
@@ -155,7 +155,7 @@ export const getEmployees = async (department?: string) => {
         }
         
         const response = await api.get(url);
-        console.log("SUCCESS - getEmployees response:", response);
+        // console.log("SUCCESS - getEmployees response:", response);
         return response.data;
     } catch (error: any) {
         console.error("ERROR - getEmployees failed:", error);
