@@ -154,7 +154,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         designation: formData.designation.trim() || "Employee",
         date_of_birth: formData.dateOfBirth,
         date_of_joining: formData.dateOfJoining,
-        reports_to: formData.reports_to || ""
+        reports_to: getEmployeeIdFromName(formData.reports_to) || ""
       };
 
       await createEmployeeMutation.mutateAsync(employeeData);
@@ -253,6 +253,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     const allEmployees = getFilteredEmployees();
     return allEmployees.filter((emp) => emp.role === "HoD");
   };
+
+  // Helper function to get employee ID from name
+  const getEmployeeIdFromName = (name: string) => {
+    const allEmployees = getFilteredEmployees();
+    const employee = allEmployees.find((emp) => emp.name === name);
+    return employee?.employeeId || employee?.id || "";
+  };
+
 
   const getAvailableDepartments = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
@@ -597,7 +605,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 onChange={(value) =>
                   handleInputChange(
                     "reports_to",
-                    value === "Select Reporting Manager" ? "" : value
+                    value === "Select Manager" ? "" : value
                   )
                 }
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
