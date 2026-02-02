@@ -408,7 +408,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name *
+                First Name <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
@@ -430,7 +430,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name *
+                Last Name <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
@@ -466,7 +466,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Email <span className="text-red-500">*</span>
               </label>
               <Input
                 type="email"
