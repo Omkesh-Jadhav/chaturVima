@@ -36,6 +36,6 @@ export interface CycleFormPayload {
   startDate: string;
   endDate: string;
   departments: string[];
-  assessmentTypes: string[];
+  assessmentType: string;
   notes?: string;
 }

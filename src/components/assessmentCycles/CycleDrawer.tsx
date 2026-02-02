@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import {
   CalendarInput,
-  CheckboxDropdown,
   FilterSelect,
   Button,
 } from "@/components/ui";
@@ -82,7 +81,7 @@ const CycleDrawer = ({
         startDate: cycle.startDate,
         endDate: cycle.endDate,
         departments,
-        assessmentTypes: cycle.assessmentTypes ?? [],
+        assessmentType: cycle.assessmentTypes?.[0] ?? "",
         notes: cycle.notes,
       });
       resetManualSelection();
@@ -255,6 +254,13 @@ const CycleDrawer = ({
   const handleSubmit = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
+      
+      // Validate assessment type
+      if (!form.assessmentType || form.assessmentType === "Select assessment type") {
+        alert("Please select an assessment type.");
+        return;
+      }
+      
       const validationError = validateManualSelection();
       if (validationError) {
         alert(validationError);
@@ -280,8 +286,9 @@ const CycleDrawer = ({
       : config.getSubmitText();
 
   const isSubmitDisabled =
-    enableManualSelection &&
-    (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0);
+    (!form.assessmentType || form.assessmentType === "Select assessment type") ||
+    (enableManualSelection &&
+    (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0));
 
   return (
     <AnimatePresence>
@@ -332,21 +339,21 @@ const CycleDrawer = ({
                   />
                 </div>
 
-                {/* Assessment Types */}
-                <div className="space-y-3">
+                {/* Assessment Type */}
+                <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase text-gray-500">
-                    Assessment Types
+                    Assessment Type
                   </label>
-                  <CheckboxDropdown
-                    label="assessment types"
-                    options={assessmentTypeOptions}
-                    selected={form.assessmentTypes}
-                    onChange={(selected) =>
-                      handleChange("assessmentTypes", selected)
+                  <FilterSelect
+                    label="Assessment Type"
+                    value={form.assessmentType || "Select assessment type"}
+                    onChange={(value) =>
+                      handleChange("assessmentType", value)
                     }
-                    placeholder="Select assessment types"
-                    className="w-full"
-                    selectAllLabel="Select all"
+                    options={[
+                      "Select assessment type",
+                      ...assessmentTypeOptions,
+                    ]}
                   />
                 </div>
 

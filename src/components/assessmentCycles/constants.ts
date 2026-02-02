@@ -8,7 +8,7 @@ export const DEFAULT_PAYLOAD: CycleFormPayload = {
   startDate: "",
   endDate: "",
   departments: [],
-  assessmentTypes: [],
+  assessmentType: "",
   notes: "",
 };
 
