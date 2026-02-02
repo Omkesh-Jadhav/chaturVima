@@ -58,6 +58,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const createEmployeeMutation = useCreateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
+  console.log("apiEmployees", apiEmployees);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
   const handleInputChange = (field: string, value: string) => {
@@ -294,6 +295,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     designation: string;
     department?: string;
     reports_to?: string;
+    reports_to_name?: string;
   }>) => {
     return apiData.map((emp, index) => ({
       id: emp.name || `api-emp-${index}`,
@@ -303,15 +305,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       role: (emp.role_profile as 'Employee' | 'HoD') || 'HoD',
       department: emp.department || '',
       designation: emp.designation || '',
-      boss: emp.reports_to || '',
+      boss: emp.reports_to_name || emp.reports_to || '',
       reports_to: emp.reports_to || '',
+      reports_to_name: emp.reports_to_name || '',
     }));
   };
 
   const getFilteredEmployees = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
-    if (apiEmployees?.data) {
-      return mapApiToEmployeeFormat(apiEmployees.data);
+    if (apiEmployees?.message) {
+      return mapApiToEmployeeFormat(apiEmployees.message);
     }
     
     // Fallback to props data with filter
@@ -590,10 +593,10 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 Reporting To
               </label>
               <FilterSelect
-                value={formData.boss || "Select Manager"}
+                value={formData.reports_to || "Select Manager"}
                 onChange={(value) =>
                   handleInputChange(
-                    "boss",
+                    "reports_to",
                     value === "Select Reporting Manager" ? "" : value
                   )
                 }
@@ -656,7 +659,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       )}
 
       {/* Employee table - show if we have API data or fallback prop data */}
-      {(apiEmployees?.data?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
+      {(apiEmployees?.message?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
         <div className="mb-6">
           <div className="mb-4 flex items-center gap-4">
             <label className="text-sm font-medium text-gray-700">
@@ -740,7 +743,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       {employee.department}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.reports_to || employee.boss || "-"}
+                      {employee.reports_to_name || employee.reports_to || "-"}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex gap-2">
