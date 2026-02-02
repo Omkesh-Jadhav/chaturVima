@@ -5,7 +5,7 @@ export interface AssessmentCycle {
   name: string;
   startDate: string;
   endDate: string;
-  type: "Quarterly" | "Annual" | "Ad hoc";
+  type: "Quarterly" | "Annual" | "Adhoc";
   period: "Fiscal" | "Calendar";
   status: CycleStatus;
   departments: string[];

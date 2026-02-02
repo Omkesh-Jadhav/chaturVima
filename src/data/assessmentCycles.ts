@@ -72,7 +72,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     name: "Company Assessment",
     startDate: "2024-11-05",
     endDate: "2024-11-25",
-    type: "Ad hoc",
+    type: "Adhoc",
     period: "Fiscal",
     status: "Upcoming",
     departments: ["People Ops", "Talent"],

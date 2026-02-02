@@ -369,7 +369,7 @@ const CycleDrawer = ({
                       onChange={(value) =>
                         handleChange("type", value as AssessmentCycle["type"])
                       }
-                      options={["Quarterly", "Annual", "Ad hoc"]}
+                      options={["Quarterly", "Annual", "Adhoc"]}
                     />
                   </div>
                   <div className="space-y-2">
