@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { validateEmail, validateTextOnly, validateDesignation } from "./validationUtils";
 import type { Employee, Department } from "./types";
-import { Button, Input, FilterSelect } from "@/components/ui";
+import { Button, Input, FilterSelect, CalendarInput } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
@@ -516,13 +516,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Birth
               </label>
-              <Input
-                type="date"
+              <CalendarInput
                 value={formData.dateOfBirth}
-                onChange={(e) =>
-                  handleInputChange("dateOfBirth", e.target.value)
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                onChange={(value) => handleInputChange("dateOfBirth", value)}
+                placeholder="Select DoB"
+                className="w-full"
               />
             </div>
 
@@ -530,13 +528,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Joining
               </label>
-              <Input
-                type="date"
+              <CalendarInput
                 value={formData.dateOfJoining}
-                onChange={(e) =>
-                  handleInputChange("dateOfJoining", e.target.value)
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                onChange={(value) => handleInputChange("dateOfJoining", value)}
+                placeholder="Joining Date"
+                className="w-full"
               />
             </div>
 

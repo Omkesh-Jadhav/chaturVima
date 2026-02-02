@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Loader2 } from "lucide-react";
-import { Button, Input, FilterSelect } from "@/components/ui";
+import { Button, Input, FilterSelect, CalendarInput } from "@/components/ui";
 import { validateEmail } from "@/pages/superAdmin/Organization/validationUtils";
 import type { Employee, Department } from "@/pages/superAdmin/Organization/types";
 import { useGetEmployeeDetails, useEditEmployeeDetails } from "@/hooks/useEmployees";
@@ -347,13 +347,11 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Birth
               </label>
-              <Input
-                type="date"
+              <CalendarInput
                 value={formData.dateOfBirth}
-                onChange={(e) =>
-                  handleInputChange("dateOfBirth", e.target.value)
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                onChange={(value) => handleInputChange("dateOfBirth", value)}
+                placeholder="Select date of birth"
+                className="w-full"
               />
             </div>
 
@@ -361,13 +359,11 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Joining
               </label>
-              <Input
-                type="date"
+              <CalendarInput
                 value={formData.dateOfJoining}
-                onChange={(e) =>
-                  handleInputChange("dateOfJoining", e.target.value)
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                onChange={(value) => handleInputChange("dateOfJoining", value)}
+                placeholder="Select date of joining"
+                className="w-full"
               />
             </div>
 
