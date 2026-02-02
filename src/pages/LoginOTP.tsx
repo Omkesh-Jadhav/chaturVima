@@ -45,7 +45,7 @@ const VALID_EMAILS = [
   "admin@example.com",
   "hr@example.com",
   "manager@example.com",
-  "super-admin@example.com",
+  "superadmin@example.com",
 ];
 const VALID_COUNTRY_CODE = "+91";
 const VALID_PHONE_NUMBER = "9876543210"; // Format: [country code][phone number] - Must start with 6, 7, 8, or 9
