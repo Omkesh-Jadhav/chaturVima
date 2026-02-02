@@ -34,6 +34,7 @@ interface CycleDrawerProps {
   cycle?: AssessmentCycle | null;
   onClose: () => void;
   onSubmit: (payload: CycleFormPayload) => void;
+  onSave?: (payload: CycleFormPayload) => void;
   fixedDepartment?: string;
   isLoading?: boolean;
 }
@@ -44,6 +45,7 @@ const CycleDrawer = ({
   cycle,
   onClose,
   onSubmit,
+  onSave,
   fixedDepartment,
   isLoading = false,
 }: CycleDrawerProps) => {
@@ -65,6 +67,7 @@ const CycleDrawer = ({
   );
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [hasSaved, setHasSaved] = useState(false);
 
   // Custom hooks
   useBodyScrollLock(open);
@@ -94,6 +97,7 @@ const CycleDrawer = ({
         notes: cycle.notes,
       });
       resetManualSelection();
+      setHasSaved(false); // Reset saved state when opening drawer
 
       const deptToUse = fixedDepartment || (cycle.departments[0] ?? null);
       if (deptToUse) {
@@ -105,6 +109,7 @@ const CycleDrawer = ({
     } else if (mode === "create") {
       setForm(DEFAULT_PAYLOAD);
       resetManualSelection();
+      setHasSaved(false);
     }
   }, [mode, cycle, open, fixedDepartment, resetManualSelection]);
 
@@ -700,17 +705,61 @@ const CycleDrawer = ({
                     </div>
                   )}
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitDisabled || isLoading}
-                  variant="gradient"
-                  size="md"
-                  className="w-full"
-                  isLoading={isLoading}
-                >
-                  {submitButtonText}
-                </Button>
+                {/* Submit Buttons */}
+                {mode === "schedule" ? (
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (onSave) {
+                          // Validate assessment type
+                          if (!form.assessmentType || form.assessmentType === "Select assessment type") {
+                            alert("Please select an assessment type.");
+                            return;
+                          }
+                          const validationError = validateManualSelection();
+                          if (validationError) {
+                            alert(validationError);
+                            return;
+                          }
+                          const finalPayload = fixedDepartment
+                            ? { ...form, departments: [fixedDepartment] }
+                            : form;
+                          onSave(finalPayload);
+                          setHasSaved(true); // Enable Schedule button after save
+                        }
+                      }}
+                      disabled={isSubmitDisabled || isLoading}
+                      variant="outline"
+                      size="md"
+                      className="flex-1 border-brand-teal text-brand-teal hover:bg-brand-teal/5"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitDisabled || isLoading || !hasSaved}
+                      variant="gradient"
+                      size="md"
+                      className="flex-1"
+                      isLoading={isLoading}
+                    >
+                      Schedule
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitDisabled || isLoading}
+                    variant="gradient"
+                    size="md"
+                    className="w-full"
+                    isLoading={isLoading}
+                  >
+                    {submitButtonText}
+                  </Button>
+                )}
               </form>
             </div>
           </motion.div>

@@ -1,6 +1,6 @@
 // Table component displaying assessment cycles with actions for HR and department heads
 import { motion } from "framer-motion";
-import { MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
 import { CYCLE_STATUS_COLORS } from "@/utils/assessmentUtils";
@@ -11,7 +11,6 @@ interface CycleTableProps {
   data: AssessmentCycle[];
   onSchedule?: (cycle: AssessmentCycle) => void;
   onShare?: (cycle: AssessmentCycle) => void;
-  onEdit?: (cycle: AssessmentCycle) => void;
   variant?: TableVariant;
   scheduleAccess?: Record<string, boolean>;
 }
@@ -20,7 +19,6 @@ const CycleTable = ({
   data,
   onSchedule,
   onShare,
-  onEdit,
   variant = "hr",
   scheduleAccess = {},
 }: CycleTableProps) => {
@@ -138,17 +136,6 @@ const CycleTable = ({
                 </td>
                 <td className="px-6 py-4 text-right align-top">
                   <div className="flex items-center justify-end gap-3">
-                    {!isDepartmentHead && onEdit && (
-                      <Tooltip content="Edit Cycle" position="top">
-                        <button
-                          onClick={() => onEdit(cycle)}
-                          className="flex items-center justify-center rounded-lg border border-gray-200 p-2 text-gray-600 transition-all hover:border-brand-teal hover:bg-brand-teal/5 hover:text-brand-teal"
-                          aria-label="Edit cycle"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                      </Tooltip>
-                    )}
                     <Button
                       onClick={() => canSchedule && onSchedule?.(cycle)}
                       disabled={!canSchedule}

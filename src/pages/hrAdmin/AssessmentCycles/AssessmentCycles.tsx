@@ -114,6 +114,26 @@ const AssessmentCycles = () => {
     createCycleMutation.mutate(payload);
   };
 
+  const handleSave = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle) return;
+    setCycles((prev) => {
+      const updated = prev.map((cycle) =>
+        cycle.id === drawerState.cycle?.id
+          ? {
+              ...cycle,
+              startDate: payload.startDate,
+              endDate: payload.endDate,
+              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : cycle.assessmentTypes,
+              notes: payload.notes,
+            }
+          : cycle
+      );
+      persistCycles(updated);
+      return updated;
+    });
+    // Don't close drawer on save, just update the cycle
+  };
+
   const handleSchedule = (payload: CycleFormPayload) => {
     if (!drawerState.cycle) return;
     setCycles((prev) => {
@@ -262,7 +282,6 @@ const AssessmentCycles = () => {
         data={filteredCycles}
         onSchedule={openScheduleDrawer}
         onShare={openShareDrawer}
-        onEdit={openEditDrawer}
         variant="hr"
       />
 
@@ -278,6 +297,7 @@ const AssessmentCycles = () => {
             ? handleEdit
             : handleSchedule
         }
+        onSave={drawerState.mode === "schedule" ? handleSave : undefined}
         isLoading={drawerState.mode === "create" ? createCycleMutation.isPending : false}
       />
 
