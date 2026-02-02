@@ -9,9 +9,9 @@ import { getDimensionFromAssessmentType } from "@/utils/assessmentConfig";
  */
 export interface CreateCyclePayload {
   cycle_name: string;
-  assessment_type: string; // Cycle type: "Quarterly", "Annual", "Adhoc"
+  assessment_type: string; // Cycle type: "Quarterly", "Annual", "Ad hoc" (API format)
   period: "Fiscal" | "Calendar";
-  dimension: string; // Assessment type: "Employee Self Assessment", etc.
+  dimension: string; // Converted dimension: "1D", "2D", "3D", "4D"
   start_date: string;
   end_date: string;
   email_notes?: string;
@@ -24,6 +24,28 @@ export interface CreateCyclePayload {
     include: number;
   }>;
 }
+
+/**
+ * Transform cycle type from frontend format to API format
+ * Frontend uses "Adhoc", but API expects "Ad hoc"
+ */
+const transformCycleTypeToAPI = (type: string): string => {
+  if (type === "Adhoc") {
+    return "Ad hoc";
+  }
+  return type;
+};
+
+/**
+ * Transform cycle type from API format to frontend format
+ * API returns "Ad hoc", but frontend uses "Adhoc"
+ */
+export const transformCycleTypeFromAPI = (type: string): string => {
+  if (type === "Ad hoc") {
+    return "Adhoc";
+  }
+  return type;
+};
 
 /**
  * Transform CycleFormPayload to API payload format
@@ -44,7 +66,7 @@ const transformCyclePayload = (payload: CycleFormPayload): CreateCyclePayload =>
   
   return {
     cycle_name: payload.name,
-    assessment_type: payload.type, // Cycle type: "Quarterly", "Annual", "Adhoc"
+    assessment_type: transformCycleTypeToAPI(payload.type), // Transform "Adhoc" to "Ad hoc" for API
     period: payload.period,
     dimension: getDimensionFromAssessmentType(payload.assessmentType), // Converted dimension: "2D", "3D", etc.
     start_date: startDate,
