@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, ClipboardList } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
 import { CYCLE_STATUS_COLORS } from "@/utils/assessmentUtils";
@@ -23,6 +23,42 @@ const CycleTable = ({
 }: CycleTableProps) => {
   const isDepartmentHead = variant === "department-head";
   const cellPadding = "px-6 py-4";
+
+  // Empty state
+  if (data.length === 0) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex flex-col items-center justify-center py-16 px-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="mb-4"
+          >
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+              <ClipboardList className="h-10 w-10 text-gray-400" />
+            </div>
+          </motion.div>
+          <motion.h3
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-2 text-lg font-semibold text-gray-900"
+          >
+            No data found
+          </motion.h3>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm text-gray-500"
+          >
+            No assessment cycles match your current filters.
+          </motion.p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
