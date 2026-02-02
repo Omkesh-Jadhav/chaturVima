@@ -57,6 +57,19 @@ export const updateOrganizationDetails = async(organizationData: {
     }
 }
 
+export const getAllIndustries = async () => {
+    try {
+        const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_INDUSTRIES);
+        console.log("SUCCESS - GET_ALL_INDUSTRIES: ", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - GET_ALL_INDUSTRIES failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);

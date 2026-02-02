@@ -7,7 +7,7 @@ import {
 } from "./validationUtils";
 import type { OrganizationInfo } from "./types";
 import { FilterSelect, Input, Button } from "@/components/ui";
-import { useGetOrganizationDetails } from "@/hooks/useEmployees";
+import { useGetOrganizationDetails, useGetAllIndustries } from "@/hooks/useEmployees";
 import { updateOrganizationDetails } from "@/api/api-functions/organization-setup";
 import { Edit, X, Save, Loader2 } from "lucide-react";
 
@@ -30,9 +30,50 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
   // Fetch organization details from API
   const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails("Chaturvima");
+  
+  // Fetch industries from API
+  const { data: industriesData, isLoading: isLoadingIndustries, error: industriesError } = useGetAllIndustries();
 
   // All fields are readonly by default, editing happens through modal
   const isReadonly = true;
+
+  // Helper function to get industry options
+  const getIndustryOptions = () => {
+    const defaultOptions = ["Select industry"];
+    
+    if (industriesData?.data) {
+      // Use API data, sorted alphabetically
+      const apiIndustries = industriesData.data
+        .map((industry: { name: string }) => industry.name)
+        .sort((a: string, b: string) => a.localeCompare(b));
+      return [...defaultOptions, ...apiIndustries];
+    }
+    
+    // Fallback to hardcoded options if API fails
+    return [
+      ...defaultOptions,
+      "Accounting",
+      "Advertising", 
+      "Aerospace",
+      "Agriculture",
+      "Automotive",
+      "Banking",
+      "Biotechnology",
+      "Chemical",
+      "Computer",
+      "Consulting",
+      "Consumer Products",
+      "Defense",
+      "Education",
+      "Electronics",
+      "Finance",
+      "Healthcare",
+      "Manufacturing",
+      "Other",
+      "Retail",
+      "Technology",
+    ];
+  };
 
   // Pre-fill form data when organization data is loaded from API
   useEffect(() => {
@@ -226,8 +267,14 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
           Organization Info
         </h2>
         <div className="flex items-center gap-3">
-          {isLoadingOrg && (
-            <span className="text-sm text-gray-500">Loading organization data...</span>
+          {(isLoadingOrg || isLoadingIndustries) && (
+            <span className="text-sm text-gray-500">
+              {isLoadingOrg && isLoadingIndustries 
+                ? "Loading organization data and industries..." 
+                : isLoadingOrg 
+                  ? "Loading organization data..." 
+                  : "Loading industries..."}
+            </span>
           )}
         </div>
       </div>
@@ -241,10 +288,19 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
         </div>
       )}
 
+      {/* Error state for industries data */}
+      {industriesError && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="text-yellow-800">
+            <strong>Note:</strong> Could not load industries from server. Using default industry options.
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Organization Name *
+            Organization Name <span className="text-red-500">*</span>
           </label>
           <Input
             type="text"
@@ -266,7 +322,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Organization Type *
+            Organization Type <span className="text-red-500">*</span>
           </label>
           <FilterSelect
             value={formData.type || "Select type"}
@@ -286,7 +342,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Organization Size *
+            Organization Size <span className="text-red-500">*</span>
           </label>
           <FilterSelect
             value={formData.size || "Select size"}
@@ -306,23 +362,14 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Industry *
+            Industry <span className="text-red-500">*</span>
           </label>
           <FilterSelect
             value={formData.industry || "Select industry"}
             onChange={() => {}}
             className={`w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal ${isReadonly ? "opacity-50 pointer-events-none" : ""
               }`}
-            options={[
-              "Select industry",
-              "Technology",
-              "Healthcare",
-              "Finance",
-              "Education",
-              "Manufacturing",
-              "Retail",
-              "Other",
-            ]}
+            options={getIndustryOptions()}
           />
         </div>
 
@@ -348,7 +395,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address *
+            Email Address <span className="text-red-500">*</span>
           </label>
           <Input
             type="email"
@@ -374,7 +421,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number *
+            Phone Number <span className="text-red-500">*</span>
           </label>
           <Input
             type="tel"
@@ -400,7 +447,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            City *
+            City <span className="text-red-500">*</span>
           </label>
           <Input
             type="text"
@@ -413,7 +460,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            State *
+            State <span className="text-red-500">*</span>
           </label>
           <Input
             type="text"
@@ -426,7 +473,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Country *
+            Country <span className="text-red-500">*</span>
           </label>
           <Input
             type="text"
@@ -479,7 +526,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Organization Name *
+                    Organization Name <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="text"
@@ -499,7 +546,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Organization Type *
+                    Organization Type <span className="text-red-500">*</span>
                   </label>
                   <FilterSelect
                     value={editFormData.type || "Select type"}
@@ -523,7 +570,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Organization Size *
+                    Organization Size <span className="text-red-500">*</span>
                   </label>
                   <FilterSelect
                     value={editFormData.size || "Select size"}
@@ -548,7 +595,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Industry *
+                    Industry <span className="text-red-500">*</span>
                   </label>
                   <FilterSelect
                     value={editFormData.industry || "Select industry"}
@@ -559,16 +606,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                       )
                     }
                     className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                    options={[
-                      "Select industry",
-                      "Technology",
-                      "Healthcare",
-                      "Finance",
-                      "Education",
-                      "Manufacturing",
-                      "Retail",
-                      "Other",
-                    ]}
+                    options={getIndustryOptions()}
                   />
                   {fieldErrors.industry && (
                     <p className="mt-1 text-sm text-red-600">{fieldErrors.industry}</p>
@@ -597,7 +635,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="email"
@@ -617,7 +655,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="tel"
@@ -637,7 +675,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
+                    City <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="text"
@@ -657,7 +695,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
+                    State <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="text"
@@ -677,7 +715,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Country *
+                    Country <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="text"

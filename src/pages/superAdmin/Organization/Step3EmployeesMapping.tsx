@@ -408,7 +408,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name *
+                First Name <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
@@ -430,7 +430,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name *
+                Last Name <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
@@ -466,7 +466,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Email <span className="text-red-500">*</span>
               </label>
               <Input
                 type="email"
@@ -578,7 +578,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 options={[
                   "Select Department",
-                  ...getAvailableDepartments().map((dept) => dept.name),
+                  ...getAvailableDepartments()
+                    .map((dept) => dept.name)
+                    .sort((a, b) => a.localeCompare(b)),
                 ]}
               />
             </div>
@@ -588,7 +590,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 Reporting To
               </label>
               <FilterSelect
-                value={formData.boss || "Select Reporting Manager"}
+                value={formData.boss || "Select Manager"}
                 onChange={(value) =>
                   handleInputChange(
                     "boss",
@@ -597,8 +599,10 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 }
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
                 options={[
-                  "Select Reporting Manager",
-                  ...getAvailableBosses().map((emp) => emp.name),
+                  "Select Manager",
+                  ...getAvailableBosses()
+                    .map((emp) => emp.name)
+                    .sort((a, b) => a.localeCompare(b)),
                 ]}
               />
             </div>
@@ -666,7 +670,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               className="w-64 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
               options={[
                 "All Departments",
-                ...getAvailableDepartments().map((dept) => dept.name),
+                ...getAvailableDepartments()
+                  .map((dept) => dept.name)
+                  .sort((a, b) => a.localeCompare(b)),
               ]}
             />
           </div>
