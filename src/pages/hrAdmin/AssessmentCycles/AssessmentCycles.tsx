@@ -8,9 +8,6 @@ import {
   departmentHeadsDirectory,
   loadShareMatrix,
   persistShareMatrix,
-  loadCycles,
-  persistCycles,
-  CYCLES_STORAGE_KEY,
   statusFilters,
   yearFilters,
 } from "@/data/assessmentCycles";
@@ -63,18 +60,15 @@ const AssessmentCycles = () => {
   }, [selectedDepartments, search, status, year]);
   
   // Fetch cycles from API
-  const { data: cycles = [], isLoading: isLoadingCycles, refetch: refetchCycles } = useQuery({
+  const { data: cycles = [], isLoading: isLoadingCycles } = useQuery({
     queryKey: ["assessmentCycles", queryParams],
     queryFn: () => getAssessmentCycles(queryParams),
     staleTime: 30000, // 30 seconds
   });
 
-  // Listen for cycle updates from other tabs/pages
+  // Listen for share matrix updates from other tabs/pages
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === CYCLES_STORAGE_KEY) {
-        setCycles(loadCycles());
-      }
       if (event.key === "cv_hr_share_matrix_v1") {
         setShareMatrix(loadShareMatrix());
       }
@@ -98,8 +92,6 @@ const AssessmentCycles = () => {
     setDrawerState({ mode: "create", open: true, cycle: null });
   const openScheduleDrawer = (cycle: AssessmentCycle) =>
     setDrawerState({ mode: "schedule", open: true, cycle });
-  const openEditDrawer = (cycle: AssessmentCycle) =>
-    setDrawerState({ mode: "edit", open: true, cycle });
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
 
@@ -126,19 +118,21 @@ const AssessmentCycles = () => {
     createCycleMutation.mutate(payload);
   };
 
-  const handleSave = (payload: CycleFormPayload) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSave = (_payload: CycleFormPayload) => {
     // Save is handled locally for now - will be updated when UPDATE API is integrated
-    // Don't close drawer on save, just update the cycle locally
     queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
   };
 
-  const handleSchedule = (payload: CycleFormPayload) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSchedule = (_payload: CycleFormPayload) => {
     // Schedule will update the cycle status - will be integrated with UPDATE API
     queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
   };
 
-  const handleEdit = (payload: CycleFormPayload) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleEdit = (_payload: CycleFormPayload) => {
     // Edit will update the cycle - will be integrated with UPDATE API
     queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
@@ -196,7 +190,7 @@ const AssessmentCycles = () => {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search cycles or departments",
+          placeholder: "Search assessment cycle name",
           className: "w-full sm:w-auto",
         }}
         filters={[

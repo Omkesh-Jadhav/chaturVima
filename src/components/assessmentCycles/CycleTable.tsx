@@ -1,4 +1,3 @@
-// Table component displaying assessment cycles with actions for HR and department heads
 import { motion } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
@@ -23,31 +22,40 @@ const CycleTable = ({
   scheduleAccess = {},
 }: CycleTableProps) => {
   const isDepartmentHead = variant === "department-head";
+  const cellPadding = "px-6 py-4";
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-100 text-sm">
+      <table className="min-w-full divide-y divide-gray-100">
         <thead>
-          <tr className="bg-gray-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-            <th className="px-5 py-3 text-left">Cycle</th>
-            <th className="px-4 py-3 text-left">Status</th>
+          <tr className="bg-gray-50">
+            <th className={`${cellPadding} text-left text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+              Cycle
+            </th>
+            <th className={`${cellPadding} text-left text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+              Status
+            </th>
             {!isDepartmentHead && (
-              <th className="px-4 py-3 text-left">Departments</th>
+              <th className={`${cellPadding} text-left text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+                Departments
+              </th>
             )}
-            <th className="px-4 py-3 text-left">Assessments</th>
-            <th className="px-4 py-3 text-left">Progress</th>
-            <th className="px-6 py-3 text-right">Actions</th>
+            <th className={`${cellPadding} text-left text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+              Assessments
+            </th>
+            <th className={`${cellPadding} text-left text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+              Progress
+            </th>
+            <th className={`${cellPadding} text-right text-xs font-semibold uppercase tracking-wider text-gray-500`}>
+              Actions
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 bg-white">
           {data.map((cycle, idx) => {
             const palette = CYCLE_STATUS_COLORS[cycle.status];
             const isCompleted = cycle.status === "Completed";
-            const canSchedule = isCompleted
-              ? false
-              : isDepartmentHead
-              ? scheduleAccess[cycle.id]
-              : true;
+            const canSchedule = isCompleted ? false : isDepartmentHead ? scheduleAccess[cycle.id] : true;
             const canShare = !isCompleted;
 
             return (
@@ -56,32 +64,34 @@ const CycleTable = ({
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}
-                className="hover:bg-brand-teal/5"
+                className="hover:bg-gray-50/50 transition-colors"
               >
-                <td className="px-5 py-4 align-top">
-                  <div className="font-semibold text-gray-900">
-                    {cycle.name}
+                {/* Cycle Column */}
+                <td className={`${cellPadding} align-middle`}>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-gray-900">{cycle.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(cycle.startDate).toLocaleDateString()} – {new Date(cycle.endDate).toLocaleDateString()}
+                    </div>
+                    <div className="text-xs text-gray-500">{cycle.type}</div>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {new Date(cycle.startDate).toLocaleDateString()} –{" "}
-                    {new Date(cycle.endDate).toLocaleDateString()}
-                  </p>
-                  <p className="text-xs text-gray-500">{cycle.type}</p>
                 </td>
-                <td className="px-4 py-4 align-top">
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${palette.bg} ${palette.text}`}
-                  >
+
+                {/* Status Column */}
+                <td className={`${cellPadding} align-middle`}>
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${palette.bg} ${palette.text}`}>
                     {cycle.status}
                   </span>
                 </td>
+
+                {/* Departments Column */}
                 {!isDepartmentHead && (
-                  <td className="px-4 py-4 align-top">
-                    <div className="flex flex-wrap items-center gap-1">
+                  <td className={`${cellPadding} align-middle`}>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {cycle.departments.slice(0, 2).map((dept) => (
                         <span
                           key={dept}
-                          className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600"
+                          className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-xs font-medium text-gray-700"
                         >
                           {dept}
                         </span>
@@ -90,46 +100,44 @@ const CycleTable = ({
                         <Tooltip
                           content={
                             <div className="space-y-1">
-                              <div className="font-semibold text-gray-900 mb-1.5">
-                                Remaining departments:
-                              </div>
-                              <div className="space-y-1">
-                                {cycle.departments.slice(2).map((dept) => (
-                                  <div key={dept} className="text-gray-700">
-                                    {dept}
-                                  </div>
-                                ))}
-                              </div>
+                              <div className="mb-1.5 font-semibold text-gray-900">Remaining departments:</div>
+                              {cycle.departments.slice(2).map((dept) => (
+                                <div key={dept} className="text-gray-700">{dept}</div>
+                              ))}
                             </div>
                           }
                           position="right"
                         >
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100">
+                          <button className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100">
                             <MoreHorizontal className="h-3 w-3" />
-                          </span>
+                          </button>
                         </Tooltip>
                       )}
                     </div>
                   </td>
                 )}
-                <td className="px-4 py-4 align-top">
-                  <div className="text-sm font-semibold text-gray-900">
-                    {cycle.linkedTeams} linked
+
+                {/* Assessments Column */}
+                <td className={`${cellPadding} align-middle`}>
+                  <div className="text-sm font-semibold text-gray-900">{cycle.linkedTeams} linked</div>
+                </td>
+
+                {/* Progress Column */}
+                <td className={`${cellPadding} align-middle`}>
+                  <div className="space-y-1.5">
+                    <div className="text-sm font-semibold text-gray-900">{cycle.participants}%</div>
+                    <div className="h-2 w-32 rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-brand-teal to-brand-navy"
+                        style={{ width: `${Math.min(cycle.participants, 100)}%` }}
+                      />
+                    </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 align-top">
-                  <div className="text-sm font-semibold text-gray-900">
-                    {cycle.participants}%
-                  </div>
-                  <div className="mt-1 h-1.5 w-28 rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-linear-to-r from-brand-teal to-brand-navy"
-                      style={{ width: `${cycle.participants}%` }}
-                    />
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right align-top">
-                  <div className="flex items-center justify-end gap-3">
+
+                {/* Actions Column */}
+                <td className={`${cellPadding} align-middle`}>
+                  <div className="flex items-center justify-end gap-2">
                     <Button
                       onClick={() => canSchedule && onSchedule?.(cycle)}
                       disabled={!canSchedule}
@@ -150,9 +158,7 @@ const CycleTable = ({
                     )}
                   </div>
                   {isDepartmentHead && !canSchedule && (
-                    <p className="mt-1 text-[11px] font-medium text-amber-600">
-                      Waiting for HR access
-                    </p>
+                    <p className="mt-2 text-right text-xs font-medium text-amber-600">Waiting for HR access</p>
                   )}
                 </td>
               </motion.tr>

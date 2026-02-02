@@ -204,28 +204,38 @@ export const getAssessmentCycles = async (
   params?: GetAssessmentCyclesParams
 ): Promise<AssessmentCycle[]> => {
   try {
-    // Build query parameters - only include non-empty values
+    // Build query parameters
     const queryParams: Record<string, string | string[]> = {};
     
+    // Department filter - pass as array: department: ["HR", "Finance"]
     if (params?.department?.length) {
       queryParams.department = params.department;
     }
+    
     if (params?.search) {
       queryParams.search = params.search;
     }
+    
     if (params?.status && params.status !== "All Status") {
       queryParams.status = params.status;
     }
+    
     if (params?.year && params.year !== "All Years") {
       queryParams.year = params.year;
     }
     
     const response = await api.get<AssessmentCycleAPIResponse>(
       API_ENDPOINTS.ASSESSMENT_CYCLE.GET_CYCLES_WITH_DEPARTMENTS,
-      { params: queryParams }
+      { 
+        params: queryParams,
+        // Axios will serialize array as: department[]=HR&department[]=Finance
+        // or department=HR&department=Finance depending on paramsSerializer
+        paramsSerializer: {
+          indexes: null, // Serialize as department[]=HR&department[]=Finance
+        }
+      }
     );
     
-    // Transform and return cycles
     const cycles = response.data?.message || [];
     return cycles.map(transformCycleFromAPI);
   } catch (error: unknown) {
