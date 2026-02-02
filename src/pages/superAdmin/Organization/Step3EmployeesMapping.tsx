@@ -58,7 +58,6 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const createEmployeeMutation = useCreateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
-  console.log("apiEmployees", apiEmployees);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
   const handleInputChange = (field: string, value: string) => {
