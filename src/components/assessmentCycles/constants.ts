@@ -35,4 +35,10 @@ export const DRAWER_CONFIG = {
       return "Save Schedule";
     },
   },
+  edit: {
+    title: "Edit Assessment Cycle",
+    getDescription: (cycleName?: string) =>
+      `Update cycle details for ${cycleName ?? "the cycle"}.`,
+    getSubmitText: () => "Save Changes",
+  },
 } as const;

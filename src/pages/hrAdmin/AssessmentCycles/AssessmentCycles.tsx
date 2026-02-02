@@ -44,7 +44,7 @@ const AssessmentCycles = () => {
   }, []);
 
   const [drawerState, setDrawerState] = useState<{
-    mode: "create" | "schedule";
+    mode: "create" | "schedule" | "edit";
     open: boolean;
     cycle?: AssessmentCycle | null;
   }>({ mode: "create", open: false, cycle: null });
@@ -58,6 +58,8 @@ const AssessmentCycles = () => {
     setDrawerState({ mode: "create", open: true, cycle: null });
   const openScheduleDrawer = (cycle: AssessmentCycle) =>
     setDrawerState({ mode: "schedule", open: true, cycle });
+  const openEditDrawer = (cycle: AssessmentCycle) =>
+    setDrawerState({ mode: "edit", open: true, cycle });
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
 
@@ -101,6 +103,30 @@ const AssessmentCycles = () => {
               endDate: payload.endDate,
               status: cycle.status === "Draft" ? "Upcoming" : cycle.status,
               assessmentTypes: payload.assessmentType ? [payload.assessmentType] : cycle.assessmentTypes,
+              notes: payload.notes,
+            }
+          : cycle
+      );
+      persistCycles(updated);
+      return updated;
+    });
+    closeDrawer();
+  };
+
+  const handleEdit = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle) return;
+    setCycles((prev) => {
+      const updated = prev.map((cycle) =>
+        cycle.id === drawerState.cycle?.id
+          ? {
+              ...cycle,
+              name: payload.name,
+              type: payload.type,
+              period: payload.period,
+              startDate: payload.startDate,
+              endDate: payload.endDate,
+              departments: payload.departments,
+              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : [],
               notes: payload.notes,
             }
           : cycle
@@ -214,6 +240,7 @@ const AssessmentCycles = () => {
         data={filteredCycles}
         onSchedule={openScheduleDrawer}
         onShare={openShareDrawer}
+        onEdit={openEditDrawer}
         variant="hr"
       />
 
@@ -222,7 +249,13 @@ const AssessmentCycles = () => {
         mode={drawerState.mode}
         cycle={drawerState.cycle}
         onClose={closeDrawer}
-        onSubmit={drawerState.mode === "create" ? handleCreate : handleSchedule}
+        onSubmit={
+          drawerState.mode === "create"
+            ? handleCreate
+            : drawerState.mode === "edit"
+            ? handleEdit
+            : handleSchedule
+        }
       />
 
       <ShareDrawer

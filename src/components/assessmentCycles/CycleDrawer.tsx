@@ -26,7 +26,7 @@ import {
 } from "./components";
 import { DEFAULT_PAYLOAD, FIELD_CLASSES, DRAWER_CONFIG } from "./constants";
 
-type DrawerMode = "create" | "schedule";
+type DrawerMode = "create" | "schedule" | "edit";
 
 interface CycleDrawerProps {
   open: boolean;
@@ -70,7 +70,7 @@ const CycleDrawer = ({
 
   // Initialize form based on mode
   useEffect(() => {
-    if (mode === "schedule" && cycle) {
+    if ((mode === "schedule" || mode === "edit") && cycle) {
       const departments = fixedDepartment
         ? [fixedDepartment]
         : cycle.departments;
@@ -418,8 +418,8 @@ const CycleDrawer = ({
                   />
                 )}
 
-                {/* Departments - Create Mode */}
-                {mode === "create" && (
+                {/* Departments - Create/Edit Mode */}
+                {(mode === "create" || mode === "edit") && (
                   <DepartmentSelector
                     departments={departmentOptions}
                     selected={form.departments}
@@ -430,7 +430,7 @@ const CycleDrawer = ({
                 )}
 
                 {/* Fixed Department Display */}
-                {mode === "schedule" && fixedDepartment && (
+                {(mode === "schedule" || mode === "edit") && fixedDepartment && (
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase text-gray-500">
                       Department
@@ -443,7 +443,9 @@ const CycleDrawer = ({
                       />
                     </div>
                     <p className="text-xs text-gray-500">
-                      Schedule for {fixedDepartment} department only
+                      {mode === "schedule" 
+                        ? `Schedule for ${fixedDepartment} department only`
+                        : `Editing cycle for ${fixedDepartment} department`}
                     </p>
                   </div>
                 )}
