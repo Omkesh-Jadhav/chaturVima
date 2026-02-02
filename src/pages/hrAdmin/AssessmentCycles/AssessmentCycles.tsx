@@ -1,7 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
 import { FilterBar, Button } from "@/components/ui";
+import { createAssessmentCycle } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
@@ -75,28 +77,41 @@ const AssessmentCycles = () => {
   const closeShareDrawer = () =>
     setShareDrawerState({ open: false, cycle: null });
 
+  // API mutation for creating assessment cycle
+  const createCycleMutation = useMutation({
+    mutationFn: createAssessmentCycle,
+    onSuccess: (data, variables) => {
+      // Create local cycle object from API response
+      const newCycle: AssessmentCycle = {
+        id: data?.name || `cycle-${Date.now()}`,
+        name: data?.cycle_name || variables.name,
+        startDate: data?.start_date || variables.startDate,
+        endDate: data?.end_date || variables.endDate,
+        type: (data?.assessment_type as AssessmentCycle["type"]) || variables.type,
+        period: (data?.period as AssessmentCycle["period"]) || variables.period,
+        status: "Draft",
+        departments: variables.departments,
+        assessmentTypes: variables.assessmentType ? [variables.assessmentType] : [],
+        participants: 0,
+        owner: "HR Ops",
+        linkedTeams: 0,
+        notes: variables.notes,
+      };
+      setCycles((prev) => {
+        const updated = [newCycle, ...prev];
+        persistCycles(updated);
+        return updated;
+      });
+      closeDrawer();
+    },
+    onError: (error) => {
+      console.error("Failed to create assessment cycle:", error);
+      alert("Failed to create assessment cycle. Please try again.");
+    },
+  });
+
   const handleCreate = (payload: CycleFormPayload) => {
-    const newCycle: AssessmentCycle = {
-      id: `cycle-${Date.now()}`,
-      name: payload.name,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
-      type: payload.type,
-      period: payload.period,
-      status: "Draft",
-      departments: payload.departments,
-      assessmentTypes: payload.assessmentType ? [payload.assessmentType] : [],
-      participants: 0,
-      owner: "HR Ops",
-      linkedTeams: 0,
-      notes: payload.notes,
-    };
-    setCycles((prev) => {
-      const updated = [newCycle, ...prev];
-      persistCycles(updated);
-      return updated;
-    });
-    closeDrawer();
+    createCycleMutation.mutate(payload);
   };
 
   const handleSchedule = (payload: CycleFormPayload) => {
@@ -263,6 +278,7 @@ const AssessmentCycles = () => {
             ? handleEdit
             : handleSchedule
         }
+        isLoading={drawerState.mode === "create" ? createCycleMutation.isPending : false}
       />
 
       <ShareDrawer

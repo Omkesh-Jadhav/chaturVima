@@ -35,6 +35,7 @@ interface CycleDrawerProps {
   onClose: () => void;
   onSubmit: (payload: CycleFormPayload) => void;
   fixedDepartment?: string;
+  isLoading?: boolean;
 }
 
 const CycleDrawer = ({
@@ -44,6 +45,7 @@ const CycleDrawer = ({
   onClose,
   onSubmit,
   fixedDepartment,
+  isLoading = false,
 }: CycleDrawerProps) => {
   // Fetch departments from API
   const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useDepartments();
@@ -701,10 +703,11 @@ const CycleDrawer = ({
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  disabled={isSubmitDisabled}
+                  disabled={isSubmitDisabled || isLoading}
                   variant="gradient"
                   size="md"
                   className="w-full"
+                  isLoading={isLoading}
                 >
                   {submitButtonText}
                 </Button>

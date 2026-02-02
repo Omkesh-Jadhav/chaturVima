@@ -345,3 +345,7 @@ export const sortStagesByScore = <T extends object>(
     return scoreB - scoreA;
   });
 };
+
+// ==================== Dimension Utilities ====================
+// Re-export dimension function from assessmentConfig for centralized usage
+export { getDimensionFromAssessmentType } from "./assessmentConfig";
