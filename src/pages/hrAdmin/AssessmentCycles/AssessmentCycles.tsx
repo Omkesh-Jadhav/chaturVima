@@ -11,15 +11,22 @@ import {
   CYCLES_STORAGE_KEY,
   statusFilters,
   yearFilters,
-  departmentOptions,
 } from "@/data/assessmentCycles";
 import type {
   AssessmentCycle,
   CycleFormPayload,
   ShareMatrix,
 } from "@/types/assessmentCycles";
+import { useDepartments } from "@/hooks/useDepartments";
 
 const AssessmentCycles = () => {
+  // Fetch departments from API
+  const { data: departments = [] } = useDepartments();
+  const departmentOptions = useMemo(() => {
+    if (!departments || departments.length === 0) return [];
+    return departments.map((dept) => dept.name).sort();
+  }, [departments]);
+  
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);

@@ -13,8 +13,8 @@ import type {
 } from "@/types/assessmentCycles";
 import {
   assessmentTypeOptions,
-  departmentOptions,
 } from "@/data/assessmentCycles";
+import { useDepartments } from "@/hooks/useDepartments";
 import { manualDepartments } from "@/data/manualAssessments";
 import { cn } from "@/utils/cn";
 import { toggleArrayItem, areAllSelected } from "@/utils/commonUtils";
@@ -45,6 +45,13 @@ const CycleDrawer = ({
   onSubmit,
   fixedDepartment,
 }: CycleDrawerProps) => {
+  // Fetch departments from API
+  const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useDepartments();
+  const departmentOptions = useMemo(() => {
+    if (!departments || departments.length === 0) return [];
+    return departments.map((dept) => dept.name).sort();
+  }, [departments]);
+  
   // State
   const [form, setForm] = useState<CycleFormPayload>(DEFAULT_PAYLOAD);
   const [enableManualSelection, setEnableManualSelection] = useState(false);
@@ -182,11 +189,11 @@ const CycleDrawer = ({
         ? []
         : [...departmentOptions],
     }));
-  }, []);
+  }, [departmentOptions]);
 
   const selectAllDepartments = useCallback(() => {
     setForm((prev) => ({ ...prev, departments: [...departmentOptions] }));
-  }, []);
+  }, [departmentOptions]);
 
   // Manual selection handlers
   const toggleManualDept = useCallback((dept: string) => {
@@ -409,24 +416,44 @@ const CycleDrawer = ({
 
                 {/* Departments - Schedule Mode */}
                 {mode === "schedule" && !fixedDepartment && (
-                  <DepartmentSelector
-                    departments={departmentOptions}
-                    selected={form.departments}
-                    onToggle={toggleDepartment}
-                    onSelectAll={toggleAllDepartments}
-                    showSelectAll={true}
-                  />
+                  <div className="space-y-2">
+                    {isLoadingDepartments ? (
+                      <div className="text-xs text-gray-500">Loading departments...</div>
+                    ) : departmentsError ? (
+                      <div className="text-xs text-red-500">Error loading departments. Please try again.</div>
+                    ) : departmentOptions.length === 0 ? (
+                      <div className="text-xs text-amber-600">No departments available.</div>
+                    ) : (
+                      <DepartmentSelector
+                        departments={departmentOptions}
+                        selected={form.departments}
+                        onToggle={toggleDepartment}
+                        onSelectAll={toggleAllDepartments}
+                        showSelectAll={true}
+                      />
+                    )}
+                  </div>
                 )}
 
                 {/* Departments - Create/Edit Mode */}
                 {(mode === "create" || mode === "edit") && (
-                  <DepartmentSelector
-                    departments={departmentOptions}
-                    selected={form.departments}
-                    onToggle={toggleDepartment}
-                    onSelectAll={selectAllDepartments}
-                    showSelectAll={true}
-                  />
+                  <div className="space-y-2">
+                    {isLoadingDepartments ? (
+                      <div className="text-xs text-gray-500">Loading departments...</div>
+                    ) : departmentsError ? (
+                      <div className="text-xs text-red-500">Error loading departments. Please try again.</div>
+                    ) : departmentOptions.length === 0 ? (
+                      <div className="text-xs text-amber-600">No departments available.</div>
+                    ) : (
+                      <DepartmentSelector
+                        departments={departmentOptions}
+                        selected={form.departments}
+                        onToggle={toggleDepartment}
+                        onSelectAll={selectAllDepartments}
+                        showSelectAll={true}
+                      />
+                    )}
+                  </div>
                 )}
 
                 {/* Fixed Department Display */}
@@ -495,16 +522,24 @@ const CycleDrawer = ({
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              {departmentOptions.map((dept) => (
-                                <DepartmentBadge
-                                  key={dept}
-                                  department={dept}
-                                  isActive={selectedDeptsForManual.includes(
-                                    dept
-                                  )}
-                                  onClick={() => toggleManualDept(dept)}
-                                />
-                              ))}
+                              {isLoadingDepartments ? (
+                                <div className="text-xs text-gray-500">Loading departments...</div>
+                              ) : departmentsError ? (
+                                <div className="text-xs text-red-500">Error loading departments.</div>
+                              ) : departmentOptions.length === 0 ? (
+                                <div className="text-xs text-amber-600">No departments available.</div>
+                              ) : (
+                                departmentOptions.map((dept) => (
+                                  <DepartmentBadge
+                                    key={dept}
+                                    department={dept}
+                                    isActive={selectedDeptsForManual.includes(
+                                      dept
+                                    )}
+                                    onClick={() => toggleManualDept(dept)}
+                                  />
+                                ))
+                              )}
                             </div>
                             {selectedDeptsForManual.length === 0 && (
                               <p className="text-xs text-amber-600">
