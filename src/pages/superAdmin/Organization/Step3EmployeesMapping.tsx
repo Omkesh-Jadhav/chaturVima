@@ -7,7 +7,7 @@ import {
   Download,
   AlertCircle,
 } from "lucide-react";
-import { validateEmail, validateTextOnly, validateDesignation } from "./validationUtils";
+import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
@@ -87,6 +87,14 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         setFieldErrors((prev) => ({ ...prev, [field]: "" }));
       }
     }
+
+    // Validate date relationship when either date changes
+    if (field === "dateOfBirth" || field === "dateOfJoining") {
+      // Use setTimeout to ensure state is updated before validation
+      setTimeout(() => {
+        validateDateRelationship();
+      }, 0);
+    }
   };
 
   const validateField = (field: string, value: string) => {
@@ -128,6 +136,27 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     return error === "";
   };
 
+  // Validate date relationships
+  const validateDateRelationship = () => {
+    if (formData.dateOfBirth && formData.dateOfJoining) {
+      if (!validateDateOfBirthBeforeJoining(formData.dateOfBirth, formData.dateOfJoining)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfJoining: "Date of joining must be after date of birth"
+        }));
+        return false;
+      } else {
+        // Clear the error if dates are valid
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfJoining: prev.dateOfJoining === "Date of joining must be after date of birth" ? "" : prev.dateOfJoining
+        }));
+        return true;
+      }
+    }
+    return true;
+  };
+
   const handleAddEmployee = async () => {
     if (
       !formData.firstName.trim() ||
@@ -138,8 +167,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
     // Validate all fields before adding
     const emailValid = validateField("email", formData.email);
+    const datesValid = validateDateRelationship();
 
-    if (!emailValid) {
+    if (!emailValid || !datesValid) {
       return;
     }
 
@@ -554,6 +584,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 placeholder="Select DoB"
                 className="w-full"
               />
+              {fieldErrors.dateOfBirth && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfBirth}</p>
+              )}
             </div>
 
             <div>
@@ -566,6 +599,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 placeholder="Joining Date"
                 className="w-full"
               />
+              {fieldErrors.dateOfJoining && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfJoining}</p>
+              )}
             </div>
 
             <div>

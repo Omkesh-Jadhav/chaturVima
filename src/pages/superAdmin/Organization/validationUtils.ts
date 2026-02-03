@@ -57,6 +57,22 @@ export const validateDesignation = (text: string): boolean => {
   return designationRegex.test(text.trim());
 };
 
+// Date comparison validation - ensures date of birth is before date of joining
+export const validateDateOfBirthBeforeJoining = (dateOfBirth: string, dateOfJoining: string): boolean => {
+  if (!dateOfBirth || !dateOfJoining) return true; // Optional fields or one is missing
+  
+  const dobDate = new Date(dateOfBirth);
+  const dojDate = new Date(dateOfJoining);
+  
+  // Check if dates are valid
+  if (isNaN(dobDate.getTime()) || isNaN(dojDate.getTime())) {
+    return true; // Let other validation handle invalid date formats
+  }
+  
+  // Date of birth should be before date of joining
+  return dobDate < dojDate;
+};
+
 // Tab-specific validation functions
 
 // Organization Tab Validations
