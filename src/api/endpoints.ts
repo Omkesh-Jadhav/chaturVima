@@ -13,6 +13,13 @@ export const API_ENDPOINTS = {
         SUBMIT_ASSESSMENT: `/api/resource/Assessment Submission`,
     },
 
+    ASSESSMENT_CYCLE: {
+        CREATE_CYCLE: `/api/resource/Assessment%20Cycle`,
+        UPDATE_CYCLE: `/api/resource/Assessment%20Cycle`,
+        GET_CYCLES: `/api/resource/Assessment%20Cycle`,
+        GET_CYCLES_WITH_DEPARTMENTS: `/api/method/chaturvima_api.api.assessment.cycle.get_assessment_cycles_with_departments`,
+    },
+
     EMPLOYEE: {
 
     },

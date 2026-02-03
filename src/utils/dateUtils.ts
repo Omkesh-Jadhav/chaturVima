@@ -73,3 +73,30 @@ export const daysUntil = (date: Date | string): number => {
   const diffTime = normalized.getTime() - today.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
+
+/**
+ * Format a date to API format (YYYY-MM-DD)
+ * @param date - Date object, date string in YYYY-MM-DD format, or ISO string
+ * @returns Formatted date string in YYYY-MM-DD format
+ */
+export const formatDateToAPI = (date: Date | string): string => {
+  if (!date) return "";
+  
+  // If it's already in YYYY-MM-DD format (from CalendarInput), return as is
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
+  
+  // Otherwise, parse it as a Date
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) {
+    console.warn("Invalid date provided to formatDateToAPI:", date);
+    return "";
+  }
+  
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  
+  return `${year}-${month}-${day}`;
+};

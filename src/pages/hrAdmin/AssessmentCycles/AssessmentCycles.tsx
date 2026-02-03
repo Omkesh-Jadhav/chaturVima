@@ -1,14 +1,13 @@
 import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
 import { FilterBar, Button } from "@/components/ui";
+import { createAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
   persistShareMatrix,
-  loadCycles,
-  persistCycles,
-  CYCLES_STORAGE_KEY,
   statusFilters,
   yearFilters,
 } from "@/data/assessmentCycles";
@@ -31,17 +30,45 @@ const AssessmentCycles = () => {
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [cycles, setCycles] = useState<AssessmentCycle[]>(() => loadCycles());
   const [shareMatrix, setShareMatrix] = useState<ShareMatrix>(() =>
     loadShareMatrix()
   );
+  
+  const queryClient = useQueryClient();
+  
+  // Build query params for API
+  const queryParams = useMemo<GetAssessmentCyclesParams>(() => {
+    const params: GetAssessmentCyclesParams = {};
+    
+    if (selectedDepartments.length > 0) {
+      params.department = selectedDepartments;
+    }
+    
+    if (search) {
+      params.search = search;
+    }
+    
+    if (status && status !== "All Status") {
+      params.status = status;
+    }
+    
+    if (year && year !== "All Years") {
+      params.year = year;
+    }
+    
+    return params;
+  }, [selectedDepartments, search, status, year]);
+  
+  // Fetch cycles from API
+  const { data: cycles = [], isLoading: isLoadingCycles } = useQuery({
+    queryKey: ["assessmentCycles", queryParams],
+    queryFn: () => getAssessmentCycles(queryParams),
+    staleTime: 30000, // 30 seconds
+  });
 
-  // Listen for cycle updates from other tabs/pages
+  // Listen for share matrix updates from other tabs/pages
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === CYCLES_STORAGE_KEY) {
-        setCycles(loadCycles());
-      }
       if (event.key === "cv_hr_share_matrix_v1") {
         setShareMatrix(loadShareMatrix());
       }
@@ -65,8 +92,6 @@ const AssessmentCycles = () => {
     setDrawerState({ mode: "create", open: true, cycle: null });
   const openScheduleDrawer = (cycle: AssessmentCycle) =>
     setDrawerState({ mode: "schedule", open: true, cycle });
-  const openEditDrawer = (cycle: AssessmentCycle) =>
-    setDrawerState({ mode: "edit", open: true, cycle });
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
 
@@ -75,72 +100,41 @@ const AssessmentCycles = () => {
   const closeShareDrawer = () =>
     setShareDrawerState({ open: false, cycle: null });
 
+  // API mutation for creating assessment cycle
+  const createCycleMutation = useMutation({
+    mutationFn: createAssessmentCycle,
+    onSuccess: () => {
+      // Invalidate and refetch cycles after creation
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      closeDrawer();
+    },
+    onError: (error) => {
+      console.error("Failed to create assessment cycle:", error);
+      alert("Failed to create assessment cycle. Please try again.");
+    },
+  });
+
   const handleCreate = (payload: CycleFormPayload) => {
-    const newCycle: AssessmentCycle = {
-      id: `cycle-${Date.now()}`,
-      name: payload.name,
-      startDate: payload.startDate,
-      endDate: payload.endDate,
-      type: payload.type,
-      period: payload.period,
-      status: "Draft",
-      departments: payload.departments,
-      assessmentTypes: payload.assessmentType ? [payload.assessmentType] : [],
-      participants: 0,
-      owner: "HR Ops",
-      linkedTeams: 0,
-      notes: payload.notes,
-    };
-    setCycles((prev) => {
-      const updated = [newCycle, ...prev];
-      persistCycles(updated);
-      return updated;
-    });
+    createCycleMutation.mutate(payload);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSave = (_payload: CycleFormPayload) => {
+    // Save is handled locally for now - will be updated when UPDATE API is integrated
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSchedule = (_payload: CycleFormPayload) => {
+    // Schedule will update the cycle status - will be integrated with UPDATE API
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
   };
 
-  const handleSchedule = (payload: CycleFormPayload) => {
-    if (!drawerState.cycle) return;
-    setCycles((prev) => {
-      const updated = prev.map((cycle) =>
-        cycle.id === drawerState.cycle?.id
-          ? {
-              ...cycle,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              status: cycle.status === "Draft" ? "Upcoming" : cycle.status,
-              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : cycle.assessmentTypes,
-              notes: payload.notes,
-            }
-          : cycle
-      );
-      persistCycles(updated);
-      return updated;
-    });
-    closeDrawer();
-  };
-
-  const handleEdit = (payload: CycleFormPayload) => {
-    if (!drawerState.cycle) return;
-    setCycles((prev) => {
-      const updated = prev.map((cycle) =>
-        cycle.id === drawerState.cycle?.id
-          ? {
-              ...cycle,
-              name: payload.name,
-              type: payload.type,
-              period: payload.period,
-              startDate: payload.startDate,
-              endDate: payload.endDate,
-              departments: payload.departments,
-              assessmentTypes: payload.assessmentType ? [payload.assessmentType] : [],
-              notes: payload.notes,
-            }
-          : cycle
-      );
-      persistCycles(updated);
-      return updated;
-    });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleEdit = (_payload: CycleFormPayload) => {
+    // Edit will update the cycle - will be integrated with UPDATE API
+    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
     closeDrawer();
   };
 
@@ -157,26 +151,8 @@ const AssessmentCycles = () => {
     });
   };
 
-  const filteredCycles = useMemo(() => {
-    return cycles.filter((cycle) => {
-      const matchesSearch =
-        !search ||
-        cycle.name.toLowerCase().includes(search.toLowerCase()) ||
-        cycle.departments.some((dept) =>
-          dept.toLowerCase().includes(search.toLowerCase())
-        );
-      const matchesStatus = status === "All Status" || cycle.status === status;
-      const matchesDepartments =
-        selectedDepartments.length === 0 ||
-        cycle.departments.some((dept) => selectedDepartments.includes(dept));
-      const matchesYear =
-        year === "All Years" ||
-        new Date(cycle.startDate).getFullYear().toString() === year;
-      return (
-        matchesSearch && matchesStatus && matchesDepartments && matchesYear
-      );
-    });
-  }, [cycles, search, status, selectedDepartments, year]);
+  // API handles filtering, so we just use the cycles directly
+  const filteredCycles = cycles;
 
   const handleClearFilters = () => {
     setStatus(statusFilters[0]);
@@ -197,7 +173,7 @@ const AssessmentCycles = () => {
             Manage cycle lifecycle and track participation across your organization.
           </p>
         </div>
-        <div className="flex items-center justify-end flex-shrink-0">
+        <div className="flex items-center justify-end shrink-0">
           <Button
             onClick={openCreateDrawer}
             variant="gradient"
@@ -214,7 +190,7 @@ const AssessmentCycles = () => {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search cycles or departments",
+          placeholder: "Search assessment cycle name",
           className: "w-full sm:w-auto",
         }}
         filters={[
@@ -243,13 +219,18 @@ const AssessmentCycles = () => {
         onClearFilters={handleClearFilters}
       />
 
-      <CycleTable
-        data={filteredCycles}
-        onSchedule={openScheduleDrawer}
-        onShare={openShareDrawer}
-        onEdit={openEditDrawer}
-        variant="hr"
-      />
+      {isLoadingCycles ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">Loading assessment cycles...</div>
+        </div>
+      ) : (
+        <CycleTable
+          data={filteredCycles}
+          onSchedule={openScheduleDrawer}
+          onShare={openShareDrawer}
+          variant="hr"
+        />
+      )}
 
       <CycleDrawer
         open={drawerState.open}
@@ -263,6 +244,8 @@ const AssessmentCycles = () => {
             ? handleEdit
             : handleSchedule
         }
+        onSave={drawerState.mode === "schedule" ? handleSave : undefined}
+        isLoading={drawerState.mode === "create" ? createCycleMutation.isPending : false}
       />
 
       <ShareDrawer

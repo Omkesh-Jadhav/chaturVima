@@ -74,6 +74,38 @@ export const getAssessmentTypeColorToken = (
 };
 
 /**
+ * Assessment Type to Dimension Mapping
+ * Centralized mapping for assessment types to their dimension values
+ */
+export const ASSESSMENT_TYPE_DIMENSIONS: Record<string, string> = {
+  "Employee Self Assessment": "1D",
+  "Manager Relationship Assessment": "2D",
+  "Department Assessment": "3D",
+  "Company Assessment": "4D",
+};
+
+/**
+ * Get dimension value for an assessment type
+ * @param assessmentType - The assessment type name
+ * @returns Dimension string (e.g., "2D", "3D")
+ */
+export const getDimensionFromAssessmentType = (assessmentType: string): string => {
+  return ASSESSMENT_TYPE_DIMENSIONS[assessmentType] || "2D";
+};
+
+/**
+ * Get assessment type name from dimension value
+ * @param dimension - The dimension value (e.g., "1D", "2D", "3D", "4D")
+ * @returns Assessment type name or empty string if not found
+ */
+export const getAssessmentTypeFromDimension = (dimension: string): string => {
+  const entry = Object.entries(ASSESSMENT_TYPE_DIMENSIONS).find(
+    ([, dim]) => dim === dimension
+  );
+  return entry ? entry[0] : "";
+};
+
+/**
  * Category palette for history table
  */
 export type CategoryPalette = {

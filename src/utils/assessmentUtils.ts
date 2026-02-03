@@ -56,11 +56,6 @@ export const CYCLE_STATUS_COLORS: Record<
     text: "text-emerald-800",
     border: "border-emerald-200",
   },
-  Upcoming: {
-    bg: "bg-orange-100",
-    text: "text-orange-800",
-    border: "border-orange-200",
-  },
   Completed: {
     bg: "bg-slate-200",
     text: "text-slate-800",
@@ -345,3 +340,7 @@ export const sortStagesByScore = <T extends object>(
     return scoreB - scoreA;
   });
 };
+
+// ==================== Dimension Utilities ====================
+// Re-export dimension function from assessmentConfig for centralized usage
+export { getDimensionFromAssessmentType } from "./assessmentConfig";

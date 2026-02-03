@@ -39,7 +39,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     endDate: "2025-02-28",
     type: "Annual",
     period: "Calendar",
-    status: "Upcoming",
+    status: "Draft",
     departments: ["Leadership", "Marketing"],
     assessmentTypes: [
       "Manager Relationship Assessment",
@@ -74,7 +74,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     endDate: "2024-11-25",
     type: "Adhoc",
     period: "Fiscal",
-    status: "Upcoming",
+    status: "Draft",
     departments: ["People Ops", "Talent"],
     assessmentTypes: [
       "Company Assessment",
@@ -189,7 +189,7 @@ export const persistCycles = (cycles: AssessmentCycle[]) => {
   localStorage.setItem(CYCLES_STORAGE_KEY, JSON.stringify(cycles));
 };
 
-export const statusFilters = ["All Status", "Active", "Upcoming", "Completed"];
+export const statusFilters = ["All Status", "Active", "Draft", "Completed"];
 export const yearFilters = ["All Years", "2024", "2025"];
 export const departmentOptions = Array.from(
   new Set(assessmentCyclesSeed.flatMap((cycle) => cycle.departments))
