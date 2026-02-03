@@ -91,8 +91,9 @@ const CycleTable = ({
           {data.map((cycle, idx) => {
             const palette = CYCLE_STATUS_COLORS[cycle.status];
             const isCompleted = cycle.status === "Completed";
-            const canSchedule = isCompleted ? false : isDepartmentHead ? scheduleAccess[cycle.id] : true;
-            const canShare = !isCompleted;
+            const isActive = cycle.status === "Active";
+            const canSchedule = !isCompleted && !isActive ? (isDepartmentHead ? scheduleAccess[cycle.id] : true) : false;
+            const canShare = !isCompleted && !isActive;
 
             return (
               <motion.tr
@@ -164,7 +165,7 @@ const CycleTable = ({
                     <div className="text-sm font-semibold text-gray-900">{cycle.participants}%</div>
                     <div className="h-2 w-32 rounded-full bg-gray-100">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-brand-teal to-brand-navy"
+                        className="h-full rounded-full bg-linear-to-r from-brand-teal to-brand-navy"
                         style={{ width: `${Math.min(cycle.participants, 100)}%` }}
                       />
                     </div>
