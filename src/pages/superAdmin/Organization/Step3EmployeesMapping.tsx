@@ -43,7 +43,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     department: "",
     reports_to: "",
     boss: "",
-    role: "Employee" as "Employee" | "HoD",
+    role: "Employee" as "Employee" | "Department Head",
   });
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -387,7 +387,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const getAvailableBosses = () => {
     // Get all employees (API data or props data)
     const allEmployees = getFilteredEmployees();
-    return allEmployees.filter((emp) => emp.role === "HoD");
+    return allEmployees.filter((emp) => emp.role === "Department Head");
   };
 
   // Helper function to get employee ID from name
@@ -446,7 +446,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       employeeId: emp.name || '',
       name: emp.employee_name || '',
       email: emp.user_id || emp.company_email || '',
-      role: (emp.role_profile as 'Employee' | 'HoD') || 'HoD',
+      role: (emp.role_profile as 'Employee' | 'Department Head') || 'Department Head',
       department: emp.department || '',
       designation: emp.designation || '',
       boss: emp.reports_to_name || emp.reports_to || '',
@@ -744,7 +744,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 value={formData.role}
                 onChange={(value) => handleInputChange("role", value)}
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                options={["Employee", "HoD"]}
+                options={["Employee", "Department Head"]}
               />
             </div>
 
@@ -937,7 +937,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500">
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
+                            className={`px-2 py-1 text-xs rounded-full ${employee.role === "Department Head"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-gray-100 text-gray-800"
                               }`}
