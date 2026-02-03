@@ -43,7 +43,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     department: "",
     reports_to: "",
     boss: "",
-    role: "Employee" as "Employee" | "HoD",
+    role: "Employee" as "Employee" | "Department Head",
   });
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -91,6 +91,48 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         }));
       } else {
         setFieldErrors((prev) => ({ ...prev, department: "" }));
+      }
+    } else if (field === "gender") {
+      // Validate gender selection
+      if (!value || value === "Select Gender") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          gender: "Please select a gender"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, gender: "" }));
+      }
+    } else if (field === "dateOfJoining") {
+      // Validate date of joining
+      if (!value) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfJoining: "Please select date of joining"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, dateOfJoining: "" }));
+      }
+    } else if (field === "dateOfBirth") {
+      // Validate date of birth
+      if (!value) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfBirth: "Please select date of birth"
+        }));
+      } else {
+        // Check if date of birth is in the future
+        const selectedDate = new Date(value);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Reset time to compare only dates
+        
+        if (selectedDate >= currentDate) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            dateOfBirth: "Date of birth must be earlier than current date"
+          }));
+        } else {
+          setFieldErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+        }
       }
     } else {
       // Clear field error when user starts typing for other fields
@@ -188,6 +230,46 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         department: "Please select a department"
       }));
       return;
+    }
+
+    // Check if gender is selected
+    if (!formData.gender || formData.gender === "Select Gender") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        gender: "Please select a gender"
+      }));
+      return;
+    }
+
+    // Check if date of joining is selected
+    if (!formData.dateOfJoining) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        dateOfJoining: "Please select date of joining"
+      }));
+      return;
+    }
+
+    // Check if date of birth is selected
+    if (!formData.dateOfBirth) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        dateOfBirth: "Please select date of birth"
+      }));
+      return;
+    } else {
+      // Check if date of birth is in the future
+      const selectedDate = new Date(formData.dateOfBirth);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      
+      if (selectedDate >= currentDate) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfBirth: "Date of birth must be earlier than current date"
+        }));
+        return;
+      }
     }
 
     if (!emailValid || !datesValid) {
@@ -305,7 +387,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const getAvailableBosses = () => {
     // Get all employees (API data or props data)
     const allEmployees = getFilteredEmployees();
-    return allEmployees.filter((emp) => emp.role === "HoD");
+    return allEmployees.filter((emp) => emp.role === "Department Head");
   };
 
   // Helper function to get employee ID from name
@@ -364,7 +446,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       employeeId: emp.name || '',
       name: emp.employee_name || '',
       email: emp.user_id || emp.company_email || '',
-      role: (emp.role_profile as 'Employee' | 'HoD') || 'HoD',
+      role: (emp.role_profile as 'Employee' | 'Department Head') || 'Department Head',
       department: emp.department || '',
       designation: emp.designation || '',
       boss: emp.reports_to_name || emp.reports_to || '',
@@ -580,7 +662,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gender
+                Gender <span className="text-red-500">*</span>
               </label>
               <FilterSelect
                 value={formData.gender || "Select Gender"}
@@ -590,14 +672,21 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     value === "Select Gender" ? "" : value
                   )
                 }
-                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full border-gray-300 focus:outline-none focus:ring-2 ${
+                  fieldErrors.gender
+                    ? "border-red-300 focus:ring-red-500"
+                    : "focus:ring-brand-teal"
+                }`}
                 options={["Select Gender", "Male", "Female", "Other"]}
               />
+              {fieldErrors.gender && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.gender}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date of Birth
+                Date of Birth <span className="text-red-500">*</span>
               </label>
               <CalendarInput
                 value={formData.dateOfBirth}
@@ -612,7 +701,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date of Joining
+                Date of Joining <span className="text-red-500">*</span>
               </label>
               <CalendarInput
                 value={formData.dateOfJoining}
@@ -655,7 +744,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 value={formData.role}
                 onChange={(value) => handleInputChange("role", value)}
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                options={["Employee", "HoD"]}
+                options={["Employee", "Department Head"]}
               />
             </div>
 
@@ -848,7 +937,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500">
                           <span
-                            className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
+                            className={`px-2 py-1 text-xs rounded-full ${employee.role === "Department Head"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-gray-100 text-gray-800"
                               }`}
