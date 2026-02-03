@@ -16,7 +16,6 @@ type StatusFilter = "All" | CycleStatus;
 const STATUS_FILTERS: StatusFilter[] = [
   "All",
   "Active",
-  "Upcoming",
   "Completed",
   "Draft",
 ];

@@ -39,7 +39,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     endDate: "2025-02-28",
     type: "Annual",
     period: "Calendar",
-    status: "Upcoming",
+    status: "Draft",
     departments: ["Leadership", "Marketing"],
     assessmentTypes: [
       "Manager Relationship Assessment",
@@ -74,7 +74,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     endDate: "2024-11-25",
     type: "Adhoc",
     period: "Fiscal",
-    status: "Upcoming",
+    status: "Draft",
     departments: ["People Ops", "Talent"],
     assessmentTypes: [
       "Company Assessment",

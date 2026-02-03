@@ -46,7 +46,7 @@ const DepartmentHeadStatus = () => {
         endDate: "2025-02-15",
         type: "Quarterly",
         period: "Calendar",
-        status: "Upcoming",
+        status: "Draft",
         departments: ["IT", "Marketing"],
         assessmentTypes: ["Employee Self Assessment"],
         allowCustomUpload: false,
@@ -61,7 +61,7 @@ const DepartmentHeadStatus = () => {
         endDate: "2025-03-31",
         type: "Annual",
         period: "Calendar",
-        status: "Upcoming",
+        status: "Draft",
         departments: ["Leadership", "People Ops"],
         assessmentTypes: ["Company Assessment"],
         allowCustomUpload: false,
@@ -76,7 +76,7 @@ const DepartmentHeadStatus = () => {
         endDate: "2025-06-30",
         type: "Quarterly",
         period: "Calendar",
-        status: "Upcoming",
+        status: "Draft",
         departments: ["IT", "Marketing", "People Ops"],
         assessmentTypes: [
           "Employee Self Assessment",
@@ -166,7 +166,7 @@ const DepartmentHeadStatus = () => {
         const scheduledCycle = cycles.find(
           (cycle) =>
             cycle.departments.includes(head.department) &&
-            (cycle.status === "Active" || cycle.status === "Upcoming")
+            (cycle.status === "Active" || cycle.status === "Draft")
         );
 
         // For testing: Force some HODs to be pending (index 1, 2, 3)
