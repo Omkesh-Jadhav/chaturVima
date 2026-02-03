@@ -560,7 +560,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                           <td className="px-4 py-3 whitespace-nowrap">
                             <Badge
                               variant={employee.role === "Department Head" ? "info" : "default"}
-                              className="text-xs font-semibold shadow-sm"
+                              className={`text-xs font-semibold shadow-sm ${
+                                employee.role === "Department Head" 
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200" 
+                                  : "bg-yellow-100 text-gray-700 border border-yellow-200"
+                              }`}
                             >
                               {employee.role}
                             </Badge>
