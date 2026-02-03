@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Loader2 } from "lucide-react";
 import { Button, Input, FilterSelect, CalendarInput } from "@/components/ui";
-import { validateEmail } from "@/pages/superAdmin/Organization/validationUtils";
+import { validateEmail, validateDateOfBirthBeforeJoining } from "@/pages/superAdmin/Organization/validationUtils";
 import type { Employee, Department } from "@/pages/superAdmin/Organization/types";
 import { useGetEmployeeDetails, useEditEmployeeDetails } from "@/hooks/useEmployees";
 
@@ -111,6 +111,26 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
+
+    // Validate department selection
+    if (field === "department") {
+      if (!value || value === "Select Department") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          department: "Please select a department"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, department: "" }));
+      }
+    }
+
+    // Validate date relationship when either date changes
+    if (field === "dateOfBirth" || field === "dateOfJoining") {
+      // Use setTimeout to ensure state is updated before validation
+      setTimeout(() => {
+        validateDateRelationship();
+      }, 0);
+    }
   };
 
   const validateField = (field: string, value: string) => {
@@ -138,15 +158,46 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     return error === "";
   };
 
+  // Validate date relationships
+  const validateDateRelationship = () => {
+    if (formData.dateOfBirth && formData.dateOfJoining) {
+      if (!validateDateOfBirthBeforeJoining(formData.dateOfBirth, formData.dateOfJoining)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfJoining: "Date of joining must be after date of birth"
+        }));
+        return false;
+      } else {
+        // Clear the error if dates are valid
+        setFieldErrors((prev) => ({
+          ...prev,
+          dateOfJoining: prev.dateOfJoining === "Date of joining must be after date of birth" ? "" : prev.dateOfJoining
+        }));
+        return true;
+      }
+    }
+    return true;
+  };
+
   const handleSave = async () => {
-    if (!employee || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+    if (!employee || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || !formData.department.trim()) {
       return;
     }
 
     // Validate all fields before saving
     const emailValid = validateField("email", formData.email);
+    const datesValid = validateDateRelationship();
+    
+    // Check if department is selected
+    if (!formData.department || formData.department === "Select Department") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        department: "Please select a department"
+      }));
+      return;
+    }
 
-    if (!emailValid) {
+    if (!emailValid || !datesValid) {
       return;
     }
 
@@ -353,6 +404,9 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
                 placeholder="Select date of birth"
                 className="w-full"
               />
+              {fieldErrors.dateOfBirth && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfBirth}</p>
+              )}
             </div>
 
             <div>
@@ -365,6 +419,9 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
                 placeholder="Select date of joining"
                 className="w-full"
               />
+              {fieldErrors.dateOfJoining && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.dateOfJoining}</p>
+              )}
             </div>
 
             <div>
@@ -396,7 +453,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department
+                Department <span className="text-red-500">*</span>
               </label>
               <FilterSelect
                 value={formData.department || "Select Department"}
@@ -406,12 +463,19 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
                     value === "Select Department" ? "" : value
                   )
                 }
-                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full border-gray-300 focus:outline-none focus:ring-2 ${
+                  fieldErrors.department
+                    ? "border-red-300 focus:ring-red-500"
+                    : "focus:ring-brand-teal"
+                }`}
                 options={[
                   "Select Department",
                   ...departments.map((dept) => dept.name),
                 ]}
               />
+              {fieldErrors.department && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.department}</p>
+              )}
             </div>
 
             <div>
