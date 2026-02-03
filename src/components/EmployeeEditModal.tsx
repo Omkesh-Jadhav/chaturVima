@@ -35,7 +35,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     designation: "",
     department: "",
     boss: "",
-    role: "Employee" as "Employee" | "HoD",
+    role: "Employee" as "Employee" | "Department Head",
   });
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
@@ -542,7 +542,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
                 value={formData.role}
                 onChange={(value) => handleInputChange("role", value)}
                 className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                options={["Employee", "HoD"]}
+                options={["Employee", "Department Head"]}
               />
             </div>
 
