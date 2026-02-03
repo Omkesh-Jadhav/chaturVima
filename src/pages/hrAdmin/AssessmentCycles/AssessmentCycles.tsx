@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Plus, AlertTriangle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -162,7 +162,7 @@ const AssessmentCycles = () => {
 
   const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
 
-  const handleSchedule = (payload: CycleFormPayload) => {
+  const handleSchedule = (_payload: CycleFormPayload) => {
     if (!drawerState.cycle?.id) {
       cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot schedule.");
       return;
