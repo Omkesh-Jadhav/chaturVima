@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
 import type { CycleDrawerRef } from "@/components/assessmentCycles/CycleDrawer";
 import { FilterBar, Button } from "@/components/ui";
-import { createAssessmentCycle, updateAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
+import { createAssessmentCycle, updateAssessmentCycle, scheduleAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
@@ -141,11 +141,25 @@ const AssessmentCycles = () => {
     updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSchedule = (_payload: CycleFormPayload) => {
-    // Schedule will update the cycle status - will be integrated with UPDATE API
-    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
-    closeDrawer();
+  // API mutation for scheduling assessment cycle
+  const scheduleCycleMutation = useMutation({
+    mutationFn: (cycleId: string) => scheduleAssessmentCycle(cycleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      closeDrawer();
+    },
+    onError: (error) => {
+      console.error("Failed to schedule assessment cycle:", error);
+      cycleDrawerRef.current?.showError("Failed to schedule assessment cycle. Please try again.");
+    },
+  });
+
+  const handleSchedule = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle?.id) {
+      cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot schedule.");
+      return;
+    }
+    scheduleCycleMutation.mutate(drawerState.cycle.id);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -267,7 +281,7 @@ const AssessmentCycles = () => {
           drawerState.mode === "create" 
             ? createCycleMutation.isPending 
             : drawerState.mode === "schedule"
-            ? updateCycleMutation.isPending
+            ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
             : false
         }
       />

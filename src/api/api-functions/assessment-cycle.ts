@@ -66,6 +66,17 @@ export const updateAssessmentCycle = async (cycleId: string, payload: CycleFormP
   }
 };
 
+// Schedule assessment cycle (sets docstatus to 1)
+export const scheduleAssessmentCycle = async (cycleId: string) => {
+  try {
+    const response = await api.put(`${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${cycleId}`, { docstatus: 1 });
+    return response.data;
+  } catch (error: unknown) {
+    console.error("ERROR - scheduleAssessmentCycle:", error);
+    throw error;
+  }
+};
+
 // API response structure
 export interface AssessmentCycleAPIResponse {
   message: Array<{

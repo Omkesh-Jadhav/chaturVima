@@ -15,7 +15,7 @@ export const API_ENDPOINTS = {
 
     ASSESSMENT_CYCLE: {
         CREATE_CYCLE: `/api/resource/Assessment%20Cycle`,
-        UPDATE_CYCLE: `/api/resource/Assessment%20Cycle`,
+        UPDATE_CYCLE: `/api/resource/Assessment%20Cycle`, // Used for both update and schedule (with docstatus: 1)
         GET_CYCLES: `/api/resource/Assessment%20Cycle`,
         GET_CYCLES_WITH_DEPARTMENTS: `/api/method/chaturvima_api.api.assessment.cycle.get_assessment_cycles_with_departments`,
     },
