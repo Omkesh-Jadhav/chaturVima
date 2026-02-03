@@ -258,7 +258,7 @@ const AssessmentCycles = () => {
             options: departmentOptions,
             selected: selectedDepartments,
             onChange: setSelectedDepartments,
-            placeholder: "All departments",
+            placeholder: "All Departments",
           },
         ]}
         onClearFilters={handleClearFilters}

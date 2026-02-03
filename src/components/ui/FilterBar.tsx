@@ -71,13 +71,15 @@ export const FilterBar = ({
         </div>
       </div>
       {showClearButton && hasActiveFilters && onClearFilters && (
-        <button
-          onClick={onClearFilters}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-brand-teal hover:bg-brand-teal/10 transition-all duration-200"
-        >
-          <Filter className="h-3 w-3" />
-          Clear all filters
-        </button>
+        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-end">
+          <button
+            onClick={onClearFilters}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-brand-teal hover:bg-brand-teal/10 transition-all duration-200"
+          >
+            <Filter className="h-3 w-3" />
+            Clear all filters
+          </button>
+        </div>
       )}
     </div>
   );
