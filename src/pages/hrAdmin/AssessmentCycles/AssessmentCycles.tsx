@@ -1,9 +1,11 @@
-import { useMemo, useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { Plus, AlertTriangle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
+import type { CycleDrawerRef } from "@/components/assessmentCycles/CycleDrawer";
 import { FilterBar, Button } from "@/components/ui";
-import { createAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
+import { createAssessmentCycle, updateAssessmentCycle, scheduleAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
@@ -90,8 +92,13 @@ const AssessmentCycles = () => {
 
   const openCreateDrawer = () =>
     setDrawerState({ mode: "create", open: true, cycle: null });
-  const openScheduleDrawer = (cycle: AssessmentCycle) =>
+  const openScheduleDrawer = (cycle: AssessmentCycle) => {
+    // Prevent opening schedule drawer if cycle is Active
+    if (cycle.status === "Active") {
+      return;
+    }
     setDrawerState({ mode: "schedule", open: true, cycle });
+  };
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
 
@@ -104,13 +111,11 @@ const AssessmentCycles = () => {
   const createCycleMutation = useMutation({
     mutationFn: createAssessmentCycle,
     onSuccess: () => {
-      // Invalidate and refetch cycles after creation
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
       closeDrawer();
     },
     onError: (error) => {
       console.error("Failed to create assessment cycle:", error);
-      alert("Failed to create assessment cycle. Please try again.");
     },
   });
 
@@ -118,17 +123,57 @@ const AssessmentCycles = () => {
     createCycleMutation.mutate(payload);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSave = (_payload: CycleFormPayload) => {
-    // Save is handled locally for now - will be updated when UPDATE API is integrated
-    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+  const cycleDrawerRef = useRef<CycleDrawerRef>(null);
+
+  // API mutation for updating assessment cycle
+  const updateCycleMutation = useMutation({
+    mutationFn: ({ cycleId, payload }: { cycleId: string; payload: CycleFormPayload }) =>
+      updateAssessmentCycle(cycleId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      cycleDrawerRef.current?.markAsSaved();
+    },
+    onError: (error) => {
+      console.error("Failed to update assessment cycle:", error);
+      cycleDrawerRef.current?.showError("Failed to save assessment cycle. Please try again.");
+    },
+  });
+
+  const handleSave = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle?.id) {
+      cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot save.");
+      return;
+    }
+    updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // API mutation for scheduling assessment cycle
+  const scheduleCycleMutation = useMutation({
+    mutationFn: (cycleId: string) => scheduleAssessmentCycle(cycleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      closeDrawer();
+    },
+    onError: (error) => {
+      console.error("Failed to schedule assessment cycle:", error);
+      cycleDrawerRef.current?.showError("Failed to schedule assessment cycle. Please try again.");
+    },
+  });
+
+  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+
   const handleSchedule = (_payload: CycleFormPayload) => {
-    // Schedule will update the cycle status - will be integrated with UPDATE API
-    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
-    closeDrawer();
+    if (!drawerState.cycle?.id) {
+      cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot schedule.");
+      return;
+    }
+    setShowScheduleConfirm(true);
+  };
+
+  const confirmSchedule = () => {
+    if (!drawerState.cycle?.id) return;
+    scheduleCycleMutation.mutate(drawerState.cycle.id);
+    setShowScheduleConfirm(false);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -213,7 +258,7 @@ const AssessmentCycles = () => {
             options: departmentOptions,
             selected: selectedDepartments,
             onChange: setSelectedDepartments,
-            placeholder: "All departments",
+            placeholder: "All Departments",
           },
         ]}
         onClearFilters={handleClearFilters}
@@ -233,6 +278,7 @@ const AssessmentCycles = () => {
       )}
 
       <CycleDrawer
+        ref={cycleDrawerRef}
         open={drawerState.open}
         mode={drawerState.mode}
         cycle={drawerState.cycle}
@@ -245,7 +291,13 @@ const AssessmentCycles = () => {
             : handleSchedule
         }
         onSave={drawerState.mode === "schedule" ? handleSave : undefined}
-        isLoading={drawerState.mode === "create" ? createCycleMutation.isPending : false}
+        isLoading={
+          drawerState.mode === "create" 
+            ? createCycleMutation.isPending 
+            : drawerState.mode === "schedule"
+            ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
+            : false
+        }
       />
 
       <ShareDrawer
@@ -256,6 +308,67 @@ const AssessmentCycles = () => {
         shareMatrix={shareMatrix}
         onToggle={handleShareToggle}
       />
+
+      {/* Schedule Confirmation Modal */}
+      <AnimatePresence>
+        {showScheduleConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowScheduleConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-linear-to-r from-amber-50 to-orange-50 p-6 pb-8 relative">
+                <div className="relative z-10 text-center">
+                  <div className="mb-4 flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center border-4 border-amber-200">
+                      <AlertTriangle className="h-8 w-8 text-amber-600" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Confirm Schedule Cycle
+                  </h2>
+                  <p className="text-gray-700 text-sm">
+                    Are you sure you want to schedule this assessment cycle?
+                  </p>
+                  <div className="mt-4 p-3 bg-amber-100/50 rounded-lg border border-amber-200">
+                    <p className="text-xs font-semibold text-amber-800">
+                      ⚠️ Important: Once scheduled, you won't be able to edit this cycle.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 flex gap-3">
+                <Button
+                  onClick={() => setShowScheduleConfirm(false)}
+                  variant="outline"
+                  size="md"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmSchedule}
+                  variant="gradient"
+                  size="md"
+                  className="flex-1"
+                  isLoading={scheduleCycleMutation.isPending}
+                >
+                  Yes, Schedule
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

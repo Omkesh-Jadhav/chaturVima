@@ -38,4 +38,5 @@ export interface CycleFormPayload {
   departments: string[];
   assessmentType: string;
   notes?: string;
+  employees?: string[]; // Employee IDs/codes for manual selection
 }

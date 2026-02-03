@@ -1,5 +1,5 @@
 // Drawer component for creating and scheduling assessment cycles
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useImperativeHandle, forwardRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import {
@@ -40,16 +40,25 @@ interface CycleDrawerProps {
   isLoading?: boolean;
 }
 
-const CycleDrawer = ({
-  open,
-  mode,
-  cycle,
-  onClose,
-  onSubmit,
-  onSave,
-  fixedDepartment,
-  isLoading = false,
-}: CycleDrawerProps) => {
+export interface CycleDrawerRef {
+  markAsSaved: () => void;
+  showError: (message: string) => void;
+}
+
+const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
+  (
+    {
+      open,
+      mode,
+      cycle,
+      onClose,
+      onSubmit,
+      onSave,
+      fixedDepartment,
+      isLoading = false,
+    },
+    ref
+  ) => {
   // Fetch departments from API
   const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useDepartments();
   const departmentOptions = useMemo(() => {
@@ -69,6 +78,7 @@ const CycleDrawer = ({
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Custom hooks
   useBodyScrollLock(open);
@@ -80,6 +90,19 @@ const CycleDrawer = ({
     setSelectedDeptsForManual([]);
     setEmployeeSearch("");
   }, []);
+
+  // Expose methods via ref
+  useImperativeHandle(ref, () => ({
+    markAsSaved: () => {
+      setHasSaved(true);
+      setSaveMessage({ type: "success", text: "Saved successfully!" });
+      setTimeout(() => setSaveMessage(null), 3000);
+    },
+    showError: (message: string) => {
+      setSaveMessage({ type: "error", text: message });
+      setTimeout(() => setSaveMessage(null), 3000);
+    },
+  }), []);
 
   // Initialize form based on mode
   useEffect(() => {
@@ -124,10 +147,32 @@ const CycleDrawer = ({
       setSelectedDeptsForManual((prev) =>
         prev.includes(fixedDepartment) ? prev : [fixedDepartment]
       );
+      // Set active department ID for fixed department
+      const deptId = `dept-${fixedDepartment.toLowerCase().replace(/\s+/g, "-")}`;
+      setActiveDeptId(deptId);
     } else if (!enableManualSelection) {
       setSelectedDeptsForManual([]);
     }
   }, [enableManualSelection, fixedDepartment]);
+
+  // Ensure activeDeptId is set when departments are selected
+  useEffect(() => {
+    if (enableManualSelection && selectedDeptsForManual.length > 0) {
+      const deptList = fixedDepartment ? [fixedDepartment] : selectedDeptsForManual;
+      if (deptList.length > 0) {
+        const currentDeptId = `dept-${deptList[0].toLowerCase().replace(/\s+/g, "-")}`;
+        // Check if current activeDeptId matches any selected department
+        const matchingDept = deptList.find((d) => {
+          const deptId = `dept-${d.toLowerCase().replace(/\s+/g, "-")}`;
+          return deptId === activeDeptId;
+        });
+        // If no match, set to first department
+        if (!matchingDept) {
+          setActiveDeptId(currentDeptId);
+        }
+      }
+    }
+  }, [enableManualSelection, selectedDeptsForManual, fixedDepartment, activeDeptId]);
 
   // Determine active department name for fetching employees
   const activeDepartmentName = useMemo(() => {
@@ -139,6 +184,7 @@ const CycleDrawer = ({
         const deptId = `dept-${d.toLowerCase().replace(/\s+/g, "-")}`;
         return deptId === activeDeptId;
       });
+      // Always return a department name if we have selected departments
       return dept || selectedDeptsForManual[0];
     }
     return undefined;
@@ -149,10 +195,12 @@ const CycleDrawer = ({
 
   // Transform API employees to Employee format
   const apiEmployees = useMemo(() => {
-    // API returns data directly as array or wrapped in data property
+    if (!employeesData) return [];
+    
+    // API returns data directly as array or wrapped in data/message property
     const employees = Array.isArray(employeesData) 
       ? employeesData 
-      : employeesData?.data || [];
+      : employeesData?.data || employeesData?.message || [];
     
     if (!Array.isArray(employees) || employees.length === 0) return [];
     
@@ -222,21 +270,23 @@ const CycleDrawer = ({
 
   // Form handlers
   const handleChange = useCallback(
-    <K extends keyof CycleFormPayload>(
-      field: K,
-      value: CycleFormPayload[K]
-    ) => {
+    <K extends keyof CycleFormPayload>(field: K, value: CycleFormPayload[K]) => {
       setForm((prev) => ({ ...prev, [field]: value }));
+      if (hasSaved) {
+        setHasSaved(false);
+        setSaveMessage(null);
+      }
     },
-    []
+    [hasSaved]
   );
 
   const toggleDepartment = useCallback((dept: string) => {
-    setForm((prev) => ({
-      ...prev,
-      departments: toggleArrayItem(prev.departments, dept),
-    }));
-  }, []);
+    setForm((prev) => ({ ...prev, departments: toggleArrayItem(prev.departments, dept) }));
+    if (hasSaved) {
+      setHasSaved(false);
+      setSaveMessage(null);
+    }
+  }, [hasSaved]);
 
   const toggleAllDepartments = useCallback(() => {
     setForm((prev) => ({
@@ -255,14 +305,35 @@ const CycleDrawer = ({
   const toggleManualDept = useCallback((dept: string) => {
     setSelectedDeptsForManual((prev) => {
       const newDepts = toggleArrayItem(prev, dept);
-      if (newDepts.length === 0) setSelectedEmployees([]);
+      if (newDepts.length === 0) {
+        setSelectedEmployees([]);
+      } else {
+        // If this is the first department being selected, set it as active
+        if (prev.length === 0 && newDepts.length === 1) {
+          const deptId = `dept-${dept.toLowerCase().replace(/\s+/g, "-")}`;
+          setActiveDeptId(deptId);
+        }
+        // If the currently active department was deselected, switch to first available
+        else if (prev.includes(dept) && !newDepts.includes(dept)) {
+          const currentDeptId = `dept-${dept.toLowerCase().replace(/\s+/g, "-")}`;
+          if (activeDeptId === currentDeptId && newDepts.length > 0) {
+            const firstDeptId = `dept-${newDepts[0].toLowerCase().replace(/\s+/g, "-")}`;
+            setActiveDeptId(firstDeptId);
+            setSelectedEmployees([]);
+          }
+        }
+      }
       return newDepts;
     });
-  }, []);
+  }, [activeDeptId]);
 
   const toggleEmployee = useCallback((employeeId: string) => {
     setSelectedEmployees((prev) => toggleArrayItem(prev, employeeId));
-  }, []);
+    if (hasSaved) {
+      setHasSaved(false);
+      setSaveMessage(null);
+    }
+  }, [hasSaved]);
 
   const selectAllInDepartment = useCallback(() => {
     if (!activeDepartment) return;
@@ -297,56 +368,36 @@ const CycleDrawer = ({
   );
 
   // Validation
-  const validateManualSelection = useCallback((): string | null => {
-    if (!enableManualSelection) return null;
-    if (!fixedDepartment && selectedDeptsForManual.length === 0) {
-      return "Please select at least one department for employee selection.";
+  const validateForm = useCallback((): string | null => {
+    if (!form.assessmentType || form.assessmentType === "Select assessment type") {
+      return "Please select an assessment type.";
     }
-    if (selectedEmployees.length === 0) {
-      return "Please select at least one employee.";
+    if (!form.type) return "Please select a type.";
+    if (!form.period) return "Please select a period.";
+    if (enableManualSelection) {
+      if (!fixedDepartment && selectedDeptsForManual.length === 0) {
+        return "Please select at least one department for employee selection.";
+      }
+      if (selectedEmployees.length === 0) {
+        return "Please select at least one employee.";
+      }
     }
     return null;
-  }, [
-    enableManualSelection,
-    fixedDepartment,
-    selectedDeptsForManual,
-    selectedEmployees,
-  ]);
+  }, [form.assessmentType, form.type, form.period, enableManualSelection, fixedDepartment, selectedDeptsForManual, selectedEmployees]);
 
   // Submit handler
   const handleSubmit = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      
-      // Validate assessment type
-      if (!form.assessmentType || form.assessmentType === "Select assessment type") {
-        alert("Please select an assessment type.");
+      const error = validateForm();
+      if (error) {
+        setSaveMessage({ type: "error", text: error });
+        setTimeout(() => setSaveMessage(null), 3000);
         return;
       }
-      
-      // Validate type
-      if (!form.type) {
-        alert("Please select a type.");
-        return;
-      }
-      
-      // Validate period
-      if (!form.period) {
-        alert("Please select a period.");
-        return;
-      }
-      
-      const validationError = validateManualSelection();
-      if (validationError) {
-        alert(validationError);
-        return;
-      }
-      const finalPayload = fixedDepartment
-        ? { ...form, departments: [fixedDepartment] }
-        : form;
-      onSubmit(finalPayload);
+      onSubmit(fixedDepartment ? { ...form, departments: [fixedDepartment] } : form);
     },
-    [form, fixedDepartment, validateManualSelection, onSubmit]
+    [form, fixedDepartment, validateForm, onSubmit]
   );
 
   // Computed values
@@ -778,38 +829,41 @@ const CycleDrawer = ({
 
                 {/* Submit Buttons */}
                 {mode === "schedule" ? (
-                  <div className="flex gap-3">
-                    <Button
+                  <div className="space-y-3">
+                    {saveMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`rounded-lg border-2 p-3 ${
+                          saveMessage.type === "success"
+                            ? "bg-green-50 border-green-200"
+                            : "bg-red-50 border-red-200"
+                        }`}
+                      >
+                        <p className={`text-sm font-semibold flex items-center gap-2 ${
+                          saveMessage.type === "success" ? "text-green-700" : "text-red-700"
+                        }`}>
+                          <span>{saveMessage.type === "success" ? "✓" : "⚠️"}</span>
+                          {saveMessage.text}
+                        </p>
+                      </motion.div>
+                    )}
+                    <div className="flex gap-3">
+                      <Button
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (onSave) {
-                          // Validate assessment type
-                          if (!form.assessmentType || form.assessmentType === "Select assessment type") {
-                            alert("Please select an assessment type.");
-                            return;
-                          }
-                          // Validate type
-                          if (!form.type) {
-                            alert("Please select a type.");
-                            return;
-                          }
-                          // Validate period
-                          if (!form.period) {
-                            alert("Please select a period.");
-                            return;
-                          }
-                          const validationError = validateManualSelection();
-                          if (validationError) {
-                            alert(validationError);
-                            return;
-                          }
-                          const finalPayload = fixedDepartment
-                            ? { ...form, departments: [fixedDepartment] }
-                            : form;
-                          onSave(finalPayload);
-                          setHasSaved(true); // Enable Schedule button after save
+                        if (!onSave) return;
+                        const error = validateForm();
+                        if (error) {
+                          setSaveMessage({ type: "error", text: error });
+                          setTimeout(() => setSaveMessage(null), 3000);
+                          return;
                         }
+                        const finalPayload = fixedDepartment
+                          ? { ...form, departments: [fixedDepartment], employees: enableManualSelection ? selectedEmployees : undefined }
+                          : { ...form, employees: enableManualSelection ? selectedEmployees : undefined };
+                        onSave(finalPayload);
                       }}
                       disabled={isSubmitDisabled || isLoading}
                       variant="outline"
@@ -828,6 +882,7 @@ const CycleDrawer = ({
                     >
                       Schedule
                     </Button>
+                    </div>
                   </div>
                 ) : (
                   <Button
@@ -848,6 +903,8 @@ const CycleDrawer = ({
       )}
     </AnimatePresence>
   );
-};
+});
+
+CycleDrawer.displayName = "CycleDrawer";
 
 export default CycleDrawer;
