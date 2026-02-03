@@ -35,7 +35,7 @@ export interface Employee {
   boss: string;
   reports_to?: string;
   reports_to_name?: string;
-  role: "Employee" | "HoD";
+  role: "Employee" | "Department Head";
 }
 
 export interface ValidationResult {

@@ -384,7 +384,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     window.URL.revokeObjectURL(url);
   };
 
-  const getAvailableBosses = () => {
+  const getAvailableBosses = (): Employee[] => {
     // Get all employees (API data or props data)
     const allEmployees = getFilteredEmployees();
     return allEmployees.filter((emp) => emp.role === "Department Head");
@@ -440,13 +440,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     department?: string;
     reports_to?: string;
     reports_to_name?: string;
-  }>) => {
+  }>): Employee[] => {
     return apiData.map((emp, index) => ({
       id: emp.name || `api-emp-${index}`,
       employeeId: emp.name || '',
       name: emp.employee_name || '',
       email: emp.user_id || emp.company_email || '',
-      role: (emp.role_profile as 'Employee' | 'Department Head') || 'Department Head',
+      role: (emp.role_profile === 'Department Head' ? 'Department Head' : 'Employee') as 'Employee' | 'Department Head',
       department: emp.department || '',
       designation: emp.designation || '',
       boss: emp.reports_to_name || emp.reports_to || '',
@@ -456,7 +456,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   };
 
   // Get all filtered employees (without pagination)
-  const getAllFilteredEmployees = useCallback(() => {
+  const getAllFilteredEmployees = useCallback((): Employee[] => {
     // Use API data if available, otherwise fall back to props data
     let allEmployees;
     if (apiEmployees?.message) {
