@@ -103,12 +103,12 @@ const OrganizationSetup = () => {
 
       <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-      <div className={activeTab === "departments" ? "w-full" : "grid grid-cols-1 lg:grid-cols-3 gap-8"}>
-        <div className={activeTab === "departments" ? "w-full" : "lg:col-span-2"}>
+      <div className={activeTab === "departments" || activeTab === "employees" ? "w-full" : "grid grid-cols-1 lg:grid-cols-3 gap-8"}>
+        <div className={activeTab === "departments" || activeTab === "employees" ? "w-full" : "lg:col-span-2"}>
           {renderActiveTab()}
         </div>
 
-        {activeTab !== "departments" && (
+        {activeTab !== "departments" && activeTab !== "employees" && (
           <div className="lg:col-span-1">
             <ValidationStatus
               validationResults={tabValidations}
