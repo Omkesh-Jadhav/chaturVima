@@ -81,6 +81,7 @@ export const scheduleAssessmentCycle = async (cycleId: string) => {
 export interface AssessmentCycleAPIResponse {
   message: Array<{
     name: string;
+    cycle_name?: string; // Cycle name from API
     status: string;
     assessment_type: string;
     dimension: string;
@@ -110,7 +111,7 @@ const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0
 
   return {
     id: apiCycle.name,
-    name: apiCycle.name,
+    name: apiCycle.cycle_name || apiCycle.name, // Use cycle_name if available, fallback to name
     startDate: timePeriod.start_date || "",
     endDate: timePeriod.end_date || "",
     type: transformCycleTypeFromAPI(apiCycle.assessment_type) as AssessmentCycle["type"],
