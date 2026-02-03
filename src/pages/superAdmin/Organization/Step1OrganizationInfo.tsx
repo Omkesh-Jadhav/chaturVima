@@ -29,7 +29,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   // Fetch organization details from API
-  const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails("Chaturvima");
+  const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails(data.name || "Chaturvima");
   
   // Fetch industries from API
   const { data: industriesData, isLoading: isLoadingIndustries, error: industriesError } = useGetAllIndustries();

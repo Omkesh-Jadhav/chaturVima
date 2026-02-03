@@ -190,7 +190,7 @@ export const createEmployee = async (employeeData: {
         return response.data;
 
     } catch (error: any) {
-        console.error("ERROR - Create department failed:", error);
+        console.error("ERROR - Create employee failed:", error);
         console.error("ERROR - Error response:", error.response);
         console.error("ERROR - Error data:", error.response?.data);
         throw error;
