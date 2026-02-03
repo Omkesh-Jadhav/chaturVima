@@ -14,13 +14,31 @@ export const validatePhone = (phone: string): boolean => {
   return phoneRegex.test(phone.replace(/[\s\-()]/g, ""));
 };
 
-// Website validation - accepts www.example.com or https://www.example.com
+// Website validation - must start with http, https, or www
 export const validateWebsite = (website: string): boolean => {
   if (!website) return true; // Optional field
-  // Accept formats: www.example.com, example.com, https://www.example.com, http://example.com
-  const websiteRegex =
-    /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
-  return websiteRegex.test(website);
+  
+  // Must start with http://, https://, or www.
+  const startsWithHttp = /^https?:\/\//i.test(website);
+  const startsWithWww = /^www\./i.test(website);
+  
+  if (!startsWithHttp && !startsWithWww) {
+    return false;
+  }
+  
+  // If it starts with www, validate the rest of the URL
+  if (startsWithWww) {
+    const websiteRegex = /^www\.[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+    return websiteRegex.test(website);
+  }
+  
+  // If it starts with http/https, validate the full URL
+  if (startsWithHttp) {
+    const websiteRegex = /^https?:\/\/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+    return websiteRegex.test(website);
+  }
+  
+  return false;
 };
 
 // Text validation - only allows letters, spaces, hyphens, and apostrophes

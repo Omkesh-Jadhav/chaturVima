@@ -115,7 +115,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
         break;
       case "website":
         if (value && !validateWebsite(value)) {
-          error = "Please enter a valid website URL (e.g., www.example.com)";
+          error = "Website must start with http://, https://, or www. (e.g., www.example.com or https://example.com)";
         }
         break;
       case "city":
@@ -141,8 +141,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   const handleEditInputChange = (field: keyof OrganizationInfo, value: string) => {
     setEditFormData(prev => ({ ...prev, [field]: value }));
     
-    // Validate text-only fields in real-time
-    if (field === "city" || field === "state" || field === "country") {
+    // Validate fields in real-time
+    if (field === "city" || field === "state" || field === "country" || field === "website") {
       validateField(field, value);
     } else {
       // Clear field error when user starts typing for other fields
@@ -627,7 +627,8 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         ? "border-red-300 focus:ring-red-500"
                         : "border-gray-300 focus:ring-brand-teal"
                     }`}
-                    placeholder="www.example.com"
+                    placeholder="www.example.com or https://example.com"
+                    
                   />
                   {fieldErrors.website && (
                     <p className="mt-1 text-sm text-red-600">{fieldErrors.website}</p>
