@@ -24,16 +24,25 @@ const transformCycleTypeToAPI = (type: string): string => (type === "Adhoc" ? "A
 export const transformCycleTypeFromAPI = (type: string): string => (type === "Ad hoc" ? "Adhoc" : type);
 
 // Transform form payload to API payload
-const transformCyclePayload = (payload: CycleFormPayload): CreateCyclePayload => ({
-  cycle_name: payload.name,
-  assessment_type: transformCycleTypeToAPI(payload.type),
-  period: payload.period,
-  dimension: getDimensionFromAssessmentType(payload.assessmentType),
-  start_date: formatDateToAPI(payload.startDate),
-  end_date: formatDateToAPI(payload.endDate),
-  email_notes: payload.notes,
-  departments: payload.departments.map((dept) => ({ department: dept, include: 1 })),
-});
+const transformCyclePayload = (payload: CycleFormPayload): CreateCyclePayload => {
+  const apiPayload: CreateCyclePayload = {
+    cycle_name: payload.name,
+    assessment_type: transformCycleTypeToAPI(payload.type),
+    period: payload.period,
+    dimension: getDimensionFromAssessmentType(payload.assessmentType),
+    start_date: formatDateToAPI(payload.startDate),
+    end_date: formatDateToAPI(payload.endDate),
+    email_notes: payload.notes,
+    departments: payload.departments.map((dept) => ({ department: dept, include: 1 })),
+  };
+
+  // Include employees if manual selection is enabled
+  if (payload.employees && payload.employees.length > 0) {
+    apiPayload.employees = payload.employees.map((emp) => ({ employee: emp, include: 1 }));
+  }
+
+  return apiPayload;
+};
 
 // Create new assessment cycle
 export const createAssessmentCycle = async (payload: CycleFormPayload) => {

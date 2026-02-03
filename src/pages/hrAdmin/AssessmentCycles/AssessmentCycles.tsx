@@ -1,9 +1,10 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Plus } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
+import type { CycleDrawerRef } from "@/components/assessmentCycles/CycleDrawer";
 import { FilterBar, Button } from "@/components/ui";
-import { createAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
+import { createAssessmentCycle, updateAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
   departmentHeadsDirectory,
   loadShareMatrix,
@@ -104,13 +105,11 @@ const AssessmentCycles = () => {
   const createCycleMutation = useMutation({
     mutationFn: createAssessmentCycle,
     onSuccess: () => {
-      // Invalidate and refetch cycles after creation
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
       closeDrawer();
     },
     onError: (error) => {
       console.error("Failed to create assessment cycle:", error);
-      alert("Failed to create assessment cycle. Please try again.");
     },
   });
 
@@ -118,10 +117,28 @@ const AssessmentCycles = () => {
     createCycleMutation.mutate(payload);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSave = (_payload: CycleFormPayload) => {
-    // Save is handled locally for now - will be updated when UPDATE API is integrated
-    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+  const cycleDrawerRef = useRef<CycleDrawerRef>(null);
+
+  // API mutation for updating assessment cycle
+  const updateCycleMutation = useMutation({
+    mutationFn: ({ cycleId, payload }: { cycleId: string; payload: CycleFormPayload }) =>
+      updateAssessmentCycle(cycleId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      cycleDrawerRef.current?.markAsSaved();
+    },
+    onError: (error) => {
+      console.error("Failed to update assessment cycle:", error);
+      cycleDrawerRef.current?.showError("Failed to save assessment cycle. Please try again.");
+    },
+  });
+
+  const handleSave = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle?.id) {
+      cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot save.");
+      return;
+    }
+    updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload });
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -233,6 +250,7 @@ const AssessmentCycles = () => {
       )}
 
       <CycleDrawer
+        ref={cycleDrawerRef}
         open={drawerState.open}
         mode={drawerState.mode}
         cycle={drawerState.cycle}
@@ -245,7 +263,13 @@ const AssessmentCycles = () => {
             : handleSchedule
         }
         onSave={drawerState.mode === "schedule" ? handleSave : undefined}
-        isLoading={drawerState.mode === "create" ? createCycleMutation.isPending : false}
+        isLoading={
+          drawerState.mode === "create" 
+            ? createCycleMutation.isPending 
+            : drawerState.mode === "schedule"
+            ? updateCycleMutation.isPending
+            : false
+        }
       />
 
       <ShareDrawer
