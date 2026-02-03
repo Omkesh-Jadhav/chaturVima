@@ -6,6 +6,7 @@ import {
   Upload,
   Download,
   AlertCircle,
+  ClipboardList
 } from "lucide-react";
 import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
@@ -758,7 +759,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       )}
 
       {/* Employee table - show if we have API data or fallback prop data */}
-      {(apiEmployees?.message?.length > 0 || employees.length > 0) && !isLoadingEmployees && (
+      {!isLoadingEmployees && (
         <div className="mb-6">
           <div className="mb-4 flex items-center gap-4">
             <label className="text-sm font-medium text-gray-700">
@@ -778,116 +779,135 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               ]}
             />
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Employee ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Email
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Designation
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Role
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Department
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Reporting Manager
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {getPaginatedEmployees().map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 text-sm text-gray-900">
-                      {employee.employeeId}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
-                      <button
-                        onClick={() => handleEmployeeNameClick(employee.employeeId)}
-                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                      >
-                        {employee.name}
-                      </button>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.email}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.designation}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                          }`}
-                      >
-                        {employee.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.department}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {employee.reports_to_name || employee.reports_to || "-"}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleEditEmployee(employee.id)}
-                          variant="ghost"
-                          size="xs"
-                          className="text-blue-600 hover:text-blue-800 p-1"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteEmployee(employee.id)}
-                          variant="ghost"
-                          size="xs"
-                          className="text-red-600 hover:text-red-800 p-1"
-                          disabled={deleteEmployeeMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {/* Pagination */}
-          {totalEmployees > 0 && (
-            <div className="mt-6 flex items-center justify-between">
-              <PaginationInfo
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
-                totalItems={totalEmployees}
-                size="sm"
-              />
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                size="sm"
-                showFirstLast={totalPages > 5}
-              />
+
+          {/* Check if filtered results are empty */}
+          {getAllFilteredEmployees().length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No data found</h3>
+              <p className="text-gray-500 text-center max-w-md">
+                {departmentFilter 
+                  ? `No employees match your current filters for ${departmentFilter} department.`
+                  : "No employees have been added yet. Start by adding employees using the form above."
+                }
+              </p>
             </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Employee ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Designation
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Role
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Department
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Reporting Manager
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {getPaginatedEmployees().map((employee) => (
+                      <tr key={employee.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {employee.employeeId}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          <button
+                            onClick={() => handleEmployeeNameClick(employee.employeeId)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            {employee.name}
+                          </button>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          {employee.email}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          {employee.designation}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${employee.role === "HoD"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                              }`}
+                          >
+                            {employee.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          {employee.department}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          {employee.reports_to_name || employee.reports_to || "-"}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-500">
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleEditEmployee(employee.id)}
+                              variant="ghost"
+                              size="xs"
+                              className="text-blue-600 hover:text-blue-800 p-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteEmployee(employee.id)}
+                              variant="ghost"
+                              size="xs"
+                              className="text-red-600 hover:text-red-800 p-1"
+                              disabled={deleteEmployeeMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              {totalEmployees > 0 && (
+                <div className="mt-6 flex items-center justify-between">
+                  <PaginationInfo
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={totalEmployees}
+                    size="sm"
+                  />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    size="sm"
+                    showFirstLast={totalPages > 5}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
