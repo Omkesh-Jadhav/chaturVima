@@ -538,6 +538,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
                         : "border-gray-300 focus:ring-brand-teal"
                     }`}
                     placeholder="Enter organization name"
+                    disabled={isReadonly}
                   />
                   {fieldErrors.name && (
                     <p className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>
