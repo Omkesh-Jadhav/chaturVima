@@ -81,6 +81,16 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     // Validate text fields in real-time
     if (field === "firstName" || field === "lastName" || field === "designation") {
       validateField(field, value);
+    } else if (field === "department") {
+      // Validate department selection
+      if (!value || value === "Select Department") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          department: "Please select a department"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, department: "" }));
+      }
     } else {
       // Clear field error when user starts typing for other fields
       if (fieldErrors[field]) {
@@ -161,13 +171,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     if (
       !formData.firstName.trim() ||
       !formData.lastName.trim() ||
-      !formData.email.trim()
+      !formData.email.trim() ||
+      !formData.department.trim()
     )
       return;
 
     // Validate all fields before adding
     const emailValid = validateField("email", formData.email);
     const datesValid = validateDateRelationship();
+    
+    // Check if department is selected
+    if (!formData.department || formData.department === "Select Department") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        department: "Please select a department"
+      }));
+      return;
+    }
 
     if (!emailValid || !datesValid) {
       return;
@@ -640,7 +660,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department
+                Department <span className="text-red-500">*</span>
               </label>
               <FilterSelect
                 value={formData.department || "Select Department"}
@@ -650,7 +670,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     value === "Select Department" ? "" : value
                   )
                 }
-                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full border-gray-300 focus:outline-none focus:ring-2 ${
+                  fieldErrors.department
+                    ? "border-red-300 focus:ring-red-500"
+                    : "focus:ring-brand-teal"
+                }`}
                 options={[
                   "Select Department",
                   ...getAvailableDepartments()
@@ -658,6 +682,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     .sort((a, b) => a.localeCompare(b)),
                 ]}
               />
+              {fieldErrors.department && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.department}</p>
+              )}
             </div>
 
             <div>

@@ -112,6 +112,18 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
       setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     }
 
+    // Validate department selection
+    if (field === "department") {
+      if (!value || value === "Select Department") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          department: "Please select a department"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, department: "" }));
+      }
+    }
+
     // Validate date relationship when either date changes
     if (field === "dateOfBirth" || field === "dateOfJoining") {
       // Use setTimeout to ensure state is updated before validation
@@ -168,13 +180,22 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (!employee || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+    if (!employee || !formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || !formData.department.trim()) {
       return;
     }
 
     // Validate all fields before saving
     const emailValid = validateField("email", formData.email);
     const datesValid = validateDateRelationship();
+    
+    // Check if department is selected
+    if (!formData.department || formData.department === "Select Department") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        department: "Please select a department"
+      }));
+      return;
+    }
 
     if (!emailValid || !datesValid) {
       return;
@@ -432,7 +453,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department
+                Department <span className="text-red-500">*</span>
               </label>
               <FilterSelect
                 value={formData.department || "Select Department"}
@@ -442,12 +463,19 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
                     value === "Select Department" ? "" : value
                   )
                 }
-                className="w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                className={`w-full border-gray-300 focus:outline-none focus:ring-2 ${
+                  fieldErrors.department
+                    ? "border-red-300 focus:ring-red-500"
+                    : "focus:ring-brand-teal"
+                }`}
                 options={[
                   "Select Department",
                   ...departments.map((dept) => dept.name),
                 ]}
               />
+              {fieldErrors.department && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.department}</p>
+              )}
             </div>
 
             <div>
