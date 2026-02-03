@@ -21,6 +21,7 @@ export { Select } from "./Select";
 export { default as Textarea } from "./Textarea";
 export { FormSection } from "./FormSection";
 export { AnimatedContainer } from "./AnimatedContainer";
+export { default as Pagination, PaginationInfo } from "./Pagination";
 
 export type { ButtonProps } from "./Button";
 export type { CardProps } from "./Card";
@@ -39,3 +40,4 @@ export type { CalendarInputProps } from "./CalendarInput";
 export type { TooltipProps } from "./Tooltip";
 export type { SelectProps, SelectOption } from "./Select";
 export type { TextareaProps } from "./Textarea";
+export type { PaginationProps } from "./Pagination";

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { validateEmail, validateTextOnly, validateDesignation } from "./validationUtils";
 import type { Employee, Department } from "./types";
-import { Button, Input, FilterSelect, CalendarInput } from "@/components/ui";
+import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
@@ -52,6 +52,10 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // React Query hooks
@@ -318,18 +322,47 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     }));
   };
 
-  const getFilteredEmployees = useCallback(() => {
+  // Get all filtered employees (without pagination)
+  const getAllFilteredEmployees = useCallback(() => {
     // Use API data if available, otherwise fall back to props data
+    let allEmployees;
     if (apiEmployees?.message) {
-      return mapApiToEmployeeFormat(apiEmployees.message);
+      allEmployees = mapApiToEmployeeFormat(apiEmployees.message);
+    } else {
+      allEmployees = employees;
     }
     
-    // Fallback to props data with filter
+    // Apply department filter
     if (!departmentFilter) {
-      return employees;
+      return allEmployees;
     }
-    return employees.filter((employee) => employee.department === departmentFilter);
+    return allEmployees.filter((employee) => employee.department === departmentFilter);
   }, [apiEmployees, employees, departmentFilter]);
+
+  // Get paginated employees for display
+  const getPaginatedEmployees = useCallback(() => {
+    const allFiltered = getAllFilteredEmployees();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return allFiltered.slice(startIndex, endIndex);
+  }, [getAllFilteredEmployees, currentPage, itemsPerPage]);
+
+  // Legacy function for backward compatibility
+  const getFilteredEmployees = getAllFilteredEmployees;
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [departmentFilter]);
+
+  // Calculate total pages
+  const totalEmployees = getAllFilteredEmployees().length;
+  const totalPages = Math.ceil(totalEmployees / itemsPerPage);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Notify parent component when actual employees change for validation
   useEffect(() => {
@@ -713,7 +746,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {getFilteredEmployees().map((employee) => (
+                {getPaginatedEmployees().map((employee) => (
                   <tr key={employee.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4 text-sm text-gray-900">
                       {employee.employeeId}
@@ -774,6 +807,25 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination */}
+          {totalEmployees > 0 && (
+            <div className="mt-6 flex items-center justify-between">
+              <PaginationInfo
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={totalEmployees}
+                size="sm"
+              />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                size="sm"
+                showFirstLast={totalPages > 5}
+              />
+            </div>
+          )}
         </div>
       )}
 
