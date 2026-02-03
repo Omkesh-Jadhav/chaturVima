@@ -33,12 +33,11 @@ const ActiveAssessmentCycles = () => {
     }
 
     return filtered.sort((a, b) => {
-      // Sort by status (Active first, then Upcoming, then others) then by start date
+      // Sort by status (Active first, then Draft, then Completed) then by start date
       const statusOrder: Record<string, number> = {
         Active: 1,
-        Upcoming: 2,
-        Draft: 3,
-        Completed: 4,
+        Draft: 2,
+        Completed: 3,
       };
       const aOrder = statusOrder[a.status] || 5;
       const bOrder = statusOrder[b.status] || 5;

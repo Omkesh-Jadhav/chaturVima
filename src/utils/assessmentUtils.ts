@@ -324,7 +324,7 @@ export const getCycleStatusColor = (
   status: CycleStatus,
   includeBorder = false
 ): string => {
-  const colors = CYCLE_STATUS_COLORS[status];
+  const colors = CYCLE_STATUS_COLORS[status] || CYCLE_STATUS_COLORS.Draft; // Fallback to Draft if status not found
   return includeBorder
     ? `${colors.bg} ${colors.text} ${colors.border || ""}`
     : `${colors.bg} ${colors.text}`;
