@@ -1,5 +1,5 @@
 import React from "react";
-import { X, User, Mail, Briefcase, Calendar, Building2, MapPin, Award, Clock } from "lucide-react";
+import { X, User, Mail, Briefcase, Calendar, Building2 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useGetEmployeeDetails } from "@/hooks/useEmployees";
 
