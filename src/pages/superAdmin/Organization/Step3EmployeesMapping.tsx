@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList } from "lucide-react";
+import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo, Badge } from "@/components/ui";
-import { useCreateEmployee, useGetEmployees, useDeleteEmployee } from "@/hooks/useEmployees";
+import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
+import { getEmployeeDetails } from "@/api/api-functions/organization-setup";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
 
@@ -64,12 +65,18 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ isOpen: boolean; employeeId: string | null; employeeName: string }>({
+    isOpen: false,
+    employeeId: null,
+    employeeName: "",
+  });
+  const [deleteError, setDeleteError] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createEmployeeMutation = useCreateEmployee();
-  const deleteEmployeeMutation = useDeleteEmployee();
+  const editEmployeeMutation = useEditEmployeeDetails();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
@@ -250,15 +257,57 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     }
   }, [getAllFilteredEmployees]);
 
-  const handleDeleteEmployee = async (id: string) => {
+  const handleDeleteClick = (id: string) => {
     const employee = getAllFilteredEmployees.find(e => e.id === id);
-    if (!employee || !window.confirm(`Are you sure you want to delete ${employee.name}?`)) return;
+    if (employee) {
+      setDeleteError("");
+      setDeleteConfirmModal({ isOpen: true, employeeId: id, employeeName: employee.name });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmModal.employeeId) return;
+
+    setDeleteError("");
 
     try {
-      await deleteEmployeeMutation.mutateAsync(employee.employeeId || employee.id);
-      onUpdate(employees.filter(emp => emp.id !== id));
+      const employee = getAllFilteredEmployees.find(e => e.id === deleteConfirmModal.employeeId);
+      if (!employee) return;
+
+      // Fetch employee details to get all required fields
+      const employeeDetailsResponse = await getEmployeeDetails(employee.employeeId || employee.id);
+      const details = employeeDetailsResponse?.data || {};
+
+      // Prepare employee data with status: "Inactive"
+      const employeeData = {
+        employee_name: details.employee_name || employee.name,
+        first_name: details.first_name || employee.name.split(' ')[0] || '',
+        last_name: details.last_name || employee.name.split(' ').slice(1).join(' ') || '',
+        user_id: details.user_id || employee.email,
+        company_email: details.company_email || employee.email,
+        gender: details.gender || '',
+        date_of_birth: details.date_of_birth || '',
+        date_of_joining: details.date_of_joining || '',
+        designation: details.designation || employee.designation || '',
+        department: details.department || employee.department || '',
+        reports_to: details.reports_to || employee.reports_to || '',
+        role_profile: details.role_profile || employee.role || 'Employee',
+        status: 'Inactive', // Set status to Inactive (capitalized as required by API)
+      };
+
+      // Call the edit API to update employee status to inactive
+      await editEmployeeMutation.mutateAsync({
+        name: employee.employeeId || employee.id,
+        employeeData: employeeData
+      });
+
+      // Remove from local state (or you can filter by status if you want to keep inactive employees)
+      onUpdate(employees.filter(emp => emp.id !== deleteConfirmModal.employeeId));
+      
+      setDeleteConfirmModal({ isOpen: false, employeeId: null, employeeName: "" });
     } catch (error) {
-      console.error("Failed to delete employee:", error);
+      console.error("Failed to deactivate employee:", error);
+      setDeleteError("Failed to deactivate employee. Please try again.");
     }
   };
 
@@ -473,7 +522,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         </div>
       )}
 
-      {(employeesError || deleteEmployeeMutation.error) && (
+      {(employeesError || editEmployeeMutation.error) && (
         <div className="p-4">
           <motion.div
             initial={{ opacity: 0 }}
@@ -481,7 +530,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
             className="bg-red-50 border border-red-200 rounded-lg p-3"
           >
             <div className="text-xs text-red-800 font-medium">
-              {employeesError ? `Error loading employees: ${employeesError.message}` : "Failed to delete employee. Please try again."}
+              {employeesError ? `Error loading employees: ${employeesError.message}` : "Failed to deactivate employee. Please try again."}
             </div>
           </motion.div>
         </div>
@@ -595,11 +644,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                                 <Edit className="w-4 h-4" />
                               </Button>
                               <Button
-                                onClick={() => handleDeleteEmployee(employee.id)}
+                                onClick={() => handleDeleteClick(employee.id)}
                                 variant="ghost"
                                 size="xs"
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-110"
-                                disabled={deleteEmployeeMutation.isPending}
+                                disabled={editEmployeeMutation.isPending}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -658,6 +707,93 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         }}
         existingEmployees={getAllFilteredEmployees}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-9998 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => {
+            setDeleteError("");
+            setDeleteConfirmModal({ isOpen: false, employeeId: null, employeeName: "" });
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.3 }}
+            className="relative w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Deactivate Employee</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">This action will set the employee status to inactive</p>
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 rounded-lg bg-orange-50 border border-orange-200">
+                <p className="text-sm text-gray-700 mb-2">
+                  Are you sure you want to deactivate <span className="font-semibold text-gray-900">"{deleteConfirmModal.employeeName}"</span>?
+                </p>
+                <p className="text-xs text-orange-800 font-medium">
+                  After deactivating this employee, they will not be able to participate in any assessment or any other work.
+                </p>
+              </div>
+
+              {deleteError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-red-800 font-medium">{deleteError}</p>
+                  </div>
+                </motion.div>
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setDeleteError("");
+                    setDeleteConfirmModal({ isOpen: false, employeeId: null, employeeName: "" });
+                  }}
+                  size="sm"
+                  className="flex-1 cursor-pointer border-gray-300 hover:bg-gray-50 text-xs"
+                  disabled={editEmployeeMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  size="sm"
+                  disabled={editEmployeeMutation.isPending}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs"
+                >
+                  {editEmployeeMutation.isPending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      Deactivating...
+                    </span>
+                  ) : (
+                    "Deactivate"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
