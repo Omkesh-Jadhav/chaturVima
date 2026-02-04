@@ -29,6 +29,48 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
   const [recentDepartmentNames, setRecentDepartmentNames] = useState<Set<string>>(new Set());
   const [validationErrors, setValidationErrors] = useState<{ name?: string; code?: string }>({});
 
+  // Load recent department IDs and names from localStorage on mount
+  useEffect(() => {
+    const storedIds = localStorage.getItem("recent_department_ids");
+    const storedNames = localStorage.getItem("recent_department_names");
+    
+    if (storedIds) {
+      try {
+        const ids = JSON.parse(storedIds);
+        setRecentDepartmentIds(new Set(ids));
+      } catch (error) {
+        console.error("Error parsing stored department IDs:", error);
+      }
+    }
+    
+    if (storedNames) {
+      try {
+        const names = JSON.parse(storedNames);
+        setRecentDepartmentNames(new Set(names));
+      } catch (error) {
+        console.error("Error parsing stored department names:", error);
+      }
+    }
+  }, []);
+
+  // Save recent department IDs to localStorage whenever they change
+  useEffect(() => {
+    if (recentDepartmentIds.size > 0) {
+      localStorage.setItem("recent_department_ids", JSON.stringify(Array.from(recentDepartmentIds)));
+    } else {
+      localStorage.removeItem("recent_department_ids");
+    }
+  }, [recentDepartmentIds]);
+
+  // Save recent department names to localStorage whenever they change
+  useEffect(() => {
+    if (recentDepartmentNames.size > 0) {
+      localStorage.setItem("recent_department_names", JSON.stringify(Array.from(recentDepartmentNames)));
+    } else {
+      localStorage.removeItem("recent_department_names");
+    }
+  }, [recentDepartmentNames]);
+
   const { data: fetchedDepartments = [], isLoading: isFetchingDepartments } = useDepartments();
   const createDepartmentMutation = useCreateDepartment();
   const updateDepartmentMutation = useUpdateDepartment();
@@ -176,26 +218,37 @@ const Step2Departments: React.FC<Step2DepartmentsProps> = ({
     setValidationErrors({});
   };
 
+  // Sync recent department names with IDs when departments are loaded
   useEffect(() => {
-    if (recentDepartmentNames.size === 0 || departments.length === 0) return;
+    if (departments.length === 0) return;
 
-    const newIds = new Set<string>();
-    const remainingNames = new Set<string>();
-
-    recentDepartmentNames.forEach((name) => {
-      const dept = departments.find(d => d.name === name);
-      if (dept) {
-        newIds.add(dept.id);
-      } else {
-        remainingNames.add(name);
-      }
+    // Clean up stored IDs that no longer exist in fetched departments
+    const validDepartmentIds = new Set(departments.map(d => d.id));
+    setRecentDepartmentIds(prev => {
+      const cleaned = new Set(Array.from(prev).filter(id => validDepartmentIds.has(id)));
+      return cleaned;
     });
 
-    if (newIds.size > 0) {
-      setRecentDepartmentIds(prev => new Set([...prev, ...newIds]));
-    }
-    if (remainingNames.size !== recentDepartmentNames.size) {
-      setRecentDepartmentNames(remainingNames);
+    // Map names to IDs for newly added departments
+    if (recentDepartmentNames.size > 0) {
+      const newIds = new Set<string>();
+      const remainingNames = new Set<string>();
+
+      recentDepartmentNames.forEach((name) => {
+        const dept = departments.find(d => d.name === name);
+        if (dept) {
+          newIds.add(dept.id);
+        } else {
+          remainingNames.add(name);
+        }
+      });
+
+      if (newIds.size > 0) {
+        setRecentDepartmentIds(prev => new Set([...prev, ...newIds]));
+      }
+      if (remainingNames.size !== recentDepartmentNames.size) {
+        setRecentDepartmentNames(remainingNames);
+      }
     }
   }, [departments, recentDepartmentNames]);
 
