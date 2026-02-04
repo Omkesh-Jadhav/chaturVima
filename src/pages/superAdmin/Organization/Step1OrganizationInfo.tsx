@@ -11,6 +11,7 @@ import { FilterSelect, Input, Button, Card } from "@/components/ui";
 import { useGetOrganizationDetails, useGetAllIndustries } from "@/hooks/useEmployees";
 import { updateOrganizationDetails } from "@/api/api-functions/organization-setup";
 import { Edit, X, Save, Loader2, Building2, AlertCircle } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 
 interface Step1OrganizationInfoProps {
@@ -47,6 +48,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   const [editFormData, setEditFormData] = useState<OrganizationInfo>(data);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+
+  // Get user role to conditionally show edit button
+  const { user } = useUser();
+  const isSuperAdmin = user?.role_profile?.[0] === "Superadmin";
 
   // Fetch organization details from API
   const { data: organizationData, isLoading: isLoadingOrg, error: orgError } = useGetOrganizationDetails(data.name || "Chaturvima");
@@ -298,15 +303,17 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
             <h2 className="text-xl font-semibold text-gray-900">Organization Info</h2>
             <p className="text-xs text-gray-500 mt-0.5">Manage your organization details</p>
           </div>
-          <Button
-            onClick={openEditModal}
-            variant="gradient"
-            size="sm"
-            className="inline-flex items-center gap-2"
-          >
-            <Edit size={16} />
-            Edit Organization Info
-          </Button>
+          {isSuperAdmin && (
+            <Button
+              onClick={openEditModal}
+              variant="gradient"
+              size="sm"
+              className="inline-flex items-center gap-2"
+            >
+              <Edit size={16} />
+              Edit Organization Info
+            </Button>
+          )}
         </div>
       </div>
 
