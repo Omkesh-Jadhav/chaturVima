@@ -30,6 +30,25 @@ const INITIAL_FORM_DATA = {
   role: "Employee" as "Employee" | "Department Head",
 };
 
+// Move FormField and SectionHeader outside component to prevent recreation on each render
+const FormField = React.memo(({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: string }) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    {children}
+    {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+  </div>
+));
+
+FormField.displayName = "FormField";
+
+const SectionHeader = React.memo(({ title }: { title: string }) => (
+  <h4 className="text-sm font-semibold text-gray-900 mb-2 pb-1.5 border-b border-gray-200">{title}</h4>
+));
+
+SectionHeader.displayName = "SectionHeader";
+
 const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   employees,
   departments,
@@ -109,7 +128,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         break;
     }
 
-    setFieldErrors((prev) => ({ ...prev, [field]: error }));
+    setFieldErrors((prev) => {
+      // Only update if error changed to prevent unnecessary re-renders
+      if (prev[field] === error) return prev;
+      return { ...prev, [field]: error };
+    });
     return !error;
   }, [employees, formData.dateOfBirth]);
 
@@ -259,20 +282,6 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   useEffect(() => {
     if (onEmployeesChange) onEmployeesChange(getAllFilteredEmployees);
   }, [getAllFilteredEmployees, onEmployeesChange]);
-
-  const FormField = ({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: string }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
-    </div>
-  );
-
-  const SectionHeader = ({ title }: { title: string }) => (
-    <h4 className="text-sm font-semibold text-gray-900 mb-2 pb-1.5 border-b border-gray-200">{title}</h4>
-  );
 
   const renderFormFields = () => {
     const inputClass = (hasError: boolean) => `w-full h-9 ${hasError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-brand-teal"}`;
