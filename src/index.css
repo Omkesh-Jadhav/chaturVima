@@ -240,3 +240,60 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family-inter);
 }
+
+/* Global Cursor Styles for Clickable Elements */
+/* Buttons - show pointer cursor unless disabled */
+button:not(:disabled),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Disabled buttons should show not-allowed cursor */
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled {
+  cursor: not-allowed;
+}
+
+/* Links */
+a {
+  cursor: pointer;
+}
+
+/* Elements with role="button" */
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Select elements */
+select:not(:disabled) {
+  cursor: pointer;
+}
+
+select:disabled {
+  cursor: not-allowed;
+}
+
+/* Clickable custom elements (divs, spans with onClick) - use .cursor-pointer class */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Interactive form elements that are clickable */
+label {
+  cursor: pointer;
+}
+
+/* Checkboxes and radio buttons */
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+/* File input */
+input[type="file"] {
+  cursor: pointer;
+}
