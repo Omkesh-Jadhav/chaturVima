@@ -23,6 +23,7 @@ export interface Department {
   company?: string;
   custom_department_head?: string | null;
   department_head_name?: string | null;
+  employee_count?: number;
 }
 
 export interface Employee {

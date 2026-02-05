@@ -25,6 +25,7 @@ const transformDepartmentData = (apiData: any): Department[] => {
             company: dept.company,
             custom_department_head: dept.custom_department_head,
             department_head_name: dept.department_head_name,
+            employee_count: dept.employee_count || 0,
         }));
 };
 

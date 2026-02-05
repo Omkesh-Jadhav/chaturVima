@@ -79,6 +79,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [hasSaved, setHasSaved] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [departmentError, setDepartmentError] = useState<string>("");
 
   // Custom hooks
   useBodyScrollLock(open);
@@ -89,6 +90,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
     setSelectedEmployees([]);
     setSelectedDeptsForManual([]);
     setEmployeeSearch("");
+    setDepartmentError("");
   }, []);
 
   // Expose methods via ref
@@ -138,6 +140,10 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
       });
       resetManualSelection();
       setHasSaved(false);
+    }
+    // Clear error when drawer closes
+    if (!open) {
+      setDepartmentError("");
     }
   }, [mode, cycle, open, fixedDepartment, resetManualSelection]);
 
@@ -281,12 +287,20 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
   );
 
   const toggleDepartment = useCallback((dept: string) => {
+    // Check if department has employees
+    const departmentData = departments.find((d) => d.name === dept);
+    if (departmentData && departmentData.employee_count === 0) {
+      setDepartmentError(`"${dept}" department has no employees. Please select a department with employees to proceed.`);
+      return;
+    }
+    
+    setDepartmentError("");
     setForm((prev) => ({ ...prev, departments: toggleArrayItem(prev.departments, dept) }));
     if (hasSaved) {
       setHasSaved(false);
       setSaveMessage(null);
     }
-  }, [hasSaved]);
+  }, [hasSaved, departments]);
 
   const toggleAllDepartments = useCallback(() => {
     setForm((prev) => ({
@@ -303,6 +317,17 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
 
   // Manual selection handlers
   const toggleManualDept = useCallback((dept: string) => {
+    // Check if department has employees (only when selecting, not deselecting)
+    const isCurrentlySelected = selectedDeptsForManual.includes(dept);
+    if (!isCurrentlySelected) {
+      const departmentData = departments.find((d) => d.name === dept);
+      if (departmentData && departmentData.employee_count === 0) {
+        setDepartmentError(`"${dept}" department has no employees. Please select a department with employees to proceed.`);
+        return;
+      }
+    }
+    
+    setDepartmentError("");
     setSelectedDeptsForManual((prev) => {
       const newDepts = toggleArrayItem(prev, dept);
       if (newDepts.length === 0) {
@@ -325,7 +350,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
       }
       return newDepts;
     });
-  }, [activeDeptId]);
+  }, [activeDeptId, departments, selectedDeptsForManual]);
 
   const toggleEmployee = useCallback((employeeId: string) => {
     setSelectedEmployees((prev) => toggleArrayItem(prev, employeeId));
@@ -553,13 +578,16 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     ) : departmentOptions.length === 0 ? (
                       <div className="text-xs text-amber-600">No departments available.</div>
                     ) : (
-                      <DepartmentSelector
-                        departments={departmentOptions}
-                        selected={form.departments}
-                        onToggle={toggleDepartment}
-                        onSelectAll={toggleAllDepartments}
-                        showSelectAll={true}
-                      />
+                      <>
+                        <DepartmentSelector
+                          departments={departmentOptions}
+                          selected={form.departments}
+                          onToggle={toggleDepartment}
+                        />
+                        {departmentError && (
+                          <p className="mt-2 text-xs text-red-600">{departmentError}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -574,13 +602,16 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     ) : departmentOptions.length === 0 ? (
                       <div className="text-xs text-amber-600">No departments available.</div>
                     ) : (
-                      <DepartmentSelector
-                        departments={departmentOptions}
-                        selected={form.departments}
-                        onToggle={toggleDepartment}
-                        onSelectAll={selectAllDepartments}
-                        showSelectAll={true}
-                      />
+                      <>
+                        <DepartmentSelector
+                          departments={departmentOptions}
+                          selected={form.departments}
+                          onToggle={toggleDepartment}
+                        />
+                        {departmentError && (
+                          <p className="mt-2 text-xs text-red-600">{departmentError}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -670,7 +701,10 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                                 ))
                               )}
                             </div>
-                            {selectedDeptsForManual.length === 0 && (
+                            {departmentError && (
+                              <p className="mt-2 text-xs text-red-600">{departmentError}</p>
+                            )}
+                            {selectedDeptsForManual.length === 0 && !departmentError && (
                               <p className="text-xs text-amber-600">
                                 Please select at least one department to choose
                                 employees
