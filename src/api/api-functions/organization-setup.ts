@@ -243,3 +243,33 @@ export const deleteEmployee = async (name: string) => {
         throw error;
     }
 }
+
+export const bulkUploadEmployees = async (file: File) => {
+    try {
+        const formData = new FormData();
+        // Append file with key 'file' as required by the API
+        formData.append('file', file);
+
+        // Log FormData contents for debugging
+        console.log("FormData file:", file);
+        console.log("FormData file name:", file.name);
+        console.log("FormData file type:", file.type);
+        console.log("FormData file size:", file.size);
+        
+        // Verify FormData has the file
+        for (const pair of formData.entries()) {
+            console.log("FormData entry:", pair[0], pair[1]);
+        }
+
+        const response = await api.post(API_ENDPOINTS.ORGANIZATION.BULK_UPLOAD_EMPLOYEES, formData);
+        console.log("SUCCESS - bulkUploadEmployees response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+
+    } catch (error: any) {
+        console.error("ERROR - Bulk upload employees failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
