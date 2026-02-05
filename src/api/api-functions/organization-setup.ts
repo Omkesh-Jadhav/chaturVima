@@ -246,30 +246,28 @@ export const deleteEmployee = async (name: string) => {
 
 export const bulkUploadEmployees = async (file: File) => {
     try {
-        const formData = new FormData();
-        // Append file with key 'file' as required by the API
-        formData.append('file', file);
-
-        // Log FormData contents for debugging
-        console.log("FormData file:", file);
-        console.log("FormData file name:", file.name);
-        console.log("FormData file type:", file.type);
-        console.log("FormData file size:", file.size);
-        
-        // Verify FormData has the file
-        for (const pair of formData.entries()) {
-            console.log("FormData entry:", pair[0], pair[1]);
+        // Validate file
+        if (!file || file.size === 0) {
+            throw new Error("File is empty or invalid. Please ensure the file has been saved properly.");
         }
 
-        const response = await api.post(API_ENDPOINTS.ORGANIZATION.BULK_UPLOAD_EMPLOYEES, formData);
-        console.log("SUCCESS - bulkUploadEmployees response:", response);
-        console.log("SUCCESS - Response data:", response.data);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        console.log("Sending file to API:", {
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type
+        });
+
+        // Increase timeout to 5 minutes (300000ms) for bulk upload operations
+        const response = await api.post(API_ENDPOINTS.ORGANIZATION.BULK_UPLOAD_EMPLOYEES, formData, {
+            timeout: 300000, // 5 minutes
+        });
+        console.log("API response received");
         return response.data;
 
     } catch (error: any) {
-        console.error("ERROR - Bulk upload employees failed:", error);
-        console.error("ERROR - Error response:", error.response);
-        console.error("ERROR - Error data:", error.response?.data);
         throw error;
     }
 }

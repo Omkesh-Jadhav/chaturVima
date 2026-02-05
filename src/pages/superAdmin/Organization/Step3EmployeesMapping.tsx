@@ -326,17 +326,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!hasDownloadedTemplate) {
-      setUploadErrors(["Please download the template first to ensure you use the correct format."]);
+    if (!file) {
+      console.error("No file selected");
+      // Reset input to allow selecting the same file again
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    if (!hasReadInstructions) {
-      setPendingFile(file);
-      setShowUploadModal(true);
+    // Validate file exists and has size
+    if (file.size === 0) {
+      setUploadErrors(["The selected file is empty. Please ensure the file has been saved properly after editing."]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (!hasDownloadedTemplate) {
+      setUploadErrors(["Please download the template first to ensure you use the correct format."]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -349,13 +355,60 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       return;
     }
 
+    console.log("File selected:", {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: new Date(file.lastModified)
+    });
+
     setPendingFile(file);
-    handleConfirmUpload();
+    
+    if (!hasReadInstructions) {
+      setShowUploadModal(true);
+      return;
+    }
+
+    // Pass file directly to avoid async state update issue
+    // Pass file directly to avoid async state update issue
+    handleConfirmUpload(file);
+  };
+
+  // Wrapper for button click that uses pendingFile state
+  const handleUploadButtonClick = () => {
+    if (pendingFile) {
+      handleConfirmUpload(pendingFile);
+    } else {
+      console.error("No pending file to upload");
+      setUploadErrors(["No file selected. Please select a file to upload."]);
+    }
   };
 
 
-  const handleConfirmUpload = async () => {
-    if (!pendingFile) return;
+  const handleConfirmUpload = async (fileToUpload?: File) => {
+    // Use provided file or fall back to pendingFile state
+    const file = fileToUpload || pendingFile;
+    
+    if (!file) {
+      console.error("No pending file to upload");
+      setUploadErrors(["No file selected. Please select a file to upload."]);
+      return;
+    }
+
+    // Validate file before upload
+    if (file.size === 0) {
+      setUploadErrors(["The selected file is empty. Please ensure the file has been saved properly after editing."]);
+      setShowUploadModal(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setPendingFile(null);
+      return;
+    }
+
+    console.log("Starting upload:", {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
 
     setShowUploadModal(false);
     setHasReadInstructions(true);
@@ -363,7 +416,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     setUploadSuccess(false);
 
     try {
-      const response = await bulkUploadMutation.mutateAsync(pendingFile);
+      const response = await bulkUploadMutation.mutateAsync(file);
+      console.log("Upload successful:", response);
       
       const formatError = (err: any, index: number): string => {
         if (typeof err === 'string') return err;
@@ -401,7 +455,12 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           errorMessages = [errorData.message || "Failed to upload file. Please check the file format and try again."];
         }
       } else {
-        errorMessages = [error?.message || "Failed to upload file. Please try again."];
+        // Handle timeout errors specifically
+        if (error?.message?.includes('timeout') || error?.code === 'ECONNABORTED') {
+          errorMessages = ["Upload timeout. The file is large and taking longer to process. Please try again or contact support if the issue persists."];
+        } else {
+          errorMessages = [error?.message || "Failed to upload file. Please try again."];
+        }
       }
       
       setUploadErrors(errorMessages);
@@ -432,7 +491,12 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     });
     
     const blobUrl = window.URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = 'employee_bulk_upload_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setHasDownloadedTemplate(true);
     setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
   };
@@ -641,12 +705,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       </>
                     )}
                     <input 
+                      key={`file-input-${hasDownloadedTemplate}`}
                       ref={fileInputRef} 
                       type="file" 
                       accept=".csv,.xlsx,.xls" 
                       onChange={handleFileSelect} 
                       className="hidden" 
-                      disabled={bulkUploadMutation.isPending || !hasDownloadedTemplate || !hasReadInstructions}
+                      disabled={bulkUploadMutation.isPending || !hasDownloadedTemplate}
                     />
                   </div>
                 </div>
@@ -937,11 +1002,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Keep the template format unchanged:</strong> Please maintain all column headers exactly as they appear in the downloaded template to ensure smooth processing.</span>
+                      <span><strong>Edit the downloaded template:</strong> After downloading, you can edit the template file directly. Add your employee data in the rows below the header, or modify the sample row. You can upload the same edited file.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Follow the sample format:</strong> We recommend following the format shown in the sample row for consistency and accuracy.</span>
+                      <span><strong>Update existing employees:</strong> If an employee with the same email already exists, uploading will update their information instead of creating a duplicate.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Keep the template format unchanged:</strong> Please maintain all column headers exactly as they appear in the downloaded template to ensure smooth processing.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
@@ -953,7 +1022,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Email addresses:</strong> Each email address should be unique and in a valid format to ensure proper employee identification.</span>
+                      <span><strong>Email addresses:</strong> Each email address should be unique and in a valid format. Existing employees will be updated based on their email address.</span>
                     </li>
                   </ul>
                 </div>
@@ -1014,7 +1083,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                       Cancel
                     </Button>
                     <Button
-                      onClick={handleConfirmUpload}
+                      onClick={handleUploadButtonClick}
                       variant="gradient"
                       size="sm"
                       disabled={bulkUploadMutation.isPending}
