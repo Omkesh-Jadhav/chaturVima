@@ -1,20 +1,22 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle, CheckCircle2, X, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo, Badge } from "@/components/ui";
-import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails, useBulkUploadEmployees } from "@/hooks/useEmployees";
+import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails, useBulkUploadEmployees, useGetOrganizationDetails } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
 import { getEmployeeDetails } from "@/api/api-functions/organization-setup";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
+import * as XLSX from "xlsx";
 
 interface Step3EmployeesMappingProps {
   employees: Employee[];
   departments: Department[];
   onUpdate: (employees: Employee[]) => void;
   onEmployeesChange?: (employees: Employee[]) => void;
+  organizationName?: string;
 }
 
 const INITIAL_FORM_DATA = {
@@ -55,6 +57,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   departments,
   onUpdate,
   onEmployeesChange,
+  organizationName,
 }) => {
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -75,6 +78,15 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [hasDownloadedTemplate, setHasDownloadedTemplate] = useState(false);
+  const [hasReadInstructions, setHasReadInstructions] = useState(false);
+
+  // Fetch organization details from backend to get the actual company name
+  const companyNameToFetch = organizationName || "Chaturvima";
+  const { data: organizationData } = useGetOrganizationDetails(companyNameToFetch);
+  const actualOrganizationName = organizationData?.data?.company_name || organizationData?.data?.name || organizationName || "Your Organization";
 
   const createEmployeeMutation = useCreateEmployee();
   const editEmployeeMutation = useEditEmployeeDetails();
@@ -246,8 +258,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
       setFormData(INITIAL_FORM_DATA);
       setFieldErrors({});
-    } catch (error) {
-      console.error("Failed to create employee:", error);
+    } catch {
+      // Error handled by mutation
     }
   };
 
@@ -307,126 +319,122 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       onUpdate(employees.filter(emp => emp.id !== deleteConfirmModal.employeeId));
       
       setDeleteConfirmModal({ isOpen: false, employeeId: null, employeeName: "" });
-    } catch (error) {
-      console.error("Failed to deactivate employee:", error);
+    } catch {
       setDeleteError("Failed to deactivate employee. Please try again.");
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
+    if (!hasDownloadedTemplate) {
+      setUploadErrors(["Please download the template first to ensure you use the correct format."]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (!hasReadInstructions) {
+      setPendingFile(file);
+      setShowUploadModal(true);
+      return;
+    }
+
     const validExtensions = ['.xlsx', '.xls', '.csv'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
     if (!validExtensions.includes(fileExtension)) {
       setUploadErrors([`Invalid file type. Please upload ${validExtensions.join(', ')} file.`]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    // Clear previous errors and success
+    setPendingFile(file);
+    handleConfirmUpload();
+  };
+
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
+
+    setShowUploadModal(false);
+    setHasReadInstructions(true);
     setUploadErrors([]);
     setUploadSuccess(false);
 
     try {
-      const response = await bulkUploadMutation.mutateAsync(file);
+      const response = await bulkUploadMutation.mutateAsync(pendingFile);
       
-      // Handle success response
-      if (response?.message) {
-        // Check if there are any errors in the response
-        if (response.message.errors && response.message.errors.length > 0) {
-          // Format errors from API response
-          const formattedErrors = response.message.errors.map((error: any, index: number) => {
-            if (typeof error === 'string') {
-              return error;
-            }
-            // Handle different error formats
-            return `Row ${error.row || index + 1}: ${error.message || error.error || JSON.stringify(error)}`;
-          });
-          setUploadErrors(formattedErrors);
-          setUploadSuccess(false);
-        } else {
-          // Success - clear errors and show success message
-          setUploadErrors([]);
-          setUploadSuccess(true);
-          console.log("Bulk upload successful:", response.message);
-          
-          // Clear success message after 5 seconds
-          setTimeout(() => {
-            setUploadSuccess(false);
-          }, 5000);
-        }
+      const formatError = (err: any, index: number): string => {
+        if (typeof err === 'string') return err;
+        return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+      };
+
+      if (response?.message?.errors?.length) {
+        setUploadErrors(response.message.errors.map(formatError));
+        setUploadSuccess(false);
       } else {
-        // Success without specific message
         setUploadErrors([]);
         setUploadSuccess(true);
-        console.log("Bulk upload successful");
-        
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          setUploadSuccess(false);
-        }, 5000);
+        setTimeout(() => setUploadSuccess(false), 5000);
       }
 
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setPendingFile(null);
     } catch (error: any) {
-      console.error("Bulk upload failed:", error);
-      
-      // Handle error response
+      const formatError = (err: any, index: number): string => {
+        if (typeof err === 'string') return err;
+        return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+      };
+
       let errorMessages: string[] = [];
+      const errorData = error?.response?.data?.message;
       
-      if (error?.response?.data?.message) {
-        const errorData = error.response.data.message;
-        
-        // Handle different error response formats
+      if (errorData) {
         if (Array.isArray(errorData)) {
-          errorMessages = errorData.map((err: any, index: number) => {
-            if (typeof err === 'string') return err;
-            return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
-          });
+          errorMessages = errorData.map(formatError);
         } else if (typeof errorData === 'string') {
           errorMessages = [errorData];
-        } else if (errorData.errors && Array.isArray(errorData.errors)) {
-          errorMessages = errorData.errors.map((err: any, index: number) => {
-            if (typeof err === 'string') return err;
-            return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
-          });
-        } else if (errorData.message) {
-          errorMessages = [errorData.message];
+        } else if (errorData.errors?.length) {
+          errorMessages = errorData.errors.map(formatError);
         } else {
-          errorMessages = ["Failed to upload file. Please check the file format and try again."];
+          errorMessages = [errorData.message || "Failed to upload file. Please check the file format and try again."];
         }
-      } else if (error?.message) {
-        errorMessages = [error.message];
       } else {
-        errorMessages = ["Failed to upload file. Please try again."];
+        errorMessages = [error?.message || "Failed to upload file. Please try again."];
       }
       
       setUploadErrors(errorMessages);
       setUploadSuccess(false);
-      
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setPendingFile(null);
     }
   };
 
+  const handleCancelUpload = () => {
+    setShowUploadModal(false);
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const downloadTemplate = () => {
-    // Template matching the exact Excel format required by the API
-    const csvContent = "email,first_name,middle_name,last_name,gender,date_of_birth,date_of_joining,department,company,role_profile,designation,reports_to\nnew2@example.com,New2,Middle,Last,Male,10-01-1995,01-06-2024,Sales,Chaturvima,Employee,Developer,EMP-0001";
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "employee_bulk_upload_template.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const headers = ["email", "first_name", "middle_name", "last_name", "gender", "date_of_birth", "date_of_joining", "department", "company", "role_profile", "designation", "reports_to"];
+    const sampleData = [["user12@gmail.com", "John", "Sam", "Doe", "Male", "10-01-1995", "01-06-2024", "Sales", actualOrganizationName, "Employee", "Software Developer", "EMP-0001"]];
+    
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+    worksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employee Template");
+    
+    const blob = new Blob([XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    
+    const blobUrl = window.URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setHasDownloadedTemplate(true);
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
   };
 
   useEffect(() => setCurrentPage(1), [departmentFilter]);
@@ -560,52 +568,88 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className={`lg:col-span-3 transition-opacity duration-300 ${!showBulkUpload ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
             <div className="bg-linear-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-4 h-full">
               <div className="space-y-4">
-                <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                  bulkUploadMutation.isPending 
-                    ? 'border-blue-300 bg-blue-50' 
-                    : uploadErrors.length > 0 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-                }`}>
-                  {bulkUploadMutation.isPending ? (
-                    <>
-                      <div className="w-10 h-10 mx-auto mb-3 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                      <p className="text-blue-600 mb-3 text-sm font-medium">Uploading file...</p>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 mb-3 text-sm">Drag & Drop Excel/CSV here or</p>
-                      <Button 
-                        onClick={() => fileInputRef.current?.click()} 
-                        variant="gradient" 
-                        size="sm"
-                        disabled={!showBulkUpload || bulkUploadMutation.isPending}
-                      >
-                        Browse Files
-                      </Button>
-                    </>
-                  )}
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    accept=".csv,.xlsx,.xls" 
-                    onChange={handleFileUpload} 
-                    className="hidden" 
-                    disabled={bulkUploadMutation.isPending}
-                  />
-                </div>
+                <div className="space-y-3">
+                  <Button 
+                    onClick={downloadTemplate} 
+                    variant="gradient" 
+                    size="sm" 
+                    className="w-full"
+                    disabled={!showBulkUpload}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Template
+                  </Button>
 
-                <Button 
-                  onClick={downloadTemplate} 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  disabled={!showBulkUpload}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Template
-                </Button>
+                  <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    bulkUploadMutation.isPending 
+                      ? 'border-blue-300 bg-blue-50' 
+                      : uploadErrors.length > 0 
+                        ? 'border-red-300 bg-red-50' 
+                        : !hasDownloadedTemplate
+                          ? 'border-amber-300 bg-amber-50'
+                          : 'border-gray-300 bg-gray-50'
+                  }`}>
+                    {bulkUploadMutation.isPending ? (
+                      <>
+                        <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        <p className="text-blue-600 text-sm">Uploading...</p>
+                      </>
+                    ) : !hasDownloadedTemplate ? (
+                      <>
+                        <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                        <p className="text-amber-700 text-sm mb-2 font-medium">Download Template First</p>
+                        <p className="text-amber-600 text-xs mb-3">Please download the template to ensure your file follows the correct format</p>
+                        <Button 
+                          onClick={() => fileInputRef.current?.click()} 
+                          variant="outline" 
+                          size="sm"
+                          disabled={true}
+                          className="opacity-50 cursor-not-allowed"
+                        >
+                          Browse Files
+                        </Button>
+                      </>
+                    ) : !hasReadInstructions ? (
+                      <>
+                        <Info className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                        <p className="text-blue-700 text-sm mb-2 font-medium">Review Instructions</p>
+                        <p className="text-blue-600 text-xs mb-3">Please review the instructions to ensure your file is formatted correctly</p>
+                        <Button 
+                          onClick={() => {
+                            setShowUploadModal(true);
+                            setPendingFile(null);
+                          }} 
+                          variant="gradient" 
+                          size="sm"
+                          disabled={!showBulkUpload}
+                        >
+                          View Instructions
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-600 text-sm mb-3">Upload Excel/CSV file</p>
+                        <Button 
+                          onClick={() => fileInputRef.current?.click()} 
+                          variant="gradient" 
+                          size="sm"
+                          disabled={!showBulkUpload || bulkUploadMutation.isPending}
+                        >
+                          Browse Files
+                        </Button>
+                      </>
+                    )}
+                    <input 
+                      ref={fileInputRef} 
+                      type="file" 
+                      accept=".csv,.xlsx,.xls" 
+                      onChange={handleFileSelect} 
+                      className="hidden" 
+                      disabled={bulkUploadMutation.isPending || !hasDownloadedTemplate || !hasReadInstructions}
+                    />
+                  </div>
+                </div>
 
                 {uploadSuccess && (
                   <motion.div
@@ -847,6 +891,164 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         }}
         existingEmployees={getAllFilteredEmployees}
       />
+
+      {/* Pre-Upload Instructions Modal */}
+      <AnimatePresence>
+        {showUploadModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-9998 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={handleCancelUpload}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Info className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Upload Instructions</h3>
+                    <p className="text-sm text-gray-500">Please take a moment to review these helpful guidelines</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCancelUpload}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Important Notes Section */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    Helpful Tips for Success
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Keep the template format unchanged:</strong> Please maintain all column headers exactly as they appear in the downloaded template to ensure smooth processing.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Follow the sample format:</strong> We recommend following the format shown in the sample row for consistency and accuracy.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Company name should match:</strong> Please ensure the company name is exactly <strong className="text-gray-900">"{actualOrganizationName}"</strong> (as entered in your Organization Details) for proper data association.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Use correct department names:</strong> Please use the exact department names that are already set up in your organization to avoid any mapping issues.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span><strong>Email addresses:</strong> Each email address should be unique and in a valid format to ensure proper employee identification.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Validation Rules Section */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-blue-500" />
+                    Format Requirements
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span><strong>Date of Birth:</strong> Date of birth must be earlier than current date.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span><strong>Date of Joining:</strong> Date of joining must be after date of birth.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span><strong>Gender:</strong> Please use one of the following values: Male, Female, or Other.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span><strong>Role Profile:</strong> Please select from: Employee, Department Head.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span><strong>Date Format:</strong> Please use DD-MM-YYYY format (for example: 10-01-1995).</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* File Info */}
+                {pendingFile && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <ClipboardList className="w-5 h-5 text-gray-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Ready to Upload:</p>
+                        <p className="text-sm text-gray-600">{pendingFile.name}</p>
+                        <p className="text-xs text-gray-500 mt-1">File size: {(pendingFile.size / 1024).toFixed(2)} KB</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
+                {pendingFile ? (
+                  <>
+                    <Button
+                      onClick={handleCancelUpload}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleConfirmUpload}
+                      variant="gradient"
+                      size="sm"
+                      disabled={bulkUploadMutation.isPending}
+                    >
+                      {bulkUploadMutation.isPending ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          I've Reviewed, Upload File
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      setHasReadInstructions(true);
+                      setShowUploadModal(false);
+                    }}
+                    variant="gradient"
+                    size="sm"
+                  >
+                    I've Reviewed, Continue
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmModal.isOpen && (

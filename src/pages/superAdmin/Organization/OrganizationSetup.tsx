@@ -80,6 +80,7 @@ const OrganizationSetup = () => {
             departments={departments}
             onUpdate={setEmployees}
             onEmployeesChange={setActualEmployees}
+            organizationName={organizationInfo.company_name || organizationInfo.name}
           />
         );
       default:
