@@ -478,7 +478,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const downloadTemplate = () => {
     const headers = ["email", "first_name", "middle_name", "last_name", "gender", "date_of_birth", "date_of_joining", "department", "company", "role_profile", "designation", "reports_to"];
-    const sampleData = [["user12@gmail.com", "John", "Sam", "Doe", "Male", "10-01-1995", "01-06-2024", "Sales", actualOrganizationName, "Employee", "Software Developer", "EMP-0001"]];
+    const sampleData = [["user12@gmail.com", "John", "Sam", "Doe", "Male", "10-01-1995", "01-06-2024", "Sales", actualOrganizationName, "Employee", "Software Developer", "HR-EMP-00023"]];
     
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
     worksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
