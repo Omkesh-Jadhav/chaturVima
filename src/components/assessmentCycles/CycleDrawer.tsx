@@ -302,18 +302,6 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
     }
   }, [hasSaved, departments]);
 
-  const toggleAllDepartments = useCallback(() => {
-    setForm((prev) => ({
-      ...prev,
-      departments: areAllSelected(departmentOptions, prev.departments)
-        ? []
-        : [...departmentOptions],
-    }));
-  }, [departmentOptions]);
-
-  const selectAllDepartments = useCallback(() => {
-    setForm((prev) => ({ ...prev, departments: [...departmentOptions] }));
-  }, [departmentOptions]);
 
   // Manual selection handlers
   const toggleManualDept = useCallback((dept: string) => {
