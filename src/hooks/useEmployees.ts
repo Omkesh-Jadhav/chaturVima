@@ -37,8 +37,8 @@ export const useCreateEmployee = () => {
             return await createEmployee(employeeData);
         },
         onSuccess: () => {
-            // Invalidate and refetch employees list if needed
-            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            // Invalidate and refetch all employee queries
+            queryClient.invalidateQueries({ queryKey: employeeKeys.all });
         },
     });
 };
@@ -139,8 +139,7 @@ export const useBulkUploadEmployees = () => {
             return await bulkUploadEmployees(file);
         },
         onSuccess: () => {
-            // Invalidate and refetch employees list
-            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            // Invalidate and refetch all employee queries
             queryClient.invalidateQueries({ queryKey: employeeKeys.all });
         },
     });

@@ -91,7 +91,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const createEmployeeMutation = useCreateEmployee();
   const editEmployeeMutation = useEditEmployeeDetails();
   const bulkUploadMutation = useBulkUploadEmployees();
-  const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
+  const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError, refetch: refetchEmployees } = useGetEmployees(departmentFilter);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
   // Consolidated validation
@@ -256,6 +256,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         reports_to: getEmployeeIdFromName(formData.reports_to) || ""
       });
 
+      // Refetch employees immediately to update the table
+      await refetchEmployees();
+      
       setFormData(INITIAL_FORM_DATA);
       setFieldErrors({});
     } catch {
@@ -315,8 +318,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         employeeData: employeeData
       });
 
-      // Remove from local state (or you can filter by status if you want to keep inactive employees)
-      onUpdate(employees.filter(emp => emp.id !== deleteConfirmModal.employeeId));
+      // Refetch employees immediately to update the table
+      await refetchEmployees();
       
       setDeleteConfirmModal({ isOpen: false, employeeId: null, employeeName: "" });
     } catch {
@@ -431,6 +434,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         setUploadErrors([]);
         setUploadSuccess(true);
         setTimeout(() => setUploadSuccess(false), 5000);
+        
+        // Refetch employees immediately to update the table
+        await refetchEmployees();
       }
 
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -951,7 +957,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         employee={employeeToEdit}
         departments={getAvailableDepartments}
         availableBosses={getAvailableBosses}
-        onSave={(updatedEmployee) => {
+        onSave={async (updatedEmployee) => {
+          // Refetch employees immediately to update the table
+          await refetchEmployees();
           onUpdate(employees.map(emp => emp.id === updatedEmployee.id ? updatedEmployee : emp));
         }}
         existingEmployees={getAllFilteredEmployees}
