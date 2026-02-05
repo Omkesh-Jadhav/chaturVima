@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createEmployee, getEmployees, getEmployeeDetails, editEmployeeDetails, deleteEmployee, getOrganizationDetails, getAllIndustries } from "@/api/api-functions/organization-setup";
+import { createEmployee, getEmployees, getEmployeeDetails, editEmployeeDetails, deleteEmployee, getOrganizationDetails, getAllIndustries, bulkUploadEmployees } from "@/api/api-functions/organization-setup";
 
 // Query keys
 export const employeeKeys = {
@@ -127,5 +127,21 @@ export const useGetAllIndustries = () => {
         queryKey: organizationKeys.industries(),
         queryFn: () => getAllIndustries(),
         staleTime: 10 * 60 * 1000, // 10 minutes (industries don't change often)
+    });
+};
+
+// Hook to bulk upload employees
+export const useBulkUploadEmployees = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (file: File) => {
+            return await bulkUploadEmployees(file);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch employees list
+            queryClient.invalidateQueries({ queryKey: employeeKeys.list() });
+            queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+        },
     });
 };

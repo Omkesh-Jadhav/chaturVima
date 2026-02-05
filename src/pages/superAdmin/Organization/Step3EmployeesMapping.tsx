@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle } from "lucide-react";
+import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo, Badge } from "@/components/ui";
-import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails } from "@/hooks/useEmployees";
+import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails, useBulkUploadEmployees } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
 import { getEmployeeDetails } from "@/api/api-functions/organization-setup";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
@@ -59,6 +59,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("");
@@ -77,6 +78,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const createEmployeeMutation = useCreateEmployee();
   const editEmployeeMutation = useEditEmployeeDetails();
+  const bulkUploadMutation = useBulkUploadEmployees();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError } = useGetEmployees(departmentFilter);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
 
@@ -311,18 +313,118 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files?.[0]) return;
-    setUploadErrors(["Row 3: Invalid email format", "Row 5: Duplicate Employee ID", "Row 8: Missing required field: Name"]);
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validExtensions = ['.xlsx', '.xls', '.csv'];
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    
+    if (!validExtensions.includes(fileExtension)) {
+      setUploadErrors([`Invalid file type. Please upload ${validExtensions.join(', ')} file.`]);
+      return;
+    }
+
+    // Clear previous errors and success
+    setUploadErrors([]);
+    setUploadSuccess(false);
+
+    try {
+      const response = await bulkUploadMutation.mutateAsync(file);
+      
+      // Handle success response
+      if (response?.message) {
+        // Check if there are any errors in the response
+        if (response.message.errors && response.message.errors.length > 0) {
+          // Format errors from API response
+          const formattedErrors = response.message.errors.map((error: any, index: number) => {
+            if (typeof error === 'string') {
+              return error;
+            }
+            // Handle different error formats
+            return `Row ${error.row || index + 1}: ${error.message || error.error || JSON.stringify(error)}`;
+          });
+          setUploadErrors(formattedErrors);
+          setUploadSuccess(false);
+        } else {
+          // Success - clear errors and show success message
+          setUploadErrors([]);
+          setUploadSuccess(true);
+          console.log("Bulk upload successful:", response.message);
+          
+          // Clear success message after 5 seconds
+          setTimeout(() => {
+            setUploadSuccess(false);
+          }, 5000);
+        }
+      } else {
+        // Success without specific message
+        setUploadErrors([]);
+        setUploadSuccess(true);
+        console.log("Bulk upload successful");
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setUploadSuccess(false);
+        }, 5000);
+      }
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error: any) {
+      console.error("Bulk upload failed:", error);
+      
+      // Handle error response
+      let errorMessages: string[] = [];
+      
+      if (error?.response?.data?.message) {
+        const errorData = error.response.data.message;
+        
+        // Handle different error response formats
+        if (Array.isArray(errorData)) {
+          errorMessages = errorData.map((err: any, index: number) => {
+            if (typeof err === 'string') return err;
+            return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+          });
+        } else if (typeof errorData === 'string') {
+          errorMessages = [errorData];
+        } else if (errorData.errors && Array.isArray(errorData.errors)) {
+          errorMessages = errorData.errors.map((err: any, index: number) => {
+            if (typeof err === 'string') return err;
+            return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+          });
+        } else if (errorData.message) {
+          errorMessages = [errorData.message];
+        } else {
+          errorMessages = ["Failed to upload file. Please check the file format and try again."];
+        }
+      } else if (error?.message) {
+        errorMessages = [error.message];
+      } else {
+        errorMessages = ["Failed to upload file. Please try again."];
+      }
+      
+      setUploadErrors(errorMessages);
+      setUploadSuccess(false);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const downloadTemplate = () => {
-    const csvContent = "Employee ID,Name,Email,Designation,Department,Reporting Manager\nEMP001,John Doe,john@example.com,Software Engineer,Engineering,Jane Smith";
+    // Template matching the exact Excel format required by the API
+    const csvContent = "email,first_name,middle_name,last_name,gender,date_of_birth,date_of_joining,department,company,role_profile,designation,reports_to\nnew2@example.com,New2,Middle,Last,Male,10-01-1995,01-06-2024,Sales,Chaturvima,Employee,Developer,EMP-0001";
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "employee_template.csv";
+    a.download = "employee_bulk_upload_template.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -458,18 +560,40 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           <div className={`lg:col-span-3 transition-opacity duration-300 ${!showBulkUpload ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
             <div className="bg-linear-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-4 h-full">
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-3 text-sm">Drag & Drop Excel/CSV here or</p>
-                  <Button 
-                    onClick={() => fileInputRef.current?.click()} 
-                    variant="gradient" 
-                    size="sm"
-                    disabled={!showBulkUpload}
-                  >
-                    Browse Files
-                  </Button>
-                  <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
+                <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+                  bulkUploadMutation.isPending 
+                    ? 'border-blue-300 bg-blue-50' 
+                    : uploadErrors.length > 0 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                }`}>
+                  {bulkUploadMutation.isPending ? (
+                    <>
+                      <div className="w-10 h-10 mx-auto mb-3 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                      <p className="text-blue-600 mb-3 text-sm font-medium">Uploading file...</p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 mb-3 text-sm">Drag & Drop Excel/CSV here or</p>
+                      <Button 
+                        onClick={() => fileInputRef.current?.click()} 
+                        variant="gradient" 
+                        size="sm"
+                        disabled={!showBulkUpload || bulkUploadMutation.isPending}
+                      >
+                        Browse Files
+                      </Button>
+                    </>
+                  )}
+                  <input 
+                    ref={fileInputRef} 
+                    type="file" 
+                    accept=".csv,.xlsx,.xls" 
+                    onChange={handleFileUpload} 
+                    className="hidden" 
+                    disabled={bulkUploadMutation.isPending}
+                  />
                 </div>
 
                 <Button 
@@ -483,6 +607,20 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   Download Template
                 </Button>
 
+                {uploadSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-green-50 border border-green-200 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 text-green-800">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span className="font-semibold text-sm">File uploaded successfully!</span>
+                    </div>
+                    <p className="text-green-700 text-xs mt-2">Employees have been added successfully.</p>
+                  </motion.div>
+                )}
+
                 {uploadErrors.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -491,9 +629,11 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   >
                     <div className="flex items-center gap-2 text-red-800 mb-2">
                       <AlertCircle className="w-5 h-5" />
-                      <span className="font-semibold text-sm">{uploadErrors.length} rows failed</span>
+                      <span className="font-semibold text-sm">
+                        {uploadErrors.length} {uploadErrors.length === 1 ? 'error' : 'errors'} found
+                      </span>
                     </div>
-                    <ul className="text-red-700 text-xs space-y-1">
+                    <ul className="text-red-700 text-xs space-y-1 max-h-40 overflow-y-auto">
                       {uploadErrors.map((error, index) => (
                         <li key={index}>• {error}</li>
                       ))}
