@@ -4,6 +4,7 @@ import { Button, Input, FilterSelect, CalendarInput } from "@/components/ui";
 import { validateEmail, validateDateOfBirthBeforeJoining } from "@/pages/superAdmin/Organization/validationUtils";
 import type { Employee, Department } from "@/pages/superAdmin/Organization/types";
 import { useGetEmployeeDetails, useEditEmployeeDetails } from "@/hooks/useEmployees";
+import { useDesignations } from "@/hooks/useDesignations";
 
 interface EmployeeEditModalProps {
   isOpen: boolean;
@@ -44,6 +45,9 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
     employee?.employeeId || employee?.id || "",
     isOpen && !!employee
   );
+
+  // Fetch designations
+  const { data: designations = [], isLoading: isLoadingDesignations } = useDesignations();
 
   // Edit employee details mutation
   const editEmployeeMutation = useEditEmployeeDetails();
@@ -506,14 +510,13 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Designation
               </label>
-              <Input
-                type="text"
-                value={formData.designation}
-                onChange={(e) =>
-                  handleInputChange("designation", e.target.value)
+              <FilterSelect
+                value={formData.designation || "Select Designation"}
+                onChange={(value) =>
+                  handleInputChange("designation", value === "Select Designation" ? "" : value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-teal"
-                placeholder="e.g., Software Engineer"
+                className="w-full"
+                options={isLoadingDesignations ? ["Select Designation", "Loading..."] : ["Select Designation", ...designations]}
               />
             </div>
 

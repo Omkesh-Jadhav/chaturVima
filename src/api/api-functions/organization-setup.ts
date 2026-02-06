@@ -70,6 +70,19 @@ export const getAllIndustries = async () => {
     }
 }
 
+export const getAllDesignations = async () => {
+    try {
+        const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DESIGNATIONS);
+        // console.log("SUCCESS - getAllDesignations response:", response);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - getAllDesignations failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);

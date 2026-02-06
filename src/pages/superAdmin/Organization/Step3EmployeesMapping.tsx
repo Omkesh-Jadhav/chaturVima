@@ -6,6 +6,7 @@ import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo, Badge } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails, useBulkUploadEmployees, useGetOrganizationDetails } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
+import { useDesignations } from "@/hooks/useDesignations";
 import { getEmployeeDetails } from "@/api/api-functions/organization-setup";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
@@ -93,6 +94,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const bulkUploadMutation = useBulkUploadEmployees();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError, refetch: refetchEmployees } = useGetEmployees(departmentFilter);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
+  const { data: designations = [], isLoading: isLoadingDesignations } = useDesignations();
 
   // Consolidated validation
   const validateField = useCallback((field: string, value: string) => {
@@ -114,7 +116,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         }
         break;
       case "designation":
-        if (trimmedValue && !validateDesignation(trimmedValue)) {
+        if (!trimmedValue || trimmedValue === "Select Designation") {
+          // Designation is optional, so no error if empty
+        } else if (!validateDesignation(trimmedValue)) {
           error = "Designation should only contain letters, numbers, spaces, hyphens, and apostrophes";
         }
         break;
@@ -422,9 +426,13 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       const response = await bulkUploadMutation.mutateAsync(file);
       console.log("Upload successful:", response);
       
-      const formatError = (err: any, index: number): string => {
+      const formatError = (err: unknown, index: number): string => {
         if (typeof err === 'string') return err;
-        return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+        if (typeof err === 'object' && err !== null) {
+          const errorObj = err as { row?: number; message?: string; error?: string };
+          return `Row ${errorObj.row || index + 1}: ${errorObj.message || errorObj.error || JSON.stringify(err)}`;
+        }
+        return `Row ${index + 1}: ${JSON.stringify(err)}`;
       };
 
       if (response?.message?.errors?.length) {
@@ -441,31 +449,54 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
       if (fileInputRef.current) fileInputRef.current.value = '';
       setPendingFile(null);
-    } catch (error: any) {
-      const formatError = (err: any, index: number): string => {
+    } catch (error: unknown) {
+      const formatError = (err: unknown, index: number): string => {
         if (typeof err === 'string') return err;
-        return `Row ${err.row || index + 1}: ${err.message || err.error || JSON.stringify(err)}`;
+        if (typeof err === 'object' && err !== null) {
+          const errorObj = err as { row?: number; message?: string; error?: string };
+          return `Row ${errorObj.row || index + 1}: ${errorObj.message || errorObj.error || JSON.stringify(err)}`;
+        }
+        return `Row ${index + 1}: ${JSON.stringify(err)}`;
       };
 
       let errorMessages: string[] = [];
-      const errorData = error?.response?.data?.message;
       
-      if (errorData) {
-        if (Array.isArray(errorData)) {
-          errorMessages = errorData.map(formatError);
-        } else if (typeof errorData === 'string') {
-          errorMessages = [errorData];
-        } else if (errorData.errors?.length) {
-          errorMessages = errorData.errors.map(formatError);
+      // Type guard for axios error
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: unknown } } };
+        const errorData = axiosError.response?.data?.message;
+        
+        if (errorData) {
+          if (Array.isArray(errorData)) {
+            errorMessages = errorData.map(formatError);
+          } else if (typeof errorData === 'string') {
+            errorMessages = [errorData];
+          } else if (errorData && typeof errorData === 'object' && 'errors' in errorData) {
+            const errorObj = errorData as { errors?: unknown[] };
+            if (Array.isArray(errorObj.errors)) {
+              errorMessages = errorObj.errors.map(formatError);
+            } else {
+              const msgObj = errorData as { message?: string };
+              errorMessages = [msgObj.message || "Failed to upload file. Please check the file format and try again."];
+            }
+          } else {
+            const msgObj = errorData as { message?: string };
+            errorMessages = [msgObj.message || "Failed to upload file. Please check the file format and try again."];
+          }
         } else {
-          errorMessages = [errorData.message || "Failed to upload file. Please check the file format and try again."];
+          errorMessages = ["Failed to upload file. Please try again."];
         }
       } else {
         // Handle timeout errors specifically
-        if (error?.message?.includes('timeout') || error?.code === 'ECONNABORTED') {
-          errorMessages = ["Upload timeout. The file is large and taking longer to process. Please try again or contact support if the issue persists."];
+        if (error && typeof error === 'object' && 'message' in error) {
+          const err = error as { message?: string; code?: string };
+          if (err.message?.includes('timeout') || err.code === 'ECONNABORTED') {
+            errorMessages = ["Upload timeout. The file is large and taking longer to process. Please try again or contact support if the issue persists."];
+          } else {
+            errorMessages = [err.message || "Failed to upload file. Please try again."];
+          }
         } else {
-          errorMessages = [error?.message || "Failed to upload file. Please try again."];
+          errorMessages = ["Failed to upload file. Please try again."];
         }
       }
       
@@ -555,7 +586,12 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <CalendarInput value={formData.dateOfJoining} onChange={(value) => handleInputChange("dateOfJoining", value)} placeholder="Joining Date" className="w-full" />
             </FormField>
             <FormField label="Designation" error={fieldErrors.designation}>
-              <Input type="text" value={formData.designation} onChange={(e) => handleInputChange("designation", e.target.value)} className={inputClass(!!fieldErrors.designation)} placeholder="e.g., Software Engineer" />
+              <FilterSelect 
+                value={formData.designation || "Select Designation"} 
+                onChange={(value) => handleInputChange("designation", value === "Select Designation" ? "" : value)} 
+                className={selectClass(!!fieldErrors.designation)} 
+                options={isLoadingDesignations ? ["Select Designation", "Loading..."] : ["Select Designation", ...designations]} 
+              />
             </FormField>
             <FormField label="Role">
               <FilterSelect value={formData.role} onChange={(value) => handleInputChange("role", value)} className="w-full h-9" options={["Employee", "Department Head"]} />
