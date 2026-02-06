@@ -311,7 +311,7 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
         designation: formData.designation,
         department: formData.department,
         reports_to: reportsToValue,
-        role_profile: formData.role,
+        custom_role_profile: formData.role,
       };
 
       // Call the API to update employee details

@@ -300,6 +300,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
       const details = employeeDetailsResponse?.data || {};
 
       // Prepare employee data with status: "Inactive"
+      const roleValue = details.role_profile || employee.role || 'Employee';
       const employeeData = {
         employee_name: details.employee_name || employee.name,
         first_name: details.first_name || employee.name.split(' ')[0] || '',
@@ -312,7 +313,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
         designation: details.designation || employee.designation || '',
         department: details.department || employee.department || '',
         reports_to: details.reports_to || employee.reports_to || '',
-        role_profile: details.role_profile || employee.role || 'Employee',
+        custom_role_profile: roleValue,
         status: 'Inactive', // Set status to Inactive (capitalized as required by API)
       };
 

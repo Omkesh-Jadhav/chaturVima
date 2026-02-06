@@ -62,7 +62,7 @@ export const useEditEmployeeDetails = () => {
                 designation: string;
                 department: string;
                 reports_to: string;
-                role_profile: string;
+                custom_role_profile: string;
             }
         }) => {
             return await editEmployeeDetails(name, employeeData);
