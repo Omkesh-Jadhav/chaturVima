@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAllDesignations } from "@/api/api-functions/organization-setup";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAllDesignations, createDesignation } from "@/api/api-functions/organization-setup";
 
 // Query keys
 export const designationKeys = {
@@ -26,6 +26,23 @@ export const useDesignations = () => {
         queryFn: async () => {
             const response = await getAllDesignations();
             return transformDesignationData(response);
+        },
+    });
+};
+
+// Hook to create a designation
+export const useCreateDesignation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (designationData: {
+            designation_name: string;
+        }) => {
+            return await createDesignation(designationData);
+        },
+        onSuccess: () => {
+            // Invalidate and refetch designations list
+            queryClient.invalidateQueries({ queryKey: designationKeys.list() });
         },
     });
 };

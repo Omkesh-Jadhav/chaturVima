@@ -83,6 +83,25 @@ export const getAllDesignations = async () => {
     }
 }
 
+export const createDesignation = async (designationData: {
+    designation_name: string;
+}) => {
+    try {
+        const payload = {
+            data: designationData
+        };
+        const response = await api.post(API_ENDPOINTS.ORGANIZATION.CREATE_DESIGNATION, payload);
+        console.log("SUCCESS - createDesignation response:", response);
+        console.log("SUCCESS - Response data:", response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error("ERROR - createDesignation failed:", error);
+        console.error("ERROR - Error response:", error.response);
+        console.error("ERROR - Error data:", error.response?.data);
+        throw error;
+    }
+}
+
 export const getAllDepartments = async () => {
     try {
         const response = await api.get(API_ENDPOINTS.ORGANIZATION.GET_ALL_DEPARTMENTS);
