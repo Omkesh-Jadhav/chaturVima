@@ -22,31 +22,45 @@ export interface QuestionnaireData {
   };
 }
 
-// Fetches all assessment types from the API
-export const getAssessmentTypes = async () => {
+// Interface for employee assessment response
+export interface EmployeeAssessment {
+  submission_name: string;
+  status: string;
+  questionnaire: string;
+  dimension: string;
+}
+
+export interface EmployeeAssessmentsResponse {
+  message: EmployeeAssessment[];
+}
+
+// Fetches employee assessments - POST request with user_id from localStorage
+export const getEmployeeAssessments = async (userId: string): Promise<EmployeeAssessment[]> => {
   try {
-    const response = await api.get(API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_TYPES);
-    console.log("SUCCESS - getAssessmentTypes response:", response);
-    return response.data;
+    const payload = { employee: userId };
+    console.log("[getEmployeeAssessments] Calling API with payload:", payload);
+    console.log("[getEmployeeAssessments] User ID:", userId);
+    
+    const response = await api.post<EmployeeAssessmentsResponse>(
+      API_ENDPOINTS.ASSESSMENT.GET_EMPLOYEE_ASSESSMENTS,
+      payload
+    );
+    
+    console.log("[getEmployeeAssessments] SUCCESS - Full response:", response);
+    console.log("[getEmployeeAssessments] Response data:", response.data);
+    console.log("[getEmployeeAssessments] Assessments:", response.data.message);
+    
+    return response.data.message || [];
   } catch (error: unknown) {
-    const err = error as { response?: { data?: unknown } };
-    console.error("ERROR - getAssessmentTypes failed:", error);
-    console.error("ERROR - Error response:", err.response);
-    console.error("ERROR - Error data:", err.response?.data);
+    const err = error as { response?: { status?: number; data?: unknown }; message?: string };
+    console.error("[getEmployeeAssessments] ERROR - API call failed:");
+    console.error("  - User ID:", userId);
+    console.error("  - Error message:", err.message);
+    console.error("  - Status:", err.response?.status);
+    console.error("  - Error response:", err.response);
+    console.error("  - Error data:", err.response?.data);
     throw error;
   }
-};
-
-// Maps API stage name to StageType
-const mapStageToStageType = (stage: string): "honeymoon" | "self-reflection" | "soul-searching" | "steady-state" => {
-  const stageMap: Record<string, "honeymoon" | "self-reflection" | "soul-searching" | "steady-state"> = {
-    "Honeymoon": "honeymoon",
-    "Self-Reflection": "self-reflection",
-    "Self-Introspection": "self-reflection",
-    "Soul-Searching": "soul-searching",
-    "Steady-State": "steady-state",
-  };
-  return stageMap[stage] || "honeymoon";
 };
 
 // Maps assessment type name to organizational level
@@ -58,21 +72,43 @@ const mapAssessmentTypeToLevel = (typeName: string): "employee" | "manager" | "d
   return "employee";
 };
 
-// Maps API question to Question interface
-const mapApiQuestionToQuestion = (
-  apiQuestion: ApiQuestion,
+// Removed mapApiQuestionToQuestion - not used anymore (we use mapAnswerToQuestion instead)
+
+// Interface for assessment answer from API
+export interface AssessmentAnswer {
+  name: string;
+  question: string;
+  rating: string; // "1" - "5"
+  idx: number;
+  [key: string]: unknown;
+}
+
+// Interface for submission question data
+export interface SubmissionQuestionData {
+  data: {
+    name: string;
+    questionnaire?: string;
+    dimension?: string;
+    answers?: AssessmentAnswer[];
+    [key: string]: unknown;
+  };
+}
+
+// Maps assessment answer to Question interface
+const mapAnswerToQuestion = (
+  answer: AssessmentAnswer,
   index: number,
-  assessmentTypeName: string
+  questionnaireName: string
 ): Question => {
-  const level = mapAssessmentTypeToLevel(assessmentTypeName);
-  const stage = mapStageToStageType(apiQuestion.stage);
+  const level = mapAssessmentTypeToLevel(questionnaireName);
+  const stage: "honeymoon" | "self-reflection" | "soul-searching" | "steady-state" = "honeymoon";
   
   return {
-    id: apiQuestion.name || `q-${assessmentTypeName}-${index + 1}`,
+    id: answer.name || `q-${questionnaireName}-${index + 1}`,
     level,
     stage,
     type: "likert",
-    text: apiQuestion.question_text,
+    text: answer.question,
     options: [
       "Strongly Disagree",
       "Disagree",
@@ -84,24 +120,74 @@ const mapApiQuestionToQuestion = (
   };
 };
 
-// Fetches questions by assessment type from the API
-export const getQuestionsByType = async (assessmentTypeName: string): Promise<Question[]> => {
+// Return type for questions with their existing answers
+export interface QuestionsWithAnswers {
+  questions: Question[];
+  answers: Record<string, number>; // questionId -> optionIndex (0-4)
+}
+
+// Fetches questions by submission name from the API and returns questions with existing answers
+export const getQuestionsBySubmission = async (submissionName: string): Promise<QuestionsWithAnswers> => {
   try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_QUESTIONS_BY_TYPE}/${assessmentTypeName}`;
-    const response = await api.get<QuestionnaireData>(url);
-    console.log("SUCCESS - getQuestionsByType response:", response);
+    const url = `${API_ENDPOINTS.ASSESSMENT.ASSESSMENT_SUBMISSION}/${submissionName}`;
     
-    const questions = response.data.data.questions || [];
-    const mappedQuestions = questions
-      .sort((a, b) => (a.order || 0) - (b.order || 0))
-      .map((q, index) => mapApiQuestionToQuestion(q, index, assessmentTypeName));
+    console.log("[getQuestionsBySubmission] Starting API call:");
+    console.log("  - URL:", url);
+    console.log("  - Method: GET");
+    console.log("  - Submission Name:", submissionName);
     
-    return mappedQuestions;
+    const response = await api.get<SubmissionQuestionData>(url);
+    
+    console.log("[getQuestionsBySubmission] SUCCESS - Full response:", response);
+    console.log("  - Status:", response.status);
+    console.log("  - Response data:", response.data);
+    
+    const submissionData = response.data.data;
+    console.log("  - Submission data:", submissionData);
+    
+    const answers = submissionData.answers || [];
+    console.log("  - Answers array length:", answers.length);
+    console.log("  - Answers array:", answers);
+    
+    const questionnaireName = submissionData.questionnaire || "SELF";
+    console.log("  - Questionnaire name:", questionnaireName);
+    
+    // Sort by idx (which represents the order) and map to Question format
+    const mappedQuestions = answers
+      .sort((a, b) => (a.idx || 0) - (b.idx || 0))
+      .map((answer, index) => mapAnswerToQuestion(answer, index, questionnaireName));
+    
+    console.log("  - Mapped questions count:", mappedQuestions.length);
+    console.log("  - Mapped questions:", mappedQuestions);
+    
+    // Extract existing answers: rating is "1"-"5" (string), convert to 0-4 index
+    const existingAnswers: Record<string, number> = {};
+    answers.forEach((answer) => {
+      if (answer.rating && answer.rating.trim() !== "") {
+        const ratingNum = parseInt(answer.rating, 10);
+        if (ratingNum >= 1 && ratingNum <= 5) {
+          // Convert 1-5 to 0-4 index
+          const questionId = answer.name || `q-${questionnaireName}-${answer.idx}`;
+          existingAnswers[questionId] = ratingNum - 1;
+        }
+      }
+    });
+    
+    console.log("  - Existing answers count:", Object.keys(existingAnswers).length);
+    console.log("  - Existing answers:", existingAnswers);
+    
+    return {
+      questions: mappedQuestions,
+      answers: existingAnswers,
+    };
   } catch (error: unknown) {
-    const err = error as { response?: { data?: unknown } };
-    console.error("ERROR - getQuestionsByType failed:", error);
-    console.error("ERROR - Error response:", err.response);
-    console.error("ERROR - Error data:", err.response?.data);
+    const err = error as { response?: { status?: number; data?: unknown }; message?: string };
+    console.error("[getQuestionsBySubmission] ERROR - API call failed:");
+    console.error("  - Submission Name:", submissionName);
+    console.error("  - Error message:", err.message);
+    console.error("  - Status:", err.response?.status);
+    console.error("  - Error response:", err.response);
+    console.error("  - Error data:", err.response?.data);
     throw error;
   }
 };
@@ -135,37 +221,9 @@ export interface AssessmentSubmissionsResponse {
   data: AssessmentSubmission[];
 }
 
-// Fetches Assessment Submissions by employee_id
-export const getAssessmentSubmissionsByEmployee = async (
-  employeeId: string
-): Promise<AssessmentSubmission[]> => {
-  try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}?filters=[["employee","=","${employeeId}"]]`;
-    const response = await api.get<AssessmentSubmissionsResponse>(url);
-    console.log("SUCCESS - getAssessmentSubmissionsByEmployee response:", response);
-    return response.data.data || [];
-  } catch (error: unknown) {
-    console.error("ERROR - getAssessmentSubmissionsByEmployee failed:", error);
-    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
-    throw error;
-  }
-};
-
-// Fetches a single Assessment Submission with full details (including answers)
-export const getAssessmentSubmissionDetail = async (
-  submissionId: string
-): Promise<AssessmentSubmission> => {
-  try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}/${submissionId}`;
-    const response = await api.get<{ data: AssessmentSubmission }>(url);
-    console.log("SUCCESS - getAssessmentSubmissionDetail response:", response);
-    return response.data.data;
-  } catch (error: unknown) {
-    console.error("ERROR - getAssessmentSubmissionDetail failed:", error);
-    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
-    throw error;
-  }
-};
+// Removed getAssessmentSubmissionsByEmployee and getAssessmentSubmissionDetail
+// Now using getEmployeeAssessments instead (which returns submission_name, status, etc.)
+// and getQuestionsBySubmission for getting questions by submission_name
 
 // Submits assessment answers to the API
 export const submitAssessmentAnswers = async (
