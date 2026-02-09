@@ -171,7 +171,25 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
             dateOfBirth: "Date of birth must be earlier than current date"
           }));
         } else {
-          setFieldErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+          // Check if person is at least 18 years old
+          const age = currentDate.getFullYear() - selectedDate.getFullYear();
+          const monthDiff = currentDate.getMonth() - selectedDate.getMonth();
+          const dayDiff = currentDate.getDate() - selectedDate.getDate();
+          
+          // Calculate exact age considering month and day
+          let exactAge = age;
+          if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            exactAge = age - 1;
+          }
+          
+          if (exactAge < 18) {
+            setFieldErrors((prev) => ({
+              ...prev,
+              dateOfBirth: "Employee must be at least 18 years old"
+            }));
+          } else {
+            setFieldErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+          }
         }
       }
     }
@@ -286,6 +304,25 @@ const EmployeeEditModal: React.FC<EmployeeEditModalProps> = ({
           dateOfBirth: "Date of birth must be earlier than current date"
         }));
         return;
+      } else {
+        // Check if person is at least 18 years old
+        const age = currentDate.getFullYear() - selectedDate.getFullYear();
+        const monthDiff = currentDate.getMonth() - selectedDate.getMonth();
+        const dayDiff = currentDate.getDate() - selectedDate.getDate();
+        
+        // Calculate exact age considering month and day
+        let exactAge = age;
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+          exactAge = age - 1;
+        }
+        
+        if (exactAge < 18) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            dateOfBirth: "Employee must be at least 18 years old"
+          }));
+          return;
+        }
       }
     }
 

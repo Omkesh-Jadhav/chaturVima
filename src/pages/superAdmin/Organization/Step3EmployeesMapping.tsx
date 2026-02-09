@@ -139,8 +139,24 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           const selectedDate = new Date(trimmedValue);
           const currentDate = new Date();
           currentDate.setHours(0, 0, 0, 0);
+          
           if (selectedDate >= currentDate) {
             error = "Date of birth must be earlier than current date";
+          } else {
+            // Check if person is at least 18 years old
+            const age = currentDate.getFullYear() - selectedDate.getFullYear();
+            const monthDiff = currentDate.getMonth() - selectedDate.getMonth();
+            const dayDiff = currentDate.getDate() - selectedDate.getDate();
+            
+            // Calculate exact age considering month and day
+            let exactAge = age;
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+              exactAge = age - 1;
+            }
+            
+            if (exactAge < 18) {
+              error = "Employee must be at least 18 years old";
+            }
           }
         }
         break;
@@ -1081,7 +1097,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date of Birth:</strong> Date of birth must be earlier than current date.</span>
+                      <span><strong>Date of Birth:</strong> Date of birth must be earlier than current date and the employee must be at least 18 years old.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
