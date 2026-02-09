@@ -13,6 +13,7 @@ export interface AssessmentCycle {
   allowCustomUpload?: boolean;
   customQuestionnaireName?: string;
   participants: number;
+  progress: number;
   owner: string;
   linkedTeams: number;
   notes?: string;

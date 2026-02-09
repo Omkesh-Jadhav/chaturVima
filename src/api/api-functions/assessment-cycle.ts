@@ -120,6 +120,7 @@ const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0
     departments,
     assessmentTypes: assessmentType ? [assessmentType] : [],
     participants: (apiCycle.employees || []).length,
+    progress: apiCycle.progress ?? 0, // Use progress from API (0-100 or 0-1 format)
     owner: "HR Ops",
     linkedTeams: apiCycle.assessments_linked_count || 0,
     notes: apiCycle.email_notes,

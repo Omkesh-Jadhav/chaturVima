@@ -202,13 +202,17 @@ const CycleTable = ({
                 <td className={`${cellPadding} align-middle`}>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-900">{cycle.participants}%</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {Math.round(cycle.progress ?? 0)}%
+                      </span>
                       <span className="text-xs text-gray-500 font-medium">complete</span>
                     </div>
                     <div className="h-2.5 w-36 rounded-full bg-gray-200 shadow-inner overflow-hidden">
                       <div
                         className="h-full rounded-full bg-linear-to-r from-brand-teal via-brand-teal to-brand-navy shadow-sm transition-all duration-500"
-                        style={{ width: `${Math.min(cycle.participants, 100)}%` }}
+                        style={{ 
+                          width: `${Math.min(Math.max(cycle.progress ?? 0, 0), 100)}%` 
+                        }}
                       />
                     </div>
                   </div>
