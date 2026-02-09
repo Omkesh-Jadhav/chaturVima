@@ -7,8 +7,8 @@ export const API_ENDPOINTS = {
     },
 
     ASSESSMENT: {
-        GET_ASSESSMENT_TYPES: `/api/resource/Questionnaire`,
-        GET_QUESTIONS_BY_TYPE: `/api/resource/Questionnaire`,
+        GET_EMPLOYEE_ASSESSMENTS: `/api/method/chaturvima_api.api.assessment.assessment.get_employee_assessments`,
+        GET_QUESTIONS_BY_SUBMISSION: `/api/resource/Assessment Submission`,
         GET_ASSESSMENT_SUBMISSIONS: `/api/resource/Assessment Submission`,
         SUBMIT_ASSESSMENT: `/api/resource/Assessment Submission`,
     },

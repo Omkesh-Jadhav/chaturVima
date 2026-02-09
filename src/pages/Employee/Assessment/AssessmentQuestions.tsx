@@ -36,13 +36,11 @@ import {
 } from "../../../utils/assessmentUtils";
 import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
 import {
-  getAssessmentTypes,
-  getQuestionsByType,
+  getEmployeeAssessments,
+  getQuestionsBySubmission,
   submitAssessmentAnswers,
-  getAssessmentSubmissionsByEmployee,
-  type AssessmentSubmission,
+  type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
-import { mapAssessmentTypeToApiName } from "../../../utils/assessmentUtils";
 import type { Question } from "../../../types";
 
 // Helper function to map submission ID to assessment type
@@ -114,21 +112,82 @@ const AssessmentQuestions = () => {
     fetchSubmissions();
   }, [user?.employee_id]);
 
+  // Fetch employee assessments using user_id from localStorage
   useEffect(() => {
-    const fetchAssessmentTypes = async () => {
+    const fetchEmployeeAssessments = async () => {
+      // Get user_id from localStorage
+      const storedUser = localStorage.getItem("chaturvima_user");
+      if (!storedUser) {
+        console.warn("[AssessmentQuestions] No user found in localStorage");
+        return;
+      }
+      
       try {
-        const response = await getAssessmentTypes();
-        const apiNames = response.data.map((q: { name: string }) => q.name);
-        const mappedTypes = mapQuestionnairesToAssessmentTypes(apiNames);
+        const parsedUser = JSON.parse(storedUser);
+        // Try multiple possible keys for user_id
+        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
+        
+        if (!userId) {
+          console.error("[AssessmentQuestions] No user_id found in localStorage user object:", parsedUser);
+          return;
+        }
+        
+        console.log("[AssessmentQuestions] Fetching assessments for user_id:", userId);
+        const assessments = await getEmployeeAssessments(userId);
+        console.log("[AssessmentQuestions] Received assessments:", assessments);
+        
+        // Map assessments to assessment types based on questionnaire
+        const mappedTypes: AssessmentType[] = [];
+        const mappedIds: Record<AssessmentType, string | null> = {
+          "Employee Self Assessment": null,
+          "Manager Relationship Assessment": null,
+          "Department Assessment": null,
+          "Company Assessment": null,
+        };
+        const mappedStatuses: Record<AssessmentType, string> = {
+          "Employee Self Assessment": "Draft",
+          "Manager Relationship Assessment": "Draft",
+          "Department Assessment": "Draft",
+          "Company Assessment": "Draft",
+        };
+        
+        assessments.forEach((assessment) => {
+          // Map questionnaire to assessment type
+          let assessmentType: AssessmentType | null = null;
+          if (assessment.questionnaire === "SELF") {
+            assessmentType = "Employee Self Assessment";
+          } else if (assessment.questionnaire === "BOSS") {
+            assessmentType = "Manager Relationship Assessment";
+          } else if (assessment.questionnaire === "Department") {
+            assessmentType = "Department Assessment";
+          } else if (assessment.questionnaire === "Company") {
+            assessmentType = "Company Assessment";
+          }
+          
+          if (assessmentType) {
+            if (!mappedTypes.includes(assessmentType)) {
+              mappedTypes.push(assessmentType);
+            }
+            mappedIds[assessmentType] = assessment.submission_name;
+            mappedStatuses[assessmentType] = assessment.status;
+          }
+        });
+        
+        console.log("[AssessmentQuestions] Mapped types:", mappedTypes);
+        console.log("[AssessmentQuestions] Mapped IDs:", mappedIds);
+        console.log("[AssessmentQuestions] Mapped statuses:", mappedStatuses);
+        
         if (mappedTypes.length > 0) {
           setAssignedTypes(mappedTypes);
+          setSubmissionIds(mappedIds);
+          setSubmissionStatuses(mappedStatuses);
         }
-      } catch (error: any) {
-        console.error("Failed to fetch assessment types:", error);
+      } catch (error: unknown) {
+        console.error("[AssessmentQuestions] Failed to fetch employee assessments:", error);
       }
     };
 
-    fetchAssessmentTypes();
+    fetchEmployeeAssessments();
   }, []);
 
   const [selectedType, setSelectedType] = useState<AssessmentType | null>(null);
@@ -144,14 +203,36 @@ const AssessmentQuestions = () => {
     const fetchQuestions = async () => {
       if (!selectedType || loadedTypes.has(selectedType)) return;
 
+      const submissionName = submissionIds[selectedType];
+      if (!submissionName) {
+        console.warn(`[AssessmentQuestions] No submission name found for assessment type: ${selectedType}`);
+        return;
+      }
+
       try {
         setIsLoadingQuestions(true);
-        const apiName = mapAssessmentTypeToApiName(selectedType);
-        const questions = await getQuestionsByType(apiName);
+        console.log(`[AssessmentQuestions] Fetching questions for submission: ${submissionName}`);
+        const { questions, answers: existingAnswers } = await getQuestionsBySubmission(submissionName);
+        console.log(`[AssessmentQuestions] Fetched ${questions.length} questions`);
+        console.log(`[AssessmentQuestions] Found ${Object.keys(existingAnswers).length} existing answers`);
+        
         setQuestionsByType((prev) => ({ ...prev, [selectedType]: questions }));
         setLoadedTypes((prev) => new Set(prev).add(selectedType));
-      } catch (error: any) {
-        console.error("Failed to fetch questions:", error);
+        
+        // Load existing answers if status is Draft
+        const status = submissionStatuses[selectedType];
+        if (status === "Draft" && Object.keys(existingAnswers).length > 0) {
+          console.log("[AssessmentQuestions] Loading existing answers for Draft assessment");
+          Object.entries(existingAnswers).forEach(([questionId, optionIndex]) => {
+            if (answers[questionId] === undefined) {
+              answerQuestion(questionId, optionIndex);
+            }
+          });
+        }
+      } catch (error: unknown) {
+        console.error("[AssessmentQuestions] Failed to fetch questions:", error);
+        setQuestionsByType((prev) => ({ ...prev, [selectedType]: [] }));
+        setLoadedTypes((prev) => new Set(prev).add(selectedType));
       } finally {
         setIsLoadingQuestions(false);
       }
