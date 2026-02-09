@@ -195,7 +195,7 @@ const AssessmentCycles = () => {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search assessment cycle name",
+          placeholder: "Search",
           className: "w-full sm:w-auto",
         }}
         filters={[
