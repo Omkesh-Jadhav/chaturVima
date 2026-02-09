@@ -62,6 +62,7 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
   // All fields are readonly by default, editing happens through modal
   const isReadonly = true;
 
+
   // Helper function to get industry options
   const getIndustryOptions = () => {
     const defaultOptions = ["Select industry"];
@@ -134,8 +135,61 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
         }
         break;
       case "phone":
-        if (value && !validatePhone(value)) {
-          error = "Please enter a valid phone number";
+        if (value) {
+          // Get all digits from the phone input
+          const allDigits = value.replace(/\D/g, "");
+          
+          if (allDigits.length === 0) {
+            error = "Phone number is required";
+          } else {
+            // Check if phone starts with + (has country code)
+            const hasCountryCode = value.trim().startsWith("+");
+            let phoneNumberDigitCount = 0;
+            
+            if (hasCountryCode && allDigits.length > 10) {
+              // Has country code and more than 10 total digits
+              // Detect country code length (common: 91=2, 1=1, 44=2)
+              let countryCodeLength = 0;
+              if (allDigits.startsWith("91")) {
+                countryCodeLength = 2; // India
+              } else if (allDigits.startsWith("1")) {
+                countryCodeLength = 1; // US/Canada
+              } else if (allDigits.startsWith("44")) {
+                countryCodeLength = 2; // UK
+              } else {
+                // Default: assume 1-2 digit country code, try to detect
+                // If total > 12, likely 2-digit country code, else 1-digit
+                countryCodeLength = allDigits.length > 12 ? 2 : 1;
+              }
+              
+              // Phone number digits = total - country code
+              phoneNumberDigitCount = allDigits.length - countryCodeLength;
+            } else if (!hasCountryCode && allDigits.length > 10) {
+              // No + but more than 10 digits - might have country code without +
+              if (allDigits.startsWith("91")) {
+                phoneNumberDigitCount = allDigits.length - 2; // India code
+              } else if (allDigits.startsWith("1")) {
+                phoneNumberDigitCount = allDigits.length - 1; // US code
+              } else {
+                // Assume first 1-2 digits are country code
+                phoneNumberDigitCount = allDigits.length - (allDigits.length > 12 ? 2 : 1);
+              }
+            } else {
+              // 10 or fewer digits total, no country code to exclude
+              phoneNumberDigitCount = allDigits.length;
+            }
+            
+            // Validate based on actual phone number digit count
+            if (phoneNumberDigitCount === 0) {
+              error = "Phone number is required";
+            } else if (phoneNumberDigitCount < 10) {
+              error = "Phone number must contain exactly 10 digits (excluding country code)";
+            } else if (phoneNumberDigitCount > 10) {
+              error = "Phone number cannot exceed 10 digits (excluding country code)";
+            } else if (!validatePhone(value)) {
+              error = "Please enter a valid phone number";
+            }
+          }
         }
         break;
       case "website":
@@ -171,9 +225,10 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     // Update form data immediately - this is the critical update
     setEditFormData(prev => ({ ...prev, [field]: value }));
     
-    // Validate fields in real-time
+    // Validate fields in real-time (especially phone to show error immediately)
     const fieldsToValidate = ["city", "state", "country", "website", "email", "phone"];
     if (fieldsToValidate.includes(field)) {
+      // Validate immediately to show error as user types
       validateField(field, value);
     } else {
       // Clear field error when user starts typing for other fields
@@ -222,8 +277,61 @@ const Step1OrganizationInfo: React.FC<Step1OrganizationInfoProps> = ({
     }
     if (!editFormData.phone.trim()) {
       errors.phone = "Phone number is required";
-    } else if (!validatePhone(editFormData.phone)) {
-      errors.phone = "Please enter a valid phone number";
+    } else {
+      // Get all digits from the phone input
+      const allDigits = editFormData.phone.replace(/\D/g, "");
+      
+      if (allDigits.length === 0) {
+        errors.phone = "Phone number is required";
+      } else {
+        // Check if phone starts with + (has country code)
+        const hasCountryCode = editFormData.phone.trim().startsWith("+");
+        let phoneNumberDigitCount = 0;
+        
+        if (hasCountryCode && allDigits.length > 10) {
+          // Has country code and more than 10 total digits
+          // Detect country code length (common: 91=2, 1=1, 44=2)
+          let countryCodeLength = 0;
+          if (allDigits.startsWith("91")) {
+            countryCodeLength = 2; // India
+          } else if (allDigits.startsWith("1")) {
+            countryCodeLength = 1; // US/Canada
+          } else if (allDigits.startsWith("44")) {
+            countryCodeLength = 2; // UK
+          } else {
+            // Default: assume 1-2 digit country code, try to detect
+            // If total > 12, likely 2-digit country code, else 1-digit
+            countryCodeLength = allDigits.length > 12 ? 2 : 1;
+          }
+          
+          // Phone number digits = total - country code
+          phoneNumberDigitCount = allDigits.length - countryCodeLength;
+        } else if (!hasCountryCode && allDigits.length > 10) {
+          // No + but more than 10 digits - might have country code without +
+          if (allDigits.startsWith("91")) {
+            phoneNumberDigitCount = allDigits.length - 2; // India code
+          } else if (allDigits.startsWith("1")) {
+            phoneNumberDigitCount = allDigits.length - 1; // US code
+          } else {
+            // Assume first 1-2 digits are country code
+            phoneNumberDigitCount = allDigits.length - (allDigits.length > 12 ? 2 : 1);
+          }
+        } else {
+          // 10 or fewer digits total, no country code to exclude
+          phoneNumberDigitCount = allDigits.length;
+        }
+        
+        // Validate based on actual phone number digit count
+        if (phoneNumberDigitCount === 0) {
+          errors.phone = "Phone number is required";
+        } else if (phoneNumberDigitCount < 10) {
+          errors.phone = "Phone number must contain exactly 10 digits (excluding country code)";
+        } else if (phoneNumberDigitCount > 10) {
+          errors.phone = "Phone number cannot exceed 10 digits (excluding country code)";
+        } else if (!validatePhone(editFormData.phone)) {
+          errors.phone = "Please enter a valid phone number";
+        }
+      }
     }
     if (editFormData.website && !validateWebsite(editFormData.website)) {
       errors.website = "Please enter a valid website URL";
