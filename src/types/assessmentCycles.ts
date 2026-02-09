@@ -27,7 +27,6 @@ export interface DepartmentHeadAccess {
   activeCycles: number;
 }
 
-export type ShareMatrix = Record<string, Record<string, boolean>>;
 
 export interface CycleFormPayload {
   name: string;

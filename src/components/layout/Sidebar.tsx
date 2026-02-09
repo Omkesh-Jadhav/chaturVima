@@ -85,13 +85,6 @@ const NAV_ITEMS: NavItem[] = [
     icon: <BarChart3 className="h-5 w-5" />,
     roles: ["HR Admin", "HR Doctorate"],
   },
-  {
-    id: "department-head-cycles",
-    label: "Assessment Cycles",
-    path: "/department-head/assessment-cycles",
-    icon: <CalendarDays className="h-5 w-5" />,
-    roles: ["Department Head"],
-  },
   // {
   //   id: "employee-setup",
   //   label: "Employee Setup",
@@ -126,11 +119,6 @@ const ROLE_CONFIG: Record<
     label: "HR Admin",
     icon: <Shield className="h-3 w-3" />,
     color: "text-green-600 bg-green-50",
-  },
-  "Department Head": {
-    label: "Department Head",
-    icon: <UserCog className="h-3 w-3" />,
-    color: "text-orange-600 bg-orange-50",
   },
   "Superadmin": {
     label: "Super Admin",

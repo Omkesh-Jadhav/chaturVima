@@ -9,7 +9,6 @@ type TableVariant = "hr" | "department-head";
 interface CycleTableProps {
   data: AssessmentCycle[];
   onSchedule?: (cycle: AssessmentCycle) => void;
-  onShare?: (cycle: AssessmentCycle) => void;
   variant?: TableVariant;
   scheduleAccess?: Record<string, boolean>;
 }
@@ -17,7 +16,6 @@ interface CycleTableProps {
 const CycleTable = ({
   data,
   onSchedule,
-  onShare,
   variant = "hr",
   scheduleAccess = {},
 }: CycleTableProps) => {
@@ -93,7 +91,6 @@ const CycleTable = ({
             const isCompleted = cycle.status === "Completed";
             const isActive = cycle.status === "Active";
             const canSchedule = !isCompleted && !isActive ? (isDepartmentHead ? scheduleAccess[cycle.id] : true) : false;
-            const canShare = !isCompleted && !isActive;
 
             return (
               <motion.tr
@@ -156,7 +153,7 @@ const CycleTable = ({
 
                 {/* Assessments Column */}
                 <td className={`${cellPadding} align-middle`}>
-                  <div className="text-sm font-semibold text-gray-900">{cycle.linkedTeams} linked</div>
+                  <div className="text-sm font-semibold text-gray-900">{cycle.linkedTeams} assessment count</div>
                 </td>
 
                 {/* Progress Column */}
@@ -183,16 +180,6 @@ const CycleTable = ({
                     >
                       Schedule Cycle
                     </Button>
-                    {!isDepartmentHead && (
-                      <Button
-                        onClick={() => canShare && onShare?.(cycle)}
-                        disabled={!canShare}
-                        variant="secondary"
-                        size="xs"
-                      >
-                        Share to HOD's
-                      </Button>
-                    )}
                   </div>
                   {isDepartmentHead && !canSchedule && (
                     <p className="mt-2 text-right text-xs font-medium text-amber-600">Waiting for HR access</p>

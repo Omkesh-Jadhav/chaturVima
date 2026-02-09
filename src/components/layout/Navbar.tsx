@@ -33,11 +33,6 @@ const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; colo
     icon: <Shield className="h-4 w-4" />,
     color: "text-green-600 bg-green-50",
   },
-  "Department Head": {
-    label: "Department Head",
-    icon: <UserCog className="h-4 w-4" />,
-    color: "text-orange-600 bg-orange-50",
-  },
   "Superadmin": {
     label: "Super Admin",
     icon: <Crown className="h-4 w-4" />,
@@ -73,7 +68,6 @@ const Navbar = () => {
   const allRoles: UserRole[] = [
     "Employee",
     "HR Admin",
-    "Department Head",
     "Superadmin",
     "HR Doctorate",
   ];
