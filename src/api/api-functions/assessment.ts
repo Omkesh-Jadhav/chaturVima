@@ -63,18 +63,6 @@ export const getEmployeeAssessments = async (userId: string): Promise<EmployeeAs
   }
 };
 
-// Maps API stage name to StageType
-const mapStageToStageType = (stage: string): "honeymoon" | "self-reflection" | "soul-searching" | "steady-state" => {
-  const stageMap: Record<string, "honeymoon" | "self-reflection" | "soul-searching" | "steady-state"> = {
-    "Honeymoon": "honeymoon",
-    "Self-Reflection": "self-reflection",
-    "Self-Introspection": "self-reflection",
-    "Soul-Searching": "soul-searching",
-    "Steady-State": "steady-state",
-  };
-  return stageMap[stage] || "honeymoon";
-};
-
 // Maps assessment type name to organizational level
 const mapAssessmentTypeToLevel = (typeName: string): "employee" | "manager" | "department" | "company" => {
   if (typeName === "Self") return "employee";
