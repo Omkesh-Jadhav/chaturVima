@@ -84,31 +84,7 @@ const mapAssessmentTypeToLevel = (typeName: string): "employee" | "manager" | "d
   return "employee";
 };
 
-// Maps API question to Question interface
-const mapApiQuestionToQuestion = (
-  apiQuestion: ApiQuestion,
-  index: number,
-  assessmentTypeName: string
-): Question => {
-  const level = mapAssessmentTypeToLevel(assessmentTypeName);
-  const stage = mapStageToStageType(apiQuestion.stage);
-  
-  return {
-    id: apiQuestion.name || `q-${assessmentTypeName}-${index + 1}`,
-    level,
-    stage,
-    type: "likert",
-    text: apiQuestion.question_text,
-    options: [
-      "Strongly Disagree",
-      "Disagree",
-      "Neutral",
-      "Agree",
-      "Strongly Agree",
-    ],
-    weight: 1.0,
-  };
-};
+// Removed mapApiQuestionToQuestion - not used anymore (we use mapAnswerToQuestion instead)
 
 // Interface for assessment answer from API
 export interface AssessmentAnswer {
