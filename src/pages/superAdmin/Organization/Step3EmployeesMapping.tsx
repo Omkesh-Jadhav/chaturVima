@@ -83,6 +83,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [hasDownloadedTemplate, setHasDownloadedTemplate] = useState(false);
   const [hasReadInstructions, setHasReadInstructions] = useState(false);
+  const [showDownloadInstructions, setShowDownloadInstructions] = useState(false);
 
   // Fetch organization details from backend to get the actual company name
   const companyNameToFetch = organizationName || "Chaturvima";
@@ -552,6 +553,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     link.click();
     document.body.removeChild(link);
     setHasDownloadedTemplate(true);
+    setShowDownloadInstructions(true);
     setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
   };
 
@@ -710,7 +712,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                         ? 'border-red-300 bg-red-50' 
                         : !hasDownloadedTemplate
                           ? 'border-amber-300 bg-amber-50'
-                          : 'border-gray-300 bg-gray-50'
+                          : showDownloadInstructions
+                            ? 'border-blue-300 bg-blue-50'
+                            : 'border-gray-300 bg-gray-50'
                   }`}>
                     {bulkUploadMutation.isPending ? (
                       <>
@@ -730,6 +734,36 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                           className="opacity-50 cursor-not-allowed"
                         >
                           Browse Files
+                        </Button>
+                      </>
+                    ) : showDownloadInstructions ? (
+                      <>
+                        <Info className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                        <p className="text-blue-900 text-sm font-semibold mb-3">Template Downloaded Successfully!</p>
+                        <div className="text-left space-y-2 mb-4">
+                          <p className="text-blue-800 text-xs font-medium">How to edit the template:</p>
+                          <ul className="text-xs text-blue-700 space-y-1.5 ml-2">
+                            <li className="flex items-start gap-2">
+                              <span className="text-blue-600 mt-1">•</span>
+                              <span><strong className="text-blue-900">Do not change the first row.</strong> It has the column names.</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-blue-600 mt-1">•</span>
+                              <span><strong className="text-blue-900">The second row is just an example.</strong> You can modify it or delete it, and add your employee data in the same format.</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <Button 
+                          onClick={() => {
+                            setShowDownloadInstructions(false);
+                            setShowUploadModal(true);
+                            setPendingFile(null);
+                          }} 
+                          variant="gradient" 
+                          size="sm"
+                          disabled={!showBulkUpload}
+                        >
+                          View Full Instructions
                         </Button>
                       </>
                     ) : !hasReadInstructions ? (
@@ -1063,27 +1097,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Edit the downloaded template:</strong> After downloading, you can edit the template file directly. Add your employee data in the rows below the header, or modify the sample row. You can upload the same edited file.</span>
+                      <span><strong>Edit the template:</strong> You can edit the downloaded file. Add your employee data below the header row. You can remove or change the sample row.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Update existing employees:</strong> If an employee with the same email already exists, uploading will update their information instead of creating a duplicate.</span>
+                      <span><strong>Email addresses:</strong> All employee emails must be different. Each employee should have a unique email address.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Keep the template format unchanged:</strong> Please maintain all column headers exactly as they appear in the downloaded template to ensure smooth processing.</span>
+                      <span><strong>Keep column headers:</strong> Do not change the first row. It has the column names and must stay the same.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Company name should match:</strong> Please ensure the company name is exactly <strong className="text-gray-900">"{actualOrganizationName}"</strong> (as entered in your Organization Details) for proper data association.</span>
+                      <span><strong>Company name:</strong> Use exactly <strong className="text-gray-900">"{actualOrganizationName}"</strong> in the company column. This must match your organization name.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Use correct department names:</strong> Please use the exact department names that are already set up in your organization to avoid any mapping issues.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Email addresses:</strong> Each email address should be unique and in a valid format. Existing employees will be updated based on their email address.</span>
+                      <span><strong>Department names:</strong> Use the exact department names that are already in your organization.</span>
                     </li>
                   </ul>
                 </div>
@@ -1097,23 +1127,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date of Birth:</strong> Date of birth must be earlier than current date and the employee must be at least 18 years old.</span>
+                      <span><strong>Date of Birth:</strong> Must be in the past. Employee must be at least 18 years old.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date of Joining:</strong> Date of joining must be after date of birth.</span>
+                      <span><strong>Date of Joining:</strong> Must be after the date of birth.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Gender:</strong> Please use one of the following values: Male, Female, or Other.</span>
+                      <span><strong>Gender:</strong> Use only: Male, Female, or Other.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Role Profile:</strong> Please select from: Employee, Department Head.</span>
+                      <span><strong>Role Profile:</strong> Use only: Employee or Department Head.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date Format:</strong> Please use DD-MM-YYYY format (for example: 10-01-1995).</span>
+                      <span><strong>Date Format:</strong> Use DD-MM-YYYY format. Example: 10-01-1995</span>
                     </li>
                   </ul>
                 </div>
