@@ -8,9 +8,8 @@ export const API_ENDPOINTS = {
 
     ASSESSMENT: {
         GET_EMPLOYEE_ASSESSMENTS: `/api/method/chaturvima_api.api.assessment.assessment.get_employee_assessments`,
-        GET_QUESTIONS_BY_SUBMISSION: `/api/resource/Assessment Submission`,
-        GET_ASSESSMENT_SUBMISSIONS: `/api/resource/Assessment Submission`,
-        SUBMIT_ASSESSMENT: `/api/resource/Assessment Submission`,
+        ASSESSMENT_SUBMISSION: `/api/resource/Assessment Submission`, // Used for: GET by submission_name, GET with filters, PUT to submit
+        SUBMIT_ASSESSMENT: `/api/resource/Assessment Submission`, // Alias for ASSESSMENT_SUBMISSION (kept for backward compatibility)
     },
 
     ASSESSMENT_CYCLE: {

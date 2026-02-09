@@ -165,7 +165,7 @@ export interface QuestionsWithAnswers {
 // Fetches questions by submission name from the API and returns questions with existing answers
 export const getQuestionsBySubmission = async (submissionName: string): Promise<QuestionsWithAnswers> => {
   try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_QUESTIONS_BY_SUBMISSION}/${submissionName}`;
+    const url = `${API_ENDPOINTS.ASSESSMENT.ASSESSMENT_SUBMISSION}/${submissionName}`;
     
     console.log("[getQuestionsBySubmission] Starting API call:");
     console.log("  - URL:", url);
@@ -257,37 +257,9 @@ export interface AssessmentSubmissionsResponse {
   data: AssessmentSubmission[];
 }
 
-// Fetches Assessment Submissions by employee_id
-export const getAssessmentSubmissionsByEmployee = async (
-  employeeId: string
-): Promise<AssessmentSubmission[]> => {
-  try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}?filters=[["employee","=","${employeeId}"]]`;
-    const response = await api.get<AssessmentSubmissionsResponse>(url);
-    console.log("SUCCESS - getAssessmentSubmissionsByEmployee response:", response);
-    return response.data.data || [];
-  } catch (error: unknown) {
-    console.error("ERROR - getAssessmentSubmissionsByEmployee failed:", error);
-    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
-    throw error;
-  }
-};
-
-// Fetches a single Assessment Submission with full details (including answers)
-export const getAssessmentSubmissionDetail = async (
-  submissionId: string
-): Promise<AssessmentSubmission> => {
-  try {
-    const url = `${API_ENDPOINTS.ASSESSMENT.GET_ASSESSMENT_SUBMISSIONS}/${submissionId}`;
-    const response = await api.get<{ data: AssessmentSubmission }>(url);
-    console.log("SUCCESS - getAssessmentSubmissionDetail response:", response);
-    return response.data.data;
-  } catch (error: unknown) {
-    console.error("ERROR - getAssessmentSubmissionDetail failed:", error);
-    console.error("ERROR - Error response:", (error as { response?: { data?: unknown } })?.response);
-    throw error;
-  }
-};
+// Removed getAssessmentSubmissionsByEmployee and getAssessmentSubmissionDetail
+// Now using getEmployeeAssessments instead (which returns submission_name, status, etc.)
+// and getQuestionsBySubmission for getting questions by submission_name
 
 // Submits assessment answers to the API
 export const submitAssessmentAnswers = async (

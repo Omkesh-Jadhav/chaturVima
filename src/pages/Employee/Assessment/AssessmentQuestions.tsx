@@ -30,11 +30,8 @@ import {
   getPaginationButtons,
   getProgressEmoji,
   getProgressMessage,
-  getCompletionByType,
-  areAllTypesComplete,
-  mapQuestionnairesToAssessmentTypes,
 } from "../../../utils/assessmentUtils";
-import { ASSESSMENT_CONFIG, type AssessmentType } from "../../../data/assessmentDashboard";
+import { ASSESSMENT_CONFIG } from "../../../data/assessmentDashboard";
 import {
   getEmployeeAssessments,
   getQuestionsBySubmission,
@@ -43,19 +40,17 @@ import {
 } from "../../../api/api-functions/assessment";
 import type { Question } from "../../../types";
 
-// Helper function to map submission ID to assessment type
-const mapSubmissionIdToAssessmentType = (submissionId: string): AssessmentType | null => {
-  const idUpper = submissionId.toUpperCase();
-  if (idUpper.includes("SELF")) {
-    return "Employee Self Assessment";
-  } else if (idUpper.includes("BOSS")) {
-    return "Manager Relationship Assessment";
-  } else if (idUpper.includes("COMPANY")) {
-    return "Company Assessment";
-  } else if (idUpper.includes("DEPT") || idUpper.includes("DEPARTMENT")) {
-    return "Department Assessment";
-  }
-  return null;
+// Map questionnaire to full display name
+const mapQuestionnaireToDisplayName = (questionnaire: string): string => {
+  const mapping: Record<string, string> = {
+    "Self": "Employee Self Assessment",
+    "SELF": "Employee Self Assessment",
+    "Boss": "Manager Relationship Assessment",
+    "BOSS": "Manager Relationship Assessment",
+    "Department": "Department Assessment",
+    "Company": "Company Assessment",
+  };
+  return mapping[questionnaire] || questionnaire;
 };
 
 const AssessmentQuestions = () => {
@@ -64,53 +59,15 @@ const AssessmentQuestions = () => {
     useAssessment();
   const { user } = useUser();
 
-  const [assignedTypes, setAssignedTypes] = useState<AssessmentType[]>([]);
-  const [questionsByType, setQuestionsByType] = useState<Record<AssessmentType, Question[]>>({
-    "Employee Self Assessment": [],
-    "Manager Relationship Assessment": [],
-    "Department Assessment": [],
-    "Company Assessment": [],
-  });
-  const [loadedTypes, setLoadedTypes] = useState<Set<AssessmentType>>(new Set());
+  // Use questionnaire as tab identifier (Self, Boss, etc.)
+  const [questionnaires, setQuestionnaires] = useState<string[]>([]);
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<string | null>(null);
+  const [questionsByQuestionnaire, setQuestionsByQuestionnaire] = useState<Record<string, Question[]>>({});
+  const [loadedQuestionnaires, setLoadedQuestionnaires] = useState<Set<string>>(new Set());
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
-  const [submissionIds, setSubmissionIds] = useState<Record<AssessmentType, string | null>>({
-    "Employee Self Assessment": null,
-    "Manager Relationship Assessment": null,
-    "Department Assessment": null,
-    "Company Assessment": null,
-  });
-
-  useEffect(() => {
-    const fetchSubmissions = async () => {
-      if (!user?.employee_id) return;
-
-      try {
-        const submissions = await getAssessmentSubmissionsByEmployee(user.employee_id);
-        const mappedIds: Record<AssessmentType, string | null> = {
-          "Employee Self Assessment": null,
-          "Manager Relationship Assessment": null,
-          "Department Assessment": null,
-          "Company Assessment": null,
-        };
-
-        submissions.forEach((submission: AssessmentSubmission) => {
-          const assessmentType = mapSubmissionIdToAssessmentType(submission.name);
-          if (assessmentType) {
-            mappedIds[assessmentType] = submission.name;
-          }
-        });
-
-        setSubmissionIds(mappedIds);
-        if (submissions.length > 0) {
-          setIsSubmitted(true);
-        }
-      } catch (error: unknown) {
-        console.error("Failed to fetch assessment submissions:", error);
-      }
-    };
-
-    fetchSubmissions();
-  }, [user?.employee_id]);
+  
+  // Store assessments - map questionnaire to assessment (for submission_name lookup)
+  const [assessmentsByQuestionnaire, setAssessmentsByQuestionnaire] = useState<Record<string, EmployeeAssessment>>({});
 
   // Fetch employee assessments using user_id from localStorage
   useEffect(() => {
@@ -136,51 +93,45 @@ const AssessmentQuestions = () => {
         const assessments = await getEmployeeAssessments(userId);
         console.log("[AssessmentQuestions] Received assessments:", assessments);
         
-        // Map assessments to assessment types based on questionnaire
-        const mappedTypes: AssessmentType[] = [];
-        const mappedIds: Record<AssessmentType, string | null> = {
-          "Employee Self Assessment": null,
-          "Manager Relationship Assessment": null,
-          "Department Assessment": null,
-          "Company Assessment": null,
-        };
-        const mappedStatuses: Record<AssessmentType, string> = {
-          "Employee Self Assessment": "Draft",
-          "Manager Relationship Assessment": "Draft",
-          "Department Assessment": "Draft",
-          "Company Assessment": "Draft",
-        };
+        // Group assessments by questionnaire (Self, Boss, etc.) - this will be our tabs
+        const assessmentsMap: Record<string, EmployeeAssessment> = {};
+        const questionnaireList: string[] = [];
         
         assessments.forEach((assessment) => {
-          // Map questionnaire to assessment type
-          let assessmentType: AssessmentType | null = null;
-          if (assessment.questionnaire === "SELF") {
-            assessmentType = "Employee Self Assessment";
-          } else if (assessment.questionnaire === "BOSS") {
-            assessmentType = "Manager Relationship Assessment";
-          } else if (assessment.questionnaire === "Department") {
-            assessmentType = "Department Assessment";
-          } else if (assessment.questionnaire === "Company") {
-            assessmentType = "Company Assessment";
-          }
+          const questionnaire = assessment.questionnaire || "Unknown";
           
-          if (assessmentType) {
-            if (!mappedTypes.includes(assessmentType)) {
-              mappedTypes.push(assessmentType);
-            }
-            mappedIds[assessmentType] = assessment.submission_name;
-            mappedStatuses[assessmentType] = assessment.status;
+          // Map questionnaire to assessment (if multiple with same questionnaire, keep the first one)
+          // Or you could filter by dimension if needed
+          if (!assessmentsMap[questionnaire]) {
+            assessmentsMap[questionnaire] = assessment;
+            questionnaireList.push(questionnaire);
           }
         });
         
-        console.log("[AssessmentQuestions] Mapped types:", mappedTypes);
-        console.log("[AssessmentQuestions] Mapped IDs:", mappedIds);
-        console.log("[AssessmentQuestions] Mapped statuses:", mappedStatuses);
+        // Sort questionnaires: Self, Boss, Department, Company (or keep API order)
+        const questionnaireOrder: Record<string, number> = {
+          "Self": 1,
+          "Boss": 2,
+          "Department": 3,
+          "Company": 4,
+        };
+        questionnaireList.sort((a, b) => {
+          const orderA = questionnaireOrder[a] || 99;
+          const orderB = questionnaireOrder[b] || 99;
+          return orderA - orderB;
+        });
         
-        if (mappedTypes.length > 0) {
-          setAssignedTypes(mappedTypes);
-          setSubmissionIds(mappedIds);
-          setSubmissionStatuses(mappedStatuses);
+        console.log("[AssessmentQuestions] Questionnaires found:", questionnaireList);
+        console.log("[AssessmentQuestions] Assessments map:", assessmentsMap);
+        
+        if (questionnaireList.length > 0) {
+          setQuestionnaires(questionnaireList);
+          setAssessmentsByQuestionnaire(assessmentsMap);
+          
+          // Auto-select first questionnaire if none selected
+          if (!selectedQuestionnaire) {
+            setSelectedQuestionnaire(questionnaireList[0]);
+          }
         }
       } catch (error: unknown) {
         console.error("[AssessmentQuestions] Failed to fetch employee assessments:", error);
@@ -190,37 +141,45 @@ const AssessmentQuestions = () => {
     fetchEmployeeAssessments();
   }, []);
 
-  const [selectedType, setSelectedType] = useState<AssessmentType | null>(null);
-  const previousTypeRef = useRef<AssessmentType | null>(null);
+  const previousQuestionnaireRef = useRef<string | null>(null);
 
+  // Auto-select first questionnaire if available
   useEffect(() => {
-    if (assignedTypes.length > 0 && (!selectedType || !assignedTypes.includes(selectedType))) {
-      setSelectedType(assignedTypes[0]);
+    if (questionnaires.length > 0 && !selectedQuestionnaire) {
+      setSelectedQuestionnaire(questionnaires[0]);
     }
-  }, [assignedTypes, selectedType]);
+  }, [questionnaires, selectedQuestionnaire]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      if (!selectedType || loadedTypes.has(selectedType)) return;
-
-      const submissionName = submissionIds[selectedType];
+      if (!selectedQuestionnaire || loadedQuestionnaires.has(selectedQuestionnaire)) return;
+      
+      // Get assessment for this questionnaire to get submission_name
+      const assessment = assessmentsByQuestionnaire[selectedQuestionnaire];
+      if (!assessment) {
+        console.warn(`[AssessmentQuestions] No assessment found for questionnaire: ${selectedQuestionnaire}`);
+        return;
+      }
+      
+      const submissionName = assessment.submission_name;
       if (!submissionName) {
-        console.warn(`[AssessmentQuestions] No submission name found for assessment type: ${selectedType}`);
+        console.warn(`[AssessmentQuestions] No submission name found for questionnaire: ${selectedQuestionnaire}`);
         return;
       }
 
       try {
         setIsLoadingQuestions(true);
-        console.log(`[AssessmentQuestions] Fetching questions for submission: ${submissionName}`);
+        console.log(`[AssessmentQuestions] Fetching questions for questionnaire: ${selectedQuestionnaire}`);
+        console.log(`[AssessmentQuestions] Using submission: ${submissionName}`);
         const { questions, answers: existingAnswers } = await getQuestionsBySubmission(submissionName);
         console.log(`[AssessmentQuestions] Fetched ${questions.length} questions`);
         console.log(`[AssessmentQuestions] Found ${Object.keys(existingAnswers).length} existing answers`);
         
-        setQuestionsByType((prev) => ({ ...prev, [selectedType]: questions }));
-        setLoadedTypes((prev) => new Set(prev).add(selectedType));
+        setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: questions }));
+        setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
         
         // Load existing answers if status is Draft
-        const status = submissionStatuses[selectedType];
+        const status = assessment.status;
         if (status === "Draft" && Object.keys(existingAnswers).length > 0) {
           console.log("[AssessmentQuestions] Loading existing answers for Draft assessment");
           Object.entries(existingAnswers).forEach(([questionId, optionIndex]) => {
@@ -231,15 +190,15 @@ const AssessmentQuestions = () => {
         }
       } catch (error: unknown) {
         console.error("[AssessmentQuestions] Failed to fetch questions:", error);
-        setQuestionsByType((prev) => ({ ...prev, [selectedType]: [] }));
-        setLoadedTypes((prev) => new Set(prev).add(selectedType));
+        setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: [] }));
+        setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
       } finally {
         setIsLoadingQuestions(false);
       }
     };
 
     fetchQuestions();
-  }, [selectedType, loadedTypes]);
+  }, [selectedQuestionnaire, loadedQuestionnaires, assessmentsByQuestionnaire, answerQuestion, answers]);
 
   const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -250,63 +209,67 @@ const AssessmentQuestions = () => {
     () => loadSubmissionStatus(user?.email) || isComplete
   );
 
-  const submitAssessmentAnswersForType = useCallback((assessmentType: AssessmentType) => {
+  const submitAssessmentAnswersForQuestionnaire = useCallback((questionnaire: string) => {
     if (isSubmitted) return;
     
-    const questions = questionsByType[assessmentType] || [];
-    const typeAnswers = questions.reduce((acc, question) => {
+    const questions = questionsByQuestionnaire[questionnaire] || [];
+    const questionnaireAnswers = questions.reduce((acc, question) => {
       if (answers[question.id] !== undefined) {
         acc[question.id] = answers[question.id];
       }
       return acc;
     }, {} as Record<string, number>);
 
-    if (Object.keys(typeAnswers).length > 0) {
-      const submissionId = submissionIds[assessmentType];
-      if (submissionId) {
-        submitAssessmentAnswers(submissionId, questions, typeAnswers).catch((error) => {
-          console.error(`Failed to submit ${assessmentType} answers:`, error);
-        });
+    if (Object.keys(questionnaireAnswers).length > 0) {
+      // Get submission_name from assessment for this questionnaire
+      const assessment = assessmentsByQuestionnaire[questionnaire];
+      if (assessment) {
+        const submissionId = assessment.submission_name;
+        if (submissionId) {
+          submitAssessmentAnswers(submissionId, questions, questionnaireAnswers).catch((error) => {
+            console.error(`Failed to submit ${questionnaire} answers:`, error);
+          });
+        }
       }
     }
-  }, [questionsByType, answers, isSubmitted, submissionIds]);
+  }, [questionsByQuestionnaire, answers, isSubmitted, assessmentsByQuestionnaire]);
 
   useEffect(() => {
-    const previousType = previousTypeRef.current;
-    if (previousType === null) {
-      previousTypeRef.current = selectedType;
+    const previousQuestionnaire = previousQuestionnaireRef.current;
+    if (previousQuestionnaire === null) {
+      previousQuestionnaireRef.current = selectedQuestionnaire;
       return;
     }
-    if (previousType !== selectedType && previousType) {
-      submitAssessmentAnswersForType(previousType);
+    if (previousQuestionnaire !== selectedQuestionnaire && previousQuestionnaire) {
+      submitAssessmentAnswersForQuestionnaire(previousQuestionnaire);
     }
-    previousTypeRef.current = selectedType;
-  }, [selectedType, submitAssessmentAnswersForType]);
+    previousQuestionnaireRef.current = selectedQuestionnaire;
+  }, [selectedQuestionnaire, submitAssessmentAnswersForQuestionnaire]);
 
   const previousPageRef = useRef<number>(-1);
-  const previousTypeForPageRef = useRef<AssessmentType | null>(null);
+  const previousQuestionnaireForPageRef = useRef<string | null>(null);
   
   useEffect(() => {
-    if (isSubmitted || !selectedType) {
+    if (isSubmitted || !selectedQuestionnaire) {
       previousPageRef.current = currentPage;
-      previousTypeForPageRef.current = selectedType;
+      previousQuestionnaireForPageRef.current = selectedQuestionnaire;
       return;
     }
 
     const isInitialMount = previousPageRef.current === -1;
-    const isTabChange = previousTypeForPageRef.current !== selectedType;
+    const isTabChange = previousQuestionnaireForPageRef.current !== selectedQuestionnaire;
 
     if (!isInitialMount && !isTabChange && previousPageRef.current !== currentPage) {
-      submitAssessmentAnswersForType(selectedType);
+      submitAssessmentAnswersForQuestionnaire(selectedQuestionnaire);
     }
 
     previousPageRef.current = currentPage;
-    previousTypeForPageRef.current = selectedType;
-  }, [currentPage, selectedType, isSubmitted, submitAssessmentAnswersForType]);
+    previousQuestionnaireForPageRef.current = selectedQuestionnaire;
+  }, [currentPage, selectedQuestionnaire, isSubmitted, submitAssessmentAnswersForQuestionnaire]);
 
   const filteredQuestions = useMemo(
-    () => (selectedType ? questionsByType[selectedType] || [] : []),
-    [questionsByType, selectedType]
+    () => (selectedQuestionnaire ? questionsByQuestionnaire[selectedQuestionnaire] || [] : []),
+    [questionsByQuestionnaire, selectedQuestionnaire]
   );
 
   const totalPages = Math.ceil(filteredQuestions.length / ASSESSMENT_CONFIG.questionsPerPage);
@@ -319,15 +282,15 @@ const AssessmentQuestions = () => {
     return filteredQuestions.slice(start, end);
   }, [filteredQuestions, currentPage]);
 
-  const completionByType = useMemo(
-    () => getCompletionByType(questionsByType, answers),
-    [questionsByType, answers]
-  );
-
-  const allTypesComplete = useMemo(
-    () => areAllTypesComplete(assignedTypes, completionByType),
-    [assignedTypes, completionByType]
-  );
+  // Calculate completion for all questionnaires
+  const allQuestionnairesComplete = useMemo(() => {
+    if (questionnaires.length === 0) return false;
+    return questionnaires.every((questionnaire) => {
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+      return questions.length > 0 && answered === questions.length;
+    });
+  }, [questionnaires, questionsByQuestionnaire, answers]);
 
   const answeredCount = useMemo(
     () => filteredQuestions.filter((q) => answers[q.id] !== undefined).length,
@@ -417,33 +380,33 @@ const AssessmentQuestions = () => {
   );
 
   const handleSave = useCallback(() => {
-    if (!selectedType) return;
+    if (!selectedQuestionnaire) return;
     
-    submitAssessmentAnswersForType(selectedType);
+    submitAssessmentAnswersForQuestionnaire(selectedQuestionnaire);
     savePage(currentPage, user?.email);
     saveAnswers(answers, user?.email);
     setIsSaved(true);
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), ASSESSMENT_CONFIG.toastDuration);
 
-    const currentIndex = assignedTypes.findIndex((type) => type === selectedType);
-    const nextTab = assignedTypes[currentIndex + 1];
+    const currentIndex = questionnaires.findIndex((q) => q === selectedQuestionnaire);
+    const nextTab = questionnaires[currentIndex + 1];
 
     if (nextTab) {
       setTimeout(() => {
-        setSelectedType(nextTab);
+        setSelectedQuestionnaire(nextTab);
         setCurrentPage(0);
         savePage(0, user?.email);
         questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       }, 500);
     }
-  }, [currentPage, answers, user?.email, selectedType, assignedTypes, submitAssessmentAnswersForType]);
+  }, [currentPage, answers, user?.email, selectedQuestionnaire, questionnaires, submitAssessmentAnswersForQuestionnaire]);
 
   const handleSubmit = useCallback(() => {
-    if (allTypesComplete && isSaved && !isSubmitted) {
+    if (allQuestionnairesComplete && isSaved && !isSubmitted) {
       setShowConfirmationModal(true);
     }
-  }, [allTypesComplete, isSaved, isSubmitted]);
+  }, [allQuestionnairesComplete, isSaved, isSubmitted]);
 
   const handleConfirmSubmit = useCallback(() => {
     setShowConfirmationModal(false);
@@ -461,9 +424,9 @@ const AssessmentQuestions = () => {
 
   useEffect(() => {
     setCurrentPage(0);
-    previousPageRef.current = -1;
+    previousQuestionnaireRef.current = null;
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [selectedType]);
+  }, [selectedQuestionnaire]);
 
   useEffect(() => {
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -497,33 +460,39 @@ const AssessmentQuestions = () => {
                   </motion.h1>
 
                   <div className="flex gap-1 overflow-x-auto custom-scrollbar-horizontal">
-                    {assignedTypes.map((type) => {
-                      const completion = completionByType[type];
-                      const isSelected = selectedType === type;
-                      const isComplete = completion?.isComplete ?? false;
+                    {questionnaires.map((questionnaire) => {
+                      const questions = questionsByQuestionnaire[questionnaire] || [];
+                      const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+                      const total = questions.length;
+                      const isComplete = total > 0 && answered === total;
+                      const isSelected = selectedQuestionnaire === questionnaire;
+                      
+                      // Get status from assessment
+                      const assessment = assessmentsByQuestionnaire[questionnaire];
+                      const status = assessment ? assessment.status : "Draft";
 
                       return (
                         <button
-                          key={type}
-                          onClick={() => setSelectedType(type)}
+                          key={questionnaire}
+                          onClick={() => setSelectedQuestionnaire(questionnaire)}
                           className={cn(
                             "relative px-2.5 py-1.5 text-xs font-medium transition-all rounded-md whitespace-nowrap shrink-0",
                             isSubmitted
                               ? "cursor-not-allowed opacity-60"
                               : "cursor-pointer",
-                            isComplete
+                            status === "Completed" || isComplete
                               ? "bg-green-500 text-white shadow-sm hover:bg-green-600"
                               : isSelected
                               ? "bg-brand-teal text-white shadow-sm"
                               : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                           )}
-                          title={type}
+                          title={`${mapQuestionnaireToDisplayName(questionnaire)} - ${status}`}
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="truncate max-w-[140px]">
-                              {type}
+                              {mapQuestionnaireToDisplayName(questionnaire)}
                             </span>
-                            {isComplete && (
+                            {(status === "Completed" || isComplete) && (
                               <Check
                                 className={cn(
                                   "h-3 w-3 shrink-0",
@@ -533,7 +502,7 @@ const AssessmentQuestions = () => {
                                 )}
                               />
                             )}
-                            {completion && completion.total > 0 && (
+                            {total > 0 && (
                               <span
                                 className={cn(
                                   "text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0",
@@ -542,7 +511,7 @@ const AssessmentQuestions = () => {
                                     : "bg-gray-200 text-gray-600"
                                 )}
                               >
-                                {completion.answered}/{completion.total}
+                                {answered}/{total}
                               </span>
                             )}
                           </div>
@@ -581,7 +550,7 @@ const AssessmentQuestions = () => {
                       </motion.div>
                       <h3 className="text-lg font-semibold text-gray-900">No Questions Available</h3>
                       <p className="text-sm text-gray-600">
-                        There are no questions available for {selectedType} at the moment. Please try again later.
+                        There are no questions available for {selectedQuestionnaire || "this questionnaire"} at the moment. Please try again later.
                       </p>
                     </div>
                   </div>
@@ -894,10 +863,10 @@ const AssessmentQuestions = () => {
                       <>
                         <Button
                           onClick={handleSubmit}
-                          disabled={!allTypesComplete}
+                          disabled={!allQuestionnairesComplete}
                           className={cn(
                             "text-xs py-1.5 h-auto",
-                            allTypesComplete
+                            allQuestionnairesComplete
                               ? "bg-gradient-to-r from-brand-teal to-brand-navy text-white cursor-pointer"
                               : "bg-gray-200 border border-gray-300 text-gray-700 cursor-not-allowed"
                           )}
@@ -960,11 +929,11 @@ const AssessmentQuestions = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700">
-                          {selectedType}
+                          {selectedQuestionnaire ? mapQuestionnaireToDisplayName(selectedQuestionnaire) : ""}
                         </span>
                         <motion.span
                           className="text-3xl"
-                          key={`${selectedType}-${answeredCount}`}
+                          key={`${selectedQuestionnaire}-${answeredCount}`}
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", duration: 0.5 }}
@@ -1011,7 +980,7 @@ const AssessmentQuestions = () => {
                       </div>
                     </div>
 
-                    {assignedTypes.length > 1 && (
+                    {questionnaires.length > 1 && (
                       <div className="pt-2 border-t border-gray-200">
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-xs font-medium text-gray-700">
@@ -1019,42 +988,41 @@ const AssessmentQuestions = () => {
                           </span>
                           <span className="text-xs font-semibold text-brand-teal">
                             {
-                              assignedTypes.filter(
-                                (type) => completionByType[type]?.isComplete
-                              ).length
+                              questionnaires.filter((questionnaire) => {
+                                const questions = questionsByQuestionnaire[questionnaire] || [];
+                                const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+                                return questions.length > 0 && answered === questions.length;
+                              }).length
                             }{" "}
-                            / {assignedTypes.length} Types
+                            / {questionnaires.length} Questionnaires
                           </span>
                         </div>
                         <div className="space-y-2">
-                          {assignedTypes.map((type) => {
-                            const completion = completionByType[type];
-                            if (!completion || completion.total === 0)
-                              return null;
+                          {questionnaires.map((questionnaire) => {
+                            const questions = questionsByQuestionnaire[questionnaire] || [];
+                            const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+                            const total = questions.length;
+                            if (total === 0) return null;
                             return (
-                              <div key={type} className="space-y-1">
+                              <div key={questionnaire} className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[10px] text-gray-600 truncate">
-                                    {type.split(" ")[0]}
+                                    {questionnaire}
                                   </span>
                                   <span className="text-[10px] font-medium text-gray-700">
-                                    {completion.answered}/{completion.total}
+                                    {answered}/{total}
                                   </span>
                                 </div>
                                 <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                   <motion.div
                                     className={`absolute inset-y-0 left-0 rounded-full ${
-                                      completion.isComplete
+                                      answered === total
                                         ? "bg-green-500"
                                         : "bg-gray-400"
                                     }`}
                                     initial={{ width: 0 }}
                                     animate={{
-                                      width: `${
-                                        (completion.answered /
-                                          completion.total) *
-                                        100
-                                      }%`,
+                                      width: `${total > 0 ? (answered / total) * 100 : 0}%`,
                                     }}
                                     transition={{ duration: 0.4 }}
                                   />
@@ -1116,7 +1084,7 @@ const AssessmentQuestions = () => {
                   </div>
                 </Card>
 
-                {allTypesComplete && (
+                {allQuestionnairesComplete && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1156,8 +1124,8 @@ const AssessmentQuestions = () => {
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleConfirmSubmit}
         answeredCount={Object.keys(answers).length}
-        totalQuestions={assignedTypes.reduce(
-          (total, type) => total + (questionsByType[type]?.length || 0),
+        totalQuestions={questionnaires.reduce(
+          (total, questionnaire) => total + (questionsByQuestionnaire[questionnaire]?.length || 0),
           0
         )}
       />

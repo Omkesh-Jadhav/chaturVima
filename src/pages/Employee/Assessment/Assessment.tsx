@@ -15,8 +15,8 @@ import AssessmentResults from "../../../components/assessment/AssessmentResults"
 import CelebrationConfetti from "../../../components/assessment/CelebrationConfetti";
 import { PlayCircle, Check } from "lucide-react";
 import {
-  getAssessmentSubmissionsByEmployee,
-  type AssessmentSubmission,
+  getEmployeeAssessments,
+  type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
 
 const Assessment = () => {
@@ -64,30 +64,63 @@ const Assessment = () => {
   // Check submission status from API instead of localStorage
   useEffect(() => {
     const checkSubmissionStatus = async () => {
-      // If we don't have a logged-in user or employee_id, fall back to local context state
-      if (!user?.employee_id) {
-        setIsAssessmentSubmitted(isComplete);
+      // Get user_id from localStorage
+      const storedUser = localStorage.getItem("chaturvima_user");
+      if (!storedUser) {
+        setIsAssessmentSubmitted(false);
         return;
       }
 
       try {
-        const submissions: AssessmentSubmission[] =
-          await getAssessmentSubmissionsByEmployee(user.employee_id);
+        const parsedUser = JSON.parse(storedUser);
+        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
+        if (!userId) {
+          setIsAssessmentSubmitted(false);
+          return;
+        }
 
-        // Consider the assessment submitted if there is at least one submission
-        // for this employee (across any questionnaire)
-        const hasAnySubmission = submissions.length > 0;
+        // Use getEmployeeAssessments - the new unified API
+        const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
+        console.log("[Assessment] Assessment status check - assessments:", assessments);
 
-        setIsAssessmentSubmitted(hasAnySubmission || isComplete);
+        // Consider the assessment submitted only if ALL assessments have status "Completed"
+        if (assessments.length === 0) {
+          console.log("[Assessment] No assessments found - not submitted");
+          setIsAssessmentSubmitted(false);
+          return;
+        }
+
+        const allCompleted = assessments.every(
+          (assessment) => assessment.status === "Completed"
+        );
+        
+        console.log("[Assessment] All assessments completed?", allCompleted);
+        
+        // Check if user has saved answers in localStorage
+        try {
+          const emailKey = parsedUser.user?.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous";
+          const storageKey = `chaturvima_assessment_answers_${emailKey}`;
+          const savedAnswers = localStorage.getItem(storageKey);
+          const hasLocalAnswers = savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
+          console.log("[Assessment] Has local saved answers?", hasLocalAnswers);
+          
+          // Only mark as submitted if all completed AND no local answers
+          const isActuallySubmitted = allCompleted && !hasLocalAnswers;
+          console.log("[Assessment] Is actually submitted?", isActuallySubmitted);
+          
+          setIsAssessmentSubmitted(isActuallySubmitted);
+        } catch (error) {
+          console.error("[Assessment] Error checking local answers:", error);
+          setIsAssessmentSubmitted(allCompleted);
+        }
       } catch (error) {
-        console.error("Failed to check assessment submission status:", error);
-        // On error, fall back to local completion state
-        setIsAssessmentSubmitted(isComplete);
+        console.error("[Assessment] Failed to check assessment submission status:", error);
+        setIsAssessmentSubmitted(false);
       }
     };
 
     checkSubmissionStatus();
-  }, [user?.employee_id, isComplete]);
+  }, [isComplete]);
 
   // Check if we should show energy break (every 5 questions, but not at the end)
   useEffect(() => {
