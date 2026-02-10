@@ -103,6 +103,53 @@ const getQuestionnaireStats = (
   return { answered, total, isComplete: total > 0 && answered === total };
 };
 
+// Helper functions for page-specific localStorage storage
+const getPageStorageKey = (questionnaire: string, page: number, email?: string): string => {
+  const baseKey = email ? email.toLowerCase().replace(/[^a-z0-9]/g, "_") : "anonymous";
+  return `chaturvima_assessment_page_${questionnaire}_${page}_${baseKey}`;
+};
+
+const savePageAnswersToLocalStorage = (
+  questionnaire: string,
+  page: number,
+  pageAnswers: Record<string, number>,
+  email?: string
+): void => {
+  try {
+    const key = getPageStorageKey(questionnaire, page, email);
+    localStorage.setItem(key, JSON.stringify(pageAnswers));
+  } catch {
+    // Error handling
+  }
+};
+
+const loadPageAnswersFromLocalStorage = (
+  questionnaire: string,
+  page: number,
+  email?: string
+): Record<string, number> => {
+  try {
+    const key = getPageStorageKey(questionnaire, page, email);
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+};
+
+const clearPageAnswersFromLocalStorage = (
+  questionnaire: string,
+  page: number,
+  email?: string
+): void => {
+  try {
+    const key = getPageStorageKey(questionnaire, page, email);
+    localStorage.removeItem(key);
+  } catch {
+    // Error handling
+  }
+};
+
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
   const { answers, answerQuestion, submitAssessment, isComplete } = useAssessment();
@@ -122,12 +169,20 @@ const AssessmentQuestions = () => {
   const [isSubmitted, setIsSubmitted] = useState(
     () => loadSubmissionStatus(user?.email) || isComplete
   );
+  // Track which answers are saved to server (to distinguish from localStorage-only)
+  const [serverSavedAnswers, setServerSavedAnswers] = useState<Set<string>>(new Set());
 
   const previousQuestionnaireRef = useRef<string | null>(null);
   const previousPageRef = useRef<number>(-1);
   const previousQuestionnaireForPageRef = useRef<string | null>(null);
   const questionsContainerRef = useRef<HTMLDivElement>(null);
   const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const answersRef = useRef(answers);
+  
+  // Keep answers ref in sync
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
 
   // Fetch employee assessments
   useEffect(() => {
@@ -171,21 +226,57 @@ const AssessmentQuestions = () => {
 
       try {
         setIsLoadingQuestions(true);
-        const { questions, answers: existingAnswers } = await getQuestionsBySubmission(
+        const { questions, answers: serverAnswers } = await getQuestionsBySubmission(
           assessment.submission_name
         );
 
         setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: questions }));
         setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
 
-        // Load existing answers if status is Draft
-        if (assessment.status === "Draft" && Object.keys(existingAnswers).length > 0) {
-          Object.entries(existingAnswers).forEach(([questionId, optionIndex]) => {
-            if (answers[questionId] === undefined) {
-              answerQuestion(questionId, optionIndex);
+        // Track server-saved answers
+        const serverSavedSet = new Set<string>(Object.keys(serverAnswers));
+        setServerSavedAnswers((prev) => {
+          const newSet = new Set(prev);
+          serverSavedSet.forEach((id) => newSet.add(id));
+          return newSet;
+        });
+
+        // Priority 1: Load server answers first (regardless of status if they exist)
+        // Server answers are the source of truth for saved data
+        // Use a batch update to avoid multiple re-renders
+        const answersToLoad: Array<[string, number]> = [];
+        const currentAnswers = answersRef.current;
+        
+        if (Object.keys(serverAnswers).length > 0) {
+          Object.entries(serverAnswers).forEach(([questionId, optionIndex]) => {
+            // Check current answers state to avoid overwriting
+            if (currentAnswers[questionId] === undefined) {
+              answersToLoad.push([questionId, optionIndex]);
             }
           });
         }
+
+        // Priority 2: Load localStorage answers for all pages and merge
+        questions.forEach((question, index) => {
+          const page = Math.floor(index / ASSESSMENT_CONFIG.questionsPerPage);
+          const pageAnswers = loadPageAnswersFromLocalStorage(selectedQuestionnaire, page, user?.email);
+          
+          // Apply localStorage answer if:
+          // 1. Server doesn't have it (unsaved change), AND
+          // 2. User hasn't answered it yet in current session
+          if (
+            pageAnswers[question.id] !== undefined && 
+            currentAnswers[question.id] === undefined &&
+            !serverSavedSet.has(question.id)
+          ) {
+            answersToLoad.push([question.id, pageAnswers[question.id]]);
+          }
+        });
+
+        // Load all answers in batch to avoid multiple re-renders
+        answersToLoad.forEach(([questionId, optionIndex]) => {
+          answerQuestion(questionId, optionIndex);
+        });
       } catch {
         setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: [] }));
         setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
@@ -195,9 +286,11 @@ const AssessmentQuestions = () => {
     };
 
     fetchQuestions();
-  }, [selectedQuestionnaire, loadedQuestionnaires, assessmentsByQuestionnaire, answerQuestion, answers]);
+    // Removed 'answers' from dependencies to prevent infinite loops
+    // Answers are checked inside the function using current state
+  }, [selectedQuestionnaire, loadedQuestionnaires, assessmentsByQuestionnaire, answerQuestion, user?.email]);
 
-  // Submit answers for questionnaire
+  // Submit answers for questionnaire (all answers)
   const submitAssessmentAnswersForQuestionnaire = useCallback(
     (questionnaire: string) => {
       if (isSubmitted) return;
@@ -213,16 +306,65 @@ const AssessmentQuestions = () => {
       if (Object.keys(questionnaireAnswers).length > 0) {
         const assessment = assessmentsByQuestionnaire[questionnaire];
         if (assessment?.submission_name) {
-          submitAssessmentAnswers(assessment.submission_name, questions, questionnaireAnswers).catch(() => {
-            // Error handling
-          });
+          submitAssessmentAnswers(assessment.submission_name, questions, questionnaireAnswers)
+            .then(() => {
+              // Mark all submitted answers as server-saved
+              setServerSavedAnswers((prev) => {
+                const newSet = new Set(prev);
+                Object.keys(questionnaireAnswers).forEach((id) => newSet.add(id));
+                return newSet;
+              });
+            })
+            .catch(() => {
+              // Error handling
+            });
         }
       }
     },
     [questionsByQuestionnaire, answers, isSubmitted, assessmentsByQuestionnaire]
   );
 
-  // Auto-save on questionnaire change
+  // Submit answers for current page only (used on page change)
+  const submitCurrentPageAnswers = useCallback(
+    async (questionnaire: string, page: number) => {
+      if (isSubmitted || !selectedQuestionnaire) return;
+
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      const start = page * ASSESSMENT_CONFIG.questionsPerPage;
+      const end = start + ASSESSMENT_CONFIG.questionsPerPage;
+      const pageQuestions = questions.slice(start, end);
+
+      // Get answers for current page only
+      const pageAnswers: Record<string, number> = {};
+      pageQuestions.forEach((question) => {
+        if (answers[question.id] !== undefined) {
+          pageAnswers[question.id] = answers[question.id];
+        }
+      });
+
+      if (Object.keys(pageAnswers).length > 0) {
+        const assessment = assessmentsByQuestionnaire[questionnaire];
+        if (assessment?.submission_name) {
+          try {
+            await submitAssessmentAnswers(assessment.submission_name, pageQuestions, pageAnswers);
+            // Mark page answers as server-saved
+            setServerSavedAnswers((prev) => {
+              const newSet = new Set(prev);
+              Object.keys(pageAnswers).forEach((id) => newSet.add(id));
+              return newSet;
+            });
+            // Clear localStorage for this page since it's now saved to server
+            clearPageAnswersFromLocalStorage(questionnaire, page, user?.email);
+          } catch {
+            // Error handling - keep localStorage as backup
+          }
+        }
+      }
+    },
+    [questionsByQuestionnaire, answers, isSubmitted, selectedQuestionnaire, assessmentsByQuestionnaire, user?.email]
+  );
+
+  // Auto-save on questionnaire change - save current page of previous questionnaire
   useEffect(() => {
     const previousQuestionnaire = previousQuestionnaireRef.current;
     if (previousQuestionnaire === null) {
@@ -230,12 +372,15 @@ const AssessmentQuestions = () => {
       return;
     }
     if (previousQuestionnaire !== selectedQuestionnaire && previousQuestionnaire) {
+      // Save current page of previous questionnaire before switching
+      submitCurrentPageAnswers(previousQuestionnaire, currentPage);
+      // Also save all answers for the previous questionnaire
       submitAssessmentAnswersForQuestionnaire(previousQuestionnaire);
     }
     previousQuestionnaireRef.current = selectedQuestionnaire;
-  }, [selectedQuestionnaire, submitAssessmentAnswersForQuestionnaire]);
+  }, [selectedQuestionnaire, submitAssessmentAnswersForQuestionnaire, submitCurrentPageAnswers, currentPage]);
 
-  // Auto-save on page change
+  // Auto-save on page change - save previous page answers to API
   useEffect(() => {
     if (isSubmitted || !selectedQuestionnaire) {
       previousPageRef.current = currentPage;
@@ -246,13 +391,16 @@ const AssessmentQuestions = () => {
     const isInitialMount = previousPageRef.current === -1;
     const isTabChange = previousQuestionnaireForPageRef.current !== selectedQuestionnaire;
 
+    // When page changes (not initial mount, not tab change), save previous page to API
     if (!isInitialMount && !isTabChange && previousPageRef.current !== currentPage) {
-      submitAssessmentAnswersForQuestionnaire(selectedQuestionnaire);
+      const previousPage = previousPageRef.current;
+      // Save previous page answers to API
+      submitCurrentPageAnswers(selectedQuestionnaire, previousPage);
     }
 
     previousPageRef.current = currentPage;
     previousQuestionnaireForPageRef.current = selectedQuestionnaire;
-  }, [currentPage, selectedQuestionnaire, isSubmitted, submitAssessmentAnswersForQuestionnaire]);
+  }, [currentPage, selectedQuestionnaire, isSubmitted, submitCurrentPageAnswers]);
 
   // Computed values
   const filteredQuestions = useMemo(
@@ -281,21 +429,24 @@ const AssessmentQuestions = () => {
     });
   }, [questionnaires, questionsByQuestionnaire, answers]);
 
-  // Load saved answers
+  // Load saved answers from localStorage (fallback for general storage)
   useEffect(() => {
-    if (!user?.email || Object.keys(answers).length > 0) return;
+    if (!user?.email) return;
 
     try {
       const storedAnswers = loadAnswers(user.email);
       if (storedAnswers && Object.keys(storedAnswers).length > 0) {
+        // Only load if not already in answers (to avoid overwriting server answers)
         Object.entries(storedAnswers).forEach(([questionId, optionIndex]) => {
-          answerQuestion(questionId, optionIndex as number);
+          if (answers[questionId] === undefined) {
+            answerQuestion(questionId, optionIndex as number);
+          }
         });
       }
     } catch {
       // Error handling
     }
-  }, [user?.email, answers, answerQuestion]);
+  }, [user?.email, answerQuestion, answers]);
 
   // Restore saved page
   useEffect(() => {
@@ -327,19 +478,44 @@ const AssessmentQuestions = () => {
   // Handle answer change
   const handleAnswerChange = useCallback(
     (questionId: string, optionIndex: number) => {
-      if (isSubmitted) return;
+      if (isSubmitted || !selectedQuestionnaire) return;
 
       answerQuestion(questionId, optionIndex);
 
+      // Save to general localStorage (for backward compatibility)
       if (user?.email) {
         saveAnswers({ ...answers, [questionId]: optionIndex }, user.email);
       }
+
+      // Save to page-specific localStorage (for unsaved changes on current page)
+      const currentQuestionIndex = filteredQuestions.findIndex((q) => q.id === questionId);
+      if (currentQuestionIndex !== -1) {
+        const questionPage = Math.floor(currentQuestionIndex / ASSESSMENT_CONFIG.questionsPerPage);
+        
+        // Get current page answers
+        const start = questionPage * ASSESSMENT_CONFIG.questionsPerPage;
+        const end = start + ASSESSMENT_CONFIG.questionsPerPage;
+        const pageQuestions = filteredQuestions.slice(start, end);
+        const pageAnswers: Record<string, number> = {};
+        
+        pageQuestions.forEach((q) => {
+          const answer = q.id === questionId ? optionIndex : answers[q.id];
+          if (answer !== undefined) {
+            pageAnswers[q.id] = answer;
+          }
+        });
+
+        // Save page answers to localStorage (only if not already saved to server)
+        if (!serverSavedAnswers.has(questionId)) {
+          savePageAnswersToLocalStorage(selectedQuestionnaire, questionPage, pageAnswers, user?.email);
+        }
+      }
+
       if (isSaved) {
         setIsSaved(false);
         setShowSavedToast(false);
       }
 
-      const currentQuestionIndex = filteredQuestions.findIndex((q) => q.id === questionId);
       if (currentQuestionIndex === -1 || currentQuestionIndex >= filteredQuestions.length - 1) return;
 
       const nextQuestionIndex = currentQuestionIndex + 1;
@@ -358,6 +534,7 @@ const AssessmentQuestions = () => {
     },
     [
       isSubmitted,
+      selectedQuestionnaire,
       answerQuestion,
       answers,
       isSaved,
@@ -366,6 +543,7 @@ const AssessmentQuestions = () => {
       totalPages,
       user?.email,
       scrollToQuestion,
+      serverSavedAnswers,
     ]
   );
 
@@ -382,7 +560,14 @@ const AssessmentQuestions = () => {
   const handleSave = useCallback(() => {
     if (!selectedQuestionnaire) return;
 
+    // Save current page to API
+    submitCurrentPageAnswers(selectedQuestionnaire, currentPage);
+    // Save all answers to API
     submitAssessmentAnswersForQuestionnaire(selectedQuestionnaire);
+    
+    // Clear localStorage for current page since it's now saved to server
+    clearPageAnswersFromLocalStorage(selectedQuestionnaire, currentPage, user?.email);
+    
     savePage(currentPage, user?.email);
     saveAnswers(answers, user?.email);
     setIsSaved(true);
@@ -407,6 +592,7 @@ const AssessmentQuestions = () => {
     selectedQuestionnaire,
     questionnaires,
     submitAssessmentAnswersForQuestionnaire,
+    submitCurrentPageAnswers,
   ]);
 
   // Handle submit

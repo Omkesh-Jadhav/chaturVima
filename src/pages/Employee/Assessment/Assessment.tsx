@@ -2,7 +2,7 @@
  * Assessment Page
  * Complete assessment flow with gamification
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../../../context/AssessmentContext";
@@ -16,6 +16,7 @@ import CelebrationConfetti from "../../../components/assessment/CelebrationConfe
 import { PlayCircle, Check } from "lucide-react";
 import {
   getEmployeeAssessments,
+  getQuestionsBySubmission,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
 
@@ -46,22 +47,129 @@ const Assessment = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
 
-  // Check if user has existing saved answers (local draft)
-  const hasExistingAnswers = useMemo(() => {
-    if (!user) return false;
+  // Check if user has existing saved answers (from current context, server or localStorage)
+  const [hasExistingAnswers, setHasExistingAnswers] = useState(false);
+  const [hasCheckedServer, setHasCheckedServer] = useState(false);
+  
+  // Quick check for current answers (immediate update)
+  useEffect(() => {
+    if (answers && typeof answers === 'object' && !Array.isArray(answers)) {
+      const answerKeys = Object.keys(answers);
+      const hasCurrentAnswers = answerKeys.length > 0 && answerKeys.some(key => {
+        const value = answers[key];
+        return typeof value === 'number' && value >= 0 && value <= 4 && !isNaN(value);
+      });
+      
+      if (hasCurrentAnswers) {
+        setHasExistingAnswers(true);
+        return;
+      }
+    }
+    
+    // If no current answers, check localStorage (fast check)
+    if (!user) {
+      setHasExistingAnswers(false);
+      return;
+    }
 
     try {
-      // Use user-specific storage key
       const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const storageKey = `chaturvima_assessment_answers_${emailKey}`;
-      const savedAnswers = localStorage.getItem(storageKey);
-      return savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
+      const savedAnswersStr = localStorage.getItem(storageKey);
+      
+      if (savedAnswersStr) {
+        try {
+          const savedAnswers = JSON.parse(savedAnswersStr);
+          if (savedAnswers && typeof savedAnswers === 'object' && !Array.isArray(savedAnswers)) {
+            const answerKeys = Object.keys(savedAnswers);
+            const hasValidAnswers = answerKeys.length > 0 && answerKeys.some(key => {
+              const value = savedAnswers[key];
+              return typeof value === 'number' && value >= 0 && value <= 4 && !isNaN(value);
+            });
+            
+            if (hasValidAnswers) {
+              setHasExistingAnswers(true);
+              return;
+            } else {
+              localStorage.removeItem(storageKey);
+            }
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        } catch {
+          localStorage.removeItem(storageKey);
+        }
+      }
     } catch {
-      return Object.keys(answers).length > 0;
+      // Error handling
     }
-  }, [answers, user]);
+    
+    // If no current or localStorage answers, check server (only once)
+    if (!hasCheckedServer) {
+      setHasExistingAnswers(false);
+    }
+  }, [answers, user, hasCheckedServer]);
+  
+  // Reset server check when user changes
+  useEffect(() => {
+    setHasCheckedServer(false);
+  }, [user]);
 
-  // Check submission status from API instead of localStorage
+  // Check server for saved answers (only once on mount or when user changes)
+  useEffect(() => {
+    const checkServerAnswers = async () => {
+      if (hasCheckedServer || !user) return;
+      
+      try {
+        const storedUser = localStorage.getItem("chaturvima_user");
+        if (!storedUser) {
+          setHasCheckedServer(true);
+          return;
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
+        if (!userId) {
+          setHasCheckedServer(true);
+          return;
+        }
+
+        const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
+        
+        // Check if any assessment has actual saved answers with valid values
+        for (const assessment of assessments) {
+          if (assessment.submission_name) {
+            try {
+              const { answers: serverAnswers } = await getQuestionsBySubmission(assessment.submission_name);
+              if (serverAnswers && typeof serverAnswers === 'object') {
+                const answerKeys = Object.keys(serverAnswers);
+                const hasValidAnswers = answerKeys.some(key => {
+                  const value = serverAnswers[key];
+                  return typeof value === 'number' && value >= 0 && value <= 4;
+                });
+                
+                if (hasValidAnswers) {
+                  setHasExistingAnswers(true);
+                  setHasCheckedServer(true);
+                  return;
+                }
+              }
+            } catch {
+              continue;
+            }
+          }
+        }
+        
+        setHasCheckedServer(true);
+      } catch {
+        setHasCheckedServer(true);
+      }
+    };
+
+    checkServerAnswers();
+  }, [user, hasCheckedServer]);
+
+  // Check submission status from API
   useEffect(() => {
     const checkSubmissionStatus = async () => {
       // Get user_id from localStorage
@@ -81,11 +189,11 @@ const Assessment = () => {
 
         // Use getEmployeeAssessments - the new unified API
         const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
-        console.log("[Assessment] Assessment status check - assessments:", assessments);
 
-        // Consider the assessment submitted only if ALL assessments have status "Completed"
+        // Consider the assessment submitted only if:
+        // 1. ALL assessments have status "Completed" (not "Draft")
+        // 2. No assessments have "Draft" status
         if (assessments.length === 0) {
-          console.log("[Assessment] No assessments found - not submitted");
           setIsAssessmentSubmitted(false);
           return;
         }
@@ -94,27 +202,29 @@ const Assessment = () => {
           (assessment) => assessment.status === "Completed"
         );
         
-        console.log("[Assessment] All assessments completed?", allCompleted);
+        const hasDraftAssessments = assessments.some(
+          (assessment) => assessment.status === "Draft"
+        );
         
-        // Check if user has saved answers in localStorage
+        // Check if user has saved answers in localStorage (unsaved changes)
         try {
           const emailKey = parsedUser.user?.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous";
           const storageKey = `chaturvima_assessment_answers_${emailKey}`;
           const savedAnswers = localStorage.getItem(storageKey);
           const hasLocalAnswers = savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
-          console.log("[Assessment] Has local saved answers?", hasLocalAnswers);
           
-          // Only mark as submitted if all completed AND no local answers
-          const isActuallySubmitted = allCompleted && !hasLocalAnswers;
-          console.log("[Assessment] Is actually submitted?", isActuallySubmitted);
+          // Only mark as submitted if:
+          // - All assessments are "Completed" (not Draft)
+          // - No Draft assessments exist
+          // - No unsaved local answers exist
+          const isActuallySubmitted = allCompleted && !hasDraftAssessments && !hasLocalAnswers;
           
           setIsAssessmentSubmitted(isActuallySubmitted);
-        } catch (error) {
-          console.error("[Assessment] Error checking local answers:", error);
-          setIsAssessmentSubmitted(allCompleted);
+        } catch {
+          // If error checking localStorage, just check completion status
+          setIsAssessmentSubmitted(allCompleted && !hasDraftAssessments);
         }
-      } catch (error) {
-        console.error("[Assessment] Failed to check assessment submission status:", error);
+      } catch {
         setIsAssessmentSubmitted(false);
       }
     };
