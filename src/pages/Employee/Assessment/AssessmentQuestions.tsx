@@ -493,7 +493,7 @@ const AssessmentQuestions = () => {
                             isSubmitted
                               ? "cursor-not-allowed opacity-60"
                               : "cursor-pointer",
-                            status === "Completed" || isQComplete
+                            isQComplete
                               ? "bg-green-500 text-white shadow-sm hover:bg-green-600"
                               : isSelected
                               ? "bg-brand-teal text-white shadow-sm"
@@ -505,7 +505,7 @@ const AssessmentQuestions = () => {
                             <span className="truncate max-w-[140px]">
                               {mapQuestionnaireToDisplayName(questionnaire)}
                             </span>
-                            {(status === "Completed" || isQComplete) && (
+                            {isQComplete && (
                               <Check
                                 className={cn(
                                   "h-3 w-3 shrink-0",
