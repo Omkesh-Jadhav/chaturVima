@@ -40,158 +40,153 @@ import {
 } from "../../../api/api-functions/assessment";
 import type { Question } from "../../../types";
 
-// Map questionnaire to full display name
+const QUESTIONNAIRE_DISPLAY_NAMES: Record<string, string> = {
+  Self: "Employee Self Assessment",
+  SELF: "Employee Self Assessment",
+  Boss: "Manager Relationship Assessment",
+  BOSS: "Manager Relationship Assessment",
+  Department: "Department Assessment",
+  DEPT: "Department Assessment",
+  "4D": "Department Assessment",
+  Company: "Company Assessment",
+};
+
+const QUESTIONNAIRE_ORDER: Record<string, number> = {
+  Self: 1,
+  Boss: 2,
+  Department: 3,
+  Company: 4,
+};
+
 const mapQuestionnaireToDisplayName = (questionnaire: string): string => {
-  const mapping: Record<string, string> = {
-    "Self": "Employee Self Assessment",
-    "SELF": "Employee Self Assessment",
-    "Boss": "Manager Relationship Assessment",
-    "BOSS": "Manager Relationship Assessment",
-    "Department": "Department Assessment",
-    "DEPT": "Department Assessment",
-    "4D": "Department Assessment",
-    "Company": "Company Assessment",
-  };
-  return mapping[questionnaire] || questionnaire;
+  return QUESTIONNAIRE_DISPLAY_NAMES[questionnaire] || questionnaire;
+};
+
+const getUserIdFromStorage = (): string | null => {
+  try {
+    const storedUser = localStorage.getItem("chaturvima_user");
+    if (!storedUser) return null;
+    const parsedUser = JSON.parse(storedUser);
+    return parsedUser.employee_id || parsedUser.user_id || parsedUser.user || null;
+  } catch {
+    return null;
+  }
+};
+
+const organizeAssessments = (assessments: EmployeeAssessment[]) => {
+  const assessmentsMap: Record<string, EmployeeAssessment> = {};
+  const questionnaireList: string[] = [];
+
+  assessments.forEach((assessment) => {
+    const questionnaire = assessment.questionnaire || "Unknown";
+    if (!assessmentsMap[questionnaire]) {
+      assessmentsMap[questionnaire] = assessment;
+      questionnaireList.push(questionnaire);
+    }
+  });
+
+  questionnaireList.sort((a, b) => {
+    const orderA = QUESTIONNAIRE_ORDER[a] || 99;
+    const orderB = QUESTIONNAIRE_ORDER[b] || 99;
+    return orderA - orderB;
+  });
+
+  return { assessmentsMap, questionnaireList };
+};
+
+const getQuestionnaireStats = (
+  questions: Question[],
+  answers: Record<string, number>
+) => {
+  const answered = questions.filter((q) => answers[q.id] !== undefined).length;
+  const total = questions.length;
+  return { answered, total, isComplete: total > 0 && answered === total };
 };
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
-  const { answers, answerQuestion, submitAssessment, isComplete } =
-    useAssessment();
+  const { answers, answerQuestion, submitAssessment, isComplete } = useAssessment();
   const { user } = useUser();
 
-  // Use questionnaire as tab identifier (Self, Boss, etc.)
   const [questionnaires, setQuestionnaires] = useState<string[]>([]);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<string | null>(null);
   const [questionsByQuestionnaire, setQuestionsByQuestionnaire] = useState<Record<string, Question[]>>({});
   const [loadedQuestionnaires, setLoadedQuestionnaires] = useState<Set<string>>(new Set());
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
-  
-  // Store assessments - map questionnaire to assessment (for submission_name lookup)
   const [assessmentsByQuestionnaire, setAssessmentsByQuestionnaire] = useState<Record<string, EmployeeAssessment>>({});
+  const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(
+    () => loadSubmissionStatus(user?.email) || isComplete
+  );
 
-  // Fetch employee assessments using user_id from localStorage
+  const previousQuestionnaireRef = useRef<string | null>(null);
+  const previousPageRef = useRef<number>(-1);
+  const previousQuestionnaireForPageRef = useRef<string | null>(null);
+  const questionsContainerRef = useRef<HTMLDivElement>(null);
+  const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Fetch employee assessments
   useEffect(() => {
     const fetchEmployeeAssessments = async () => {
-      // Get user_id from localStorage
-      const storedUser = localStorage.getItem("chaturvima_user");
-      if (!storedUser) {
-        console.warn("[AssessmentQuestions] No user found in localStorage");
-        return;
-      }
-      
+      const userId = getUserIdFromStorage();
+      if (!userId) return;
+
       try {
-        const parsedUser = JSON.parse(storedUser);
-        // Try multiple possible keys for user_id
-        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
-        
-        if (!userId) {
-          console.error("[AssessmentQuestions] No user_id found in localStorage user object:", parsedUser);
-          return;
-        }
-        
-        console.log("[AssessmentQuestions] Fetching assessments for user_id:", userId);
         const assessments = await getEmployeeAssessments(userId);
-        console.log("[AssessmentQuestions] Received assessments:", assessments);
-        
-        // Group assessments by questionnaire (Self, Boss, etc.) - this will be our tabs
-        const assessmentsMap: Record<string, EmployeeAssessment> = {};
-        const questionnaireList: string[] = [];
-        
-        assessments.forEach((assessment) => {
-          const questionnaire = assessment.questionnaire || "Unknown";
-          
-          // Map questionnaire to assessment (if multiple with same questionnaire, keep the first one)
-          // Or you could filter by dimension if needed
-          if (!assessmentsMap[questionnaire]) {
-            assessmentsMap[questionnaire] = assessment;
-            questionnaireList.push(questionnaire);
-          }
-        });
-        
-        // Sort questionnaires: Self, Boss, Department, Company (or keep API order)
-        const questionnaireOrder: Record<string, number> = {
-          "Self": 1,
-          "Boss": 2,
-          "Department": 3,
-          "Company": 4,
-        };
-        questionnaireList.sort((a, b) => {
-          const orderA = questionnaireOrder[a] || 99;
-          const orderB = questionnaireOrder[b] || 99;
-          return orderA - orderB;
-        });
-        
-        console.log("[AssessmentQuestions] Questionnaires found:", questionnaireList);
-        console.log("[AssessmentQuestions] Assessments map:", assessmentsMap);
-        
+        const { assessmentsMap, questionnaireList } = organizeAssessments(assessments);
+
         if (questionnaireList.length > 0) {
           setQuestionnaires(questionnaireList);
           setAssessmentsByQuestionnaire(assessmentsMap);
-          
-          // Auto-select first questionnaire if none selected
           if (!selectedQuestionnaire) {
             setSelectedQuestionnaire(questionnaireList[0]);
           }
         }
-      } catch (error: unknown) {
-        console.error("[AssessmentQuestions] Failed to fetch employee assessments:", error);
+      } catch {
+        // Error handling - could add user notification here
       }
     };
 
     fetchEmployeeAssessments();
-  }, []);
+  }, [selectedQuestionnaire]);
 
-  const previousQuestionnaireRef = useRef<string | null>(null);
-
-  // Auto-select first questionnaire if available
+  // Auto-select first questionnaire
   useEffect(() => {
     if (questionnaires.length > 0 && !selectedQuestionnaire) {
       setSelectedQuestionnaire(questionnaires[0]);
     }
   }, [questionnaires, selectedQuestionnaire]);
 
+  // Fetch questions for selected questionnaire
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!selectedQuestionnaire || loadedQuestionnaires.has(selectedQuestionnaire)) return;
-      
-      // Get assessment for this questionnaire to get submission_name
+
       const assessment = assessmentsByQuestionnaire[selectedQuestionnaire];
-      if (!assessment) {
-        console.warn(`[AssessmentQuestions] No assessment found for questionnaire: ${selectedQuestionnaire}`);
-        return;
-      }
-      
-      const submissionName = assessment.submission_name;
-      if (!submissionName) {
-        console.warn(`[AssessmentQuestions] No submission name found for questionnaire: ${selectedQuestionnaire}`);
-        return;
-      }
+      if (!assessment?.submission_name) return;
 
       try {
         setIsLoadingQuestions(true);
-        console.log(`[AssessmentQuestions] Fetching questions for questionnaire: ${selectedQuestionnaire}`);
-        console.log(`[AssessmentQuestions] Using submission: ${submissionName}`);
-        const { questions, answers: existingAnswers } = await getQuestionsBySubmission(submissionName);
-        console.log(`[AssessmentQuestions] Fetched ${questions.length} questions`);
-        console.log(`[AssessmentQuestions] Found ${Object.keys(existingAnswers).length} existing answers`);
-        
+        const { questions, answers: existingAnswers } = await getQuestionsBySubmission(
+          assessment.submission_name
+        );
+
         setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: questions }));
         setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
-        
+
         // Load existing answers if status is Draft
-        const status = assessment.status;
-        if (status === "Draft" && Object.keys(existingAnswers).length > 0) {
-          console.log("[AssessmentQuestions] Loading existing answers for Draft assessment");
+        if (assessment.status === "Draft" && Object.keys(existingAnswers).length > 0) {
           Object.entries(existingAnswers).forEach(([questionId, optionIndex]) => {
             if (answers[questionId] === undefined) {
               answerQuestion(questionId, optionIndex);
             }
           });
         }
-      } catch (error: unknown) {
-        console.error("[AssessmentQuestions] Failed to fetch questions:", error);
+      } catch {
         setQuestionsByQuestionnaire((prev) => ({ ...prev, [selectedQuestionnaire]: [] }));
         setLoadedQuestionnaires((prev) => new Set(prev).add(selectedQuestionnaire));
       } finally {
@@ -202,40 +197,32 @@ const AssessmentQuestions = () => {
     fetchQuestions();
   }, [selectedQuestionnaire, loadedQuestionnaires, assessmentsByQuestionnaire, answerQuestion, answers]);
 
-  const [currentPage, setCurrentPage] = useState(() => loadPage(user?.email));
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [showSavedToast, setShowSavedToast] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(
-    () => loadSubmissionStatus(user?.email) || isComplete
-  );
+  // Submit answers for questionnaire
+  const submitAssessmentAnswersForQuestionnaire = useCallback(
+    (questionnaire: string) => {
+      if (isSubmitted) return;
 
-  const submitAssessmentAnswersForQuestionnaire = useCallback((questionnaire: string) => {
-    if (isSubmitted) return;
-    
-    const questions = questionsByQuestionnaire[questionnaire] || [];
-    const questionnaireAnswers = questions.reduce((acc, question) => {
-      if (answers[question.id] !== undefined) {
-        acc[question.id] = answers[question.id];
-      }
-      return acc;
-    }, {} as Record<string, number>);
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      const questionnaireAnswers = questions.reduce((acc, question) => {
+        if (answers[question.id] !== undefined) {
+          acc[question.id] = answers[question.id];
+        }
+        return acc;
+      }, {} as Record<string, number>);
 
-    if (Object.keys(questionnaireAnswers).length > 0) {
-      // Get submission_name from assessment for this questionnaire
-      const assessment = assessmentsByQuestionnaire[questionnaire];
-      if (assessment) {
-        const submissionId = assessment.submission_name;
-        if (submissionId) {
-          submitAssessmentAnswers(submissionId, questions, questionnaireAnswers).catch((error) => {
-            console.error(`Failed to submit ${questionnaire} answers:`, error);
+      if (Object.keys(questionnaireAnswers).length > 0) {
+        const assessment = assessmentsByQuestionnaire[questionnaire];
+        if (assessment?.submission_name) {
+          submitAssessmentAnswers(assessment.submission_name, questions, questionnaireAnswers).catch(() => {
+            // Error handling
           });
         }
       }
-    }
-  }, [questionsByQuestionnaire, answers, isSubmitted, assessmentsByQuestionnaire]);
+    },
+    [questionsByQuestionnaire, answers, isSubmitted, assessmentsByQuestionnaire]
+  );
 
+  // Auto-save on questionnaire change
   useEffect(() => {
     const previousQuestionnaire = previousQuestionnaireRef.current;
     if (previousQuestionnaire === null) {
@@ -248,9 +235,7 @@ const AssessmentQuestions = () => {
     previousQuestionnaireRef.current = selectedQuestionnaire;
   }, [selectedQuestionnaire, submitAssessmentAnswersForQuestionnaire]);
 
-  const previousPageRef = useRef<number>(-1);
-  const previousQuestionnaireForPageRef = useRef<string | null>(null);
-  
+  // Auto-save on page change
   useEffect(() => {
     if (isSubmitted || !selectedQuestionnaire) {
       previousPageRef.current = currentPage;
@@ -269,14 +254,13 @@ const AssessmentQuestions = () => {
     previousQuestionnaireForPageRef.current = selectedQuestionnaire;
   }, [currentPage, selectedQuestionnaire, isSubmitted, submitAssessmentAnswersForQuestionnaire]);
 
+  // Computed values
   const filteredQuestions = useMemo(
     () => (selectedQuestionnaire ? questionsByQuestionnaire[selectedQuestionnaire] || [] : []),
     [questionsByQuestionnaire, selectedQuestionnaire]
   );
 
   const totalPages = Math.ceil(filteredQuestions.length / ASSESSMENT_CONFIG.questionsPerPage);
-  const questionsContainerRef = useRef<HTMLDivElement>(null);
-  const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const currentPageQuestions = useMemo(() => {
     const start = currentPage * ASSESSMENT_CONFIG.questionsPerPage;
@@ -284,36 +268,36 @@ const AssessmentQuestions = () => {
     return filteredQuestions.slice(start, end);
   }, [filteredQuestions, currentPage]);
 
-  // Calculate completion for all questionnaires
-  const allQuestionnairesComplete = useMemo(() => {
-    if (questionnaires.length === 0) return false;
-    return questionnaires.every((questionnaire) => {
-      const questions = questionsByQuestionnaire[questionnaire] || [];
-      const answered = questions.filter((q) => answers[q.id] !== undefined).length;
-      return questions.length > 0 && answered === questions.length;
-    });
-  }, [questionnaires, questionsByQuestionnaire, answers]);
-
   const answeredCount = useMemo(
     () => filteredQuestions.filter((q) => answers[q.id] !== undefined).length,
     [filteredQuestions, answers]
   );
 
+  const allQuestionnairesComplete = useMemo(() => {
+    if (questionnaires.length === 0) return false;
+    return questionnaires.every((questionnaire) => {
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      return getQuestionnaireStats(questions, answers).isComplete;
+    });
+  }, [questionnaires, questionsByQuestionnaire, answers]);
+
+  // Load saved answers
   useEffect(() => {
     if (!user?.email || Object.keys(answers).length > 0) return;
 
     try {
       const storedAnswers = loadAnswers(user.email);
-      if (!storedAnswers || Object.keys(storedAnswers).length === 0) return;
-
-      Object.entries(storedAnswers).forEach(([questionId, optionIndex]) => {
-        answerQuestion(questionId, optionIndex as number);
-      });
-    } catch (error) {
-      console.error("Failed to load saved answers from localStorage:", error);
+      if (storedAnswers && Object.keys(storedAnswers).length > 0) {
+        Object.entries(storedAnswers).forEach(([questionId, optionIndex]) => {
+          answerQuestion(questionId, optionIndex as number);
+        });
+      }
+    } catch {
+      // Error handling
     }
   }, [user?.email, answers, answerQuestion]);
 
+  // Restore saved page
   useEffect(() => {
     const savedPage = loadPage(user?.email);
     if (savedPage >= 0 && savedPage < totalPages && savedPage !== currentPage) {
@@ -324,6 +308,7 @@ const AssessmentQuestions = () => {
     }
   }, [user?.email, totalPages, currentPage, isComplete]);
 
+  // Scroll to question helper
   const scrollToQuestion = useCallback(
     (questionId: string, offset: number = ASSESSMENT_CONFIG.scrollOffset) => {
       setTimeout(() => {
@@ -339,6 +324,7 @@ const AssessmentQuestions = () => {
     []
   );
 
+  // Handle answer change
   const handleAnswerChange = useCallback(
     (questionId: string, optionIndex: number) => {
       if (isSubmitted) return;
@@ -370,9 +356,20 @@ const AssessmentQuestions = () => {
         }, ASSESSMENT_CONFIG.autoAdvanceDelay);
       }
     },
-    [isSubmitted, answerQuestion, answers, isSaved, filteredQuestions, currentPage, totalPages, user?.email, scrollToQuestion]
+    [
+      isSubmitted,
+      answerQuestion,
+      answers,
+      isSaved,
+      filteredQuestions,
+      currentPage,
+      totalPages,
+      user?.email,
+      scrollToQuestion,
+    ]
   );
 
+  // Change page
   const changePage = useCallback(
     (newPage: number) => {
       setCurrentPage(newPage);
@@ -381,9 +378,10 @@ const AssessmentQuestions = () => {
     [user?.email]
   );
 
+  // Handle save
   const handleSave = useCallback(() => {
     if (!selectedQuestionnaire) return;
-    
+
     submitAssessmentAnswersForQuestionnaire(selectedQuestionnaire);
     savePage(currentPage, user?.email);
     saveAnswers(answers, user?.email);
@@ -402,14 +400,23 @@ const AssessmentQuestions = () => {
         questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       }, 500);
     }
-  }, [currentPage, answers, user?.email, selectedQuestionnaire, questionnaires, submitAssessmentAnswersForQuestionnaire]);
+  }, [
+    currentPage,
+    answers,
+    user?.email,
+    selectedQuestionnaire,
+    questionnaires,
+    submitAssessmentAnswersForQuestionnaire,
+  ]);
 
+  // Handle submit
   const handleSubmit = useCallback(() => {
     if (allQuestionnairesComplete && isSaved && !isSubmitted) {
       setShowConfirmationModal(true);
     }
   }, [allQuestionnairesComplete, isSaved, isSubmitted]);
 
+  // Handle confirm submit
   const handleConfirmSubmit = useCallback(() => {
     setShowConfirmationModal(false);
     submitAssessment();
@@ -419,20 +426,28 @@ const AssessmentQuestions = () => {
     clearPageStorage(user?.email);
   }, [submitAssessment, user?.email]);
 
+  // Handle view report
   const handleViewReport = useCallback(() => {
     setShowSuccessModal(false);
     navigate("/assessment-report");
   }, [navigate]);
 
+  // Reset page on questionnaire change
   useEffect(() => {
     setCurrentPage(0);
     previousQuestionnaireRef.current = null;
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [selectedQuestionnaire]);
 
+  // Scroll to top on page change
   useEffect(() => {
     questionsContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
+
+  const progressPercentage = useMemo(
+    () => (filteredQuestions.length > 0 ? Math.round((answeredCount / filteredQuestions.length) * 100) : 0),
+    [answeredCount, filteredQuestions.length]
+  );
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -440,7 +455,7 @@ const AssessmentQuestions = () => {
         <div className="h-full overflow-hidden flex flex-col">
           <div className="grid lg:grid-cols-4 gap-4 h-full min-h-0 flex-1 overflow-hidden">
             <div className="lg:col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
-              <div className="flex-shrink-0 space-y-2 mb-3">
+              <div className="shrink-0 space-y-2 mb-3">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/assessment")}
@@ -464,14 +479,10 @@ const AssessmentQuestions = () => {
                   <div className="flex gap-1 overflow-x-auto custom-scrollbar-horizontal">
                     {questionnaires.map((questionnaire) => {
                       const questions = questionsByQuestionnaire[questionnaire] || [];
-                      const answered = questions.filter((q) => answers[q.id] !== undefined).length;
-                      const total = questions.length;
-                      const isComplete = total > 0 && answered === total;
+                      const { answered, total, isComplete: isQComplete } = getQuestionnaireStats(questions, answers);
                       const isSelected = selectedQuestionnaire === questionnaire;
-                      
-                      // Get status from assessment
                       const assessment = assessmentsByQuestionnaire[questionnaire];
-                      const status = assessment ? assessment.status : "Draft";
+                      const status = assessment?.status || "Draft";
 
                       return (
                         <button
@@ -482,7 +493,7 @@ const AssessmentQuestions = () => {
                             isSubmitted
                               ? "cursor-not-allowed opacity-60"
                               : "cursor-pointer",
-                            status === "Completed" || isComplete
+                            status === "Completed" || isQComplete
                               ? "bg-green-500 text-white shadow-sm hover:bg-green-600"
                               : isSelected
                               ? "bg-brand-teal text-white shadow-sm"
@@ -494,13 +505,11 @@ const AssessmentQuestions = () => {
                             <span className="truncate max-w-[140px]">
                               {mapQuestionnaireToDisplayName(questionnaire)}
                             </span>
-                            {(status === "Completed" || isComplete) && (
+                            {(status === "Completed" || isQComplete) && (
                               <Check
                                 className={cn(
                                   "h-3 w-3 shrink-0",
-                                  isSelected || isComplete
-                                    ? "text-white"
-                                    : "text-green-600"
+                                  isSelected || isQComplete ? "text-white" : "text-green-600"
                                 )}
                               />
                             )}
@@ -508,7 +517,7 @@ const AssessmentQuestions = () => {
                               <span
                                 className={cn(
                                   "text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0",
-                                  isSelected || isComplete
+                                  isSelected || isQComplete
                                     ? "bg-white/20 text-white"
                                     : "bg-gray-200 text-gray-600"
                                 )}
@@ -552,239 +561,225 @@ const AssessmentQuestions = () => {
                       </motion.div>
                       <h3 className="text-lg font-semibold text-gray-900">No Questions Available</h3>
                       <p className="text-sm text-gray-600">
-                        There are no questions available for {selectedQuestionnaire || "this questionnaire"} at the moment. Please try again later.
+                        There are no questions available for{" "}
+                        {selectedQuestionnaire ? mapQuestionnaireToDisplayName(selectedQuestionnaire) : "this questionnaire"} at the moment. Please try again later.
                       </p>
                     </div>
                   </div>
                 ) : (
-                <AnimatePresence mode="wait">
-                  {currentPageQuestions.map((question, idx) => {
-                    const questionNumber =
-                      currentPage * ASSESSMENT_CONFIG.questionsPerPage +
-                      idx +
-                      1;
-                    const selectedAnswer = answers[question.id];
+                  <AnimatePresence mode="wait">
+                    {currentPageQuestions.map((question, idx) => {
+                      const questionNumber =
+                        currentPage * ASSESSMENT_CONFIG.questionsPerPage + idx + 1;
+                      const selectedAnswer = answers[question.id];
 
-                    return (
-                      <motion.div
-                        key={`${question.id}-${currentPage}`}
-                        ref={(el) => {
-                          questionRefs.current[question.id] = el;
-                        }}
-                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        transition={{
-                          delay: idx * 0.08,
-                          type: "spring",
-                          stiffness: 120,
-                          damping: 15,
-                        }}
-                        className="relative"
-                      >
-                        {selectedAnswer !== undefined && (
-                          <div className="absolute -top-2 -right-2 -z-10">
-                            {[...Array(3)].map((_, i) => (
-                              <motion.div
-                                key={i}
-                                className="absolute w-2 h-2 rounded-full bg-brand-teal/40"
-                                animate={{
-                                  x: [0, Math.cos(i * 120) * 20],
-                                  y: [0, Math.sin(i * 120) * 20],
-                                  opacity: [0.6, 0],
-                                  scale: [1, 0],
-                                }}
-                                transition={{
-                                  duration: 1,
-                                  delay: i * 0.2,
-                                  repeat: Infinity,
-                                  repeatDelay: 2,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        <Card
-                          variant="elevated"
-                          className={cn(
-                            "transition-all duration-300 relative overflow-hidden group",
-                            selectedAnswer !== undefined
-                              ? "border-brand-teal border-2 shadow-lg"
-                              : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
-                          )}
+                      return (
+                        <motion.div
+                          key={`${question.id}-${currentPage}`}
+                          ref={(el) => {
+                            questionRefs.current[question.id] = el;
+                          }}
+                          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                          transition={{
+                            delay: idx * 0.08,
+                            type: "spring",
+                            stiffness: 120,
+                            damping: 15,
+                          }}
+                          className="relative"
                         >
-                          <CardContent className="p-4 relative z-10">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <span className="text-xs text-gray-500">
-                                  Question {questionNumber} of{" "}
-                                  {filteredQuestions.length}
-                                </span>
-                                <h3 className="text-sm font-medium text-gray-900 mt-0.5">
-                                  {question.text}
-                                </h3>
-                              </div>
-                              <AnimatePresence>
-                                {selectedAnswer !== undefined && (
-                                  <motion.div
-                                    initial={{ scale: 0, rotate: -180 }}
-                                    animate={{
-                                      scale: 1,
-                                      rotate: 0,
-                                      y: [0, -5, 0],
-                                    }}
-                                    exit={{ scale: 0, rotate: 180 }}
-                                    transition={{
-                                      rotate: {
-                                        type: "spring",
-                                        stiffness: 200,
-                                      },
-                                      y: {
-                                        duration: 2,
-                                        repeat: Infinity,
-                                        repeatType: "reverse",
-                                      },
-                                    }}
-                                    className="flex-shrink-0 ml-4 relative"
-                                  >
-                                    <motion.div
-                                      className="absolute inset-0 rounded-full bg-green-400/30 blur-md"
-                                      animate={{
-                                        scale: [1, 1.3, 1],
-                                        opacity: [0.5, 0, 0.5],
-                                      }}
-                                      transition={{
-                                        duration: 2,
-                                        repeat: Infinity,
-                                      }}
-                                    />
-                                    <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
-                                      <Check className="h-5 w-5 text-white" />
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
+                          {selectedAnswer !== undefined && (
+                            <div className="absolute -top-2 -right-2 -z-10">
+                              {[...Array(3)].map((_, i) => (
+                                <motion.div
+                                  key={i}
+                                  className="absolute w-2 h-2 rounded-full bg-brand-teal/40"
+                                  animate={{
+                                    x: [0, Math.cos(i * 120) * 20],
+                                    y: [0, Math.sin(i * 120) * 20],
+                                    opacity: [0.6, 0],
+                                    scale: [1, 0],
+                                  }}
+                                  transition={{
+                                    duration: 1,
+                                    delay: i * 0.2,
+                                    repeat: Infinity,
+                                    repeatDelay: 2,
+                                  }}
+                                />
+                              ))}
                             </div>
+                          )}
 
-                            <div className="space-y-2 mt-3">
-                              {question.options.map((option, optionIndex) => {
-                                const isSelected =
-                                  selectedAnswer === optionIndex;
-                                return (
-                                  <motion.button
-                                    key={optionIndex}
-                                    type="button"
-                                    onClick={() =>
-                                      handleAnswerChange(
-                                        question.id,
-                                        optionIndex
-                                      )
-                                    }
-                                    disabled={isSubmitted}
-                                    whileHover={
-                                      isSubmitted
-                                        ? {}
-                                        : {
-                                            scale: 1.02,
-                                            x: 4,
-                                            boxShadow: isSelected
-                                              ? "0 4px 12px rgba(43, 198, 180, 0.2)"
-                                              : "0 4px 12px rgba(0, 0, 0, 0.08)",
-                                          }
-                                    }
-                                    whileTap={
-                                      isSubmitted ? {} : { scale: 0.98 }
-                                    }
-                                    className={cn(
-                                      "w-full text-left p-2.5 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm",
-                                      isSubmitted
-                                        ? "cursor-not-allowed opacity-60"
-                                        : "cursor-pointer",
-                                      isSelected
-                                        ? "border-brand-teal bg-brand-teal/10 shadow-sm"
-                                        : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
-                                    )}
-                                  >
-                                    {isSelected && (
-                                      <>
-                                        <motion.div
-                                          className="absolute inset-0 rounded-lg bg-brand-teal/20"
-                                          initial={{ scale: 0, opacity: 0.5 }}
-                                          animate={{
-                                            scale: [0, 2],
-                                            opacity: [0.5, 0],
-                                          }}
-                                          transition={{ duration: 0.6 }}
-                                        />
-                                        <motion.div
-                                          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy"
-                                          initial={{ scaleY: 0 }}
-                                          animate={{ scaleY: 1 }}
-                                          transition={{ duration: 0.3 }}
-                                        />
-                                      </>
-                                    )}
-                                    <div className="flex items-center gap-3 relative z-10">
+                          <Card
+                            variant="elevated"
+                            className={cn(
+                              "transition-all duration-300 relative overflow-hidden group",
+                              selectedAnswer !== undefined
+                                ? "border-brand-teal border-2 shadow-lg"
+                                : "border-gray-200 hover:border-brand-teal/30 hover:shadow-md"
+                            )}
+                          >
+                            <CardContent className="p-4 relative z-10">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <span className="text-xs text-gray-500">
+                                    Question {questionNumber} of {filteredQuestions.length}
+                                  </span>
+                                  <h3 className="text-sm font-medium text-gray-900 mt-0.5">
+                                    {question.text}
+                                  </h3>
+                                </div>
+                                <AnimatePresence>
+                                  {selectedAnswer !== undefined && (
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -180 }}
+                                      animate={{
+                                        scale: 1,
+                                        rotate: 0,
+                                        y: [0, -5, 0],
+                                      }}
+                                      exit={{ scale: 0, rotate: 180 }}
+                                      transition={{
+                                        rotate: {
+                                          type: "spring",
+                                          stiffness: 200,
+                                        },
+                                        y: {
+                                          duration: 2,
+                                          repeat: Infinity,
+                                          repeatType: "reverse",
+                                        },
+                                      }}
+                                      className="shrink-0 ml-4 relative"
+                                    >
                                       <motion.div
-                                        className={cn(
-                                          "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                                          isSelected
-                                            ? "border-brand-teal bg-brand-teal"
-                                            : "border-gray-300 group-hover/option:border-brand-teal/50"
-                                        )}
-                                        animate={
-                                          isSelected
-                                            ? {
-                                                scale: [1, 1.2, 1],
-                                                rotate: [0, 180, 360],
-                                              }
-                                            : {}
-                                        }
-                                        transition={{ duration: 0.5 }}
-                                      >
-                                        {isSelected && (
+                                        className="absolute inset-0 rounded-full bg-green-400/30 blur-md"
+                                        animate={{
+                                          scale: [1, 1.3, 1],
+                                          opacity: [0.5, 0, 0.5],
+                                        }}
+                                        transition={{
+                                          duration: 2,
+                                          repeat: Infinity,
+                                        }}
+                                      />
+                                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+                                        <Check className="h-5 w-5 text-white" />
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+
+                              <div className="space-y-2 mt-3">
+                                {question.options.map((option, optionIndex) => {
+                                  const isSelected = selectedAnswer === optionIndex;
+                                  return (
+                                    <motion.button
+                                      key={optionIndex}
+                                      type="button"
+                                      onClick={() => handleAnswerChange(question.id, optionIndex)}
+                                      disabled={isSubmitted}
+                                      whileHover={
+                                        isSubmitted
+                                          ? {}
+                                          : {
+                                              scale: 1.02,
+                                              x: 4,
+                                              boxShadow: isSelected
+                                                ? "0 4px 12px rgba(43, 198, 180, 0.2)"
+                                                : "0 4px 12px rgba(0, 0, 0, 0.08)",
+                                            }
+                                      }
+                                      whileTap={isSubmitted ? {} : { scale: 0.98 }}
+                                      className={cn(
+                                        "w-full text-left p-2.5 rounded-lg border-2 transition-all relative overflow-hidden group/option text-sm",
+                                        isSubmitted
+                                          ? "cursor-not-allowed opacity-60"
+                                          : "cursor-pointer",
+                                        isSelected
+                                          ? "border-brand-teal bg-brand-teal/10 shadow-sm"
+                                          : "border-gray-200 bg-white hover:border-brand-teal/50 hover:bg-gray-50"
+                                      )}
+                                    >
+                                      {isSelected && (
+                                        <>
                                           <motion.div
-                                            initial={{ scale: 0, rotate: -180 }}
-                                            animate={{ scale: 1, rotate: 0 }}
-                                            className="w-2 h-2 rounded-full bg-white"
+                                            className="absolute inset-0 rounded-lg bg-brand-teal/20"
+                                            initial={{ scale: 0, opacity: 0.5 }}
+                                            animate={{
+                                              scale: [0, 2],
+                                              opacity: [0.5, 0],
+                                            }}
+                                            transition={{ duration: 0.6 }}
                                           />
-                                        )}
-                                      </motion.div>
-                                      <span
-                                        className={cn(
-                                          "text-sm font-normal",
-                                          isSelected
-                                            ? "text-gray-900"
-                                            : "text-gray-700"
-                                        )}
-                                      >
-                                        {option}
-                                      </span>
-                                    </div>
-                                  </motion.button>
-                                );
-                              })}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
+                                          <motion.div
+                                            className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-brand-teal to-brand-navy"
+                                            initial={{ scaleY: 0 }}
+                                            animate={{ scaleY: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                          />
+                                        </>
+                                      )}
+                                      <div className="flex items-center gap-3 relative z-10">
+                                        <motion.div
+                                          className={cn(
+                                            "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                                            isSelected
+                                              ? "border-brand-teal bg-brand-teal"
+                                              : "border-gray-300 group-hover/option:border-brand-teal/50"
+                                          )}
+                                          animate={
+                                            isSelected
+                                              ? {
+                                                  scale: [1, 1.2, 1],
+                                                  rotate: [0, 180, 360],
+                                                }
+                                              : {}
+                                          }
+                                          transition={{ duration: 0.5 }}
+                                        >
+                                          {isSelected && (
+                                            <motion.div
+                                              initial={{ scale: 0, rotate: -180 }}
+                                              animate={{ scale: 1, rotate: 0 }}
+                                              className="w-2 h-2 rounded-full bg-white"
+                                            />
+                                          )}
+                                        </motion.div>
+                                        <span
+                                          className={cn(
+                                            "text-sm font-normal",
+                                            isSelected ? "text-gray-900" : "text-gray-700"
+                                          )}
+                                        >
+                                          {option}
+                                        </span>
+                                      </div>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
                 )}
               </div>
 
-              <div className="flex-shrink-0 flex items-center justify-between pt-3 border-t border-gray-200 mt-3">
+              <div className="shrink-0 flex items-center justify-between pt-3 border-t border-gray-200 mt-3">
                 <Button
                   variant="outline"
                   onClick={() => changePage(currentPage - 1)}
                   disabled={currentPage === 0}
                   className={cn(
                     "text-xs py-1.5 h-auto",
-                    isSubmitted
-                      ? "cursor-not-allowed opacity-60"
-                      : "cursor-pointer"
+                    isSubmitted ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                   )}
                   size="sm"
                 >
@@ -793,52 +788,50 @@ const AssessmentQuestions = () => {
                 </Button>
 
                 <div className="flex items-center gap-1">
-                  {getPaginationButtons(currentPage, totalPages).map(
-                    (pageIdx, idx) => {
-                      if (pageIdx === "ellipsis") {
-                        return (
-                          <motion.span
-                            key={`ellipsis-${idx}`}
-                            className="px-2 text-gray-400"
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            ...
-                          </motion.span>
-                        );
-                      }
-                      const isCurrentPage = currentPage === pageIdx;
+                  {getPaginationButtons(currentPage, totalPages).map((pageIdx, idx) => {
+                    if (pageIdx === "ellipsis") {
                       return (
-                        <motion.button
-                          key={pageIdx}
-                          onClick={() => changePage(pageIdx)}
-                          whileHover={{ scale: 1.15, y: -2 }}
-                          whileTap={{ scale: 0.9 }}
-                          className={cn(
-                            "w-8 h-8 rounded-lg text-xs font-medium transition-all relative",
-                            isSubmitted
-                              ? "cursor-not-allowed opacity-60"
-                              : "cursor-pointer",
-                            isCurrentPage
-                              ? "bg-brand-teal text-white shadow-md"
-                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                          )}
+                        <motion.span
+                          key={`ellipsis-${idx}`}
+                          className="px-2 text-gray-400"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
                         >
-                          {isCurrentPage && (
-                            <motion.div
-                              className="absolute inset-0 rounded-lg bg-brand-teal/30 blur-md"
-                              animate={{
-                                scale: [1, 1.3, 1],
-                                opacity: [0.5, 0, 0.5],
-                              }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            />
-                          )}
-                          <span className="relative z-10">{pageIdx + 1}</span>
-                        </motion.button>
+                          ...
+                        </motion.span>
                       );
                     }
-                  )}
+                    const isCurrentPage = currentPage === pageIdx;
+                    return (
+                      <motion.button
+                        key={pageIdx}
+                        onClick={() => changePage(pageIdx)}
+                        whileHover={{ scale: 1.15, y: -2 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={cn(
+                          "w-8 h-8 rounded-lg text-xs font-medium transition-all relative",
+                          isSubmitted
+                            ? "cursor-not-allowed opacity-60"
+                            : "cursor-pointer",
+                          isCurrentPage
+                            ? "bg-brand-teal text-white shadow-md"
+                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        )}
+                      >
+                        {isCurrentPage && (
+                          <motion.div
+                            className="absolute inset-0 rounded-lg bg-brand-teal/30 blur-md"
+                            animate={{
+                              scale: [1, 1.3, 1],
+                              opacity: [0.5, 0, 0.5],
+                            }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                        )}
+                        <span className="relative z-10">{pageIdx + 1}</span>
+                      </motion.button>
+                    );
+                  })}
                 </div>
 
                 {currentPage === totalPages - 1 ? (
@@ -907,9 +900,7 @@ const AssessmentQuestions = () => {
                     disabled={currentPage === totalPages - 1}
                     className={cn(
                       "text-xs py-1.5 h-auto",
-                      isSubmitted
-                        ? "cursor-not-allowed opacity-60"
-                        : "cursor-pointer"
+                      isSubmitted ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                     )}
                     size="sm"
                   >
@@ -940,14 +931,7 @@ const AssessmentQuestions = () => {
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", duration: 0.5 }}
                         >
-                          {getProgressEmoji(
-                            filteredQuestions.length > 0
-                              ? Math.round(
-                                  (answeredCount / filteredQuestions.length) *
-                                    100
-                                )
-                              : 0
-                          )}
+                          {getProgressEmoji(progressPercentage)}
                         </motion.span>
                       </div>
                       <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
@@ -955,26 +939,14 @@ const AssessmentQuestions = () => {
                           className="absolute inset-y-0 left-0 bg-gradient-to-r from-brand-teal to-brand-navy rounded-full"
                           initial={{ width: 0 }}
                           animate={{
-                            width: `${
-                              filteredQuestions.length > 0
-                                ? (answeredCount / filteredQuestions.length) *
-                                  100
-                                : 0
-                            }%`,
+                            width: `${progressPercentage}%`,
                           }}
                           transition={{ duration: 0.6, ease: "easeOut" }}
                         />
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-gray-500">
-                          {getProgressMessage(
-                            filteredQuestions.length > 0
-                              ? Math.round(
-                                  (answeredCount / filteredQuestions.length) *
-                                    100
-                                )
-                              : 0
-                          )}
+                          {getProgressMessage(progressPercentage)}
                         </span>
                         <span className="text-xs font-semibold text-brand-teal">
                           {answeredCount} / {filteredQuestions.length}
@@ -989,21 +961,17 @@ const AssessmentQuestions = () => {
                             Overall Completion
                           </span>
                           <span className="text-xs font-semibold text-brand-teal">
-                            {
-                              questionnaires.filter((questionnaire) => {
-                                const questions = questionsByQuestionnaire[questionnaire] || [];
-                                const answered = questions.filter((q) => answers[q.id] !== undefined).length;
-                                return questions.length > 0 && answered === questions.length;
-                              }).length
-                            }{" "}
+                            {questionnaires.filter((questionnaire) => {
+                              const questions = questionsByQuestionnaire[questionnaire] || [];
+                              return getQuestionnaireStats(questions, answers).isComplete;
+                            }).length}{" "}
                             / {questionnaires.length} Questionnaires
                           </span>
                         </div>
                         <div className="space-y-2">
                           {questionnaires.map((questionnaire) => {
                             const questions = questionsByQuestionnaire[questionnaire] || [];
-                            const answered = questions.filter((q) => answers[q.id] !== undefined).length;
-                            const total = questions.length;
+                            const { answered, total } = getQuestionnaireStats(questions, answers);
                             if (total === 0) return null;
                             return (
                               <div key={questionnaire} className="space-y-1">
@@ -1018,9 +986,7 @@ const AssessmentQuestions = () => {
                                 <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                   <motion.div
                                     className={`absolute inset-y-0 left-0 rounded-full ${
-                                      answered === total
-                                        ? "bg-green-500"
-                                        : "bg-gray-400"
+                                      answered === total ? "bg-green-500" : "bg-gray-400"
                                     }`}
                                     initial={{ width: 0 }}
                                     animate={{
@@ -1047,19 +1013,14 @@ const AssessmentQuestions = () => {
                       {filteredQuestions.map((question, idx) => {
                         const isAnswered = answers[question.id] !== undefined;
                         const isCurrent =
-                          idx >=
-                            currentPage * ASSESSMENT_CONFIG.questionsPerPage &&
-                          idx <
-                            (currentPage + 1) *
-                              ASSESSMENT_CONFIG.questionsPerPage;
+                          idx >= currentPage * ASSESSMENT_CONFIG.questionsPerPage &&
+                          idx < (currentPage + 1) * ASSESSMENT_CONFIG.questionsPerPage;
 
                         return (
                           <button
                             key={question.id}
                             onClick={() => {
-                              const targetPage = Math.floor(
-                                idx / ASSESSMENT_CONFIG.questionsPerPage
-                              );
+                              const targetPage = Math.floor(idx / ASSESSMENT_CONFIG.questionsPerPage);
                               changePage(targetPage);
                             }}
                             className={cn(
@@ -1073,10 +1034,7 @@ const AssessmentQuestions = () => {
                                 ? "border-brand-teal text-brand-teal bg-white"
                                 : "border-gray-300 text-gray-700 bg-white"
                             )}
-                            title={`Question ${idx + 1}: ${question.text.slice(
-                              0,
-                              30
-                            )}...`}
+                            title={`Question ${idx + 1}: ${question.text.slice(0, 30)}...`}
                           >
                             <span className="font-semibold">{idx + 1}</span>
                           </button>
@@ -1100,7 +1058,7 @@ const AssessmentQuestions = () => {
                           repeat: Infinity,
                           repeatDelay: 2,
                         }}
-                        className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                        className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shrink-0"
                       >
                         <Check className="h-5 w-5 text-white" />
                       </motion.div>
