@@ -48,6 +48,8 @@ const mapQuestionnaireToDisplayName = (questionnaire: string): string => {
     "Boss": "Manager Relationship Assessment",
     "BOSS": "Manager Relationship Assessment",
     "Department": "Department Assessment",
+    "DEPT": "Department Assessment",
+    "4D": "Department Assessment",
     "Company": "Company Assessment",
   };
   return mapping[questionnaire] || questionnaire;
