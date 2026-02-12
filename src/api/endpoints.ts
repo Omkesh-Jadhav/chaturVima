@@ -23,6 +23,10 @@ export const API_ENDPOINTS = {
 
     },
 
+    EMPLOYEE_DASHBOARD: {
+        GET_EMPLOYEE_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_assessment_summary`,
+    },
+
     ORGANIZATION: {
         GET_ORGANIZATION_DETAILS: `/api/resource/Company`,
         UPDATE_ORGANIZATION_DETAILS: `/api/resource/Company`,
