@@ -1275,7 +1275,10 @@ const AssessmentQuestions = () => {
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleConfirmSubmit}
-        answeredCount={Object.keys(answers).length}
+        answeredCount={questionnaires.reduce((count, questionnaire) => {
+          const questions = questionsByQuestionnaire[questionnaire] || [];
+          return count + questions.filter((q) => answers[q.id] !== undefined).length;
+        }, 0)}
         totalQuestions={questionnaires.reduce(
           (total, questionnaire) => total + (questionsByQuestionnaire[questionnaire]?.length || 0),
           0
