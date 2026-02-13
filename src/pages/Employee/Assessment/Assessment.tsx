@@ -131,12 +131,10 @@ const Assessment = () => {
             const answeredCount = Object.keys(answersMap || {}).length;
             const totalQuestions = questions?.length || 0;
             
-            // If at least 1 question is answered (has rating), mark as hasAnyAnswers
             if (answeredCount > 0) {
               hasAnyAnswers = true;
             }
             
-            // Check if all questions are answered
             if (totalQuestions > 0 && answeredCount < totalQuestions) {
               allQuestionsAnswered = false;
             }
@@ -145,20 +143,17 @@ const Assessment = () => {
           }
         }
 
-        // Rule 1: All "Completed" OR all questions answered = Assessment Submitted
-        // BUT only if submission was confirmed via modal (checked above)
+        // Determine button state based on assessment status
         if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
-          setIsAssessmentSubmitted(false); // Don't show submitted unless confirmed via modal
-          setHasExistingAnswers(true); // Show continue instead
-        } 
-        // Rule 2: Has "Draft" or "In Progress" status OR has at least 1 answer = Continue Assessment
-        // Status "Draft" or "In Progress" means user has started answering, even if API doesn't return ratings yet
-        else if (hasDraft || hasInProgress || hasAnyAnswers) {
+          // All complete but not confirmed via modal - show continue
+          setIsAssessmentSubmitted(false);
+          setHasExistingAnswers(true);
+        } else if (hasDraft || hasInProgress || hasAnyAnswers) {
+          // Has partial progress - show continue
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
-        } 
-        // Rule 3: No answers yet = Start Assessment
-        else {
+        } else {
+          // No answers yet - show start
           setHasExistingAnswers(false);
           setIsAssessmentSubmitted(false);
         }

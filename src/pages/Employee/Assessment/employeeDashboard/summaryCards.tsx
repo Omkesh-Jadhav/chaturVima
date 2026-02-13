@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CheckCircle, AlertTriangle, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/common";
 import { useUser } from "@/context/UserContext";
@@ -20,26 +20,26 @@ const SummaryCards = () => {
   const [summary, setSummary] = useState<EmployeeAssessmentSummary>(defaultSummary);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchSummary = useCallback(async () => {
     const employeeId = user?.employee_id;
     if (!employeeId) {
       setIsLoading(false);
       return;
     }
 
-    const fetchSummary = async () => {
-      try {
-        const data = await getEmployeeAssessmentSummary(employeeId);
-        setSummary(data);
-      } catch {
-        setSummary({ ...defaultSummary, employee: employeeId });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSummary();
+    try {
+      const data = await getEmployeeAssessmentSummary(employeeId);
+      setSummary(data);
+    } catch {
+      setSummary({ ...defaultSummary, employee: employeeId });
+    } finally {
+      setIsLoading(false);
+    }
   }, [user?.employee_id]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   const displayValue = (value: number | string) => (isLoading ? "..." : value);
 

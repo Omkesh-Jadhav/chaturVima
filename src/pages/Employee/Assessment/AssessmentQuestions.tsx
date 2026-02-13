@@ -429,6 +429,19 @@ const AssessmentQuestions = () => {
     });
   }, [questionnaires, questionsByQuestionnaire, answers]);
 
+  // Memoized values for confirmation modal
+  const confirmationModalStats = useMemo(() => {
+    const total = questionnaires.reduce(
+      (sum, questionnaire) => sum + (questionsByQuestionnaire[questionnaire]?.length || 0),
+      0
+    );
+    const answered = questionnaires.reduce((count, questionnaire) => {
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      return count + questions.filter((q) => answers[q.id] !== undefined).length;
+    }, 0);
+    return { total, answered };
+  }, [questionnaires, questionsByQuestionnaire, answers]);
+
   // Load saved answers from localStorage (fallback for general storage)
   useEffect(() => {
     if (!user?.email) return;
@@ -1275,14 +1288,8 @@ const AssessmentQuestions = () => {
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
         onConfirm={handleConfirmSubmit}
-        answeredCount={questionnaires.reduce((count, questionnaire) => {
-          const questions = questionsByQuestionnaire[questionnaire] || [];
-          return count + questions.filter((q) => answers[q.id] !== undefined).length;
-        }, 0)}
-        totalQuestions={questionnaires.reduce(
-          (total, questionnaire) => total + (questionsByQuestionnaire[questionnaire]?.length || 0),
-          0
-        )}
+        answeredCount={confirmationModalStats.answered}
+        totalQuestions={confirmationModalStats.total}
       />
 
       <SuccessModal
