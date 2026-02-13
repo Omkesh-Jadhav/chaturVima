@@ -19,6 +19,7 @@ import {
   getQuestionsBySubmission,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
+import { loadSubmissionStatus } from "../../../utils/assessmentUtils";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -92,6 +93,16 @@ const Assessment = () => {
       }
 
       try {
+        // First check if user has confirmed submission via modal
+        const isSubmissionConfirmed = loadSubmissionStatus(user?.email);
+        
+        if (isSubmissionConfirmed) {
+          setIsAssessmentSubmitted(true);
+          setHasExistingAnswers(false);
+          setIsChecking(false);
+          return;
+        }
+
         const userId = user.employee_id || user.user;
         const assessments = await getEmployeeAssessments(userId);
 
@@ -135,9 +146,10 @@ const Assessment = () => {
         }
 
         // Rule 1: All "Completed" OR all questions answered = Assessment Submitted
+        // BUT only if submission was confirmed via modal (checked above)
         if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
-          setIsAssessmentSubmitted(true);
-          setHasExistingAnswers(false);
+          setIsAssessmentSubmitted(false); // Don't show submitted unless confirmed via modal
+          setHasExistingAnswers(true); // Show continue instead
         } 
         // Rule 2: Has "Draft" or "In Progress" status OR has at least 1 answer = Continue Assessment
         // Status "Draft" or "In Progress" means user has started answering, even if API doesn't return ratings yet
