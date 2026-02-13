@@ -19,7 +19,6 @@ import {
   getQuestionsBySubmission,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
-import { loadSubmissionStatus } from "../../../utils/assessmentUtils";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ const Assessment = () => {
     answerQuestion,
     goToPreviousQuestion,
     resetAssessment,
-    answers,
   } = useAssessment();
 
   const handleAnswer = (optionIndex: number) => {
@@ -93,16 +91,6 @@ const Assessment = () => {
       }
 
       try {
-        // First check if user has confirmed submission via modal
-        const isSubmissionConfirmed = loadSubmissionStatus(user?.email);
-        
-        if (isSubmissionConfirmed) {
-          setIsAssessmentSubmitted(true);
-          setHasExistingAnswers(false);
-          setIsChecking(false);
-          return;
-        }
-
         const userId = user.employee_id || user.user;
         const assessments = await getEmployeeAssessments(userId);
 
@@ -113,15 +101,20 @@ const Assessment = () => {
           return;
         }
 
-        // Get latest cycle assessments only
+        // Get latest cycle assessments (this is the current/active cycle)
         const latestAssessments = getLatestCycleAssessments(assessments);
+        
+        // Get the latest cycle ID
+        const latestCycleId = latestAssessments.length > 0 
+          ? getCycleId(latestAssessments[0].submission_name) 
+          : '';
 
-        // Check statuses
+        // Check statuses of latest cycle
         const allStatusCompleted = latestAssessments.every(a => a.status === "Completed");
         const hasDraft = latestAssessments.some(a => a.status === "Draft");
         const hasInProgress = latestAssessments.some(a => a.status === "In Progress");
 
-        // Verify if all questions are actually answered
+        // Verify if all questions are actually answered in latest cycle
         let allQuestionsAnswered = true;
         let hasAnyAnswers = false;
         
@@ -131,10 +124,17 @@ const Assessment = () => {
             const answeredCount = Object.keys(answersMap || {}).length;
             const totalQuestions = questions?.length || 0;
             
-            if (answeredCount > 0) {
-              hasAnyAnswers = true;
+            // Only mark as hasAnyAnswers if we have actual answers with ratings
+            // answersMap only contains answers with valid ratings (from getQuestionsBySubmission)
+            if (answeredCount > 0 && answersMap) {
+              // Double-check that answersMap actually has values (not just empty object)
+              const hasValidAnswers = Object.values(answersMap).some(rating => rating !== undefined && rating !== null);
+              if (hasValidAnswers) {
+                hasAnyAnswers = true;
+              }
             }
             
+            // Check if all questions are answered for this assessment
             if (totalQuestions > 0 && answeredCount < totalQuestions) {
               allQuestionsAnswered = false;
             }
@@ -143,17 +143,41 @@ const Assessment = () => {
           }
         }
 
+        // Check if THIS specific cycle was submitted
+        const cycleSubmissionKey = `chaturvima_submitted_cycle_${latestCycleId}_${user?.email?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'anonymous'}`;
+        const isThisCycleSubmitted = typeof window !== 'undefined' 
+          ? localStorage.getItem(cycleSubmissionKey) === 'true'
+          : false;
+
+        // Determine if latest cycle is fully submitted
+        const isLatestCycleFullySubmitted = 
+          allStatusCompleted && 
+          allQuestionsAnswered && 
+          !hasDraft && 
+          !hasInProgress && 
+          isThisCycleSubmitted;
+
         // Determine button state based on assessment status
-        if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
-          // All complete but not confirmed via modal - show continue
+        // Rule 1: Latest cycle is fully submitted → "Assessment Submitted"
+        if (isLatestCycleFullySubmitted) {
+          setIsAssessmentSubmitted(true);
+          setHasExistingAnswers(false);
+        } 
+        // Rule 2: Has actual answers OR status is Draft/In Progress → "Continue Assessment"
+        // Status "Draft" or "In Progress" means user has started answering (even if API doesn't return answers yet)
+        // OR if we can verify answers exist from API
+        else if (hasAnyAnswers || hasDraft || hasInProgress) {
+          setHasExistingAnswers(true);
+          setIsAssessmentSubmitted(false);
+        } 
+        // Rule 3: Latest cycle is complete but not confirmed via modal → "Continue Assessment"
+        // (All questions answered but modal not confirmed)
+        else if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(true);
-        } else if (hasAnyAnswers) {
-          // Has actual answers - show continue
-          setHasExistingAnswers(true);
-          setIsAssessmentSubmitted(false);
-        } else {
-          // No answers yet - show start (even if status is Draft/In Progress)
+        } 
+        // Rule 4: No answers and no Draft/In Progress status → "Start Assessment"
+        else {
           setHasExistingAnswers(false);
           setIsAssessmentSubmitted(false);
         }

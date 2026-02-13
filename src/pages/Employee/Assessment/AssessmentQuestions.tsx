@@ -24,8 +24,6 @@ import {
   loadPage,
   saveAnswers,
   loadAnswers,
-  saveSubmissionStatus,
-  loadSubmissionStatus,
   clearPageStorage,
   getPaginationButtons,
   getProgressEmoji,
@@ -166,9 +164,7 @@ const AssessmentQuestions = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(
-    () => loadSubmissionStatus(user?.email) || isComplete
-  );
+  const [isSubmitted, setIsSubmitted] = useState(false);
   // Track which answers are saved to server (to distinguish from localStorage-only)
   const [serverSavedAnswers, setServerSavedAnswers] = useState<Set<string>>(new Set());
 
@@ -184,7 +180,42 @@ const AssessmentQuestions = () => {
     answersRef.current = answers;
   }, [answers]);
 
-  // Fetch employee assessments
+  // Helper: Extract cycle ID from submission name
+  const getCycleId = (submissionName: string): string => {
+    const parts = submissionName.split('-');
+    if (parts.length >= 7) {
+      return `${parts[5]}-${parts[6]}`; // dimension-cycleNumber
+    }
+    return '';
+  };
+
+  // Helper: Get latest cycle assessments only
+  const getLatestCycleAssessments = (assessments: EmployeeAssessment[]): EmployeeAssessment[] => {
+    // Group by cycle
+    const byCycle = new Map<string, EmployeeAssessment[]>();
+    assessments.forEach((a) => {
+      const cycleId = getCycleId(a.submission_name);
+      if (cycleId) {
+        if (!byCycle.has(cycleId)) byCycle.set(cycleId, []);
+        byCycle.get(cycleId)!.push(a);
+      }
+    });
+
+    // Find latest cycle (highest number)
+    let latestCycle = '';
+    let maxNum = -1;
+    byCycle.forEach((_, cycleId) => {
+      const num = parseInt(cycleId.split('-')[1], 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+        latestCycle = cycleId;
+      }
+    });
+
+    return latestCycle ? (byCycle.get(latestCycle) || assessments) : assessments;
+  };
+
+  // Fetch employee assessments - only show latest cycle
   useEffect(() => {
     const fetchEmployeeAssessments = async () => {
       const userId = getUserIdFromStorage();
@@ -192,7 +223,12 @@ const AssessmentQuestions = () => {
 
       try {
         const assessments = await getEmployeeAssessments(userId);
-        const { assessmentsMap, questionnaireList } = organizeAssessments(assessments);
+        
+        // Get only the latest cycle assessments
+        const latestCycleAssessments = getLatestCycleAssessments(assessments);
+        
+        // Organize only the latest cycle assessments
+        const { assessmentsMap, questionnaireList } = organizeAssessments(latestCycleAssessments);
 
         if (questionnaireList.length > 0) {
           setQuestionnaires(questionnaireList);
@@ -461,16 +497,22 @@ const AssessmentQuestions = () => {
     }
   }, [user?.email, answerQuestion, answers]);
 
-  // Restore saved page
+  // Restore saved page and check submission status from API
   useEffect(() => {
     const savedPage = loadPage(user?.email);
     if (savedPage >= 0 && savedPage < totalPages && savedPage !== currentPage) {
       setCurrentPage(savedPage);
     }
-    if (loadSubmissionStatus(user?.email) || isComplete) {
-      setIsSubmitted(true);
+    
+    // Check if current assessment cycle is submitted based on API status
+    if (questionnaires.length > 0 && assessmentsByQuestionnaire) {
+      const allSubmitted = questionnaires.every((questionnaire) => {
+        const assessment = assessmentsByQuestionnaire[questionnaire];
+        return assessment?.status === "Completed";
+      });
+      setIsSubmitted(allSubmitted && isComplete);
     }
-  }, [user?.email, totalPages, currentPage, isComplete]);
+  }, [user?.email, totalPages, currentPage, isComplete, questionnaires, assessmentsByQuestionnaire]);
 
   // Scroll to question helper
   const scrollToQuestion = useCallback(
@@ -621,9 +663,23 @@ const AssessmentQuestions = () => {
     submitAssessment();
     setIsSubmitted(true);
     setShowSuccessModal(true);
-    saveSubmissionStatus(true, user?.email);
+    
+    // Save cycle-specific submission status when modal is confirmed
+    // Each cycle has its own submission flag: chaturvima_submitted_cycle_{cycleId}_{email}
+    if (user?.email && assessmentsByQuestionnaire && Object.keys(assessmentsByQuestionnaire).length > 0) {
+      const firstAssessment = Object.values(assessmentsByQuestionnaire)[0];
+      if (firstAssessment?.submission_name) {
+        const cycleParts = firstAssessment.submission_name.split('-');
+        if (cycleParts.length >= 7) {
+          const currentCycleId = `${cycleParts[5]}-${cycleParts[6]}`;
+          const cycleSubmissionKey = `chaturvima_submitted_cycle_${currentCycleId}_${user.email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+          localStorage.setItem(cycleSubmissionKey, 'true');
+        }
+      }
+    }
+    
     clearPageStorage(user?.email);
-  }, [submitAssessment, user?.email]);
+  }, [submitAssessment, user?.email, assessmentsByQuestionnaire]);
 
   // Handle view report
   const handleViewReport = useCallback(() => {
