@@ -95,11 +95,7 @@ const Assessment = () => {
         const userId = user.employee_id || user.user;
         const assessments = await getEmployeeAssessments(userId);
 
-        // DEBUG: Log all assessments
-        console.log("🔍 [BUTTON DEBUG] All assessments:", assessments);
-
         if (assessments.length === 0) {
-          console.log("🔍 [BUTTON DEBUG] No assessments found");
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(false);
           setIsChecking(false);
@@ -108,34 +104,28 @@ const Assessment = () => {
 
         // Get latest cycle assessments only
         const latestAssessments = getLatestCycleAssessments(assessments);
-        console.log("🔍 [BUTTON DEBUG] Latest cycle assessments:", latestAssessments);
 
         // Check statuses
         const allStatusCompleted = latestAssessments.every(a => a.status === "Completed");
         const hasDraft = latestAssessments.some(a => a.status === "Draft");
         const hasInProgress = latestAssessments.some(a => a.status === "In Progress");
-        
-        console.log("🔍 [BUTTON DEBUG] allStatusCompleted:", allStatusCompleted);
-        console.log("🔍 [BUTTON DEBUG] hasDraft:", hasDraft);
-        console.log("🔍 [BUTTON DEBUG] hasInProgress:", hasInProgress);
-        console.log("🔍 [BUTTON DEBUG] Statuses:", latestAssessments.map(a => `${a.questionnaire}: ${a.status}`));
 
-        // Verify if all questions are actually answered (even if status is "In Progress")
+        // Verify if all questions are actually answered
         let allQuestionsAnswered = true;
         let hasAnyAnswers = false;
         
         for (const assessment of latestAssessments) {
           try {
-            const { answers, questions } = await getQuestionsBySubmission(assessment.submission_name);
-            const answeredCount = Object.keys(answers || {}).length;
+            const { answers: answersMap, questions } = await getQuestionsBySubmission(assessment.submission_name);
+            const answeredCount = Object.keys(answersMap || {}).length;
             const totalQuestions = questions?.length || 0;
             
-            console.log(`🔍 [BUTTON DEBUG] ${assessment.questionnaire}: ${answeredCount}/${totalQuestions} answered`);
-            
+            // If at least 1 question is answered (has rating), mark as hasAnyAnswers
             if (answeredCount > 0) {
               hasAnyAnswers = true;
             }
             
+            // Check if all questions are answered
             if (totalQuestions > 0 && answeredCount < totalQuestions) {
               allQuestionsAnswered = false;
             }
@@ -144,29 +134,23 @@ const Assessment = () => {
           }
         }
 
-        console.log("🔍 [BUTTON DEBUG] allQuestionsAnswered:", allQuestionsAnswered);
-        console.log("🔍 [BUTTON DEBUG] hasAnyAnswers:", hasAnyAnswers);
-
         // Rule 1: All "Completed" OR all questions answered = Assessment Submitted
-        if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft) {
-          console.log("🔍 [BUTTON DEBUG] ✅ Setting: Assessment Submitted");
+        if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
           setIsAssessmentSubmitted(true);
           setHasExistingAnswers(false);
         } 
-        // Rule 2: Has answers but not all complete = Continue Assessment
-        else if (hasAnyAnswers) {
-          console.log("🔍 [BUTTON DEBUG] ⏳ Setting: Continue Assessment");
+        // Rule 2: Has "Draft" or "In Progress" status OR has at least 1 answer = Continue Assessment
+        // Status "Draft" or "In Progress" means user has started answering, even if API doesn't return ratings yet
+        else if (hasDraft || hasInProgress || hasAnyAnswers) {
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
         } 
         // Rule 3: No answers yet = Start Assessment
         else {
-          console.log("🔍 [BUTTON DEBUG] 🚀 Setting: Start Assessment");
           setHasExistingAnswers(false);
           setIsAssessmentSubmitted(false);
         }
-      } catch (error) {
-        console.error("🔍 [BUTTON DEBUG] ❌ Error:", error);
+      } catch {
         setIsAssessmentSubmitted(false);
         setHasExistingAnswers(false);
       } finally {
@@ -496,73 +480,58 @@ const Assessment = () => {
             transition={{ delay: 0.7 }}
             className="text-center"
           >
-            {(() => {
-              // DEBUG: Log current button state
-              console.log("🔍 [BUTTON RENDER] isChecking:", isChecking);
-              console.log("🔍 [BUTTON RENDER] isAssessmentSubmitted:", isAssessmentSubmitted);
-              console.log("🔍 [BUTTON RENDER] hasExistingAnswers:", hasExistingAnswers);
-              
-              if (isChecking) {
-                return (
-                  <>
-                    <Button
-                      disabled
-                      size="lg"
-                      className="px-12 py-6 text-lg bg-gray-400 text-white cursor-not-allowed shadow-lg opacity-90"
-                    >
-                      <PlayCircle className="mr-2 h-6 w-6 animate-spin" />
-                      Loading...
-                    </Button>
-                    <p className="mt-4 text-sm text-gray-500">
-                      Checking your assessment status...
-                    </p>
-                  </>
-                );
-              }
-              
-              if (isAssessmentSubmitted) {
-                return (
-                  <>
-                    <Button
-                      disabled
-                      size="lg"
-                      className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
-                    >
-                      <Check className="mr-2 h-6 w-6" />
-                      Assessment Submitted
-                    </Button>
-                    <p className="mt-4 text-sm text-green-600 font-medium">
-                      Your assessment has been successfully submitted. No further
-                      actions are allowed.
-                    </p>
-                  </>
-                );
-              }
-              
-              return (
-                <>
-                  <Button
-                    onClick={handleStart}
-                    size="lg"
-                    className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                  >
-                    <PlayCircle className="mr-2 h-6 w-6" />
-                    {hasExistingAnswers
-                      ? "Continue Assessment"
-                      : "Start Assessment"}
-                  </Button>
-                  {hasExistingAnswers ? (
-                    <p className="mt-4 text-sm text-brand-teal font-medium">
-                      Your previous progress has been saved
-                    </p>
-                  ) : (
-                    <p className="mt-4 text-sm text-gray-500">
-                      Your responses are automatically saved!
-                    </p>
-                  )}
-                </>
-              );
-            })()}
+            {isChecking ? (
+              <>
+                <Button
+                  disabled
+                  size="lg"
+                  className="px-12 py-6 text-lg bg-gray-400 text-white cursor-not-allowed shadow-lg opacity-90"
+                >
+                  <PlayCircle className="mr-2 h-6 w-6 animate-spin" />
+                  Loading...
+                </Button>
+                <p className="mt-4 text-sm text-gray-500">
+                  Checking your assessment status...
+                </p>
+              </>
+            ) : isAssessmentSubmitted ? (
+              <>
+                <Button
+                  disabled
+                  size="lg"
+                  className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
+                >
+                  <Check className="mr-2 h-6 w-6" />
+                  Assessment Submitted
+                </Button>
+                <p className="mt-4 text-sm text-green-600 font-medium">
+                  Your assessment has been successfully submitted. No further
+                  actions are allowed.
+                </p>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={handleStart}
+                  size="lg"
+                  className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                >
+                  <PlayCircle className="mr-2 h-6 w-6" />
+                  {hasExistingAnswers
+                    ? "Continue Assessment"
+                    : "Start Assessment"}
+                </Button>
+                {hasExistingAnswers ? (
+                  <p className="mt-4 text-sm text-brand-teal font-medium">
+                    Your previous progress has been saved
+                  </p>
+                ) : (
+                  <p className="mt-4 text-sm text-gray-500">
+                    Your responses are automatically saved!
+                  </p>
+                )}
+              </>
+            )}
           </motion.div>
         </motion.div>
       </div>
