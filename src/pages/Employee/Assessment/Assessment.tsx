@@ -148,12 +148,12 @@ const Assessment = () => {
           // All complete but not confirmed via modal - show continue
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(true);
-        } else if (hasDraft || hasInProgress || hasAnyAnswers) {
-          // Has partial progress - show continue
+        } else if (hasAnyAnswers) {
+          // Has actual answers - show continue
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
         } else {
-          // No answers yet - show start
+          // No answers yet - show start (even if status is Draft/In Progress)
           setHasExistingAnswers(false);
           setIsAssessmentSubmitted(false);
         }
