@@ -163,10 +163,9 @@ const Assessment = () => {
           setIsAssessmentSubmitted(true);
           setHasExistingAnswers(false);
         } 
-        // Rule 2: Has actual answers OR status is Draft/In Progress → "Continue Assessment"
-        // Status "Draft" or "In Progress" means user has started answering (even if API doesn't return answers yet)
-        // OR if we can verify answers exist from API
-        else if (hasAnyAnswers || hasDraft || hasInProgress) {
+        // Rule 2: Has actual answers (verified from API) → "Continue Assessment"
+        // Only show "Continue Assessment" if we can verify answers exist from API
+        else if (hasAnyAnswers) {
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
         } 
@@ -176,7 +175,8 @@ const Assessment = () => {
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(true);
         } 
-        // Rule 4: No answers and no Draft/In Progress status → "Start Assessment"
+        // Rule 4: No answers (even if status is Draft/In Progress) → "Start Assessment"
+        // For new cycles, even if status is Draft/In Progress, show "Start Assessment" if no answers
         else {
           setHasExistingAnswers(false);
           setIsAssessmentSubmitted(false);
