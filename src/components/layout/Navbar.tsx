@@ -328,7 +328,7 @@ const Navbar = () => {
                               {user.full_name || 'User'}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {user.user || 'user@example.com'}
+                              {user.email || user.user || ''}
                             </div>
                             <div className="mt-1 flex items-center gap-1">
                               <div
