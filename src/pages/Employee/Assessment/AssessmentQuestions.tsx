@@ -618,6 +618,12 @@ const AssessmentQuestions = () => {
     navigate("/assessment-report");
   }, [navigate]);
 
+  // Handle close modal - navigate back to assessment page
+  const handleCloseSuccessModal = useCallback(() => {
+    setShowSuccessModal(false);
+    navigate("/assessment");
+  }, [navigate]);
+
   // Reset page on questionnaire change
   useEffect(() => {
     setCurrentPage(0);
@@ -1278,7 +1284,7 @@ const AssessmentQuestions = () => {
 
       <SuccessModal
         isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={handleCloseSuccessModal}
         onViewReport={handleViewReport}
       />
     </div>

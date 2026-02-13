@@ -35,7 +35,6 @@ const Assessment = () => {
     answers,
   } = useAssessment();
 
-  // Wrapper for backward compatibility with QuestionCard
   const handleAnswer = (optionIndex: number) => {
     if (currentQuestion) {
       answerQuestion(currentQuestion.id, optionIndex);
@@ -46,193 +45,139 @@ const Assessment = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
-
-  // Check if user has existing saved answers (from current context, server or localStorage)
   const [hasExistingAnswers, setHasExistingAnswers] = useState(false);
-  const [hasCheckedServer, setHasCheckedServer] = useState(false);
-  
-  // Quick check for current answers (immediate update)
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Helper: Extract cycle ID from submission name (e.g., "2D-0310" from "SUB-ASSESSMENT-HR-EMP-00039-2D-0310-Self-0311")
+  const getCycleId = (submissionName: string): string => {
+    const parts = submissionName.split('-');
+    if (parts.length >= 7) {
+      return `${parts[5]}-${parts[6]}`; // dimension-cycleNumber
+    }
+    return '';
+  };
+
+  // Helper: Get latest cycle assessments
+  const getLatestCycleAssessments = (assessments: EmployeeAssessment[]): EmployeeAssessment[] => {
+    // Group by cycle
+    const byCycle = new Map<string, EmployeeAssessment[]>();
+    assessments.forEach((a) => {
+      const cycleId = getCycleId(a.submission_name);
+      if (cycleId) {
+        if (!byCycle.has(cycleId)) byCycle.set(cycleId, []);
+        byCycle.get(cycleId)!.push(a);
+      }
+    });
+
+    // Find latest cycle (highest number)
+    let latestCycle = '';
+    let maxNum = -1;
+    byCycle.forEach((_, cycleId) => {
+      const num = parseInt(cycleId.split('-')[1], 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+        latestCycle = cycleId;
+      }
+    });
+
+    return latestCycle ? (byCycle.get(latestCycle) || assessments) : assessments;
+  };
+
+  // Check button state - runs once on mount
   useEffect(() => {
-    if (answers && typeof answers === 'object' && !Array.isArray(answers)) {
-      const answerKeys = Object.keys(answers);
-      const hasCurrentAnswers = answerKeys.length > 0 && answerKeys.some(key => {
-        const value = answers[key];
-        return typeof value === 'number' && value >= 0 && value <= 4 && !isNaN(value);
-      });
-      
-      if (hasCurrentAnswers) {
-        setHasExistingAnswers(true);
+    const checkButtonState = async () => {
+      if (!user?.employee_id && !user?.user) {
+        setIsChecking(false);
         return;
       }
-    }
-    
-    // If no current answers, check localStorage (fast check)
-    if (!user) {
-      setHasExistingAnswers(false);
-      return;
-    }
 
-    try {
-      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      const storageKey = `chaturvima_assessment_answers_${emailKey}`;
-      const savedAnswersStr = localStorage.getItem(storageKey);
-      
-      if (savedAnswersStr) {
-        try {
-          const savedAnswers = JSON.parse(savedAnswersStr);
-          if (savedAnswers && typeof savedAnswers === 'object' && !Array.isArray(savedAnswers)) {
-            const answerKeys = Object.keys(savedAnswers);
-            const hasValidAnswers = answerKeys.length > 0 && answerKeys.some(key => {
-              const value = savedAnswers[key];
-              return typeof value === 'number' && value >= 0 && value <= 4 && !isNaN(value);
-            });
-            
-            if (hasValidAnswers) {
-              setHasExistingAnswers(true);
-              return;
-            } else {
-              localStorage.removeItem(storageKey);
-            }
-          } else {
-            localStorage.removeItem(storageKey);
-          }
-        } catch {
-          localStorage.removeItem(storageKey);
+      try {
+        const userId = user.employee_id || user.user;
+        const assessments = await getEmployeeAssessments(userId);
+
+        // DEBUG: Log all assessments
+        console.log("🔍 [BUTTON DEBUG] All assessments:", assessments);
+
+        if (assessments.length === 0) {
+          console.log("🔍 [BUTTON DEBUG] No assessments found");
+          setIsAssessmentSubmitted(false);
+          setHasExistingAnswers(false);
+          setIsChecking(false);
+          return;
         }
+
+        // Get latest cycle assessments only
+        const latestAssessments = getLatestCycleAssessments(assessments);
+        console.log("🔍 [BUTTON DEBUG] Latest cycle assessments:", latestAssessments);
+
+        // Check statuses
+        const allStatusCompleted = latestAssessments.every(a => a.status === "Completed");
+        const hasDraft = latestAssessments.some(a => a.status === "Draft");
+        const hasInProgress = latestAssessments.some(a => a.status === "In Progress");
+        
+        console.log("🔍 [BUTTON DEBUG] allStatusCompleted:", allStatusCompleted);
+        console.log("🔍 [BUTTON DEBUG] hasDraft:", hasDraft);
+        console.log("🔍 [BUTTON DEBUG] hasInProgress:", hasInProgress);
+        console.log("🔍 [BUTTON DEBUG] Statuses:", latestAssessments.map(a => `${a.questionnaire}: ${a.status}`));
+
+        // Verify if all questions are actually answered (even if status is "In Progress")
+        let allQuestionsAnswered = true;
+        let hasAnyAnswers = false;
+        
+        for (const assessment of latestAssessments) {
+          try {
+            const { answers, questions } = await getQuestionsBySubmission(assessment.submission_name);
+            const answeredCount = Object.keys(answers || {}).length;
+            const totalQuestions = questions?.length || 0;
+            
+            console.log(`🔍 [BUTTON DEBUG] ${assessment.questionnaire}: ${answeredCount}/${totalQuestions} answered`);
+            
+            if (answeredCount > 0) {
+              hasAnyAnswers = true;
+            }
+            
+            if (totalQuestions > 0 && answeredCount < totalQuestions) {
+              allQuestionsAnswered = false;
+            }
+          } catch {
+            allQuestionsAnswered = false;
+          }
+        }
+
+        console.log("🔍 [BUTTON DEBUG] allQuestionsAnswered:", allQuestionsAnswered);
+        console.log("🔍 [BUTTON DEBUG] hasAnyAnswers:", hasAnyAnswers);
+
+        // Rule 1: All "Completed" OR all questions answered = Assessment Submitted
+        if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft) {
+          console.log("🔍 [BUTTON DEBUG] ✅ Setting: Assessment Submitted");
+          setIsAssessmentSubmitted(true);
+          setHasExistingAnswers(false);
+        } 
+        // Rule 2: Has answers but not all complete = Continue Assessment
+        else if (hasAnyAnswers) {
+          console.log("🔍 [BUTTON DEBUG] ⏳ Setting: Continue Assessment");
+          setHasExistingAnswers(true);
+          setIsAssessmentSubmitted(false);
+        } 
+        // Rule 3: No answers yet = Start Assessment
+        else {
+          console.log("🔍 [BUTTON DEBUG] 🚀 Setting: Start Assessment");
+          setHasExistingAnswers(false);
+          setIsAssessmentSubmitted(false);
+        }
+      } catch (error) {
+        console.error("🔍 [BUTTON DEBUG] ❌ Error:", error);
+        setIsAssessmentSubmitted(false);
+        setHasExistingAnswers(false);
+      } finally {
+        setIsChecking(false);
       }
-    } catch {
-      // Error handling
-    }
-    
-    // If no current or localStorage answers, check server (only once)
-    if (!hasCheckedServer) {
-      setHasExistingAnswers(false);
-    }
-  }, [answers, user, hasCheckedServer]);
-  
-  // Reset server check when user changes
-  useEffect(() => {
-    setHasCheckedServer(false);
+    };
+
+    checkButtonState();
   }, [user]);
 
-  // Check server for saved answers (only once on mount or when user changes)
-  useEffect(() => {
-    const checkServerAnswers = async () => {
-      if (hasCheckedServer || !user) return;
-      
-      try {
-        const storedUser = localStorage.getItem("chaturvima_user");
-        if (!storedUser) {
-          setHasCheckedServer(true);
-          return;
-        }
-
-        const parsedUser = JSON.parse(storedUser);
-        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
-        if (!userId) {
-          setHasCheckedServer(true);
-          return;
-        }
-
-        const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
-        
-        // Check if any assessment has actual saved answers with valid values
-        for (const assessment of assessments) {
-          if (assessment.submission_name) {
-            try {
-              const { answers: serverAnswers } = await getQuestionsBySubmission(assessment.submission_name);
-              if (serverAnswers && typeof serverAnswers === 'object') {
-                const answerKeys = Object.keys(serverAnswers);
-                const hasValidAnswers = answerKeys.some(key => {
-                  const value = serverAnswers[key];
-                  return typeof value === 'number' && value >= 0 && value <= 4;
-                });
-                
-                if (hasValidAnswers) {
-                  setHasExistingAnswers(true);
-                  setHasCheckedServer(true);
-                  return;
-                }
-              }
-            } catch {
-              continue;
-            }
-          }
-        }
-        
-        setHasCheckedServer(true);
-      } catch {
-        setHasCheckedServer(true);
-      }
-    };
-
-    checkServerAnswers();
-  }, [user, hasCheckedServer]);
-
-  // Check submission status from API
-  useEffect(() => {
-    const checkSubmissionStatus = async () => {
-      // Get user_id from localStorage
-      const storedUser = localStorage.getItem("chaturvima_user");
-      if (!storedUser) {
-        setIsAssessmentSubmitted(false);
-        return;
-      }
-
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
-        if (!userId) {
-          setIsAssessmentSubmitted(false);
-          return;
-        }
-
-        // Use getEmployeeAssessments - the new unified API
-        const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
-
-        // Consider the assessment submitted only if:
-        // 1. ALL assessments have status "Completed" (not "Draft")
-        // 2. No assessments have "Draft" status
-        if (assessments.length === 0) {
-          setIsAssessmentSubmitted(false);
-          return;
-        }
-
-        const allCompleted = assessments.every(
-          (assessment) => assessment.status === "Completed"
-        );
-        
-        const hasDraftAssessments = assessments.some(
-          (assessment) => assessment.status === "Draft"
-        );
-        
-        // Check if user has saved answers in localStorage (unsaved changes)
-        try {
-          const emailKey = parsedUser.user?.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous";
-          const storageKey = `chaturvima_assessment_answers_${emailKey}`;
-          const savedAnswers = localStorage.getItem(storageKey);
-          const hasLocalAnswers = savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
-          
-          // Only mark as submitted if:
-          // - All assessments are "Completed" (not Draft)
-          // - No Draft assessments exist
-          // - No unsaved local answers exist
-          const isActuallySubmitted = allCompleted && !hasDraftAssessments && !hasLocalAnswers;
-          
-          setIsAssessmentSubmitted(isActuallySubmitted);
-        } catch {
-          // If error checking localStorage, just check completion status
-          setIsAssessmentSubmitted(allCompleted && !hasDraftAssessments);
-        }
-      } catch {
-        setIsAssessmentSubmitted(false);
-      }
-    };
-
-    checkSubmissionStatus();
-  }, [isComplete]);
-
-  // Check if we should show energy break (every 5 questions, but not at the end)
+  // Check if we should show energy break
   useEffect(() => {
     if (
       progress.currentQuestionIndex > 0 &&
@@ -248,15 +193,13 @@ const Assessment = () => {
     const milestones = [25, 50, 75, 100];
     if (milestones.includes(progress.percentComplete)) {
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 100); // Reset for next milestone
+      setTimeout(() => setShowConfetti(false), 100);
     }
   }, [progress.percentComplete]);
 
   const handleStart = () => {
-    // Prevent starting if already submitted
     if (isAssessmentSubmitted) return;
 
-    // Check if there are saved answers
     if (!user) {
       startAssessment();
       navigate("/assessment/questions");
@@ -264,7 +207,6 @@ const Assessment = () => {
     }
 
     try {
-      // Use user-specific storage key
       const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const storageKey = `chaturvima_assessment_answers_${emailKey}`;
       const savedAnswers = localStorage.getItem(storageKey);
@@ -272,13 +214,10 @@ const Assessment = () => {
         savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
 
       if (!hasExistingAnswers) {
-        // No saved answers - start fresh assessment
         startAssessment();
       }
-      // If has existing answers, don't call startAssessment() to preserve them
       navigate("/assessment/questions");
     } catch {
-      // If error parsing, start fresh
       startAssessment();
       navigate("/assessment/questions");
     }
@@ -294,8 +233,7 @@ const Assessment = () => {
     setShowEnergyBreak(false);
   };
 
-  // If assessment is submitted, always show welcome screen with disabled button
-  // Not started state (or submitted state - show welcome screen with disabled button)
+  // Welcome screen (not started or submitted)
   if (isAssessmentSubmitted || (!hasStarted && !isComplete)) {
     return (
       <div className="max-w-5xl mx-auto">
@@ -354,9 +292,7 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">
-                145
-                </p>
+                <p className="text-4xl font-bold text-blue-600">145</p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
@@ -552,6 +488,7 @@ const Assessment = () => {
               ))}
             </div>
           </motion.div>
+
           {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -559,53 +496,82 @@ const Assessment = () => {
             transition={{ delay: 0.7 }}
             className="text-center"
           >
-            {isAssessmentSubmitted ? (
-              <>
-                <Button
-                  disabled
-                  size="lg"
-                  className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
-                >
-                  <Check className="mr-2 h-6 w-6" />
-                  Assessment Submitted
-                </Button>
-                <p className="mt-4 text-sm text-green-600 font-medium">
-                  Your assessment has been successfully submitted. No further
-                  actions are allowed.
-                </p>
-              </>
-            ) : (
-              <>
-                <Button
-                  onClick={handleStart}
-                  size="lg"
-                  className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                >
-                  <PlayCircle className="mr-2 h-6 w-6" />
-                  {hasExistingAnswers
-                    ? "Continue Assessment"
-                    : "Start Assessment"}
-                </Button>
-                {hasExistingAnswers ? (
-                  <p className="mt-4 text-sm text-brand-teal font-medium">
-                    Your previous progress has been saved
-                  </p>
-                ) : (
-                  <p className="mt-4 text-sm text-gray-500">
-                    Your responses are automatically saved!
-                  </p>
-                )}
-              </>
-            )}
+            {(() => {
+              // DEBUG: Log current button state
+              console.log("🔍 [BUTTON RENDER] isChecking:", isChecking);
+              console.log("🔍 [BUTTON RENDER] isAssessmentSubmitted:", isAssessmentSubmitted);
+              console.log("🔍 [BUTTON RENDER] hasExistingAnswers:", hasExistingAnswers);
+              
+              if (isChecking) {
+                return (
+                  <>
+                    <Button
+                      disabled
+                      size="lg"
+                      className="px-12 py-6 text-lg bg-gray-400 text-white cursor-not-allowed shadow-lg opacity-90"
+                    >
+                      <PlayCircle className="mr-2 h-6 w-6 animate-spin" />
+                      Loading...
+                    </Button>
+                    <p className="mt-4 text-sm text-gray-500">
+                      Checking your assessment status...
+                    </p>
+                  </>
+                );
+              }
+              
+              if (isAssessmentSubmitted) {
+                return (
+                  <>
+                    <Button
+                      disabled
+                      size="lg"
+                      className="px-12 py-6 text-lg bg-green-500 text-white cursor-not-allowed shadow-lg opacity-90"
+                    >
+                      <Check className="mr-2 h-6 w-6" />
+                      Assessment Submitted
+                    </Button>
+                    <p className="mt-4 text-sm text-green-600 font-medium">
+                      Your assessment has been successfully submitted. No further
+                      actions are allowed.
+                    </p>
+                  </>
+                );
+              }
+              
+              return (
+                <>
+                  <Button
+                    onClick={handleStart}
+                    size="lg"
+                    className="px-12 py-6 text-lg bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                  >
+                    <PlayCircle className="mr-2 h-6 w-6" />
+                    {hasExistingAnswers
+                      ? "Continue Assessment"
+                      : "Start Assessment"}
+                  </Button>
+                  {hasExistingAnswers ? (
+                    <p className="mt-4 text-sm text-brand-teal font-medium">
+                      Your previous progress has been saved
+                    </p>
+                  ) : (
+                    <p className="mt-4 text-sm text-gray-500">
+                      Your responses are automatically saved!
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </motion.div>
         </motion.div>
       </div>
     );
   }
 
-  // If assessment is submitted, show welcome screen with disabled button (not results)
   // Assessment complete state - only show results if not submitted
-  if (isComplete && result && !isAssessmentSubmitted) {
+  // If submitted, show welcome screen with "Assessment Submitted" button instead
+  if (isComplete && result && !isAssessmentSubmitted && !isChecking) {
     return <AssessmentResults result={result} onRetake={handleRetake} />;
   }
 
