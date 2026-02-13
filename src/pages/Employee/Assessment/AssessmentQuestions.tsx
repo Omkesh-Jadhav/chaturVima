@@ -566,6 +566,27 @@ const AssessmentQuestions = () => {
         }
       }
 
+      // Mark current assessment cycle as STARTED (at least one answer given)
+      // This is used by the main Assessment page to decide between
+      // "Start Assessment" vs "Continue Assessment" without requiring a full refresh.
+      if (user?.email && assessmentsByQuestionnaire && Object.keys(assessmentsByQuestionnaire).length > 0) {
+        const firstAssessment = Object.values(assessmentsByQuestionnaire)[0];
+        if (firstAssessment?.submission_name) {
+          const cycleParts = firstAssessment.submission_name.split("-");
+          if (cycleParts.length >= 7) {
+            const currentCycleId = `${cycleParts[5]}-${cycleParts[6]}`;
+            const cycleStartedKey = `chaturvima_started_cycle_${currentCycleId}_${user.email
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "_")}`;
+            try {
+              localStorage.setItem(cycleStartedKey, "true");
+            } catch {
+              // Ignore localStorage errors
+            }
+          }
+        }
+      }
+
       if (isSaved) {
         setIsSaved(false);
         setShowSavedToast(false);
@@ -599,6 +620,7 @@ const AssessmentQuestions = () => {
       user?.email,
       scrollToQuestion,
       serverSavedAnswers,
+      assessmentsByQuestionnaire,
     ]
   );
 
@@ -689,8 +711,11 @@ const AssessmentQuestions = () => {
 
   // Handle close modal - navigate back to assessment page
   const handleCloseSuccessModal = useCallback(() => {
+    // Navigate immediately to avoid showing the questions page briefly
+    // Using replace to avoid adding to history stack
+    navigate("/assessment", { replace: true });
+    // Close modal after navigation starts (component will unmount anyway)
     setShowSuccessModal(false);
-    navigate("/assessment");
   }, [navigate]);
 
   // Reset page on questionnaire change
@@ -712,7 +737,8 @@ const AssessmentQuestions = () => {
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="relative z-10 h-full w-full overflow-hidden px-4 py-3 lg:px-6 lg:py-8">
+      {!(isSubmitted && !showSuccessModal) && (
+        <div className="relative z-10 h-full w-full overflow-hidden px-4 py-3 lg:px-6 lg:py-8">
         <div className="h-full overflow-hidden flex flex-col">
           <div className="grid lg:grid-cols-4 gap-4 h-full min-h-0 flex-1 overflow-hidden">
             <div className="lg:col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
@@ -1338,7 +1364,8 @@ const AssessmentQuestions = () => {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       <ConfirmationModal
         isOpen={showConfirmationModal}

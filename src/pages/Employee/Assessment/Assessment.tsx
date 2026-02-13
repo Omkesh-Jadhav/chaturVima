@@ -143,10 +143,17 @@ const Assessment = () => {
           }
         }
 
-        // Check if THIS specific cycle was submitted
+        // Check if THIS specific cycle was submitted (via final confirmation modal)
         const cycleSubmissionKey = `chaturvima_submitted_cycle_${latestCycleId}_${user?.email?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'anonymous'}`;
-        const isThisCycleSubmitted = typeof window !== 'undefined' 
-          ? localStorage.getItem(cycleSubmissionKey) === 'true'
+        const isThisCycleSubmitted = typeof window !== "undefined"
+          ? localStorage.getItem(cycleSubmissionKey) === "true"
+          : false;
+
+        // Check if THIS specific cycle has been started (at least one answer chosen)
+        // This flag is set from the questions page as soon as the user answers any question
+        const cycleStartedKey = `chaturvima_started_cycle_${latestCycleId}_${user?.email?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'anonymous'}`;
+        const isThisCycleStarted = typeof window !== "undefined"
+          ? localStorage.getItem(cycleStartedKey) === "true"
           : false;
 
         // Determine if latest cycle is fully submitted
@@ -163,9 +170,10 @@ const Assessment = () => {
           setIsAssessmentSubmitted(true);
           setHasExistingAnswers(false);
         } 
-        // Rule 2: Has actual answers (verified from API) → "Continue Assessment"
-        // Only show "Continue Assessment" if we can verify answers exist from API
-        else if (hasAnyAnswers) {
+        // Rule 2: Has actual answers (verified from API) OR user has started this cycle → "Continue Assessment"
+        // isThisCycleStarted is a fast client-side flag set when at least 1 answer is given,
+        // even if the answers are not yet saved to the server
+        else if (hasAnyAnswers || isThisCycleStarted) {
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
         } 
