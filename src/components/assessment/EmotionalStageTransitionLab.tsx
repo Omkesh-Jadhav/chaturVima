@@ -15,6 +15,7 @@ export type HistoricalAssessment = {
   title: string;
   date: string;
   dominantStage: string;
+  status?: string;
   stageScores: {
     Honeymoon: number;
     "Self-Introspection": number;
@@ -74,8 +75,10 @@ interface EmotionalStageTransitionLabProps {
 const EmotionalStageTransitionLab = ({
   historicalAssessments = MOCK_HISTORICAL_ASSESSMENTS,
 }: EmotionalStageTransitionLabProps) => {
-  // Limit to first 3 assessments and reverse to show latest first
-  const displayedAssessments = historicalAssessments.slice(0, 3).reverse();
+  // Sort assessments by date (latest first)
+  const displayedAssessments = [...historicalAssessments].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   // Don't render if less than 2 assessments
   if (displayedAssessments.length < 2) {
@@ -93,9 +96,16 @@ const EmotionalStageTransitionLab = ({
   return (
     <div className="space-y-4">
       {/* Assessment Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div
+        className="relative max-h-[520px] overflow-y-auto pr-2 rounded-xl border border-gray-100 bg-gradient-to-b from-gray-50/80 via-white to-gray-50/60 shadow-inner scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 scrollbar-track-transparent"
+      >
+        <div className="grid gap-4 md:grid-cols-3 py-1">
         {displayedAssessments.map((assessment, assessmentIdx) => {
-          const isCurrent = assessmentIdx === 0;
+        const isCurrent =
+          assessment.status === "Active" || assessmentIdx === 0;
+        const cardBorderHighlight = isCurrent
+          ? "border-emerald-300/80 shadow-md"
+          : "border-amber-300/70 shadow-sm";
 
           // Get stage scores in order
           const stageScores = STAGE_ORDER.map((stage) => {
@@ -113,7 +123,7 @@ const EmotionalStageTransitionLab = ({
           return (
             <div
               key={assessment.id}
-              className="relative rounded-xl border border-gray-100 bg-white p-4 shadow-sm overflow-hidden"
+              className={`relative rounded-xl border-2 bg-white/95 p-4 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${cardBorderHighlight}`}
             >
               {/* Badge - Sticker style with colors */}
               {isCurrent ? (
@@ -145,7 +155,14 @@ const EmotionalStageTransitionLab = ({
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <Calendar className="h-3 w-3" />
-                      <span>{formatDisplayDate(assessment.date)}</span>
+                      <span>
+                        {assessment.status === "Completed"
+                          ? "Completed on "
+                          : assessment.status === "Active"
+                          ? "Last submitted on "
+                          : "Updated on "}
+                        {formatDisplayDate(assessment.date)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -164,10 +181,10 @@ const EmotionalStageTransitionLab = ({
                       transition={{
                         delay: assessmentIdx * 0.1 + idx * 0.05,
                       }}
-                      className={`rounded-lg border p-3 ${
+                      className={`rounded-lg border p-3 bg-white/90 backdrop-blur-sm transition-all duration-300 ${
                         stageData.isDominant
                           ? "border-2 border-gray-300 shadow-md"
-                          : "border border-gray-200"
+                          : "border border-gray-200 hover:border-gray-300 hover:shadow-sm"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-4">
@@ -216,6 +233,7 @@ const EmotionalStageTransitionLab = ({
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

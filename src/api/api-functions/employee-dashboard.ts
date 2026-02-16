@@ -48,6 +48,25 @@ export interface EmployeeWeightedAssessmentSummaryResponse {
   message: EmployeeWeightedAssessmentSummary;
 }
 
+// Employee cycle transition lab types
+export interface EmployeeCycleTransitionLabStage {
+  stage: string;
+  score: number;
+  percentage: number;
+}
+
+export interface EmployeeCycleTransitionLabEntry {
+  assessment_cycle: string;
+  status: string;
+  last_submitted_on: string;
+  stages: EmployeeCycleTransitionLabStage[];
+  dominant_stage: string;
+}
+
+export interface EmployeeCycleTransitionLabResponse {
+  message: EmployeeCycleTransitionLabEntry[];
+}
+
 // Fetches employee assessment summary - GET request with employee query parameter
 export const getEmployeeAssessmentSummary = async (
   employeeId: string
@@ -78,6 +97,22 @@ export const getEmployeeWeightedAssessmentSummary = async (
         },
       }
     );
+
+  return response.data.message;
+};
+
+// Fetches employee cycle transition lab data (historical stage transitions)
+export const getEmployeeCycleTransitionLab = async (
+  employeeId: string
+): Promise<EmployeeCycleTransitionLabEntry[]> => {
+  const response = await api.get<EmployeeCycleTransitionLabResponse>(
+    API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_CYCLE_TRANSITION_LAB,
+    {
+      params: {
+        employee: employeeId,
+      },
+    }
+  );
 
   return response.data.message;
 };
