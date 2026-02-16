@@ -1,14 +1,18 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer, Tooltip } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
 import {
   ASSESSMENT_TYPES,
   MOCK_SUB_STAGES,
-  MOCK_EMOTIONAL_INTENSITY_HEATMAP,
   STAGE_ORDER,
 } from "@/data/assessmentDashboard";
 import { getStageColor } from "@/utils/assessmentConfig";
+import { useUser } from "@/context/UserContext";
+import {
+  getEmployeeWeightedAssessmentSummary,
+  type EmployeeWeightedAssessmentSummary,
+} from "@/api/api-functions/employee-dashboard";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
@@ -16,12 +20,43 @@ const CARD_BASE_CLASSES =
 const STAGES = STAGE_ORDER;
 
 const AssessmentTypesSubStagesHeatmap = () => {
+  const { user } = useUser();
+  const [summary, setSummary] =
+    useState<EmployeeWeightedAssessmentSummary | null>(null);
+
+  useEffect(() => {
+    const employeeId = user?.employee_id;
+    if (!employeeId) return;
+
+    const fetchData = async () => {
+      try {
+        const data = await getEmployeeWeightedAssessmentSummary(employeeId);
+        setSummary(data);
+      } catch (error) {
+        console.error(
+          "Failed to fetch employee weighted assessment summary for sub-stages heatmap:",
+          error
+        );
+        setSummary(null);
+      }
+    };
+
+    fetchData();
+  }, [user?.employee_id]);
+
   const subStagesByStage = useMemo(() => {
     return STAGES.map((stage) => ({
       stage,
-      subStages: MOCK_SUB_STAGES[stage] || [],
+      subStages:
+        summary?.stages
+          .find((s) => s.stage === stage)
+          ?.sub_stages.map((subStage, index) => ({
+            id: `${stage}-${index}`,
+            label: subStage.sub_stage,
+            value: subStage.percentage,
+          })) || MOCK_SUB_STAGES[stage] || [],
     }));
-  }, []);
+  }, [summary]);
 
   // Group stages in pairs for quadrant layout
   const stagePairs = useMemo(() => {
@@ -38,17 +73,24 @@ const AssessmentTypesSubStagesHeatmap = () => {
     subStageIndex: number,
     totalSubStages: number
   ): number => {
-    const stageData = MOCK_EMOTIONAL_INTENSITY_HEATMAP.find(
-      (r) => r.stage === stage
-    );
+    const stageData = summary?.stages.find((s) => s.stage === stage);
     if (!stageData) return 0;
 
-    const stageValue =
-      stageData.values[assessmentType as keyof typeof stageData.values] ?? 0;
+    const subStage = stageData.sub_stages[subStageIndex];
+    if (!subStage) return 0;
 
-    const baseValue = stageValue / totalSubStages;
-    const variation = [1.2, 0.9, 1.1, 0.8][subStageIndex % 4] || 1;
-    return Math.min(100, Math.round(baseValue * variation));
+    // Use percentage directly from API; fall back to proportional score if needed
+    const valueFromPercentage = subStage.percentage;
+
+    if (typeof valueFromPercentage === "number") {
+      return Math.min(100, Math.max(0, Math.round(valueFromPercentage)));
+    }
+
+    const totalScore =
+      stageData.sub_stages.reduce((sum, s) => sum + (s.score || 0), 0) || 1;
+    const proportionalScore = (subStage.score / totalScore) * 100;
+
+    return Math.min(100, Math.max(0, Math.round(proportionalScore)));
   };
 
   const headerColors: Record<

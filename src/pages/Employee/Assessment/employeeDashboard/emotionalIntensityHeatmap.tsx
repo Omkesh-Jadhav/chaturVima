@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
@@ -8,12 +8,55 @@ import {
   STAGE_ORDER,
 } from "@/data/assessmentDashboard";
 import { getCategoryPalette, getStageColor } from "@/utils/assessmentConfig";
+import { useUser } from "@/context/UserContext";
+import {
+  getEmployeeWeightedAssessmentSummary,
+  type EmployeeWeightedAssessmentSummary,
+} from "@/api/api-functions/employee-dashboard";
+import type { EmotionalIntensityRow } from "@/data/assessmentDashboard";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const EmotionalIntensityHeatmap = () => {
-  const emotionalIntensityHeatmap = MOCK_EMOTIONAL_INTENSITY_HEATMAP;
+  const { user } = useUser();
+  const [summary, setSummary] =
+    useState<EmployeeWeightedAssessmentSummary | null>(null);
+
+  useEffect(() => {
+    const employeeId = user?.employee_id;
+    if (!employeeId) return;
+
+    const fetchData = async () => {
+      try {
+        const data = await getEmployeeWeightedAssessmentSummary(employeeId);
+        setSummary(data);
+      } catch (error) {
+        console.error(
+          "Failed to fetch employee weighted assessment summary for heatmap:",
+          error
+        );
+        setSummary(null);
+      }
+    };
+
+    fetchData();
+  }, [user?.employee_id]);
+
+  const emotionalIntensityHeatmap: EmotionalIntensityRow[] = useMemo(() => {
+    if (!summary) return MOCK_EMOTIONAL_INTENSITY_HEATMAP;
+
+    return summary.stages.map((stage) => ({
+      stage: stage.stage,
+      values: {
+        "Employee Self Assessment": stage.percentage,
+        "Manager Relationship Assessment": stage.percentage,
+        "Department Assessment": stage.percentage,
+        "Company Assessment": stage.percentage,
+      },
+    }));
+  }, [summary]);
+
   const assessmentTypes = ASSESSMENT_TYPES;
 
   const transformedHeatmap = useMemo(() => {
@@ -33,6 +76,16 @@ const EmotionalIntensityHeatmap = () => {
   }, [emotionalIntensityHeatmap, assessmentTypes]);
 
   const logicalOutcomes = useMemo(() => {
+    if (summary?.logical_outcomes?.length) {
+      return summary.logical_outcomes
+        .map((entry) => {
+          const [, description] =
+            Object.entries(entry).find(([key]) => key !== "sr_no") ?? [];
+          return typeof description === "string" ? description : "";
+        })
+        .filter((text) => text.trim().length > 0);
+    }
+
     const outcomes: string[] = [];
     const stageAverages = emotionalIntensityHeatmap.map((row) => ({
       stage: row.stage,
@@ -40,6 +93,10 @@ const EmotionalIntensityHeatmap = () => {
         Object.values(row.values).reduce((sum, val) => sum + val, 0) /
         Object.values(row.values).length,
     }));
+
+    if (stageAverages.length === 0) {
+      return outcomes;
+    }
 
     const highestStage = stageAverages.reduce((max, stage) =>
       stage.avg > max.avg ? stage : max
@@ -89,7 +146,7 @@ const EmotionalIntensityHeatmap = () => {
     }
 
     return outcomes;
-  }, [emotionalIntensityHeatmap]);
+  }, [summary, emotionalIntensityHeatmap]);
 
   const headerColors: Record<
     string,
