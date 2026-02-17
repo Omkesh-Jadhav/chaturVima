@@ -1,22 +1,18 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Plus, AlertTriangle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { CycleTable, CycleDrawer, ShareDrawer } from "@/components/assessmentCycles";
+import { CycleTable, CycleDrawer } from "@/components/assessmentCycles";
 import type { CycleDrawerRef } from "@/components/assessmentCycles/CycleDrawer";
 import { FilterBar, Button } from "@/components/ui";
 import { createAssessmentCycle, updateAssessmentCycle, scheduleAssessmentCycle, getAssessmentCycles, type GetAssessmentCyclesParams } from "@/api/api-functions/assessment-cycle";
 import {
-  departmentHeadsDirectory,
-  loadShareMatrix,
-  persistShareMatrix,
   statusFilters,
   yearFilters,
 } from "@/data/assessmentCycles";
 import type {
   AssessmentCycle,
   CycleFormPayload,
-  ShareMatrix,
 } from "@/types/assessmentCycles";
 import { useDepartments } from "@/hooks/useDepartments";
 
@@ -32,9 +28,6 @@ const AssessmentCycles = () => {
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [shareMatrix, setShareMatrix] = useState<ShareMatrix>(() =>
-    loadShareMatrix()
-  );
   
   const queryClient = useQueryClient();
   
@@ -68,27 +61,11 @@ const AssessmentCycles = () => {
     staleTime: 30000, // 30 seconds
   });
 
-  // Listen for share matrix updates from other tabs/pages
-  useEffect(() => {
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === "cv_hr_share_matrix_v1") {
-        setShareMatrix(loadShareMatrix());
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
   const [drawerState, setDrawerState] = useState<{
     mode: "create" | "schedule" | "edit";
     open: boolean;
     cycle?: AssessmentCycle | null;
   }>({ mode: "create", open: false, cycle: null });
-
-  const [shareDrawerState, setShareDrawerState] = useState<{
-    open: boolean;
-    cycle?: AssessmentCycle | null;
-  }>({ open: false, cycle: null });
 
   const openCreateDrawer = () =>
     setDrawerState({ mode: "create", open: true, cycle: null });
@@ -102,10 +79,6 @@ const AssessmentCycles = () => {
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
 
-  const openShareDrawer = (cycle: AssessmentCycle) =>
-    setShareDrawerState({ open: true, cycle });
-  const closeShareDrawer = () =>
-    setShareDrawerState({ open: false, cycle: null });
 
   // API mutation for creating assessment cycle
   const createCycleMutation = useMutation({
@@ -183,18 +156,6 @@ const AssessmentCycles = () => {
     closeDrawer();
   };
 
-  const handleShareToggle = (headId: string, hasAccess: boolean) => {
-    const cycleId = shareDrawerState.cycle?.id;
-    if (!cycleId) return;
-    setShareMatrix((prev) => {
-      const next: ShareMatrix = {
-        ...prev,
-        [cycleId]: { ...(prev[cycleId] || {}), [headId]: hasAccess },
-      };
-      persistShareMatrix(next);
-      return next;
-    });
-  };
 
   // API handles filtering, so we just use the cycles directly
   const filteredCycles = cycles;
@@ -214,8 +175,7 @@ const AssessmentCycles = () => {
             Assessment Cycles
           </h1>
           <p className="mt-1 text-gray-600">
-            Create, schedule, and share assessment cycles with department heads.
-            Manage cycle lifecycle and track participation across your organization.
+            Create and schedule assessment cycles. Manage cycle lifecycle and track participation across your organization.
           </p>
         </div>
         <div className="flex items-center justify-end shrink-0">
@@ -235,7 +195,7 @@ const AssessmentCycles = () => {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search assessment cycle name",
+          placeholder: "Search",
           className: "w-full sm:w-auto",
         }}
         filters={[
@@ -272,7 +232,6 @@ const AssessmentCycles = () => {
         <CycleTable
           data={filteredCycles}
           onSchedule={openScheduleDrawer}
-          onShare={openShareDrawer}
           variant="hr"
         />
       )}
@@ -298,15 +257,6 @@ const AssessmentCycles = () => {
             ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
             : false
         }
-      />
-
-      <ShareDrawer
-        open={shareDrawerState.open}
-        cycle={shareDrawerState.cycle}
-        onClose={closeShareDrawer}
-        departmentHeads={departmentHeadsDirectory}
-        shareMatrix={shareMatrix}
-        onToggle={handleShareToggle}
       />
 
       {/* Schedule Confirmation Modal */}

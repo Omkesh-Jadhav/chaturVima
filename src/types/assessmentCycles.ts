@@ -13,6 +13,7 @@ export interface AssessmentCycle {
   allowCustomUpload?: boolean;
   customQuestionnaireName?: string;
   participants: number;
+  progress: number;
   owner: string;
   linkedTeams: number;
   notes?: string;
@@ -27,7 +28,6 @@ export interface DepartmentHeadAccess {
   activeCycles: number;
 }
 
-export type ShareMatrix = Record<string, Record<string, boolean>>;
 
 export interface CycleFormPayload {
   name: string;

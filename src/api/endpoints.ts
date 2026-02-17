@@ -23,11 +23,18 @@ export const API_ENDPOINTS = {
 
     },
 
+    EMPLOYEE_DASHBOARD: {
+        GET_EMPLOYEE_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_assessment_summary`,
+        GET_EMPLOYEE_WEIGHTED_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_weighted_assessment_summary`,
+        GET_EMPLOYEE_CYCLE_TRANSITION_LAB: `/api/method/chaturvima_api.api.dashboard.get_employee_cycle_transition_lab`,
+    },
+
     ORGANIZATION: {
         GET_ORGANIZATION_DETAILS: `/api/resource/Company`,
         UPDATE_ORGANIZATION_DETAILS: `/api/resource/Company`,
         GET_ALL_INDUSTRIES: `/api/resource/Industry Type`,
         GET_ALL_DESIGNATIONS: `/api/resource/Designation`,
+        CREATE_DESIGNATION: `/api/resource/Designation`,
         
         GET_ALL_DEPARTMENTS: `/api/method/chaturvima_api.api.department.list_departments`,
         CREATE_DEPARTMENT: `/api/resource/Department`,

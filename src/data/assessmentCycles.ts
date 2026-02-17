@@ -1,14 +1,12 @@
 import type {
   AssessmentCycle,
   DepartmentHeadAccess,
-  ShareMatrix,
 } from "@/types/assessmentCycles";
 import { assessmentTypeOptions } from "./assessmentDashboard";
 
 // Re-export for backward compatibility
 export { assessmentTypeOptions };
 
-export const SHARE_MATRIX_STORAGE_KEY = "cv_hr_share_matrix_v1";
 export const CYCLES_STORAGE_KEY = "cv_hr_assessment_cycles_v1";
 
 export const assessmentCyclesSeed: AssessmentCycle[] = [
@@ -28,6 +26,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     allowCustomUpload: true,
     customQuestionnaireName: "self-reflection-template.pdf",
     participants: 87,
+    progress: 87,
     owner: "HR Ops",
     linkedTeams: 6,
     notes: "Critical refresh before year-end compensation decisions.",
@@ -47,6 +46,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     ],
     allowCustomUpload: false,
     participants: 0,
+    progress: 0,
     owner: "People Center of Excellence",
     linkedTeams: 4,
     notes: "Includes 360 feedback plus self-reflection module.",
@@ -63,6 +63,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     assessmentTypes: ["Department Assessment"],
     allowCustomUpload: false,
     participants: 92,
+    progress: 92,
     owner: "Engineering HRBP",
     linkedTeams: 3,
     notes: "Pilot for deeper capability mapping.",
@@ -84,6 +85,7 @@ export const assessmentCyclesSeed: AssessmentCycle[] = [
     allowCustomUpload: true,
     customQuestionnaireName: "culture-health-check.xlsx",
     participants: 0,
+    progress: 0,
     owner: "Talent Acquisition",
     linkedTeams: 2,
     notes: "Short sprint for new-hire sentiment.",
@@ -125,41 +127,6 @@ export const departmentHeadsDirectory: DepartmentHeadAccess[] = [
   },
 ];
 
-const buildDefaultShareMatrix = (): ShareMatrix => {
-  return assessmentCyclesSeed.reduce<ShareMatrix>((acc, cycle, cycleIdx) => {
-    acc[cycle.id] = departmentHeadsDirectory.reduce<Record<string, boolean>>(
-      (mapping, head, headIdx) => {
-        const isPrimary =
-          (cycleIdx + headIdx) % 2 === 0 ||
-          cycle.departments.includes(head.department);
-        mapping[head.id] = Boolean(isPrimary && cycle.status !== "Completed");
-        return mapping;
-      },
-      {}
-    );
-    return acc;
-  }, {});
-};
-
-export const defaultShareMatrix = buildDefaultShareMatrix();
-
-export const loadShareMatrix = (): ShareMatrix => {
-  if (typeof window === "undefined") return defaultShareMatrix;
-  const cached = localStorage.getItem(SHARE_MATRIX_STORAGE_KEY);
-  if (!cached) return defaultShareMatrix;
-  try {
-    const parsed = JSON.parse(cached) as ShareMatrix;
-    return { ...defaultShareMatrix, ...parsed };
-  } catch {
-    return defaultShareMatrix;
-  }
-};
-
-export const persistShareMatrix = (matrix: ShareMatrix) => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(SHARE_MATRIX_STORAGE_KEY, JSON.stringify(matrix));
-};
-
 export const loadCycles = (): AssessmentCycle[] => {
   if (typeof window === "undefined") return assessmentCyclesSeed;
   const cached = localStorage.getItem(CYCLES_STORAGE_KEY);
@@ -190,7 +157,7 @@ export const persistCycles = (cycles: AssessmentCycle[]) => {
 };
 
 export const statusFilters = ["All Status", "Active", "Draft", "Completed"];
-export const yearFilters = ["All Years", "2024", "2025"];
+export const yearFilters = ["All Years", "2026"];
 export const departmentOptions = Array.from(
   new Set(assessmentCyclesSeed.flatMap((cycle) => cycle.departments))
 ).sort();

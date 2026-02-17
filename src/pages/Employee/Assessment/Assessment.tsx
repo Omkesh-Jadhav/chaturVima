@@ -2,7 +2,7 @@
  * Assessment Page
  * Complete assessment flow with gamification
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../../../context/AssessmentContext";
@@ -16,6 +16,7 @@ import CelebrationConfetti from "../../../components/assessment/CelebrationConfe
 import { PlayCircle, Check } from "lucide-react";
 import {
   getEmployeeAssessments,
+  getQuestionsBySubmission,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
 
@@ -31,10 +32,8 @@ const Assessment = () => {
     answerQuestion,
     goToPreviousQuestion,
     resetAssessment,
-    answers,
   } = useAssessment();
 
-  // Wrapper for backward compatibility with QuestionCard
   const handleAnswer = (optionIndex: number) => {
     if (currentQuestion) {
       answerQuestion(currentQuestion.id, optionIndex);
@@ -45,84 +44,163 @@ const Assessment = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
+  const [hasExistingAnswers, setHasExistingAnswers] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
-  // Check if user has existing saved answers (local draft)
-  const hasExistingAnswers = useMemo(() => {
-    if (!user) return false;
-
-    try {
-      // Use user-specific storage key
-      const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      const storageKey = `chaturvima_assessment_answers_${emailKey}`;
-      const savedAnswers = localStorage.getItem(storageKey);
-      return savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
-    } catch {
-      return Object.keys(answers).length > 0;
+  // Helper: Extract cycle ID from submission name (e.g., "2D-0310" from "SUB-ASSESSMENT-HR-EMP-00039-2D-0310-Self-0311")
+  const getCycleId = (submissionName: string): string => {
+    const parts = submissionName.split('-');
+    if (parts.length >= 7) {
+      return `${parts[5]}-${parts[6]}`; // dimension-cycleNumber
     }
-  }, [answers, user]);
+    return '';
+  };
 
-  // Check submission status from API instead of localStorage
+  // Helper: Get latest cycle assessments
+  const getLatestCycleAssessments = (assessments: EmployeeAssessment[]): EmployeeAssessment[] => {
+    // Group by cycle
+    const byCycle = new Map<string, EmployeeAssessment[]>();
+    assessments.forEach((a) => {
+      const cycleId = getCycleId(a.submission_name);
+      if (cycleId) {
+        if (!byCycle.has(cycleId)) byCycle.set(cycleId, []);
+        byCycle.get(cycleId)!.push(a);
+      }
+    });
+
+    // Find latest cycle (highest number)
+    let latestCycle = '';
+    let maxNum = -1;
+    byCycle.forEach((_, cycleId) => {
+      const num = parseInt(cycleId.split('-')[1], 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+        latestCycle = cycleId;
+      }
+    });
+
+    return latestCycle ? (byCycle.get(latestCycle) || assessments) : assessments;
+  };
+
+  // Check button state - runs once on mount
   useEffect(() => {
-    const checkSubmissionStatus = async () => {
-      // Get user_id from localStorage
-      const storedUser = localStorage.getItem("chaturvima_user");
-      if (!storedUser) {
-        setIsAssessmentSubmitted(false);
+    const checkButtonState = async () => {
+      if (!user?.employee_id && !user?.user) {
+        setIsChecking(false);
         return;
       }
 
       try {
-        const parsedUser = JSON.parse(storedUser);
-        const userId = parsedUser.employee_id || parsedUser.user_id || parsedUser.user;
-        if (!userId) {
-          setIsAssessmentSubmitted(false);
-          return;
-        }
+        const userId = user.employee_id || user.user;
+        const assessments = await getEmployeeAssessments(userId);
 
-        // Use getEmployeeAssessments - the new unified API
-        const assessments: EmployeeAssessment[] = await getEmployeeAssessments(userId);
-        console.log("[Assessment] Assessment status check - assessments:", assessments);
-
-        // Consider the assessment submitted only if ALL assessments have status "Completed"
         if (assessments.length === 0) {
-          console.log("[Assessment] No assessments found - not submitted");
           setIsAssessmentSubmitted(false);
+          setHasExistingAnswers(false);
+          setIsChecking(false);
           return;
         }
 
-        const allCompleted = assessments.every(
-          (assessment) => assessment.status === "Completed"
-        );
+        // Get latest cycle assessments (this is the current/active cycle)
+        const latestAssessments = getLatestCycleAssessments(assessments);
         
-        console.log("[Assessment] All assessments completed?", allCompleted);
+        // Get the latest cycle ID
+        const latestCycleId = latestAssessments.length > 0 
+          ? getCycleId(latestAssessments[0].submission_name) 
+          : '';
+
+        // Check statuses of latest cycle
+        const allStatusCompleted = latestAssessments.every(a => a.status === "Completed");
+        const hasDraft = latestAssessments.some(a => a.status === "Draft");
+        const hasInProgress = latestAssessments.some(a => a.status === "In Progress");
+
+        // Verify if all questions are actually answered in latest cycle
+        let allQuestionsAnswered = true;
+        let hasAnyAnswers = false;
         
-        // Check if user has saved answers in localStorage
-        try {
-          const emailKey = parsedUser.user?.toLowerCase().replace(/[^a-z0-9]/g, "_") || "anonymous";
-          const storageKey = `chaturvima_assessment_answers_${emailKey}`;
-          const savedAnswers = localStorage.getItem(storageKey);
-          const hasLocalAnswers = savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
-          console.log("[Assessment] Has local saved answers?", hasLocalAnswers);
-          
-          // Only mark as submitted if all completed AND no local answers
-          const isActuallySubmitted = allCompleted && !hasLocalAnswers;
-          console.log("[Assessment] Is actually submitted?", isActuallySubmitted);
-          
-          setIsAssessmentSubmitted(isActuallySubmitted);
-        } catch (error) {
-          console.error("[Assessment] Error checking local answers:", error);
-          setIsAssessmentSubmitted(allCompleted);
+        for (const assessment of latestAssessments) {
+          try {
+            const { answers: answersMap, questions } = await getQuestionsBySubmission(assessment.submission_name);
+            const answeredCount = Object.keys(answersMap || {}).length;
+            const totalQuestions = questions?.length || 0;
+            
+            // Only mark as hasAnyAnswers if we have actual answers with ratings
+            // answersMap only contains answers with valid ratings (from getQuestionsBySubmission)
+            if (answeredCount > 0 && answersMap) {
+              // Double-check that answersMap actually has values (not just empty object)
+              const hasValidAnswers = Object.values(answersMap).some(rating => rating !== undefined && rating !== null);
+              if (hasValidAnswers) {
+                hasAnyAnswers = true;
+              }
+            }
+            
+            // Check if all questions are answered for this assessment
+            if (totalQuestions > 0 && answeredCount < totalQuestions) {
+              allQuestionsAnswered = false;
+            }
+          } catch {
+            allQuestionsAnswered = false;
+          }
         }
-      } catch (error) {
-        console.error("[Assessment] Failed to check assessment submission status:", error);
+
+        // Check if THIS specific cycle was submitted (via final confirmation modal)
+        const cycleSubmissionKey = `chaturvima_submitted_cycle_${latestCycleId}_${user?.email?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'anonymous'}`;
+        const isThisCycleSubmitted = typeof window !== "undefined"
+          ? localStorage.getItem(cycleSubmissionKey) === "true"
+          : false;
+
+        // Check if THIS specific cycle has been started (at least one answer chosen)
+        // This flag is set from the questions page as soon as the user answers any question
+        const cycleStartedKey = `chaturvima_started_cycle_${latestCycleId}_${user?.email?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'anonymous'}`;
+        const isThisCycleStarted = typeof window !== "undefined"
+          ? localStorage.getItem(cycleStartedKey) === "true"
+          : false;
+
+        // Determine if latest cycle is fully submitted
+        const isLatestCycleFullySubmitted = 
+          allStatusCompleted && 
+          allQuestionsAnswered && 
+          !hasDraft && 
+          !hasInProgress && 
+          isThisCycleSubmitted;
+
+        // Determine button state based on assessment status
+        // Rule 1: Latest cycle is fully submitted → "Assessment Submitted"
+        if (isLatestCycleFullySubmitted) {
+          setIsAssessmentSubmitted(true);
+          setHasExistingAnswers(false);
+        } 
+        // Rule 2: Has actual answers (verified from API) OR user has started this cycle → "Continue Assessment"
+        // isThisCycleStarted is a fast client-side flag set when at least 1 answer is given,
+        // even if the answers are not yet saved to the server
+        else if (hasAnyAnswers || isThisCycleStarted) {
+          setHasExistingAnswers(true);
+          setIsAssessmentSubmitted(false);
+        } 
+        // Rule 3: Latest cycle is complete but not confirmed via modal → "Continue Assessment"
+        // (All questions answered but modal not confirmed)
+        else if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
+          setIsAssessmentSubmitted(false);
+          setHasExistingAnswers(true);
+        } 
+        // Rule 4: No answers (even if status is Draft/In Progress) → "Start Assessment"
+        // For new cycles, even if status is Draft/In Progress, show "Start Assessment" if no answers
+        else {
+          setHasExistingAnswers(false);
+          setIsAssessmentSubmitted(false);
+        }
+      } catch {
         setIsAssessmentSubmitted(false);
+        setHasExistingAnswers(false);
+      } finally {
+        setIsChecking(false);
       }
     };
 
-    checkSubmissionStatus();
-  }, [isComplete]);
+    checkButtonState();
+  }, [user]);
 
-  // Check if we should show energy break (every 5 questions, but not at the end)
+  // Check if we should show energy break
   useEffect(() => {
     if (
       progress.currentQuestionIndex > 0 &&
@@ -138,15 +216,13 @@ const Assessment = () => {
     const milestones = [25, 50, 75, 100];
     if (milestones.includes(progress.percentComplete)) {
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 100); // Reset for next milestone
+      setTimeout(() => setShowConfetti(false), 100);
     }
   }, [progress.percentComplete]);
 
   const handleStart = () => {
-    // Prevent starting if already submitted
     if (isAssessmentSubmitted) return;
 
-    // Check if there are saved answers
     if (!user) {
       startAssessment();
       navigate("/assessment/questions");
@@ -154,7 +230,6 @@ const Assessment = () => {
     }
 
     try {
-      // Use user-specific storage key
       const emailKey = user.user.toLowerCase().replace(/[^a-z0-9]/g, "_");
       const storageKey = `chaturvima_assessment_answers_${emailKey}`;
       const savedAnswers = localStorage.getItem(storageKey);
@@ -162,13 +237,10 @@ const Assessment = () => {
         savedAnswers && Object.keys(JSON.parse(savedAnswers)).length > 0;
 
       if (!hasExistingAnswers) {
-        // No saved answers - start fresh assessment
         startAssessment();
       }
-      // If has existing answers, don't call startAssessment() to preserve them
       navigate("/assessment/questions");
     } catch {
-      // If error parsing, start fresh
       startAssessment();
       navigate("/assessment/questions");
     }
@@ -184,8 +256,7 @@ const Assessment = () => {
     setShowEnergyBreak(false);
   };
 
-  // If assessment is submitted, always show welcome screen with disabled button
-  // Not started state (or submitted state - show welcome screen with disabled button)
+  // Welcome screen (not started or submitted)
   if (isAssessmentSubmitted || (!hasStarted && !isComplete)) {
     return (
       <div className="max-w-5xl mx-auto">
@@ -244,9 +315,7 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">
-                145
-                </p>
+                <p className="text-4xl font-bold text-blue-600">145</p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
@@ -442,6 +511,7 @@ const Assessment = () => {
               ))}
             </div>
           </motion.div>
+
           {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -449,7 +519,21 @@ const Assessment = () => {
             transition={{ delay: 0.7 }}
             className="text-center"
           >
-            {isAssessmentSubmitted ? (
+            {isChecking ? (
+              <>
+                <Button
+                  disabled
+                  size="lg"
+                  className="px-12 py-6 text-lg bg-gray-400 text-white cursor-not-allowed shadow-lg opacity-90"
+                >
+                  <PlayCircle className="mr-2 h-6 w-6 animate-spin" />
+                  Loading...
+                </Button>
+                <p className="mt-4 text-sm text-gray-500">
+                  Checking your assessment status...
+                </p>
+              </>
+            ) : isAssessmentSubmitted ? (
               <>
                 <Button
                   disabled
@@ -493,9 +577,9 @@ const Assessment = () => {
     );
   }
 
-  // If assessment is submitted, show welcome screen with disabled button (not results)
   // Assessment complete state - only show results if not submitted
-  if (isComplete && result && !isAssessmentSubmitted) {
+  // If submitted, show welcome screen with "Assessment Submitted" button instead
+  if (isComplete && result && !isAssessmentSubmitted && !isChecking) {
     return <AssessmentResults result={result} onRetake={handleRetake} />;
   }
 

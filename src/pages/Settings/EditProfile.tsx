@@ -156,13 +156,32 @@ const EditProfile = () => {
   // Prefill form data from user context
   useEffect(() => {
     if (!user) return;
+    
+    // Safely extract user email with multiple fallbacks - use optional chaining
+    const rawUserEmail = user?.user;
+    const userEmail = (rawUserEmail && typeof rawUserEmail === 'string' && rawUserEmail.trim()) 
+      ? rawUserEmail.trim() 
+      : '';
+    
+    // Safely create seed value - ensure we always have a string before calling replace
+    let seedValue = 'user'; // default fallback
+    try {
+      if (userEmail && typeof userEmail === 'string' && userEmail.length > 0) {
+        const cleaned = userEmail.replace(/[^a-z0-9]/gi, '');
+        seedValue = cleaned && cleaned.length > 0 ? cleaned : 'user';
+      }
+    } catch (error) {
+      console.warn('Error generating seed value:', error);
+      seedValue = 'user';
+    }
+    
     setFormData((prev) => ({
       ...prev,
-      profilePhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user.replace(/[^a-z0-9]/g, '')}`,
-      name: user.full_name,
-      designation: user.role_profile[0] || "Employee", // Use first role
+      profilePhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seedValue}`,
+      name: user?.full_name || '',
+      designation: (user?.role_profile && Array.isArray(user.role_profile) && user.role_profile[0]) || "Employee", // Use first role
       department: "General", // Default department since it's not in API response
-      emailAddress: user.user,
+      emailAddress: userEmail,
     }));
   }, [user]);
 

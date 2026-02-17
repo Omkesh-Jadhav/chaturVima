@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle, CheckCircle2, X, Info } from "lucide-react";
+import { Edit, Trash2, Plus, Upload, Download, AlertCircle, ClipboardList, AlertTriangle, CheckCircle2, X, Info, PlusCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { validateEmail, validateTextOnly, validateDesignation, validateDateOfBirthBeforeJoining } from "./validationUtils";
 import type { Employee, Department } from "./types";
 import { Button, Input, FilterSelect, CalendarInput, Pagination, PaginationInfo, Badge } from "@/components/ui";
 import { useCreateEmployee, useGetEmployees, useEditEmployeeDetails, useBulkUploadEmployees, useGetOrganizationDetails } from "@/hooks/useEmployees";
 import { useDepartments } from "@/hooks/useDepartments";
-import { useDesignations } from "@/hooks/useDesignations";
+import { useDesignations, useCreateDesignation } from "@/hooks/useDesignations";
 import { getEmployeeDetails } from "@/api/api-functions/organization-setup";
 import EmployeeDetailsModal from "@/components/EmployeeDetailsModal";
 import EmployeeEditModal from "@/components/EmployeeEditModal";
@@ -83,6 +83,10 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [hasDownloadedTemplate, setHasDownloadedTemplate] = useState(false);
   const [hasReadInstructions, setHasReadInstructions] = useState(false);
+  const [showDownloadInstructions, setShowDownloadInstructions] = useState(false);
+  const [showAddDesignationModal, setShowAddDesignationModal] = useState(false);
+  const [newDesignationName, setNewDesignationName] = useState("");
+  const [designationError, setDesignationError] = useState("");
 
   // Fetch organization details from backend to get the actual company name
   const companyNameToFetch = organizationName || "Chaturvima";
@@ -94,7 +98,8 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
   const bulkUploadMutation = useBulkUploadEmployees();
   const { data: apiEmployees, isLoading: isLoadingEmployees, error: employeesError, refetch: refetchEmployees } = useGetEmployees(departmentFilter);
   const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useDepartments();
-  const { data: designations = [], isLoading: isLoadingDesignations } = useDesignations();
+  const { data: designations = [], isLoading: isLoadingDesignations, refetch: refetchDesignations } = useDesignations();
+  const createDesignationMutation = useCreateDesignation();
 
   // Consolidated validation
   const validateField = useCallback((field: string, value: string) => {
@@ -139,8 +144,24 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
           const selectedDate = new Date(trimmedValue);
           const currentDate = new Date();
           currentDate.setHours(0, 0, 0, 0);
+          
           if (selectedDate >= currentDate) {
             error = "Date of birth must be earlier than current date";
+          } else {
+            // Check if person is at least 18 years old
+            const age = currentDate.getFullYear() - selectedDate.getFullYear();
+            const monthDiff = currentDate.getMonth() - selectedDate.getMonth();
+            const dayDiff = currentDate.getDate() - selectedDate.getDate();
+            
+            // Calculate exact age considering month and day
+            let exactAge = age;
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+              exactAge = age - 1;
+            }
+            
+            if (exactAge < 18) {
+              error = "Employee must be at least 18 years old";
+            }
           }
         }
         break;
@@ -234,6 +255,49 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
 
   const totalEmployees = getAllFilteredEmployees.length;
   const totalPages = Math.ceil(totalEmployees / itemsPerPage);
+
+  const handleAddDesignation = async () => {
+    const trimmedName = newDesignationName.trim();
+    
+    if (!trimmedName) {
+      setDesignationError("Designation name is required");
+      return;
+    }
+
+    // Check if designation already exists
+    if (designations.some(d => d.toLowerCase() === trimmedName.toLowerCase())) {
+      setDesignationError("This designation already exists");
+      return;
+    }
+
+    // Validate designation name format
+    if (!validateDesignation(trimmedName)) {
+      setDesignationError("Designation should only contain letters, numbers, spaces, hyphens, and apostrophes");
+      return;
+    }
+
+    setDesignationError("");
+
+    try {
+      await createDesignationMutation.mutateAsync({
+        designation_name: trimmedName
+      });
+
+      // Refetch designations to update the list
+      await refetchDesignations();
+      
+      // Set the newly created designation in the form
+      handleInputChange("designation", trimmedName);
+      
+      // Close modal and reset
+      setShowAddDesignationModal(false);
+      setNewDesignationName("");
+      setDesignationError("");
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to create designation. Please try again.";
+      setDesignationError(errorMessage);
+    }
+  };
 
   const handleAddEmployee = async () => {
     const requiredFields = ["firstName", "lastName", "email", "department", "gender", "dateOfBirth", "dateOfJoining"];
@@ -536,6 +600,7 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
     link.click();
     document.body.removeChild(link);
     setHasDownloadedTemplate(true);
+    setShowDownloadInstructions(true);
     setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
   };
 
@@ -587,12 +652,28 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
               <CalendarInput value={formData.dateOfJoining} onChange={(value) => handleInputChange("dateOfJoining", value)} placeholder="Joining Date" className="w-full" />
             </FormField>
             <FormField label="Designation" error={fieldErrors.designation}>
-              <FilterSelect 
-                value={formData.designation || "Select Designation"} 
-                onChange={(value) => handleInputChange("designation", value === "Select Designation" ? "" : value)} 
-                className={selectClass(!!fieldErrors.designation)} 
-                options={isLoadingDesignations ? ["Select Designation", "Loading..."] : ["Select Designation", ...designations]} 
-              />
+              <div className="flex gap-2">
+                <FilterSelect 
+                  value={formData.designation || "Select Designation"} 
+                  onChange={(value) => handleInputChange("designation", value === "Select Designation" ? "" : value)} 
+                  className={`flex-1 ${selectClass(!!fieldErrors.designation)}`}
+                  options={isLoadingDesignations ? ["Select Designation", "Loading..."] : ["Select Designation", ...designations]} 
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddDesignationModal(true);
+                    setNewDesignationName("");
+                    setDesignationError("");
+                  }}
+                  className="px-3 h-9 border-brand-teal text-brand-teal hover:bg-brand-teal/10 hover:border-brand-navy hover:text-brand-navy transition-all duration-200"
+                  title="Add Custom Designation"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                </Button>
+              </div>
             </FormField>
             <FormField label="Role">
               <FilterSelect value={formData.role} onChange={(value) => handleInputChange("role", value)} className="w-full h-9" options={["Employee", "Department Head"]} />
@@ -694,7 +775,9 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                         ? 'border-red-300 bg-red-50' 
                         : !hasDownloadedTemplate
                           ? 'border-amber-300 bg-amber-50'
-                          : 'border-gray-300 bg-gray-50'
+                          : showDownloadInstructions
+                            ? 'border-blue-300 bg-blue-50'
+                            : 'border-gray-300 bg-gray-50'
                   }`}>
                     {bulkUploadMutation.isPending ? (
                       <>
@@ -714,6 +797,36 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                           className="opacity-50 cursor-not-allowed"
                         >
                           Browse Files
+                        </Button>
+                      </>
+                    ) : showDownloadInstructions ? (
+                      <>
+                        <Info className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                        <p className="text-blue-900 text-sm font-semibold mb-3">Template Downloaded Successfully!</p>
+                        <div className="text-left space-y-2 mb-4">
+                          <p className="text-blue-800 text-xs font-medium">How to edit the template:</p>
+                          <ul className="text-xs text-blue-700 space-y-1.5 ml-2">
+                            <li className="flex items-start gap-2">
+                              <span className="text-blue-600 mt-1">•</span>
+                              <span><strong className="text-blue-900">Do not change the first row.</strong> It has the column names.</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-blue-600 mt-1">•</span>
+                              <span><strong className="text-blue-900">The second row is just an example.</strong> You can modify it or delete it, and add your employee data in the same format.</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <Button 
+                          onClick={() => {
+                            setShowDownloadInstructions(false);
+                            setShowUploadModal(true);
+                            setPendingFile(null);
+                          }} 
+                          variant="gradient" 
+                          size="sm"
+                          disabled={!showBulkUpload}
+                        >
+                          View Full Instructions
                         </Button>
                       </>
                     ) : !hasReadInstructions ? (
@@ -1047,27 +1160,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Edit the downloaded template:</strong> After downloading, you can edit the template file directly. Add your employee data in the rows below the header, or modify the sample row. You can upload the same edited file.</span>
+                      <span><strong>Edit the template:</strong> You can edit the downloaded file. Add your employee data below the header row. You can remove or change the sample row.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Update existing employees:</strong> If an employee with the same email already exists, uploading will update their information instead of creating a duplicate.</span>
+                      <span><strong>Email addresses:</strong> All employee emails must be different. Each employee should have a unique email address.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Keep the template format unchanged:</strong> Please maintain all column headers exactly as they appear in the downloaded template to ensure smooth processing.</span>
+                      <span><strong>Keep column headers:</strong> Do not change the first row. It has the column names and must stay the same.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Company name should match:</strong> Please ensure the company name is exactly <strong className="text-gray-900">"{actualOrganizationName}"</strong> (as entered in your Organization Details) for proper data association.</span>
+                      <span><strong>Company name:</strong> Use exactly <strong className="text-gray-900">"{actualOrganizationName}"</strong> in the company column. This must match your organization name.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Use correct department names:</strong> Please use the exact department names that are already set up in your organization to avoid any mapping issues.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-500 mt-1">•</span>
-                      <span><strong>Email addresses:</strong> Each email address should be unique and in a valid format. Existing employees will be updated based on their email address.</span>
+                      <span><strong>Department names:</strong> Use the exact department names that are already in your organization.</span>
                     </li>
                   </ul>
                 </div>
@@ -1081,23 +1190,23 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date of Birth:</strong> Date of birth must be earlier than current date.</span>
+                      <span><strong>Date of Birth:</strong> Must be in the past. Employee must be at least 18 years old.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date of Joining:</strong> Date of joining must be after date of birth.</span>
+                      <span><strong>Date of Joining:</strong> Must be after the date of birth.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Gender:</strong> Please use one of the following values: Male, Female, or Other.</span>
+                      <span><strong>Gender:</strong> Use only: Male, Female, or Other.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Role Profile:</strong> Please select from: Employee, Department Head.</span>
+                      <span><strong>Role Profile:</strong> Use only: Employee or Department Head.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-500 mt-1">•</span>
-                      <span><strong>Date Format:</strong> Please use DD-MM-YYYY format (for example: 10-01-1995).</span>
+                      <span><strong>Date Format:</strong> Use DD-MM-YYYY format. Example: 10-01-1995</span>
                     </li>
                   </ul>
                 </div>
@@ -1158,6 +1267,118 @@ const Step3EmployeesMapping: React.FC<Step3EmployeesMappingProps> = ({
                     I've Reviewed, Continue
                   </Button>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Custom Designation Modal */}
+      <AnimatePresence>
+        {showAddDesignationModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-9998 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => {
+              setShowAddDesignationModal(false);
+              setNewDesignationName("");
+              setDesignationError("");
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-xl shadow-xl max-w-md w-full"
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-brand-teal/10 flex items-center justify-center">
+                    <PlusCircle className="w-5 h-5 text-brand-teal" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Add Custom Designation</h3>
+                    <p className="text-sm text-gray-500">Create a new designation for your organization</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAddDesignationModal(false);
+                    setNewDesignationName("");
+                    setDesignationError("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Designation Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={newDesignationName}
+                    onChange={(e) => {
+                      setNewDesignationName(e.target.value);
+                      if (designationError) setDesignationError("");
+                    }}
+                    placeholder="e.g., Team Lead – Engineering"
+                    className={`w-full h-10 ${designationError ? "border-red-300 focus:ring-red-500" : "border-gray-300 focus:ring-brand-teal"}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !createDesignationMutation.isPending) {
+                        handleAddDesignation();
+                      }
+                    }}
+                  />
+                  {designationError && (
+                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {designationError}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-gray-500">
+                    Use letters, numbers, spaces, hyphens, and apostrophes only.
+                  </p>
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
+                <Button
+                  onClick={() => {
+                    setShowAddDesignationModal(false);
+                    setNewDesignationName("");
+                    setDesignationError("");
+                  }}
+                  variant="outline"
+                  size="sm"
+                  disabled={createDesignationMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddDesignation}
+                  variant="gradient"
+                  size="sm"
+                  disabled={createDesignationMutation.isPending || !newDesignationName.trim()}
+                >
+                  {createDesignationMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Create Designation
+                    </>
+                  )}
+                </Button>
               </div>
             </motion.div>
           </motion.div>

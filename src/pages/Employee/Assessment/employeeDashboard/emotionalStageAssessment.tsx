@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
 import { MOCK_EMOTIONAL_STAGE_ASSESSMENT } from "@/data/assessmentDashboard";
@@ -14,6 +14,11 @@ import {
 } from "@/components/assessmentDashboard";
 import { CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 import Aura from "./aura";
+import { useUser } from "@/context/UserContext";
+import {
+  getEmployeeWeightedAssessmentSummary,
+} from "@/api/api-functions/employee-dashboard";
+import { getStagePieColor } from "@/utils/assessmentConfig";
 
 interface EmotionalStageAssessmentProps {
   onStageSelect: (stage: EmotionalStageAssessmentType | null) => void;
@@ -26,7 +31,39 @@ const EmotionalStageAssessment = ({
   onStageClick,
   selectedStage,
 }: EmotionalStageAssessmentProps) => {
-  const emotionalStageAssessment = MOCK_EMOTIONAL_STAGE_ASSESSMENT;
+  const { user } = useUser();
+  const [emotionalStageAssessment, setEmotionalStageAssessment] =
+    useState<EmotionalStageAssessmentType[]>(MOCK_EMOTIONAL_STAGE_ASSESSMENT);
+
+  useEffect(() => {
+    const employeeId = user?.employee_id;
+    if (!employeeId) return;
+
+    const fetchData = async () => {
+      try {
+        const data = await getEmployeeWeightedAssessmentSummary(employeeId);
+        const stages: EmotionalStageAssessmentType[] = data.stages.map(
+          (stage) => ({
+            stage: stage.stage,
+            score: stage.score,
+            color: getStagePieColor(stage.stage as any),
+          })
+        );
+
+        setEmotionalStageAssessment(stages);
+      } catch (error) {
+        // If API fails, fall back to mock data
+        console.error(
+          "Failed to fetch employee weighted assessment summary:",
+          error
+        );
+        setEmotionalStageAssessment(MOCK_EMOTIONAL_STAGE_ASSESSMENT);
+      }
+    };
+
+    fetchData();
+  }, [user?.employee_id]);
+
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
 
   // Find the stage with the highest score
@@ -59,8 +96,7 @@ const EmotionalStageAssessment = ({
     if (!selectedStage && dominantStage) {
       onStageSelect(dominantStage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dominantStage, onStageSelect, selectedStage]);
 
   const handleStageClick = (stage: EmotionalStageAssessmentType) => {
     // Always select the clicked stage (no toggle-off) so user can immediately

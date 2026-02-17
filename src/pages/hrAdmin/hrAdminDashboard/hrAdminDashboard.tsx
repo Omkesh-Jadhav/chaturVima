@@ -5,7 +5,6 @@ import StageDistributionHealth from "./stageDistributionHealth";
 // import SubStageDistributionHealth from "./subStageDistributionHealth";
 import SubStageDistributionChart from "./subStageDistributionChart";
 import ActiveAssessmentCycles from "./activeAssessmentCycles";
-import DepartmentHeadStatus from "./departmentHeadStatus";
 import OrganizationOverview from "./organizationOverview";
 import OrganizationSetupInfo from "./organizationSetupInfo";
 import OrganizationalStageDistribution from "./organizationalStageDistribution";
@@ -76,7 +75,6 @@ const HrAdminDashboard = () => {
         {/* Quick Overview Section */}
         <div className="grid gap-4 md:grid-cols-2">
           <ActiveAssessmentCycles />
-          <DepartmentHeadStatus />
         </div>
 
         {/* Stage Analysis Section */}
