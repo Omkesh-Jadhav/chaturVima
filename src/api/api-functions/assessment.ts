@@ -29,6 +29,7 @@ export interface EmployeeAssessment {
   dimension: string;
   assignment: string;
   assessment_cycle: string;
+  cycle_name: string;
 }
 
 export interface EmployeeAssessmentsResponse {
@@ -47,6 +48,7 @@ export const getEmployeeAssessments = async (
       "dimension",
       "assignment",
       "assessment_cycle",
+      "cycle_name",
       // "modified_by",     // uncomment if needed later
       // "modified",
     ],
@@ -135,7 +137,10 @@ export const getQuestionsBySubmission = async (
   const submissionData = response.data.data;
   const answers = submissionData.answers || [];
   const questionnaireName = submissionData.questionnaire || "SELF";
-  const cycle_name = submissionData.assessment_cycle || "Default";
+  // const cycle_name = submissionData.assessment_cycle || "Default";
+  const cycle_name = submissionData.cycle_name?.trim() 
+  || submissionData.assessment_cycle?.trim() 
+  || "Current Assessment Cycle";
 
   // Sort answers by idx (defensive: fallback to 0)
   const sortedAnswers = [...answers].sort((a, b) => (a.idx ?? 0) - (b.idx ?? 0));

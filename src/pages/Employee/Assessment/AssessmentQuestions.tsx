@@ -754,7 +754,7 @@ const AssessmentQuestions = () => {
                   </Button>
 
                   <div className="space-y-2">
-                    <motion.h1
+                    {/* <motion.h1
                       className="text-xl md:text-2xl font-bold text-gray-900"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -765,6 +765,14 @@ const AssessmentQuestions = () => {
                         ? (cycleNames[selectedQuestionnaire] || "Loading cycle...")
                         : "Current Assessment"}
 
+                    </motion.h1> */}
+                    <motion.h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                      {selectedQuestionnaire
+                        ? (assessmentsByQuestionnaire[selectedQuestionnaire]?.cycle_name?.trim() ||
+                          cycleNames[selectedQuestionnaire] ||
+                          assessmentsByQuestionnaire[selectedQuestionnaire]?.assessment_cycle?.replace("Assessment Cycle - ", "").trim() ||
+                          mapQuestionnaireToDisplayName(selectedQuestionnaire))
+                        : "Current Assessment"}
                     </motion.h1>
 
                     <div className="flex gap-1 overflow-x-auto custom-scrollbar-horizontal">
