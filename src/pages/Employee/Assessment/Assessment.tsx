@@ -485,7 +485,7 @@ const Assessment = () => {
                 },
                 {
                   step: "3",
-                  title: "Review Your Answers",
+                  title: "Submit Your Answers",
                   icon: "📋",
                   desc: "Edit before submitting",
                 },
