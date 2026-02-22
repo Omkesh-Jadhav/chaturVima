@@ -13,19 +13,32 @@ export const loginUser = async (email: string, password: string) => {
       headers: {
         'Content-Type': 'application/json',
       },
+      validateStatus: (status) => status < 500, // Don't throw for 4xx errors
     });
 
-    if (response.data) {
-      localStorage.setItem('chaturvima_user', JSON.stringify(response.data));
-      console.log(localStorage.getItem('chaturvima_user'));
-      
-      return {
-        success: true,
-        data: response.data,
-      };
+    // Check for successful response (2xx) and ensure success_key is 1
+    if (response.status >= 200 && response.status < 300 && response.data?.message?.success_key === 1) {
+      if (response.data) {
+        // Don't store in localStorage here - let the loginWithOTP function handle that
+        // after it processes the user data
+        return {
+          success: true,
+          data: response.data,
+        };
+      }
+      throw new Error("Invalid response format: Missing data");
     }
 
-    throw new Error("Invalid response format");
+    // Handle non-successful responses
+    const errorMessage = response.data?.message?.message === 'Authentication Error!' 
+      ? 'Invalid email or password' 
+      : response.data?.message?.message || response.data?.message || 'Invalid email or password';
+    return {
+      success: false,
+      error: errorMessage,
+      status: response.status,
+      responseData: response.data // Include full response for debugging
+    };
   } catch (error: any) {
     console.error("Login error:", error);
 
@@ -55,11 +68,27 @@ export const LogoutUser = async () => {
       }
     });
 
-    if (response.data) {
-      localStorage.removeItem('apiKey');
-      localStorage.removeItem('apiSecret');
-      localStorage.removeItem('chaturvima_user');
-      
+    // Clear all authentication related data from localStorage
+    const itemsToRemove = [
+      'apiKey',
+      'apiSecret',
+      'chaturvima_user',
+      'auth_token',
+      'refresh_token',
+      'user_session',
+      'user_data'
+    ];
+    
+    itemsToRemove.forEach(item => localStorage.removeItem(item));
+    
+    // Clear all localStorage items that start with 'chaturvima_'
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('chaturvima_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    if (response.data) {      
       return {
         success: true,
         data: response.data,
