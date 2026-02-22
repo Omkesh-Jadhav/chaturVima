@@ -23,37 +23,37 @@ const AssessmentCycles = () => {
     if (!departments || departments.length === 0) return [];
     return departments.map((dept) => dept.name).sort();
   }, [departments]);
-  
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  
+
   const queryClient = useQueryClient();
-  
+
   // Build query params for API
   const queryParams = useMemo<GetAssessmentCyclesParams>(() => {
     const params: GetAssessmentCyclesParams = {};
-    
+
     if (selectedDepartments.length > 0) {
       params.department = selectedDepartments;
     }
-    
+
     if (search) {
       params.search = search;
     }
-    
+
     if (status && status !== "All Status") {
       params.status = status;
     }
-    
+
     if (year && year !== "All Years") {
       params.year = year;
     }
-    
+
     return params;
   }, [selectedDepartments, search, status, year]);
-  
+
   // Fetch cycles from API
   const { data: cycles = [], isLoading: isLoadingCycles } = useQuery({
     queryKey: ["assessmentCycles", queryParams],
@@ -255,18 +255,18 @@ const AssessmentCycles = () => {
           drawerState.mode === "create"
             ? handleCreate
             : drawerState.mode === "edit"
-            ? handleEdit
-            : handleSchedule
+              ? handleEdit
+              : handleSchedule
         }
         onSave={drawerState.mode === "schedule" ? handleSave : undefined}
         isLoading={
           drawerState.mode === "create"
             ? createCycleMutation.isPending
             : drawerState.mode === "schedule"
-            ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
-            : drawerState.mode === "edit"
-            ? updateCycleMutation.isPending
-            : false
+              ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
+              : drawerState.mode === "edit"
+                ? updateCycleMutation.isPending
+                : false
         }
       />
 
