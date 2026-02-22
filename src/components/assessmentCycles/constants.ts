@@ -36,9 +36,9 @@ export const DRAWER_CONFIG = {
     },
   },
   edit: {
-    title: "Edit Assessment Cycle",
+    title: "Edit cycle dates",
     getDescription: (cycleName?: string) =>
-      `Update cycle details for ${cycleName ?? "the cycle"}.`,
+      `Update start and end dates for ${cycleName ?? "the cycle"}.`,
     getSubmitText: () => "Save Changes",
   },
 } as const;

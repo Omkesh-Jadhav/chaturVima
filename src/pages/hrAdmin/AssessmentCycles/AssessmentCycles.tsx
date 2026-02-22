@@ -23,37 +23,37 @@ const AssessmentCycles = () => {
     if (!departments || departments.length === 0) return [];
     return departments.map((dept) => dept.name).sort();
   }, [departments]);
-  
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(statusFilters[0]);
   const [year, setYear] = useState(yearFilters[0]);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  
+
   const queryClient = useQueryClient();
-  
+
   // Build query params for API
   const queryParams = useMemo<GetAssessmentCyclesParams>(() => {
     const params: GetAssessmentCyclesParams = {};
-    
+
     if (selectedDepartments.length > 0) {
       params.department = selectedDepartments;
     }
-    
+
     if (search) {
       params.search = search;
     }
-    
+
     if (status && status !== "All Status") {
       params.status = status;
     }
-    
+
     if (year && year !== "All Years") {
       params.year = year;
     }
-    
+
     return params;
   }, [selectedDepartments, search, status, year]);
-  
+
   // Fetch cycles from API
   const { data: cycles = [], isLoading: isLoadingCycles } = useQuery({
     queryKey: ["assessmentCycles", queryParams],
@@ -75,6 +75,9 @@ const AssessmentCycles = () => {
       return;
     }
     setDrawerState({ mode: "schedule", open: true, cycle });
+  };
+  const openEditDatesDrawer = (cycle: AssessmentCycle) => {
+    setDrawerState({ mode: "edit", open: true, cycle });
   };
   const closeDrawer = () =>
     setDrawerState((prev) => ({ ...prev, open: false, cycle: null }));
@@ -100,11 +103,15 @@ const AssessmentCycles = () => {
 
   // API mutation for updating assessment cycle
   const updateCycleMutation = useMutation({
-    mutationFn: ({ cycleId, payload }: { cycleId: string; payload: CycleFormPayload }) =>
+    mutationFn: ({ cycleId, payload }: { cycleId: string; payload: CycleFormPayload; closeOnSuccess?: boolean }) =>
       updateAssessmentCycle(cycleId, payload),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
-      cycleDrawerRef.current?.markAsSaved();
+      if (variables.closeOnSuccess) {
+        closeDrawer();
+      } else {
+        cycleDrawerRef.current?.markAsSaved();
+      }
     },
     onError: (error) => {
       console.error("Failed to update assessment cycle:", error);
@@ -117,7 +124,7 @@ const AssessmentCycles = () => {
       cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot save.");
       return;
     }
-    updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload });
+    updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload, closeOnSuccess: false });
   };
 
   // API mutation for scheduling assessment cycle
@@ -149,11 +156,12 @@ const AssessmentCycles = () => {
     setShowScheduleConfirm(false);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleEdit = (_payload: CycleFormPayload) => {
-    // Edit will update the cycle - will be integrated with UPDATE API
-    queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
-    closeDrawer();
+  const handleEdit = (payload: CycleFormPayload) => {
+    if (!drawerState.cycle?.id) {
+      cycleDrawerRef.current?.showError("Cycle ID is missing. Cannot update.");
+      return;
+    }
+    updateCycleMutation.mutate({ cycleId: drawerState.cycle.id, payload, closeOnSuccess: true });
   };
 
 
@@ -232,6 +240,7 @@ const AssessmentCycles = () => {
         <CycleTable
           data={filteredCycles}
           onSchedule={openScheduleDrawer}
+          onEditDates={openEditDatesDrawer}
           variant="hr"
         />
       )}
@@ -246,16 +255,18 @@ const AssessmentCycles = () => {
           drawerState.mode === "create"
             ? handleCreate
             : drawerState.mode === "edit"
-            ? handleEdit
-            : handleSchedule
+              ? handleEdit
+              : handleSchedule
         }
         onSave={drawerState.mode === "schedule" ? handleSave : undefined}
         isLoading={
-          drawerState.mode === "create" 
-            ? createCycleMutation.isPending 
+          drawerState.mode === "create"
+            ? createCycleMutation.isPending
             : drawerState.mode === "schedule"
-            ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
-            : false
+              ? updateCycleMutation.isPending || scheduleCycleMutation.isPending
+              : drawerState.mode === "edit"
+                ? updateCycleMutation.isPending
+                : false
         }
       />
 

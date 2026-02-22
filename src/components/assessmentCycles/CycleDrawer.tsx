@@ -382,6 +382,14 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
 
   // Validation
   const validateForm = useCallback((): string | null => {
+    if (mode === "edit") {
+      if (!form.startDate) return "Please select a start date.";
+      if (!form.endDate) return "Please select an end date.";
+      if (form.startDate && form.endDate && new Date(form.endDate) < new Date(form.startDate)) {
+        return "End date must be on or after start date.";
+      }
+      return null;
+    }
     if (!form.assessmentType || form.assessmentType === "Select assessment type") {
       return "Please select an assessment type.";
     }
@@ -396,7 +404,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
       }
     }
     return null;
-  }, [form.assessmentType, form.type, form.period, enableManualSelection, fixedDepartment, selectedDeptsForManual, selectedEmployees]);
+  }, [mode, form.assessmentType, form.type, form.period, form.startDate, form.endDate, enableManualSelection, fixedDepartment, selectedDeptsForManual, selectedEmployees]);
 
   // Submit handler
   const handleSubmit = useCallback(
@@ -417,6 +425,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
   const config = DRAWER_CONFIG[mode];
   const title = config.title;
   const description = config.getDescription(cycle?.name);
+  const isEditDatesOnly = mode === "edit";
   const submitButtonText =
     mode === "create"
       ? config.getSubmitText()
@@ -424,12 +433,13 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
       ? config.getSubmitText(selectedEmployees.length)
       : config.getSubmitText();
 
-  const isSubmitDisabled =
-    (!form.assessmentType || form.assessmentType === "Select assessment type") ||
-    !form.type ||
-    !form.period ||
-    (enableManualSelection &&
-    (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0));
+  const isSubmitDisabled = isEditDatesOnly
+    ? !form.startDate || !form.endDate
+    : ((!form.assessmentType || form.assessmentType === "Select assessment type") ||
+        !form.type ||
+        !form.period ||
+        (enableManualSelection &&
+          (selectedDeptsForManual.length === 0 || selectedEmployees.length === 0)));
 
   return (
     <AnimatePresence>
@@ -476,7 +486,9 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     value={form.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                     placeholder="e.g. Q1 2025 Performance Review"
-                    className={FIELD_CLASSES}
+                    className={cn(FIELD_CLASSES, isEditDatesOnly && "cursor-not-allowed bg-gray-100 text-gray-700")}
+                    disabled={isEditDatesOnly}
+                    readOnly={isEditDatesOnly}
                   />
                 </div>
 
@@ -495,6 +507,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                       "Select assessment type",
                       ...assessmentTypeOptions,
                     ]}
+                    disabled={isEditDatesOnly}
                   />
                 </div>
 
@@ -515,6 +528,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                         }
                       }}
                       options={["Select Type", "Quarterly", "Annual", "Adhoc"]}
+                      disabled={isEditDatesOnly}
                     />
                   </div>
                   <div className="space-y-2">
@@ -535,6 +549,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                         }
                       }}
                       options={["Select Period", "Fiscal", "Calendar"]}
+                      disabled={isEditDatesOnly}
                     />
                   </div>
                 </div>
@@ -580,8 +595,8 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                   </div>
                 )}
 
-                {/* Departments - Create/Edit Mode */}
-                {(mode === "create" || mode === "edit") && (
+                {/* Departments - Create Mode (edit mode shows read-only below) */}
+                {mode === "create" && (
                   <div className="space-y-2">
                     {isLoadingDepartments ? (
                       <div className="text-xs text-gray-500">Loading departments...</div>
@@ -601,6 +616,29 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                         )}
                       </>
                     )}
+                  </div>
+                )}
+
+                {/* Departments - Edit mode (read-only) */}
+                {mode === "edit" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold uppercase text-gray-500">
+                      Departments
+                    </label>
+                    <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                      {form.departments.length === 0 ? (
+                        <span className="text-xs text-gray-500">No departments</span>
+                      ) : (
+                        form.departments.map((dept) => (
+                          <span
+                            key={dept}
+                            className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700"
+                          >
+                            {dept}
+                          </span>
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -730,7 +768,9 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     value={form.notes}
                     onChange={(e) => handleChange("notes", e.target.value)}
                     placeholder="Key objectives, blackout dates, or data dependencies..."
-                    className={FIELD_CLASSES}
+                    className={cn(FIELD_CLASSES, isEditDatesOnly && "cursor-not-allowed bg-gray-100 text-gray-700")}
+                    disabled={isEditDatesOnly}
+                    readOnly={isEditDatesOnly}
                   />
                 </div>
 
