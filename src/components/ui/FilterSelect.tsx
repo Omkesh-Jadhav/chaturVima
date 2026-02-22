@@ -7,6 +7,7 @@ export interface FilterSelectProps {
   onChange: (value: string) => void;
   options: string[];
   className?: string;
+  disabled?: boolean;
 }
 
 export const FilterSelect = ({
@@ -14,6 +15,7 @@ export const FilterSelect = ({
   onChange,
   options,
   className = "",
+  disabled = false,
 }: FilterSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{
@@ -72,9 +74,12 @@ export const FilterSelect = ({
         <button
           ref={buttonRef}
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => !disabled && setIsOpen((prev) => !prev)}
+          disabled={disabled}
           className={`inline-flex items-center justify-between gap-2 w-full rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all duration-200 ${
-            isActive
+            disabled
+              ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-500"
+              : isActive
               ? "border-brand-teal/50 bg-brand-teal/5 text-brand-teal shadow-sm"
               : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
           } focus:outline-none focus:ring-2 focus:ring-brand-teal/30 focus:border-brand-teal`}

@@ -58,7 +58,10 @@ export const createAssessmentCycle = async (payload: CycleFormPayload) => {
 // Update existing assessment cycle
 export const updateAssessmentCycle = async (cycleId: string, payload: CycleFormPayload) => {
   try {
-    const response = await api.put(`${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${cycleId}`, transformCyclePayload(payload));
+    const url = `${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${encodeURIComponent(cycleId)}`;
+    const response = await api.put(url, transformCyclePayload(payload), {
+      params: { name: cycleId },
+    });
     return response.data;
   } catch (error: unknown) {
     console.error("ERROR - updateAssessmentCycle:", error);
@@ -69,7 +72,10 @@ export const updateAssessmentCycle = async (cycleId: string, payload: CycleFormP
 // Schedule assessment cycle (sets docstatus to 1)
 export const scheduleAssessmentCycle = async (cycleId: string) => {
   try {
-    const response = await api.put(`${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${cycleId}`, { docstatus: 1 });
+    const url = `${API_ENDPOINTS.ASSESSMENT_CYCLE.UPDATE_CYCLE}/${encodeURIComponent(cycleId)}`;
+    const response = await api.put(url, { docstatus: 1 }, {
+      params: { name: cycleId },
+    });
     return response.data;
   } catch (error: unknown) {
     console.error("ERROR - scheduleAssessmentCycle:", error);

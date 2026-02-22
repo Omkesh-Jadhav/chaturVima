@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MoreHorizontal, ClipboardList } from "lucide-react";
+import { MoreHorizontal, ClipboardList, Pencil } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
 import { CYCLE_STATUS_COLORS } from "@/utils/assessmentUtils";
@@ -20,6 +20,7 @@ type TableVariant = "hr" | "department-head";
 interface CycleTableProps {
   data: AssessmentCycle[];
   onSchedule?: (cycle: AssessmentCycle) => void;
+  onEditDates?: (cycle: AssessmentCycle) => void;
   variant?: TableVariant;
   scheduleAccess?: Record<string, boolean>;
 }
@@ -27,6 +28,7 @@ interface CycleTableProps {
 const CycleTable = ({
   data,
   onSchedule,
+  onEditDates,
   variant = "hr",
   scheduleAccess = {},
 }: CycleTableProps) => {
@@ -104,6 +106,7 @@ const CycleTable = ({
             const palette = CYCLE_STATUS_COLORS[cycle.status];
             const isCompleted = cycle.status === "Completed";
             const isActive = cycle.status === "Active";
+            const isScheduled = isActive || isCompleted;
             const canSchedule = !isCompleted && !isActive ? (isDepartmentHead ? scheduleAccess[cycle.id] : true) : false;
 
             return (
@@ -210,8 +213,8 @@ const CycleTable = ({
                     <div className="h-2.5 w-36 rounded-full bg-gray-200 shadow-inner overflow-hidden">
                       <div
                         className="h-full rounded-full bg-linear-to-r from-brand-teal via-brand-teal to-brand-navy shadow-sm transition-all duration-500"
-                        style={{ 
-                          width: `${Math.min(Math.max(cycle.progress ?? 0, 0), 100)}%` 
+                        style={{
+                          width: `${Math.min(Math.max(cycle.progress ?? 0, 0), 100)}%`
                         }}
                       />
                     </div>
@@ -221,16 +224,31 @@ const CycleTable = ({
                 {/* Actions Column */}
                 <td className={`${cellPadding} align-middle`}>
                   <div className="flex items-center justify-end gap-2">
-                    <Button
-                      onClick={() => canSchedule && onSchedule?.(cycle)}
-                      disabled={!canSchedule}
-                      variant="primary"
-                      size="xs"
-                    >
-                      Schedule Cycle
-                    </Button>
+                    {isScheduled && onEditDates && (
+                      <Tooltip content="Edit dates" position="left">
+                        <Button
+                          onClick={() => onEditDates(cycle)}
+                          variant="outline"
+                          size="xs"
+                          className="gap-1.5"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                      </Tooltip>
+                    )}
+                    {!isScheduled && (
+                      <Button
+                        onClick={() => canSchedule && onSchedule?.(cycle)}
+                        disabled={!canSchedule}
+                        variant="primary"
+                        size="xs"
+                      >
+                        Schedule Cycle
+                      </Button>
+                    )}
                   </div>
-                  {isDepartmentHead && !canSchedule && (
+                  {isDepartmentHead && !canSchedule && !isScheduled && (
                     <p className="mt-2 text-right text-xs font-medium text-amber-600">Waiting for HR access</p>
                   )}
                 </td>
