@@ -302,6 +302,55 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
     }
   }, [hasSaved, departments]);
 
+  // Edit mode: add department only (cannot remove initial departments)
+  const initialDepartments = useMemo(
+    () => (mode === "edit" && cycle?.departments ? [...cycle.departments] : []),
+    [mode, cycle?.departments]
+  );
+  const addedDepartments = useMemo(
+    () => form.departments.filter((d) => !initialDepartments.includes(d)),
+    [form.departments, initialDepartments]
+  );
+  const availableToAdd = useMemo(
+    () => departmentOptions.filter((d) => !form.departments.includes(d)),
+    [departmentOptions, form.departments]
+  );
+
+  const addDepartmentInEditMode = useCallback(
+    (dept: string) => {
+      const departmentData = departments.find((d) => d.name === dept);
+      if (departmentData && departmentData.employee_count === 0) {
+        setDepartmentError(`"${dept}" department has no employees. Please select a department with employees to proceed.`);
+        return;
+      }
+      setDepartmentError("");
+      setForm((prev) => ({
+        ...prev,
+        departments: prev.departments.includes(dept) ? prev.departments : [...prev.departments, dept],
+      }));
+      if (hasSaved) {
+        setHasSaved(false);
+        setSaveMessage(null);
+      }
+    },
+    [departments, hasSaved]
+  );
+
+  const removeAddedDepartment = useCallback(
+    (dept: string) => {
+      if (initialDepartments.includes(dept)) return;
+      setForm((prev) => ({
+        ...prev,
+        departments: prev.departments.filter((d) => d !== dept),
+      }));
+      if (hasSaved) {
+        setHasSaved(false);
+        setSaveMessage(null);
+      }
+    },
+    [initialDepartments, hasSaved]
+  );
+
 
   // Manual selection handlers
   const toggleManualDept = useCallback((dept: string) => {
@@ -561,6 +610,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     required
                     value={form.startDate}
                     onChange={(next) => handleChange("startDate", next)}
+                    disabled={isEditDatesOnly}
                   />
                   <CalendarInput
                     label="End Date"
@@ -619,26 +669,83 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                   </div>
                 )}
 
-                {/* Departments - Edit mode (read-only) */}
+                {/* Departments - Edit mode: read-only initial + add new (cannot update/remove initial) */}
                 {mode === "edit" && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <label className="text-xs font-semibold uppercase text-gray-500">
                       Departments
                     </label>
-                    <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
-                      {form.departments.length === 0 ? (
-                        <span className="text-xs text-gray-500">No departments</span>
-                      ) : (
-                        form.departments.map((dept) => (
-                          <span
-                            key={dept}
-                            className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700"
-                          >
-                            {dept}
-                          </span>
-                        ))
-                      )}
-                    </div>
+                    {/* Initial (existing) departments - read-only */}
+                    {initialDepartments.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-medium text-gray-500">
+                          Current departments (cannot be changed)
+                        </span>
+                        <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                          {initialDepartments.map((dept) => (
+                            <span
+                              key={dept}
+                              className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700"
+                            >
+                              {dept}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Added departments - removable */}
+                    {addedDepartments.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-medium text-gray-500">
+                          Added departments
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {addedDepartments.map((dept) => (
+                            <span
+                              key={dept}
+                              className="inline-flex items-center gap-1 rounded-lg border border-brand-teal/30 bg-brand-teal/5 px-2.5 py-1 text-xs font-semibold text-brand-teal"
+                            >
+                              {dept}
+                              <button
+                                type="button"
+                                onClick={() => removeAddedDepartment(dept)}
+                                className="rounded p-0.5 hover:bg-brand-teal/20"
+                                aria-label={`Remove ${dept}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Add another department */}
+                    {availableToAdd.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-medium text-gray-500">
+                          Add department
+                        </span>
+                        {isLoadingDepartments ? (
+                          <div className="text-xs text-gray-500">Loading departments...</div>
+                        ) : departmentsError ? (
+                          <div className="text-xs text-red-500">Error loading departments.</div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {availableToAdd.map((dept) => (
+                              <DepartmentBadge
+                                key={dept}
+                                department={dept}
+                                isActive={false}
+                                onClick={() => addDepartmentInEditMode(dept)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        {departmentError && (
+                          <p className="mt-1 text-xs text-red-600">{departmentError}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
