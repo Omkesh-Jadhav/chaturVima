@@ -223,9 +223,9 @@ const AssessmentQuestions = () => {
       if (!userId) return;
 
       try {
-        const assessments = await getEmployeeAssessments(userId);
+        const { assessments } = await getEmployeeAssessments(userId);
 
-        // Get only the latest cycle assessments
+        // Get only the latest cycle assessments (or filtered by selected cycle)
         const latestCycleAssessments = getLatestCycleAssessments(assessments);
 
         // Organize only the latest cycle assessments

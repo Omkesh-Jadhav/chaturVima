@@ -52,6 +52,7 @@ const Assessment = () => {
   const [rescheduleMessage, setRescheduleMessage] = useState("");
   const [rescheduleSubmitted, setRescheduleSubmitted] = useState(false);
   const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
+  const [totalQuestionsCount, setTotalQuestionsCount] = useState<number>(0);
 
   // Helper: Extract cycle ID from submission name (e.g., "2D-0310" from "SUB-ASSESSMENT-HR-EMP-00039-2D-0310-Self-0311")
   const getCycleId = (submissionName: string): string => {
@@ -98,7 +99,9 @@ const Assessment = () => {
 
       try {
         const userId = user.employee_id || user.user;
-        const assessments = await getEmployeeAssessments(userId);
+        const { overall, assessments } = await getEmployeeAssessments(userId);
+
+        setTotalQuestionsCount(overall?.total_questions ?? 0);
 
         if (assessments.length === 0) {
           setIsAssessmentSubmitted(false);
@@ -115,7 +118,7 @@ const Assessment = () => {
         setIsOverdue(hasOverdue);
         setOverdueCycleNames(
           hasOverdue
-            ? [...new Set(overdueList.map((a) => a.cycle_name).filter(Boolean))]
+            ? [...new Set(overdueList.map((a) => a.cycle_name).filter((n): n is string => Boolean(n)))]
             : []
         );
 
@@ -335,7 +338,9 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">145</p>
+                <p className="text-4xl font-bold text-blue-600">
+                  {totalQuestionsCount > 0 ? totalQuestionsCount : "—"}
+                </p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>
