@@ -7,13 +7,13 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../../../context/AssessmentContext";
 import { useUser } from "../../../context/UserContext";
-import { Button } from "../../../components/ui";
+import { Button, Textarea } from "../../../components/ui";
 import QuestionCard from "../../../components/assessment/QuestionCard";
 import AssessmentProgress from "../../../components/assessment/AssessmentProgress";
 import EnergyBreak from "../../../components/assessment/EnergyBreak";
 import AssessmentResults from "../../../components/assessment/AssessmentResults";
 import CelebrationConfetti from "../../../components/assessment/CelebrationConfetti";
-import { PlayCircle, Check } from "lucide-react";
+import { PlayCircle, Check, AlertCircle, X, Send } from "lucide-react";
 import {
   getEmployeeAssessments,
   getQuestionsBySubmission,
@@ -46,6 +46,12 @@ const Assessment = () => {
   const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
   const [hasExistingAnswers, setHasExistingAnswers] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [isOverdue, setIsOverdue] = useState(false);
+  const [overdueCycleNames, setOverdueCycleNames] = useState<string[]>([]);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [rescheduleMessage, setRescheduleMessage] = useState("");
+  const [rescheduleSubmitted, setRescheduleSubmitted] = useState(false);
+  const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
 
   // Helper: Extract cycle ID from submission name (e.g., "2D-0310" from "SUB-ASSESSMENT-HR-EMP-00039-2D-0310-Self-0311")
   const getCycleId = (submissionName: string): string => {
@@ -97,9 +103,21 @@ const Assessment = () => {
         if (assessments.length === 0) {
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(false);
+          setIsOverdue(false);
+          setOverdueCycleNames([]);
           setIsChecking(false);
           return;
         }
+
+        // Check if any assessment is Overdue (end date passed) and collect cycle names
+        const overdueList = assessments.filter((a) => a.status === "Overdue");
+        const hasOverdue = overdueList.length > 0;
+        setIsOverdue(hasOverdue);
+        setOverdueCycleNames(
+          hasOverdue
+            ? [...new Set(overdueList.map((a) => a.cycle_name).filter(Boolean))]
+            : []
+        );
 
         // Get latest cycle assessments (this is the current/active cycle)
         const latestAssessments = getLatestCycleAssessments(assessments);
@@ -192,6 +210,8 @@ const Assessment = () => {
       } catch {
         setIsAssessmentSubmitted(false);
         setHasExistingAnswers(false);
+        setIsOverdue(false);
+        setOverdueCycleNames([]);
       } finally {
         setIsChecking(false);
       }
@@ -512,7 +532,48 @@ const Assessment = () => {
             </div>
           </motion.div>
 
-          {/* CTA Button */}
+          {/* Overdue: single card with cycle name and one action */}
+          {isOverdue && !isChecking && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              className="mb-8 rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6"
+            >
+              <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:justify-between sm:text-left gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-amber-900">
+                      {overdueCycleNames.length > 0
+                        ? overdueCycleNames.join(", ")
+                        : "Assessment (overdue)"}
+                    </h3>
+                    <p className="mt-0.5 text-sm text-amber-800">
+                      The deadline has passed. Request a new date from HR if you’d still like to complete this assessment.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setShowRescheduleModal(true);
+                    setRescheduleSubmitted(false);
+                    setRescheduleMessage("");
+                  }}
+                  variant="outline"
+                  size="md"
+                  className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 hover:border-amber-400"
+                >
+                  Request reschedule
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* CTA — when overdue, nothing here (card above is the only action) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -533,7 +594,7 @@ const Assessment = () => {
                   Checking your assessment status...
                 </p>
               </>
-            ) : isAssessmentSubmitted ? (
+            ) : isOverdue ? null : isAssessmentSubmitted ? (
               <>
                 <Button
                   disabled
@@ -572,6 +633,118 @@ const Assessment = () => {
               </>
             )}
           </motion.div>
+
+          {/* Request Reschedule Modal */}
+          <AnimatePresence>
+            {showRescheduleModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                onClick={() => !rescheduleSubmitted && setShowRescheduleModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6">
+                    {rescheduleSubmitted ? (
+                      <>
+                        <div className="flex justify-center mb-4">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+                            <Check className="h-7 w-7 text-green-600" />
+                          </div>
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
+                          Request sent
+                        </h2>
+                        <p className="text-sm text-gray-600 text-center">
+                          Your request to reschedule this assessment has been sent to HR. They will get back to you regarding the new dates.
+                        </p>
+                        <div className="mt-6 flex justify-center">
+                          <Button
+                            type="button"
+                            onClick={() => setShowRescheduleModal(false)}
+                            variant="gradient"
+                            size="md"
+                          >
+                            Close
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold text-gray-900">
+                            Request reschedule
+                          </h2>
+                          <button
+                            type="button"
+                            onClick={() => setShowRescheduleModal(false)}
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            aria-label="Close"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                          You can request HR to reschedule this assessment since the end date has passed. Add an optional message below.
+                        </p>
+                        <Textarea
+                          value={rescheduleMessage}
+                          onChange={(e) => setRescheduleMessage(e.target.value)}
+                          placeholder="e.g. I was on leave during the assessment period..."
+                          rows={3}
+                          className="mb-4 resize-none"
+                        />
+                        <div className="flex gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="md"
+                            className="flex-1"
+                            onClick={() => setShowRescheduleModal(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="gradient"
+                            size="md"
+                            className="flex-1 gap-2"
+                            disabled={isSubmittingReschedule}
+                            onClick={async () => {
+                              setIsSubmittingReschedule(true);
+                              // TODO: call API to submit reschedule request (employee, message, cycle/submission ref)
+                              await new Promise((r) => setTimeout(r, 600));
+                              setIsSubmittingReschedule(false);
+                              setRescheduleSubmitted(true);
+                            }}
+                          >
+                            {isSubmittingReschedule ? (
+                              <>
+                                <PlayCircle className="h-4 w-4 animate-spin" />
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4" />
+                                Submit request
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     );
