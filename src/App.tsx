@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider, useUser } from "./context/UserContext";
 import { AssessmentProvider } from "./context/AssessmentContext";
 import { SidebarProvider } from "./context/SidebarContext";
+import { SelectedAssessmentCycleProvider } from "./context/SelectedAssessmentCycleContext";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Employee/Assessment/employeeDashboard";
@@ -80,9 +81,11 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SidebarProvider>
-              <AssessmentProvider>
-                <Layout />
-              </AssessmentProvider>
+              <SelectedAssessmentCycleProvider>
+                <AssessmentProvider>
+                  <Layout />
+                </AssessmentProvider>
+              </SelectedAssessmentCycleProvider>
             </SidebarProvider>
           </ProtectedRoute>
         }

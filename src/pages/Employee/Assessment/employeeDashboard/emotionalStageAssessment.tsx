@@ -15,6 +15,7 @@ import {
 import { CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 import Aura from "./aura";
 import { useUser } from "@/context/UserContext";
+import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import {
   getEmployeeWeightedAssessmentSummary,
 } from "@/api/api-functions/employee-dashboard";
@@ -32,6 +33,7 @@ const EmotionalStageAssessment = ({
   selectedStage,
 }: EmotionalStageAssessmentProps) => {
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
   const [emotionalStageAssessment, setEmotionalStageAssessment] =
     useState<EmotionalStageAssessmentType[]>(MOCK_EMOTIONAL_STAGE_ASSESSMENT);
 
@@ -41,7 +43,10 @@ const EmotionalStageAssessment = ({
 
     const fetchData = async () => {
       try {
-        const data = await getEmployeeWeightedAssessmentSummary(employeeId);
+        const data = await getEmployeeWeightedAssessmentSummary(
+          employeeId,
+          selectedCycle?.cycleName
+        );
         const stages: EmotionalStageAssessmentType[] = data.stages.map(
           (stage) => ({
             stage: stage.stage,
@@ -62,7 +67,7 @@ const EmotionalStageAssessment = ({
     };
 
     fetchData();
-  }, [user?.employee_id]);
+  }, [user?.employee_id, selectedCycle?.cycleName]);
 
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
 
