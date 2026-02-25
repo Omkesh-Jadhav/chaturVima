@@ -2,7 +2,7 @@ import type { UserRole } from "@/types";
 
 const roleLandingRoutes: Record<UserRole, string> = {
   "Employee": "/assessment",
-  // manager: "/assessment-dashboard",
+  "Department Head": "/department-head",
   "HR Admin": "/hr/dashboard",
   "Superadmin": "/organization-setup",
   "HR Doctorate": "/hr/organization-health-report",

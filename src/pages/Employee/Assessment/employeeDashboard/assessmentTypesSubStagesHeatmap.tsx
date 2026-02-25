@@ -68,10 +68,10 @@ const AssessmentTypesSubStagesHeatmap = () => {
   }, [subStagesByStage]);
 
   const getSubStageValue = (
-    assessmentType: string,
+    // assessmentType: string,
     stage: string,
     subStageIndex: number,
-    totalSubStages: number
+    // totalSubStages: number
   ): number => {
     const stageData = summary?.stages.find((s) => s.stage === stage);
     if (!stageData) return 0;
@@ -253,10 +253,10 @@ const AssessmentTypesSubStagesHeatmap = () => {
 
                           {subStages.map((subStage, cellIdx) => {
                             const value = getSubStageValue(
-                              assessmentType,
+                              // assessmentType,
                               stage,
-                              cellIdx,
-                              subStages.length
+                              cellIdx
+                              // subStages.length
                             );
                             const isZero = value === 0;
 

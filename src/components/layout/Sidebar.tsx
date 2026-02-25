@@ -110,11 +110,11 @@ const ROLE_CONFIG: Record<
     icon: <User className="h-3 w-3" />,
     color: "text-blue-600 bg-blue-50",
   },
-  // manager: {
-  //   label: "Manager",
-  //   icon: <UserCog className="h-3 w-3" />,
-  //   color: "text-purple-600 bg-purple-50",
-  // },
+  "Department Head": {
+    label: "Department Head",
+    icon: <UserCog className="h-3 w-3" />,
+    color: "text-purple-600 bg-purple-50",
+  },
   "HR Admin": {
     label: "HR Admin",
     icon: <Shield className="h-3 w-3" />,

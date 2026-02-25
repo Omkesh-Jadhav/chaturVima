@@ -28,6 +28,11 @@ const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; colo
     icon: <User className="h-4 w-4" />,
     color: "text-blue-600 bg-blue-50",
   },
+  "Department Head": {
+    label: "Department Head",
+    icon: <UserCog className="h-4 w-4" />,
+    color: "text-purple-600 bg-purple-50",
+  },
   "HR Admin": {
     label: "HR Admin",
     icon: <Shield className="h-4 w-4" />,

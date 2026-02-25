@@ -137,9 +137,8 @@ export const getQuestionsBySubmission = async (
   const submissionData = response.data.data;
   const answers = submissionData.answers || [];
   const questionnaireName = submissionData.questionnaire || "SELF";
-  // const cycle_name = submissionData.assessment_cycle || "Default";
-  const cycle_name = submissionData.cycle_name?.trim() 
-  || submissionData.assessment_cycle?.trim() 
+  const cycle_name = (typeof submissionData.cycle_name === 'string' ? submissionData.cycle_name.trim() : '') 
+  || (typeof submissionData.assessment_cycle === 'string' ? submissionData.assessment_cycle.trim() : '') 
   || "Current Assessment Cycle";
 
   // Sort answers by idx (defensive: fallback to 0)
