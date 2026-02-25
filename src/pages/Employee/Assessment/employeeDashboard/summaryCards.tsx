@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { CheckCircle, AlertTriangle, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/common";
 import { useUser } from "@/context/UserContext";
+import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import {
   getEmployeeAssessmentSummary,
   type EmployeeAssessmentSummary,
@@ -17,6 +18,7 @@ const defaultSummary: EmployeeAssessmentSummary = {
 
 const SummaryCards = () => {
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
   const [summary, setSummary] = useState<EmployeeAssessmentSummary>(defaultSummary);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,14 +30,17 @@ const SummaryCards = () => {
     }
 
     try {
-      const data = await getEmployeeAssessmentSummary(employeeId);
+      const data = await getEmployeeAssessmentSummary(
+        employeeId,
+        selectedCycle?.cycleName
+      );
       setSummary(data);
     } catch {
       setSummary({ ...defaultSummary, employee: employeeId });
     } finally {
       setIsLoading(false);
     }
-  }, [user?.employee_id]);
+  }, [user?.employee_id, selectedCycle?.cycleName]);
 
   useEffect(() => {
     fetchSummary();

@@ -17,6 +17,8 @@ export interface AssessmentCycle {
   owner: string;
   linkedTeams: number;
   notes?: string;
+  /** Employee IDs assigned to this cycle (from API); used to filter cycles by current user */
+  employeeIds?: string[];
 }
 
 export interface DepartmentHeadAccess {

@@ -67,17 +67,17 @@ export interface EmployeeCycleTransitionLabResponse {
   message: EmployeeCycleTransitionLabEntry[];
 }
 
-// Fetches employee assessment summary - GET request with employee query parameter
+// Fetches employee assessment summary - GET request with employee and optional cycle_name
 export const getEmployeeAssessmentSummary = async (
-  employeeId: string
+  employeeId: string,
+  cycleName?: string
 ): Promise<EmployeeAssessmentSummary> => {
+  const params: Record<string, string> = { employee: employeeId };
+  if (cycleName?.trim()) params.cycle_name = cycleName.trim();
+
   const response = await api.get<EmployeeAssessmentSummaryResponse>(
     API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_ASSESSMENT_SUMMARY,
-    {
-      params: {
-        employee: employeeId,
-      },
-    }
+    { params }
   );
 
   return response.data.message;
@@ -85,17 +85,17 @@ export const getEmployeeAssessmentSummary = async (
 
 // Fetches employee weighted emotional assessment summary
 export const getEmployeeWeightedAssessmentSummary = async (
-  employeeId: string
+  employeeId: string,
+  cycleName?: string
 ): Promise<EmployeeWeightedAssessmentSummary> => {
+  const params: Record<string, string> = { employee: employeeId };
+  if (cycleName?.trim()) params.cycle_name = cycleName.trim();
+
   const response =
     await api.get<EmployeeWeightedAssessmentSummaryResponse>(
       API_ENDPOINTS.EMPLOYEE_DASHBOARD
         .GET_EMPLOYEE_WEIGHTED_ASSESSMENT_SUMMARY,
-      {
-        params: {
-          employee: employeeId,
-        },
-      }
+      { params }
     );
 
   return response.data.message;
@@ -103,15 +103,15 @@ export const getEmployeeWeightedAssessmentSummary = async (
 
 // Fetches employee cycle transition lab data (historical stage transitions)
 export const getEmployeeCycleTransitionLab = async (
-  employeeId: string
+  employeeId: string,
+  cycleName?: string
 ): Promise<EmployeeCycleTransitionLabEntry[]> => {
+  const params: Record<string, string> = { employee: employeeId };
+  if (cycleName?.trim()) params.cycle_name = cycleName.trim();
+
   const response = await api.get<EmployeeCycleTransitionLabResponse>(
     API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_CYCLE_TRANSITION_LAB,
-    {
-      params: {
-        employee: employeeId,
-      },
-    }
+    { params }
   );
 
   return response.data.message;

@@ -27,31 +27,57 @@ export interface EmployeeAssessment {
   status: string;
   questionnaire: string;
   dimension: string;
-  assignment: string;
-  assessment_cycle: string;
-  cycle_name: string;
+  assignment?: string;
+  assessment_cycle?: string;
+  cycle_name?: string;
+  total_questions?: number;
+  answered_questions?: number;
+  pending_questions?: number;
+}
+
+/** Overall counts from get_employee_assessments API */
+export interface EmployeeAssessmentsOverall {
+  total_questions: number;
+  answered_questions: number;
+  pending_questions: number;
+}
+
+/** Raw item from API response message.items[] */
+export interface EmployeeAssessmentItem {
+  submission_name: string;
+  status: string;
+  questionnaire: string;
+  dimension: string;
+  total_questions: number;
+  answered_questions: number;
+  pending_questions: number;
+  assignment?: string;
+  assessment_cycle?: string;
+  cycle_name?: string;
+}
+
+export interface EmployeeAssessmentsResponseLegacy {
+  message: EmployeeAssessment[];
 }
 
 export interface EmployeeAssessmentsResponse {
-  message: EmployeeAssessment[];
+  message: {
+    overall: EmployeeAssessmentsOverall;
+    items: EmployeeAssessmentItem[];
+  };
+}
+
+/** Result of getEmployeeAssessments: overall counts + list of assessments */
+export interface GetEmployeeAssessmentsResult {
+  overall: EmployeeAssessmentsOverall;
+  assessments: EmployeeAssessment[];
 }
 
 export const getEmployeeAssessments = async (
   userId: string
-): Promise<EmployeeAssessment[]> => {
+): Promise<GetEmployeeAssessmentsResult> => {
   const payload = {
     employee: userId,
-    fields: [
-      "name as submission_name",
-      "status",
-      "questionnaire",
-      "dimension",
-      "assignment",
-      "assessment_cycle",
-      "cycle_name",
-      // "modified_by",     // uncomment if needed later
-      // "modified",
-    ],
   };
 
   const response = await api.post<EmployeeAssessmentsResponse>(
@@ -59,7 +85,54 @@ export const getEmployeeAssessments = async (
     payload
   );
 
-  return response.data.message || [];
+  const msg = response.data?.message;
+
+  if (!msg) {
+    return {
+      overall: { total_questions: 0, answered_questions: 0, pending_questions: 0 },
+      assessments: [],
+    };
+  }
+
+  // New shape: { overall, items }
+  if (typeof msg === "object" && "overall" in msg && "items" in msg) {
+    const { overall, items } = msg as {
+      overall: EmployeeAssessmentsOverall;
+      items: EmployeeAssessmentItem[];
+    };
+    const assessments: EmployeeAssessment[] = (items || []).map((item) => ({
+      submission_name: item.submission_name,
+      status: item.status,
+      questionnaire: item.questionnaire,
+      dimension: item.dimension,
+      assignment: item.assignment,
+      assessment_cycle: item.assessment_cycle,
+      cycle_name: item.cycle_name,
+      total_questions: item.total_questions,
+      answered_questions: item.answered_questions,
+      pending_questions: item.pending_questions,
+    }));
+    return {
+      overall: overall ?? { total_questions: 0, answered_questions: 0, pending_questions: 0 },
+      assessments,
+    };
+  }
+
+  // Legacy shape: message is array
+  const list = Array.isArray(msg) ? msg : [];
+  const assessments = list as EmployeeAssessment[];
+  const total_questions =
+    assessments.reduce((sum, a) => sum + (a.total_questions ?? 0), 0) || 0;
+  const answered_questions =
+    assessments.reduce((sum, a) => sum + (a.answered_questions ?? 0), 0) || 0;
+  return {
+    overall: {
+      total_questions,
+      answered_questions,
+      pending_questions: total_questions - answered_questions,
+    },
+    assessments,
+  };
 };
 
 // ────────────────────────────────────────────────

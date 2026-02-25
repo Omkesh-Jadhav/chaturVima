@@ -3,6 +3,7 @@ import { AnimatedContainer } from "@/components/ui";
 import { EmotionalStageTransitionLab } from "@/components/assessment";
 import type { HistoricalAssessment } from "@/components/assessment/EmotionalStageTransitionLab";
 import { useUser } from "@/context/UserContext";
+import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import { getEmployeeCycleTransitionLab } from "@/api/api-functions/employee-dashboard";
 
 const CARD_BASE_CLASSES =
@@ -10,6 +11,7 @@ const CARD_BASE_CLASSES =
 
 const TransitionLab = () => {
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
   const [historicalAssessments, setHistoricalAssessments] = useState<
     HistoricalAssessment[] | undefined
   >(undefined);
@@ -20,7 +22,10 @@ const TransitionLab = () => {
 
     const fetchData = async () => {
       try {
-        const entries = await getEmployeeCycleTransitionLab(employeeId);
+        const entries = await getEmployeeCycleTransitionLab(
+          employeeId,
+          selectedCycle?.cycleName
+        );
 
         const mapped: HistoricalAssessment[] = entries.map((entry, index) => {
           const stageScores: HistoricalAssessment["stageScores"] = {
@@ -70,7 +75,7 @@ const TransitionLab = () => {
     };
 
     fetchData();
-  }, [user?.employee_id]);
+  }, [user?.employee_id, selectedCycle?.cycleName]);
 
   return (
     <AnimatedContainer

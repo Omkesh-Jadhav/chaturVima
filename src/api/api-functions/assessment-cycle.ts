@@ -130,6 +130,7 @@ const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0
     owner: "HR Ops",
     linkedTeams: apiCycle.assessments_linked_count || 0,
     notes: apiCycle.email_notes,
+    employeeIds: (apiCycle.employees || []).map((e) => e.employee),
   };
 };
 

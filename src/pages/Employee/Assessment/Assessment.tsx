@@ -52,6 +52,7 @@ const Assessment = () => {
   const [rescheduleMessage, setRescheduleMessage] = useState("");
   const [rescheduleSubmitted, setRescheduleSubmitted] = useState(false);
   const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
+  const [totalQuestionsCount, setTotalQuestionsCount] = useState<number>(0);
 
   // Helper: Extract cycle ID from submission name (e.g., "2D-0310" from "SUB-ASSESSMENT-HR-EMP-00039-2D-0310-Self-0311")
   const getCycleId = (submissionName: string): string => {
@@ -98,7 +99,9 @@ const Assessment = () => {
 
       try {
         const userId = user.employee_id || user.user;
-        const assessments = await getEmployeeAssessments(userId);
+        const { overall, assessments } = await getEmployeeAssessments(userId);
+
+        setTotalQuestionsCount(overall?.total_questions ?? 0);
 
         if (assessments.length === 0) {
           setIsAssessmentSubmitted(false);
@@ -115,16 +118,16 @@ const Assessment = () => {
         setIsOverdue(hasOverdue);
         setOverdueCycleNames(
           hasOverdue
-            ? [...new Set(overdueList.map((a) => a.cycle_name).filter(Boolean))]
+            ? [...new Set(overdueList.map((a) => a.cycle_name).filter((n): n is string => Boolean(n)))]
             : []
         );
 
         // Get latest cycle assessments (this is the current/active cycle)
         const latestAssessments = getLatestCycleAssessments(assessments);
-        
+
         // Get the latest cycle ID
-        const latestCycleId = latestAssessments.length > 0 
-          ? getCycleId(latestAssessments[0].submission_name) 
+        const latestCycleId = latestAssessments.length > 0
+          ? getCycleId(latestAssessments[0].submission_name)
           : '';
 
         // Check statuses of latest cycle
@@ -135,13 +138,13 @@ const Assessment = () => {
         // Verify if all questions are actually answered in latest cycle
         let allQuestionsAnswered = true;
         let hasAnyAnswers = false;
-        
+
         for (const assessment of latestAssessments) {
           try {
             const { answers: answersMap, questions } = await getQuestionsBySubmission(assessment.submission_name);
             const answeredCount = Object.keys(answersMap || {}).length;
             const totalQuestions = questions?.length || 0;
-            
+
             // Only mark as hasAnyAnswers if we have actual answers with ratings
             // answersMap only contains answers with valid ratings (from getQuestionsBySubmission)
             if (answeredCount > 0 && answersMap) {
@@ -151,7 +154,7 @@ const Assessment = () => {
                 hasAnyAnswers = true;
               }
             }
-            
+
             // Check if all questions are answered for this assessment
             if (totalQuestions > 0 && answeredCount < totalQuestions) {
               allQuestionsAnswered = false;
@@ -175,11 +178,11 @@ const Assessment = () => {
           : false;
 
         // Determine if latest cycle is fully submitted
-        const isLatestCycleFullySubmitted = 
-          allStatusCompleted && 
-          allQuestionsAnswered && 
-          !hasDraft && 
-          !hasInProgress && 
+        const isLatestCycleFullySubmitted =
+          allStatusCompleted &&
+          allQuestionsAnswered &&
+          !hasDraft &&
+          !hasInProgress &&
           isThisCycleSubmitted;
 
         // Determine button state based on assessment status
@@ -187,20 +190,20 @@ const Assessment = () => {
         if (isLatestCycleFullySubmitted) {
           setIsAssessmentSubmitted(true);
           setHasExistingAnswers(false);
-        } 
+        }
         // Rule 2: Has actual answers (verified from API) OR user has started this cycle → "Continue Assessment"
         // isThisCycleStarted is a fast client-side flag set when at least 1 answer is given,
         // even if the answers are not yet saved to the server
         else if (hasAnyAnswers || isThisCycleStarted) {
           setHasExistingAnswers(true);
           setIsAssessmentSubmitted(false);
-        } 
+        }
         // Rule 3: Latest cycle is complete but not confirmed via modal → "Continue Assessment"
         // (All questions answered but modal not confirmed)
         else if ((allStatusCompleted || allQuestionsAnswered) && !hasDraft && !hasInProgress) {
           setIsAssessmentSubmitted(false);
           setHasExistingAnswers(true);
-        } 
+        }
         // Rule 4: No answers (even if status is Draft/In Progress) → "Start Assessment"
         // For new cycles, even if status is Draft/In Progress, show "Start Assessment" if no answers
         else {
@@ -335,7 +338,9 @@ const Assessment = () => {
               className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-4xl font-bold text-blue-600">145</p>
+                <p className="text-4xl font-bold text-blue-600">
+                  {totalQuestionsCount > 0 ? totalQuestionsCount : "—"}
+                </p>
                 <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
                   <span className="text-2xl">❓</span>
                 </div>

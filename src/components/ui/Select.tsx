@@ -111,16 +111,18 @@ export const Select = ({
           {isOpen && !disabled && (
             <>
               <div
-                className="fixed inset-0 z-10 bg-black/5"
+                className="fixed inset-0 z-[100]"
                 onClick={() => setIsOpen(false)}
+                aria-hidden
               />
               <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 z-[101] mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-black/5"
               >
-                <div className="h-1 bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal" />
+                <div className="h-0.5 bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal" />
                 <div className="max-h-80 overflow-y-auto p-1.5">
                   <div className="space-y-0.5">
                     {normalizedOptions.map((option) => {
