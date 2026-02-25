@@ -281,6 +281,7 @@ const ManualAssessments = () => {
                 startDate: "",
                 endDate: "",
                 participants: 0,
+                progress: 0,
                 owner: "HR Admin",
                 linkedTeams: 0,
                 notes: "",
