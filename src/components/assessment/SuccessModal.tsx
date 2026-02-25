@@ -6,20 +6,27 @@
  */
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Sparkles, Target, Star, Zap } from "lucide-react";
+import { Trophy, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui";
-import { cn } from "@/utils/cn";
-import { CONFETTI_COLORS, ACHIEVEMENT_BADGES } from "@/data/assessmentDashboard";
+// import { cn } from "@/utils/cn";
+import { CONFETTI_COLORS } from "@/data/assessmentDashboard";
+
+interface Questionnaire {
+  name: string;
+  displayName: string;
+  isComplete: boolean;
+}
 
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewReport: () => void;
+  onViewReport: (questionnaire?: string) => void;
+  questionnaires?: Questionnaire[];
 }
 
-const iconMap = { Target, Star, Zap };
+// const iconMap = { Target, Star, Zap };
 
-const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
+const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [] }: SuccessModalProps) => {
   const [confetti, setConfetti] = useState<
     Array<{ id: number; x: number; y: number; color: string; delay: number }>
   >([]);
@@ -80,10 +87,17 @@ const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.8, opacity: 0, y: 50 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="relative w-full max-w-lg rounded-3xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg max-h-[90vh] rounded-3xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-brand-teal via-brand-navy to-brand-teal p-8 pb-12 relative overflow-hidden">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors duration-200 flex items-center justify-center group"
+        >
+          <X className="h-4 w-4 text-white group-hover:text-white/80" />
+        </button>
+        <div className="bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal p-6 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             {Array.from({ length: 20 }).map((_, i) => (
               <motion.div
@@ -111,8 +125,8 @@ const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
               className="mb-6 flex justify-center"
             >
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30">
-                  <Trophy className="h-12 w-12 text-white" />
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30">
+                  <Trophy className="h-6 w-6 text-white" />
                 </div>
                 <motion.div
                   className="absolute inset-0 rounded-full border-4 border-white/20"
@@ -126,7 +140,7 @@ const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-3xl font-bold text-white mb-2"
+              className="text-2xl font-bold text-white mb-1"
             >
               Assessment Complete! 🎉
             </motion.h2>
@@ -134,14 +148,14 @@ const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-white/90 text-lg"
+              className="text-white/90 text-md"
             >
               Thank you for your thoughtful responses
             </motion.p>
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-8 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,43 +165,41 @@ const SuccessModal = ({ isOpen, onClose, onViewReport }: SuccessModalProps) => {
             <div className="text-center space-y-3">
               <div className="flex items-center justify-center gap-2 text-gray-600">
                 <Sparkles className="h-5 w-5 text-brand-teal" />
-                <span className="text-sm font-medium">Your insights are being analyzed</span>
+                <span className="text-sm font-medium">Your insights are being analyzed and Your organizational health profile is being generated based on your honest feedback.</span>
               </div>
-              <p className="text-base text-gray-700 leading-relaxed">
-                We've successfully received your assessment responses. Your organizational health
-                profile is being generated based on your honest feedback.
-              </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-4">
-              {ACHIEVEMENT_BADGES.map((badge, idx) => {
-                const Icon = iconMap[badge.icon as keyof typeof iconMap];
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6 + idx * 0.1 }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-50 border border-gray-200"
+            <div className="space-y-4 pt-4">
+              {questionnaires.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 gap-2">
+                    {questionnaires.map((questionnaire) => (
+                      <Button
+                        key={questionnaire.name}
+                        onClick={() => onViewReport(questionnaire.name)}
+                        className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
+                        disabled={!questionnaire.isComplete}
+                      >
+                        <Trophy className="mr-2 h-4 w-4" />
+                        View {questionnaire.displayName} Results
+                      </Button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => onViewReport()}
+                    className="flex-1 cursor-pointer bg-linear-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
                   >
-                    <Icon className={cn("h-6 w-6", badge.color)} />
-                    <span className="text-xs font-medium text-gray-700">{badge.label}</span>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer">
-                Close
-              </Button>
-              <Button
-                onClick={onViewReport}
-                className="flex-1 cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
-              >
-                <Trophy className="mr-2 h-4 w-4" />
-                View Results
-              </Button>
+                    <Trophy className="mr-2 h-4 w-4" />
+                    View Results
+                  </Button>
+                  <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer">
+                    Close
+                  </Button>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

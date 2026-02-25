@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ResponsiveChord } from "@nivo/chord";
 import { ResponsiveAreaBump } from "@nivo/bump";
 import { ResponsiveStream } from "@nivo/stream";
@@ -25,9 +26,32 @@ import { pieChartTheme } from "@/components/assessmentDashboard/pieChartTheme";
 
 
 
+// Questionnaire display name mapping
+const QUESTIONNAIRE_DISPLAY_NAMES: Record<string, string> = {
+  Self: "Employee Self Assessment",
+  SELF: "Employee Self Assessment",
+  Boss: "Manager Relationship Assessment",
+  BOSS: "Manager Relationship Assessment",
+  Department: "Department Assessment",
+  DEPT: "Department Assessment",
+  "4D": "Department Assessment",
+  Company: "Company Assessment",
+};
+
+const mapQuestionnaireToDisplayName = (questionnaire: string): string => {
+  return QUESTIONNAIRE_DISPLAY_NAMES[questionnaire] || questionnaire;
+};
+
 const AssessmentReport: React.FC = () => {
   const reportRef = useRef<HTMLDivElement>(null);
   const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  const selectedQuestionnaire = searchParams.get('questionnaire');
+
+  // Get display name for selected questionnaire
+  const questionnaireDisplayName = selectedQuestionnaire 
+    ? mapQuestionnaireToDisplayName(selectedQuestionnaire)
+    : "Overall Assessment";
 
   // Assessment Data from JSON
   const overviewText = assessmentData.overview.text;
@@ -122,13 +146,18 @@ const AssessmentReport: React.FC = () => {
         {/* Header */}
         <header className="text-center">
           <h1 className="text-4xl font-bold text-indigo-700 mb-2">
-            Employee Personality Assessment Report
+            {questionnaireDisplayName} Report
           </h1>
           <p className="text-gray-600">
             Employee: <strong>{assessmentData.employee.name}</strong> |
             Department: {assessmentData.employee.department} | Assessment Date:{" "}
             {new Date().toLocaleDateString()}
           </p>
+          {selectedQuestionnaire && (
+            <div className="mt-2 inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+              {questionnaireDisplayName}
+            </div>
+          )}
         </header>
 
         {/* Overview */}

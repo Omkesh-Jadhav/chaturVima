@@ -706,9 +706,15 @@ const AssessmentQuestions = () => {
   }, [submitAssessment, user?.email, assessmentsByQuestionnaire]);
 
   // Handle view report
-  const handleViewReport = useCallback(() => {
+  const handleViewReport = useCallback((questionnaire?: string) => {
     setShowSuccessModal(false);
-    navigate("/assessment-report");
+    if (questionnaire) {
+      // Navigate to assessment report with questionnaire parameter
+      navigate(`/assessment-report?questionnaire=${encodeURIComponent(questionnaire)}`);
+    } else {
+      // Default navigation without questionnaire parameter
+      navigate("/assessment-report");
+    }
   }, [navigate]);
 
   // Handle close modal - navigate back to assessment page
@@ -734,6 +740,19 @@ const AssessmentQuestions = () => {
     () => (filteredQuestions.length > 0 ? Math.round((answeredCount / filteredQuestions.length) * 100) : 0),
     [answeredCount, filteredQuestions.length]
   );
+
+  // Prepare questionnaires data for SuccessModal
+  const successModalQuestionnaires = useMemo(() => {
+    return questionnaires.map((questionnaire) => {
+      const questions = questionsByQuestionnaire[questionnaire] || [];
+      const { isComplete } = getQuestionnaireStats(questions, answers);
+      return {
+        name: questionnaire,
+        displayName: mapQuestionnaireToDisplayName(questionnaire),
+        isComplete
+      };
+    });
+  }, [questionnaires, questionsByQuestionnaire, answers]);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -1390,6 +1409,7 @@ const AssessmentQuestions = () => {
         isOpen={showSuccessModal}
         onClose={handleCloseSuccessModal}
         onViewReport={handleViewReport}
+        questionnaires={successModalQuestionnaires}
       />
     </div>
   );
