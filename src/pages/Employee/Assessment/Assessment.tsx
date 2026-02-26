@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../../../context/AssessmentContext";
+import { useSelectedAssessmentCycle } from "../../../context/SelectedAssessmentCycleContext";
 import { useUser } from "../../../context/UserContext";
 import { Button, Textarea } from "../../../components/ui";
 import QuestionCard from "../../../components/assessment/QuestionCard";
@@ -23,6 +24,7 @@ import {
 const Assessment = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
   const {
     progress,
     currentQuestion,
@@ -99,7 +101,9 @@ const Assessment = () => {
 
       try {
         const userId = user.employee_id || user.user;
-        const { overall, assessments } = await getEmployeeAssessments(userId);
+        const { overall, assessments } = await getEmployeeAssessments(userId, {
+          cycle_name: selectedCycle?.cycleId,
+        });
 
         setTotalQuestionsCount(overall?.total_questions ?? 0);
 
@@ -141,7 +145,9 @@ const Assessment = () => {
 
         for (const assessment of latestAssessments) {
           try {
-            const { answers: answersMap, questions } = await getQuestionsBySubmission(assessment.submission_name);
+            const { answers: answersMap, questions } = await getQuestionsBySubmission(assessment.submission_name, {
+              cycle_name: selectedCycle?.cycleId,
+            });
             const answeredCount = Object.keys(answersMap || {}).length;
             const totalQuestions = questions?.length || 0;
 
@@ -221,7 +227,7 @@ const Assessment = () => {
     };
 
     checkButtonState();
-  }, [user]);
+  }, [user, selectedCycle?.cycleId]);
 
   // Check if we should show energy break
   useEffect(() => {

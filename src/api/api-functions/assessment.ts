@@ -81,12 +81,10 @@ export const getEmployeeAssessments = async (
   userId: string,
   options?: GetEmployeeAssessmentsOptions
 ): Promise<GetEmployeeAssessmentsResult> => {
-  const payload: { employee: string; cycle_name?: string } = {
+  const payload: { employee: string; cycle_name: string } = {
     employee: userId,
+    cycle_name: options?.cycle_name ?? "",
   };
-  if (options?.cycle_name) {
-    payload.cycle_name = options.cycle_name;
-  }
 
   const response = await api.post<EmployeeAssessmentsResponse>(
     API_ENDPOINTS.ASSESSMENT.GET_EMPLOYEE_ASSESSMENTS,
