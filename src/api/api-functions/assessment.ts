@@ -73,12 +73,20 @@ export interface GetEmployeeAssessmentsResult {
   assessments: EmployeeAssessment[];
 }
 
+export interface GetEmployeeAssessmentsOptions {
+  cycle_name?: string;
+}
+
 export const getEmployeeAssessments = async (
-  userId: string
+  userId: string,
+  options?: GetEmployeeAssessmentsOptions
 ): Promise<GetEmployeeAssessmentsResult> => {
-  const payload = {
+  const payload: { employee: string; cycle_name?: string } = {
     employee: userId,
   };
+  if (options?.cycle_name) {
+    payload.cycle_name = options.cycle_name;
+  }
 
   const response = await api.post<EmployeeAssessmentsResponse>(
     API_ENDPOINTS.ASSESSMENT.GET_EMPLOYEE_ASSESSMENTS,
@@ -201,11 +209,19 @@ export interface QuestionsWithAnswers {
   cycle_name: string;
 }
 
+export interface GetQuestionsBySubmissionOptions {
+  cycle_name?: string;
+}
+
 export const getQuestionsBySubmission = async (
-  submissionName: string
+  submissionName: string,
+  options?: GetQuestionsBySubmissionOptions
 ): Promise<QuestionsWithAnswers> => {
   const url = `${API_ENDPOINTS.ASSESSMENT.ASSESSMENT_SUBMISSION}/${submissionName}`;
-  const response = await api.get<SubmissionQuestionData>(url);
+  const config = options?.cycle_name
+    ? { params: { cycle_name: options.cycle_name } }
+    : undefined;
+  const response = await api.get<SubmissionQuestionData>(url, config);
 
   const submissionData = response.data.data;
   const answers = submissionData.answers || [];

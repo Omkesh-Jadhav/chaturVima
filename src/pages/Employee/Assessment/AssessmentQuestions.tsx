@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment } from "../../../context/AssessmentContext";
+import { useSelectedAssessmentCycle } from "../../../context/SelectedAssessmentCycleContext";
 import { useUser } from "../../../context/UserContext";
 import { Button, Card, CardContent } from "../../../components/ui";
 import {
@@ -152,6 +153,7 @@ const AssessmentQuestions = () => {
   const navigate = useNavigate();
   const { answers, answerQuestion, submitAssessment, isComplete } = useAssessment();
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
 
   const [questionnaires, setQuestionnaires] = useState<string[]>([]);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<string | null>(null);
@@ -223,7 +225,9 @@ const AssessmentQuestions = () => {
       if (!userId) return;
 
       try {
-        const { assessments } = await getEmployeeAssessments(userId);
+        const { assessments } = await getEmployeeAssessments(userId, {
+          cycle_name: selectedCycle?.cycleId,
+        });
 
         // Get only the latest cycle assessments (or filtered by selected cycle)
         const latestCycleAssessments = getLatestCycleAssessments(assessments);
@@ -243,7 +247,7 @@ const AssessmentQuestions = () => {
     };
 
     fetchEmployeeAssessments();
-  }, [selectedQuestionnaire]);
+  }, [selectedQuestionnaire, selectedCycle?.cycleId]);
 
   // Auto-select first questionnaire
   useEffect(() => {
@@ -263,7 +267,8 @@ const AssessmentQuestions = () => {
       try {
         setIsLoadingQuestions(true);
         const { questions, answers: serverAnswers, cycle_name } = await getQuestionsBySubmission(
-          assessment.submission_name
+          assessment.submission_name,
+          { cycle_name: selectedCycle?.cycleName }
         );
         // Save cycle name for this questionnaire
         setCycleNames((prev) => ({
