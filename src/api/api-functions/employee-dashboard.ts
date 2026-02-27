@@ -69,6 +69,20 @@ export interface EmployeeCycleTransitionLabResponse {
   message: EmployeeCycleTransitionLabEntry;
 }
 
+// Pending assessment cycles with questionnaires
+export interface EmployeePendingCycle {
+  assessment_cycle: string;
+  status: string;
+  dimension: string;
+  start_date: string;
+  end_date: string;
+  questionnaires: { name: string }[];
+}
+
+export interface EmployeePendingCyclesResponse {
+  message: EmployeePendingCycle[];
+}
+
 // Fetches employee assessment summary - GET request with employee and optional cycle_name
 export const getEmployeeAssessmentSummary = async (
   employeeId: string,
@@ -120,4 +134,22 @@ export const getEmployeeCycleTransitionLab = async (
   // API returns a single entry; normalize to array for UI (Transition Lab list)
   const entries = Array.isArray(message) ? message : [message];
   return entries;
+};
+
+// Fetches pending assessment cycles with questionnaires for an employee
+export const getEmployeePendingCycles = async (
+  employeeId: string,
+  statuses: string[] = ["Active"]
+): Promise<EmployeePendingCycle[]> => {
+  const payload: { employee: string; status?: string[] } = { employee: employeeId };
+  if (statuses.length > 0) {
+    payload.status = statuses;
+  }
+
+  const response = await api.post<EmployeePendingCyclesResponse>(
+    API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_CYCLES_WITH_QUESTIONNAIRES,
+    payload
+  );
+
+  return response.data?.message ?? [];
 };
