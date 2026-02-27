@@ -84,7 +84,7 @@ const EmployeeDashboard = () => {
         <SWOTAnalysis />
         <EmotionalIntensityHeatmap />
         <AssessmentTypesSubStagesHeatmap />
-        <TransitionLab />
+        {/* <TransitionLab /> */}
         <PendingAssessments />
         <TestHistory />
       </div>

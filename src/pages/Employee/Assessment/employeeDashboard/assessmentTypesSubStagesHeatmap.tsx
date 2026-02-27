@@ -2,13 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer, Tooltip } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import {
-  ASSESSMENT_TYPES,
-  MOCK_SUB_STAGES,
-  STAGE_ORDER,
-} from "@/data/assessmentDashboard";
+import { ASSESSMENT_TYPES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getStageColor } from "@/utils/assessmentConfig";
 import { useUser } from "@/context/UserContext";
+import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import {
   getEmployeeWeightedAssessmentSummary,
   type EmployeeWeightedAssessmentSummary,
@@ -21,6 +18,7 @@ const STAGES = STAGE_ORDER;
 
 const AssessmentTypesSubStagesHeatmap = () => {
   const { user } = useUser();
+  const { selectedCycle } = useSelectedAssessmentCycle();
   const [summary, setSummary] =
     useState<EmployeeWeightedAssessmentSummary | null>(null);
 
@@ -30,7 +28,10 @@ const AssessmentTypesSubStagesHeatmap = () => {
 
     const fetchData = async () => {
       try {
-        const data = await getEmployeeWeightedAssessmentSummary(employeeId);
+        const data = await getEmployeeWeightedAssessmentSummary(
+          employeeId,
+          selectedCycle?.cycleId
+        );
         setSummary(data);
       } catch (error) {
         console.error(
@@ -42,20 +43,20 @@ const AssessmentTypesSubStagesHeatmap = () => {
     };
 
     fetchData();
-  }, [user?.employee_id]);
+  }, [user?.employee_id, selectedCycle?.cycleId]);
 
   const subStagesByStage = useMemo(() => {
-    return STAGES.map((stage) => ({
-      stage,
-      subStages:
-        summary?.stages
-          .find((s) => s.stage === stage)
-          ?.sub_stages.map((subStage, index) => ({
+    return STAGES.map((stage) => {
+      const stageData = summary?.stages?.find((s) => s.stage === stage);
+      const subStages = stageData?.sub_stages?.length
+        ? stageData.sub_stages.map((subStage, index) => ({
             id: `${stage}-${index}`,
             label: subStage.sub_stage,
             value: subStage.percentage,
-          })) || MOCK_SUB_STAGES[stage] || [],
-    }));
+          }))
+        : [{ id: `${stage}-0`, label: "Not Available", value: 0 }];
+      return { stage, subStages };
+    });
   }, [summary]);
 
   // Group stages in pairs for quadrant layout
@@ -73,8 +74,9 @@ const AssessmentTypesSubStagesHeatmap = () => {
     subStageIndex: number,
     // totalSubStages: number
   ): number => {
-    const stageData = summary?.stages.find((s) => s.stage === stage);
-    if (!stageData) return 0;
+    const stages = summary?.stages ?? [];
+    const stageData = stages.find((s) => s.stage === stage);
+    if (!stageData?.sub_stages) return 0;
 
     const subStage = stageData.sub_stages[subStageIndex];
     if (!subStage) return 0;

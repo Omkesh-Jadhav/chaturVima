@@ -48,7 +48,7 @@ export interface EmployeeWeightedAssessmentSummaryResponse {
   message: EmployeeWeightedAssessmentSummary;
 }
 
-// Employee cycle transition lab types
+// Employee cycle transition lab types (API returns a single entry per cycle)
 export interface EmployeeCycleTransitionLabStage {
   stage: string;
   score: number;
@@ -56,6 +56,7 @@ export interface EmployeeCycleTransitionLabStage {
 }
 
 export interface EmployeeCycleTransitionLabEntry {
+  employee?: string;
   assessment_cycle: string;
   status: string;
   last_submitted_on: string;
@@ -63,8 +64,9 @@ export interface EmployeeCycleTransitionLabEntry {
   dominant_stage: string;
 }
 
+/** API returns message as a single object for the selected cycle, not an array */
 export interface EmployeeCycleTransitionLabResponse {
-  message: EmployeeCycleTransitionLabEntry[];
+  message: EmployeeCycleTransitionLabEntry;
 }
 
 // Fetches employee assessment summary - GET request with employee and optional cycle_name
@@ -101,7 +103,7 @@ export const getEmployeeWeightedAssessmentSummary = async (
   return response.data.message;
 };
 
-// Fetches employee cycle transition lab data (historical stage transitions)
+// Fetches employee cycle transition lab data (single cycle entry; API returns one object)
 export const getEmployeeCycleTransitionLab = async (
   employeeId: string,
   cycleName?: string
@@ -114,5 +116,8 @@ export const getEmployeeCycleTransitionLab = async (
     { params }
   );
 
-  return response.data.message;
+  const message = response.data.message;
+  // API returns a single entry; normalize to array for UI (Transition Lab list)
+  const entries = Array.isArray(message) ? message : [message];
+  return entries;
 };

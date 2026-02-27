@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
-import { MOCK_EMOTIONAL_STAGE_ASSESSMENT } from "@/data/assessmentDashboard";
 import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
 import {
   calculatePercentage,
@@ -35,7 +34,7 @@ const EmotionalStageAssessment = ({
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
   const [emotionalStageAssessment, setEmotionalStageAssessment] =
-    useState<EmotionalStageAssessmentType[]>(MOCK_EMOTIONAL_STAGE_ASSESSMENT);
+    useState<EmotionalStageAssessmentType[] | null>(null);
 
   useEffect(() => {
     const employeeId = user?.employee_id;
@@ -47,38 +46,38 @@ const EmotionalStageAssessment = ({
           employeeId,
           selectedCycle?.cycleId
         );
-        const stages: EmotionalStageAssessmentType[] = data.stages.map(
+        const rawStages = data?.stages ?? [];
+        const stages: EmotionalStageAssessmentType[] = rawStages.map(
           (stage) => ({
             stage: stage.stage,
             score: stage.score,
             color: getStagePieColor(stage.stage as any),
           })
         );
-
         setEmotionalStageAssessment(stages);
       } catch (error) {
-        // If API fails, fall back to mock data
         console.error(
           "Failed to fetch employee weighted assessment summary:",
           error
         );
-        setEmotionalStageAssessment(MOCK_EMOTIONAL_STAGE_ASSESSMENT);
+        setEmotionalStageAssessment(null);
       }
     };
 
     fetchData();
   }, [user?.employee_id, selectedCycle?.cycleId]);
 
-  const maxScore = findMaxByKey(emotionalStageAssessment, "score");
+  const stages = emotionalStageAssessment ?? [];
+  const maxScore = findMaxByKey(stages, "score");
 
   // Find the stage with the highest score
   const maxScoreValue = Math.max(
-    ...emotionalStageAssessment.map((stage) => stage.score),
+    ...stages.map((stage) => stage.score),
     0
   );
 
   // Calculate status based on highest score (not percentage)
-  const stagesWithStatus = emotionalStageAssessment.map((stage) => {
+  const stagesWithStatus = stages.map((stage) => {
     // Mark as Dominant if it has the highest score
     const calculatedStatus: "Dominant" | undefined =
       stage.score === maxScoreValue && maxScoreValue > 0
@@ -110,6 +109,18 @@ const EmotionalStageAssessment = ({
     onStageClick?.(stage);
   };
 
+  // When no API data, show full UI with 0% / Not Available
+  const displayStages = stages.length > 0 ? stages : (
+    ["Honeymoon", "Self-Introspection", "Soul-Searching", "Steady-State"] as const
+  ).map((stage) => ({
+    stage,
+    score: 0,
+    color: getStagePieColor(stage as any),
+  })) as EmotionalStageAssessmentType[];
+  const displayMaxScore = findMaxByKey(displayStages, "score") || 1;
+  const displayStagesWithStatus = stages.length > 0 ? stagesWithStatus : displayStages.map((s) => ({ ...s, calculatedStatus: undefined as const }));
+  const displaySorted = stages.length > 0 ? sortedStagesWithStatus : sortStagesByScore(displayStagesWithStatus, "score");
+
   return (
     <div className="relative z-10 grid gap-6 xl:grid-cols-5">
       <AnimatedContainer
@@ -135,8 +146,8 @@ const EmotionalStageAssessment = ({
         </div>
 
         <div className="space-y-1.5">
-          {sortedStagesWithStatus.map((stage, idx) => {
-            const percentage = calculatePercentage(stage.score, maxScore);
+          {displaySorted.map((stage, idx) => {
+            const percentage = calculatePercentage(stage.score, displayMaxScore);
             const statusStyle =
               stage.calculatedStatus === "Dominant"
                 ? STATUS_STYLES["Dominant"]
@@ -247,7 +258,7 @@ const EmotionalStageAssessment = ({
       </AnimatedContainer>
 
       <Aura
-        data={emotionalStageAssessment.map((s) => ({
+        data={displayStages.map((s) => ({
           stage: s.stage,
           value: s.score,
           color: s.color,
