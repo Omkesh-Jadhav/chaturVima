@@ -115,9 +115,8 @@ const EmotionalIntensityHeatmap = () => {
       const light = getStageColor(stage, "light");
       const dark = getStageColor(stage, "dark");
       acc[stage] = {
-        bg: `linear-gradient(135deg, ${light}, ${
-          lightToDarkMap[stage] || light
-        })`,
+        bg: `linear-gradient(135deg, ${light}, ${lightToDarkMap[stage] || light
+          })`,
         border: main,
         dot: `linear-gradient(135deg, ${main}, ${dark})`,
       };
@@ -237,17 +236,16 @@ const EmotionalIntensityHeatmap = () => {
                       return (
                         <div
                           key={`${row.assessmentType}-${stage}`}
-                          className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${
-                            isZero
+                          className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${isZero
                               ? "border border-gray-200 bg-white"
                               : "bg-gray-50"
-                          }`}
+                            }`}
                           style={
                             !isZero
                               ? {
-                                  border: `1px solid ${shadowColor}30`,
-                                  boxShadow: `0 2px 8px ${shadowColor}20`,
-                                }
+                                border: `1px solid ${shadowColor}30`,
+                                boxShadow: `0 2px 8px ${shadowColor}20`,
+                              }
                               : {}
                           }
                         >
@@ -313,22 +311,21 @@ const EmotionalIntensityHeatmap = () => {
 
                           <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
                             <span
-                              className={`text-sm font-bold ${
-                                isZero
+                              className={`text-sm font-bold ${isZero
                                   ? "text-gray-900"
                                   : value > 50
-                                  ? "text-white drop-shadow-lg"
-                                  : "text-gray-900 drop-shadow-sm"
-                              }`}
+                                    ? "text-white drop-shadow-lg"
+                                    : "text-gray-900 drop-shadow-sm"
+                                }`}
                               style={
                                 !isZero && value > 50
                                   ? { textShadow: "0 2px 4px rgba(0,0,0,0.5)" }
                                   : !isZero
-                                  ? {
+                                    ? {
                                       textShadow:
                                         "0 1px 2px rgba(255,255,255,0.8)",
                                     }
-                                  : {}
+                                    : {}
                               }
                             >
                               {value}%
@@ -354,7 +351,7 @@ const EmotionalIntensityHeatmap = () => {
           </div>
         </div>
 
-        <div className="mt-4 border-t border-gray-200 pt-4">
+        {/* <div className="mt-4 border-t border-gray-200 pt-4">
           <div className="rounded-xl bg-linear-to-br from-blue-50 via-indigo-50/30 to-purple-50/20 border-2 border-blue-100/60 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <div className="h-1 w-8 bg-linear-to-r from-blue-500 to-indigo-500 rounded-full" />
@@ -386,7 +383,7 @@ const EmotionalIntensityHeatmap = () => {
               )}
             </ul>
           </div>
-        </div>
+        </div> */}
       </div>
     </AnimatedContainer>
   );
