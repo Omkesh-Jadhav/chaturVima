@@ -1,6 +1,6 @@
 import api from "../axios-setup";
 import { API_ENDPOINTS } from "../endpoints";
-import type { CycleFormPayload, AssessmentCycle } from "@/types/assessmentCycles";
+import type { CycleFormPayload, AssessmentCycle, CycleStatus } from "@/types/assessmentCycles";
 import { formatDateToAPI } from "@/utils/dateUtils";
 import { getDimensionFromAssessmentType, getAssessmentTypeFromDimension } from "@/utils/assessmentConfig";
 
@@ -83,12 +83,13 @@ export const scheduleAssessmentCycle = async (cycleId: string) => {
   }
 };
 
-// API response structure
+// API response structure (docstatus: 0 = Draft → Schedule, 1 = Scheduled → Edit)
 export interface AssessmentCycleAPIResponse {
   message: Array<{
     name: string;
     cycle_name?: string; // Cycle name from API
-    status: string;
+    status?: string;
+    docstatus?: number;
     assessment_type: string;
     dimension: string;
     assessments_linked_count: number;
@@ -109,6 +110,25 @@ export interface GetAssessmentCyclesParams {
   year?: string;
 }
 
+// Normalize API status for display and actions:
+// - Draft (status = Draft) → table shows Schedule; user can edit anything, Save, then Schedule (confirm modal)
+// - Active (status = Active) → table shows Edit; user can change dates and departments only
+// Prefer docstatus when present: 0 = Draft, 1 = Active (scheduled)
+const normalizeCycleStatus = (
+  apiCycle: AssessmentCycleAPIResponse["message"][0]
+): CycleStatus => {
+  const docstatus = apiCycle.docstatus;
+  if (docstatus === 0) return "Draft";
+  if (docstatus === 1) return "Active";
+  const apiStatus = apiCycle.status;
+  if (apiStatus === undefined || apiStatus === null || apiStatus === "") return "Draft";
+  const s = String(apiStatus).trim().toLowerCase();
+  if (s === "active" || s === "1" || s === "scheduled") return "Active";
+  if (s === "completed" || s === "2" || s === "closed") return "Completed";
+  // "0", "draft", or any other → Draft (show Schedule until user schedules)
+  return "Draft";
+};
+
 // Transform API response to frontend format
 const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0]): AssessmentCycle => {
   const timePeriod = apiCycle.time_period || {};
@@ -122,7 +142,7 @@ const transformCycleFromAPI = (apiCycle: AssessmentCycleAPIResponse["message"][0
     endDate: timePeriod.end_date || "",
     type: transformCycleTypeFromAPI(apiCycle.assessment_type) as AssessmentCycle["type"],
     period: (apiCycle.period || "Fiscal") as AssessmentCycle["period"],
-    status: (apiCycle.status as AssessmentCycle["status"]) || "Draft",
+    status: normalizeCycleStatus(apiCycle),
     departments,
     assessmentTypes: assessmentType ? [assessmentType] : [],
     participants: (apiCycle.employees || []).length,

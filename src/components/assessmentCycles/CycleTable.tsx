@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MoreHorizontal, ClipboardList, Pencil } from "lucide-react";
+import { MoreHorizontal, ClipboardList, Pencil, CalendarClock } from "lucide-react";
 import { Tooltip, Button } from "@/components/ui";
 import type { AssessmentCycle } from "@/types/assessmentCycles";
 import { CYCLE_STATUS_COLORS } from "@/utils/assessmentUtils";
@@ -106,8 +106,10 @@ const CycleTable = ({
             const palette = CYCLE_STATUS_COLORS[cycle.status];
             const isCompleted = cycle.status === "Completed";
             const isActive = cycle.status === "Active";
+            const isDraft = cycle.status === "Draft";
+            // Draft → Schedule (edit anything, Save, then Schedule + confirm). Active/Completed → Edit (dates & department only).
             const isScheduled = isActive || isCompleted;
-            const canSchedule = !isCompleted && !isActive ? (isDepartmentHead ? scheduleAccess[cycle.id] : true) : false;
+            const canSchedule = isDraft ? (isDepartmentHead ? scheduleAccess[cycle.id] : true) : false;
 
             return (
               <motion.tr
@@ -221,34 +223,45 @@ const CycleTable = ({
                   </div>
                 </td>
 
-                {/* Actions Column */}
+                {/* Actions: Both buttons always visible. Schedule = edit everything then schedule (disabled after scheduled). Edit = dates & departments only (enabled after scheduled). */}
                 <td className={`${cellPadding} align-middle`}>
                   <div className="flex items-center justify-end gap-2">
-                    {isScheduled && onEditDates && (
-                      <Tooltip content="Edit dates" position="left">
+                    <Tooltip
+                      content={isScheduled ? "Already scheduled" : "Edit everything, Save, then Schedule (with confirmation)"}
+                      position="left"
+                    >
+                      <span className="inline-flex">
                         <Button
-                          onClick={() => onEditDates(cycle)}
+                          onClick={() => canSchedule && onSchedule?.(cycle)}
+                          disabled={!canSchedule || isScheduled}
+                          variant="primary"
+                          size="xs"
+                          className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-blue-500 border-0 disabled:opacity-50"
+                        >
+                          <CalendarClock className="h-3.5 w-3.5" />
+                          Schedule
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      content={isScheduled ? "Edit dates and departments only" : "Available after scheduling"}
+                      position="left"
+                    >
+                      <span className="inline-flex">
+                        <Button
+                          onClick={() => isScheduled && onEditDates?.(cycle)}
+                          disabled={!isScheduled}
                           variant="outline"
                           size="xs"
-                          className="gap-1.5"
+                          className="gap-1.5 disabled:opacity-50"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                           Edit
                         </Button>
-                      </Tooltip>
-                    )}
-                    {!isScheduled && (
-                      <Button
-                        onClick={() => canSchedule && onSchedule?.(cycle)}
-                        disabled={!canSchedule}
-                        variant="primary"
-                        size="xs"
-                      >
-                        Schedule Cycle
-                      </Button>
-                    )}
+                      </span>
+                    </Tooltip>
                   </div>
-                  {isDepartmentHead && !canSchedule && !isScheduled && (
+                  {isDepartmentHead && isDraft && !canSchedule && (
                     <p className="mt-2 text-right text-xs font-medium text-amber-600">Waiting for HR access</p>
                   )}
                 </td>

@@ -70,8 +70,8 @@ const AssessmentCycles = () => {
   const openCreateDrawer = () =>
     setDrawerState({ mode: "create", open: true, cycle: null });
   const openScheduleDrawer = (cycle: AssessmentCycle) => {
-    // Prevent opening schedule drawer if cycle is Active
-    if (cycle.status === "Active") {
+    // Only allow schedule for Draft (after create). Active/Completed use Edit instead.
+    if (cycle.status !== "Draft") {
       return;
     }
     setDrawerState({ mode: "schedule", open: true, cycle });
@@ -302,7 +302,7 @@ const AssessmentCycles = () => {
                   </p>
                   <div className="mt-4 p-3 bg-amber-100/50 rounded-lg border border-amber-200">
                     <p className="text-xs font-semibold text-amber-800">
-                      ⚠️ Important: Once scheduled, you won't be able to edit this cycle.
+                      ⚠️ After scheduling, you can only edit dates and departments for this cycle.
                     </p>
                   </div>
                 </div>

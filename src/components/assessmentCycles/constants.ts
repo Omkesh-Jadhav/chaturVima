@@ -1,4 +1,8 @@
 // Configuration and default values for assessment cycle drawer
+// Flow:
+// 1. Create cycle → Status = Draft, Action = Schedule.
+// 2. Click Schedule → drawer opens with pre-filled data; user can edit anything, Save (persist), then Schedule (confirmation modal).
+// 3. After Schedule → Status = Active, Action = Edit (change dates and department only).
 import type { CycleFormPayload } from "@/types/assessmentCycles";
 
 export const DEFAULT_PAYLOAD: CycleFormPayload = {
@@ -36,9 +40,9 @@ export const DRAWER_CONFIG = {
     },
   },
   edit: {
-    title: "Edit the Assessment Cycle",
+    title: "Edit dates & departments",
     getDescription: (cycleName?: string) =>
-      `Update end date or departments for ${cycleName ?? "the cycle"}.`,
+      `Change dates and departments only for ${cycleName ?? "the cycle"}.`,
     getSubmitText: () => "Save Changes",
   },
 } as const;
