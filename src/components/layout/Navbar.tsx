@@ -70,9 +70,15 @@ const Navbar = () => {
   };
 
   // Get available roles from user's role_profile array (excluding current active role)
-  const availableRoles = (user.role_profile || []).filter(
+  let availableRoles = (user.role_profile || []).filter(
     (role): role is UserRole => role !== user.role_profile?.[0] && Boolean(ROLE_CONFIG[role as UserRole])
   ) as UserRole[];
+
+  // Special case: If user has "HR Admin" role, also add "Employee" role as available option
+  const currentRole = user.role_profile?.[0];
+  if (currentRole === "HR Admin" && !availableRoles.includes("Employee")) {
+    availableRoles = [...availableRoles, "Employee"];
+  }
 
   const handleRoleSwitch = (newRole: UserRole) => {
     switchRole(newRole);
