@@ -32,7 +32,7 @@ const SummaryCards = () => {
     try {
       const data = await getEmployeeAssessmentSummary(
         employeeId,
-        selectedCycle?.cycleName
+        selectedCycle?.cycleId
       );
       setSummary(data);
     } catch {
@@ -40,7 +40,7 @@ const SummaryCards = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.employee_id, selectedCycle?.cycleName]);
+  }, [user?.employee_id, selectedCycle?.cycleId]);
 
   useEffect(() => {
     fetchSummary();

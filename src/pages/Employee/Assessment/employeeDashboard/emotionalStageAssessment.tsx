@@ -45,7 +45,7 @@ const EmotionalStageAssessment = ({
       try {
         const data = await getEmployeeWeightedAssessmentSummary(
           employeeId,
-          selectedCycle?.cycleName
+          selectedCycle?.cycleId
         );
         const stages: EmotionalStageAssessmentType[] = data.stages.map(
           (stage) => ({
@@ -67,7 +67,7 @@ const EmotionalStageAssessment = ({
     };
 
     fetchData();
-  }, [user?.employee_id, selectedCycle?.cycleName]);
+  }, [user?.employee_id, selectedCycle?.cycleId]);
 
   const maxScore = findMaxByKey(emotionalStageAssessment, "score");
 

@@ -24,7 +24,7 @@ const TransitionLab = () => {
       try {
         const entries = await getEmployeeCycleTransitionLab(
           employeeId,
-          selectedCycle?.cycleName
+          selectedCycle?.cycleId
         );
 
         const mapped: HistoricalAssessment[] = entries.map((entry, index) => {
@@ -75,7 +75,7 @@ const TransitionLab = () => {
     };
 
     fetchData();
-  }, [user?.employee_id, selectedCycle?.cycleName]);
+  }, [user?.employee_id, selectedCycle?.cycleId]);
 
   return (
     <AnimatedContainer
