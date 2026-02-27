@@ -152,7 +152,7 @@ const clearPageAnswersFromLocalStorage = (
 
 const AssessmentQuestions = () => {
   const navigate = useNavigate();
-  const { answers, answerQuestion, submitAssessment, isComplete } = useAssessment();
+  const { answers, answerQuestion, submitAssessment, isComplete, resetAssessment } = useAssessment();
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
 
@@ -736,11 +736,11 @@ const AssessmentQuestions = () => {
 
   // Handle close modal - navigate back to assessment page
   const handleCloseSuccessModal = useCallback(() => {
-    // Using replace to avoid adding to history stack
-    navigate("/assessment", { replace: true });
-    // Close modal after navigation starts (component will unmount anyway)
+    // Reset context so /assessment shows the landing (with "Assessment Submitted"), not the results view
+    resetAssessment();
     setShowSuccessModal(false);
-  }, [navigate]);
+    navigate("/assessment", { replace: true });
+  }, [navigate, resetAssessment]);
 
   // Reset page on questionnaire change
   useEffect(() => {
