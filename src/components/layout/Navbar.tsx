@@ -21,6 +21,7 @@ import { LogoutUser } from "../../api/api-functions/authentication";
 import type { UserRole } from "../../types";
 import { cn } from "../../utils/cn";
 import { getRoleLandingRoute } from "../../utils/roleRoutes";
+import { getFirstLetter } from "../../utils/commonUtils";
 
 const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; color: string }> = {
   "Employee": {
@@ -297,11 +298,12 @@ const Navbar = () => {
               }}
               className="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-gray-100"
             >
-              <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user?.replace(/[^a-z0-9]/g, '') || 'default'}`}
-                alt={user.full_name || 'User'}
-                className="h-8 w-8 rounded-full border-2 border-gray-200"
-              />
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 bg-linear-to-br from-brand-teal to-brand-navy text-sm font-semibold text-white"
+                aria-hidden
+              >
+                {getFirstLetter(user.full_name, user.email || user.user)}
+              </div>
               <ChevronDown className="hidden h-4 w-4 text-gray-500 sm:block" />
             </button>
 
@@ -323,11 +325,12 @@ const Navbar = () => {
                     <div className="p-2">
                       <div className="mb-2 rounded-lg bg-linear-to-r from-brand-teal/10 to-brand-navy/10 p-3">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user?.replace(/[^a-z0-9]/g, '') || 'default'}`}
-                            alt={user.full_name || 'User'}
-                            className="h-10 w-10 rounded-full border-2 border-white"
-                          />
+                          <div
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-white bg-linear-to-br from-brand-teal to-brand-navy text-base font-semibold text-white"
+                            aria-hidden
+                          >
+                            {getFirstLetter(user.full_name, user.email || user.user)}
+                          </div>
                           <div className="flex-1">
                             <div className="text-sm font-semibold text-gray-900">
                               {user.full_name || 'User'}

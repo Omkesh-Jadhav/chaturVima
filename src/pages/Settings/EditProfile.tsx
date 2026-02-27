@@ -30,6 +30,7 @@ import {
 } from "../../components/ui";
 import { useUser } from "../../context/UserContext";
 import { COUNTRY_CODES, SALUTATIONS } from "../../utils/theme";
+import { getFirstLetter } from "../../utils/commonUtils";
 
 // Success Modal Component
 const SuccessModal = ({
@@ -156,31 +157,20 @@ const EditProfile = () => {
   // Prefill form data from user context
   useEffect(() => {
     if (!user) return;
-    
-    // Safely extract user email with multiple fallbacks - use optional chaining
+
     const rawUserEmail = user?.user;
-    const userEmail = (rawUserEmail && typeof rawUserEmail === 'string' && rawUserEmail.trim()) 
-      ? rawUserEmail.trim() 
-      : '';
-    
-    // Safely create seed value - ensure we always have a string before calling replace
-    let seedValue = 'user'; // default fallback
-    try {
-      if (userEmail && typeof userEmail === 'string' && userEmail.length > 0) {
-        const cleaned = userEmail.replace(/[^a-z0-9]/gi, '');
-        seedValue = cleaned && cleaned.length > 0 ? cleaned : 'user';
-      }
-    } catch (error) {
-      console.warn('Error generating seed value:', error);
-      seedValue = 'user';
-    }
-    
+    const userEmail =
+      rawUserEmail && typeof rawUserEmail === "string" && rawUserEmail.trim()
+        ? rawUserEmail.trim()
+        : "";
+
     setFormData((prev) => ({
       ...prev,
-      profilePhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seedValue}`,
-      name: user?.full_name || '',
-      designation: (user?.role_profile && Array.isArray(user.role_profile) && user.role_profile[0]) || "Employee", // Use first role
-      department: "General", // Default department since it's not in API response
+      profilePhoto: "", // No random avatar; we show first-letter avatar
+      name: user?.full_name || "",
+      designation:
+        (user?.role_profile && Array.isArray(user.role_profile) && user.role_profile[0]) || "Employee",
+      department: "General",
       emailAddress: userEmail,
     }));
   }, [user]);
@@ -296,15 +286,15 @@ const EditProfile = () => {
                 {/* Profile Photo Section */}
                 <div className="flex flex-col items-center space-y-4 mb-6 pb-6 border-b border-gray-200">
                   <div className="relative group">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-linear-to-br from-brand-teal/20 to-brand-navy/20 flex items-center justify-center ring-2 ring-brand-teal/20">
-                      {formData.profilePhoto ? (
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-linear-to-br from-brand-teal to-brand-navy flex items-center justify-center ring-2 ring-brand-teal/20 text-white text-4xl font-semibold">
+                      {formData.profilePhoto && formData.profilePhoto.startsWith("data:") ? (
                         <img
                           src={formData.profilePhoto}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <UserCircle className="h-16 w-16 text-gray-400" />
+                        getFirstLetter(formData.name, formData.emailAddress)
                       )}
                     </div>
                     <Button
