@@ -25,14 +25,6 @@ const SETTINGS_OPTIONS: SettingsOption[] = [
     path: "/settings/edit-profile",
     color: "from-blue-500 to-blue-600",
   },
-  {
-    id: "security",
-    title: "Security",
-    description: "Manage security settings and OTP preferences",
-    icon: <Shield className="h-5 w-5" />,
-    path: "/settings/security",
-    color: "from-red-500 to-red-600",
-  },
 ];
 
 const Settings = () => {
