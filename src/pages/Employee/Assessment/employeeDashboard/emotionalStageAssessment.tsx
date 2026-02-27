@@ -68,7 +68,7 @@ const EmotionalStageAssessment = ({
   }, [user?.employee_id, selectedCycle?.cycleId]);
 
   const stages = emotionalStageAssessment ?? [];
-  const maxScore = findMaxByKey(stages, "score");
+  // const maxScore = findMaxByKey(stages, "score");
 
   // Find the stage with the highest score
   const maxScoreValue = Math.max(
@@ -118,7 +118,7 @@ const EmotionalStageAssessment = ({
     color: getStagePieColor(stage as any),
   })) as EmotionalStageAssessmentType[];
   const displayMaxScore = findMaxByKey(displayStages, "score") || 1;
-  const displayStagesWithStatus = stages.length > 0 ? stagesWithStatus : displayStages.map((s) => ({ ...s, calculatedStatus: undefined as const }));
+  const displayStagesWithStatus = stages.length > 0 ? stagesWithStatus : displayStages.map((s) => ({ ...s, calculatedStatus: undefined }));
   const displaySorted = stages.length > 0 ? sortedStagesWithStatus : sortStagesByScore(displayStagesWithStatus, "score");
 
   return (
