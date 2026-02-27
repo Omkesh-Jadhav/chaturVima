@@ -69,16 +69,10 @@ const Navbar = () => {
     color: "text-gray-700 bg-gray-100",
   };
 
-  // Get all available roles that the user can switch to
-  const allRoles: UserRole[] = [
-    "Employee",
-    "HR Admin",
-    "Superadmin",
-    "HR Doctorate",
-  ];
-  const availableRoles = allRoles.filter(
-    (role): role is UserRole => user.role_profile?.length > 0 && role !== user.role_profile[0] && Boolean(ROLE_CONFIG[role])
-  );
+  // Get available roles from user's role_profile array (excluding current active role)
+  const availableRoles = (user.role_profile || []).filter(
+    (role): role is UserRole => role !== user.role_profile?.[0] && Boolean(ROLE_CONFIG[role as UserRole])
+  ) as UserRole[];
 
   const handleRoleSwitch = (newRole: UserRole) => {
     switchRole(newRole);
