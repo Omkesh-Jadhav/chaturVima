@@ -8,7 +8,7 @@ import SubStagesBreakdown from "./subStagesBreakdown";
 import SWOTAnalysis from "./swotAnalysis";
 import EmotionalIntensityHeatmap from "./emotionalIntensityHeatmap";
 import AssessmentTypesSubStagesHeatmap from "./assessmentTypesSubStagesHeatmap";
-import TransitionLab from "./transitionLab";
+// import TransitionLab from "./transitionLab";
 import PendingAssessments from "./pendingAssessments";
 import TestHistory from "./testHistory";
 import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
