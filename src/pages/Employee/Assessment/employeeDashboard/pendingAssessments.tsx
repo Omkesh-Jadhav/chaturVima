@@ -43,8 +43,8 @@ const PendingAssessments = () => {
               return mappedType ?? q.name;
             }) ?? [];
           return {
-            id: `${cycle.assessment_cycle}-${index}`,
-            cycleName: cycle.assessment_cycle,
+            id: `${cycle.cycle_name}-${index}`,
+            cycleName: cycle.cycle_name,
             assessmentTypes: types,
             startDate: cycle.start_date,
             endDate: cycle.end_date,
@@ -98,7 +98,7 @@ const PendingAssessments = () => {
                 delay={idx * 0.1}
                 className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-3.5 transition-all hover:shadow-md hover:border-gray-300"
               >
-                <h3 className="text-xs font-semibold text-gray-900 mb-2.5 line-clamp-2 min-h-[32px]">
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-2.5 line-clamp-2 min-h-[32px]">
                   {item.cycleName}
                 </h3>
                 <div className="flex flex-wrap gap-1 mb-2.5">

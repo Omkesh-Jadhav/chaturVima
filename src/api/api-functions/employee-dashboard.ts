@@ -72,6 +72,7 @@ export interface EmployeeCycleTransitionLabResponse {
 // Pending assessment cycles with questionnaires
 export interface EmployeePendingCycle {
   assessment_cycle: string;
+  cycle_name: string;
   status: string;
   dimension: string;
   start_date: string;
