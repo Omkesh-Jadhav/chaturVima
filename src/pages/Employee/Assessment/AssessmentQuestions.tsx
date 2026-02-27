@@ -37,6 +37,7 @@ import {
   submitAssessmentAnswers,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
+import { reportGeneration } from "../../../api/api-functions/reports";
 import type { Question } from "../../../types";
 
 const QUESTIONNAIRE_DISPLAY_NAMES: Record<string, string> = {
@@ -687,11 +688,22 @@ const AssessmentQuestions = () => {
   }, [allQuestionnairesComplete, isSaved, isSubmitted]);
 
   // Handle confirm submit
-  const handleConfirmSubmit = useCallback(() => {
+  const handleConfirmSubmit = useCallback(async () => {
     setShowConfirmationModal(false);
     submitAssessment();
     setIsSubmitted(true);
     setShowSuccessModal(true);
+
+    // Call report generation API
+    if (user?.employee_id && selectedCycle?.cycleId) {
+      try {
+        await reportGeneration(user.employee_id, selectedCycle.cycleId);
+        console.log("Report generation initiated successfully");
+      } catch (error) {
+        console.error("Failed to initiate report generation:", error);
+        // Note: We don't show error to user as this is a background process
+      }
+    }
 
     // Save cycle-specific submission status when modal is confirmed
     // Each cycle has its own submission flag: chaturvima_submitted_cycle_{cycleId}_{email}
@@ -708,7 +720,7 @@ const AssessmentQuestions = () => {
     }
 
     clearPageStorage(user?.email);
-  }, [submitAssessment, user?.email, assessmentsByQuestionnaire]);
+  }, [submitAssessment, user?.email, user?.employee_id, selectedCycle?.cycleId, assessmentsByQuestionnaire]);
 
   // Handle view report
   const handleViewReport = useCallback((questionnaire?: string) => {

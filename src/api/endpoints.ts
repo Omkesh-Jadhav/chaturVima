@@ -51,7 +51,7 @@ export const API_ENDPOINTS = {
     },
 
     REPORT: {
-
+        REPORT_GENERATION: `http://16.16.64.172:5000/generate-employee-report`
     },
 
     USER: {
