@@ -45,7 +45,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     email: string,
     _mobile: string,
     name?: string,
-    apiResponse?: any // Accept actual API response
+    apiResponse?: any
   ): Promise<void> => {
     // Simulate API call delay for OTP verification
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -59,7 +59,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       full_name: apiResponse.message.full_name,
       email: apiResponse.message.email || email,
       employee_id: apiResponse.message.employee_id,
-      role_profile: apiResponse.message.role_profile, // Now an array
+      role_profile: apiResponse.message.role_profile, // Original roles from API
+      current_role: apiResponse.message.role_profile?.[0], // Set first role as current
       api_key: apiResponse.message.api_key,
       api_secret: apiResponse.message.api_secret,
       authorization_header: apiResponse.message.authorization_header
@@ -71,6 +72,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       ).join(" ") || "User",
       email: email,
       role_profile: ["Employee"], // Default role as array
+      current_role: "Employee", // Set default current role
       api_key: `mock_token_${Date.now()}`,
       api_secret: `mock_refresh_${Date.now()}`,
       authorization_header: `mock_refresh_${Date.now()}`
@@ -91,14 +93,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const switchRole = (newRole: UserRole) => {
     if (!user) return;
-    // Update role_profile array - replace first role or add new role
-    const updatedRoles = [...user.role_profile];
-    if (updatedRoles.length > 0) {
-      updatedRoles[0] = newRole; // Replace primary role
-    } else {
-      updatedRoles.push(newRole); // Add if no roles exist
-    }
-    const updatedUser = { ...user, role_profile: updatedRoles };
+    // Only update current_role, preserve original role_profile from API
+    const updatedUser = { ...user, current_role: newRole };
     setUser(updatedUser);
     setIsAuthenticated(true);
     localStorage.setItem("chaturvima_user", JSON.stringify(updatedUser));

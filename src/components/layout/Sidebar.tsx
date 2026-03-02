@@ -137,12 +137,13 @@ const Sidebar = () => {
   const location = useLocation();
   const { user } = useUser();
 
-  const currentRoleConfig = user && user.role_profile?.length > 0 ? ROLE_CONFIG[user.role_profile[0] as UserRole] : null;
+  const currentRole = user?.current_role || user?.role_profile?.[0];
+  const currentRoleConfig = currentRole ? ROLE_CONFIG[currentRole as UserRole] : null;
 
-  // Filter navigation items based on user role
+  // Filter navigation items based on current active role
   const getVisibleNavItems = () => {
-    if (!user) return [];
-    return NAV_ITEMS.filter((item) => user.role_profile?.length > 0 && item.roles.includes(user.role_profile[0] as UserRole));
+    if (!user || !currentRole) return [];
+    return NAV_ITEMS.filter((item) => item.roles.includes(currentRole as UserRole));
   };
 
   const visibleNavItems = getVisibleNavItems();

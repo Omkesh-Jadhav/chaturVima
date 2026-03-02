@@ -87,6 +87,18 @@ const EmotionalIntensityHeatmap = () => {
     }));
   }, [emotionalIntensityHeatmap, assessmentTypes]);
 
+  // Only show logical outcomes from API; no synthesized or hardcoded text
+  // const logicalOutcomes = useMemo(() => {
+  //   if (!summary?.logical_outcomes?.length) return [];
+  //   return summary.logical_outcomes
+  //     .map((entry) => {
+  //       const [, description] =
+  //         Object.entries(entry).find(([key]) => key !== "sr_no") ?? [];
+  //       return typeof description === "string" ? description : "";
+  //     })
+  //     .filter((text) => text.trim().length > 0);
+  // }, [summary]);
+
   const headerColors: Record<
     string,
     { bg: string; border: string; dot: string }
@@ -225,8 +237,8 @@ const EmotionalIntensityHeatmap = () => {
                         <div
                           key={`${row.assessmentType}-${stage}`}
                           className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${isZero
-                              ? "border border-gray-200 bg-white"
-                              : "bg-gray-50"
+                            ? "border border-gray-200 bg-white"
+                            : "bg-gray-50"
                             }`}
                           style={
                             !isZero
@@ -300,10 +312,10 @@ const EmotionalIntensityHeatmap = () => {
                           <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
                             <span
                               className={`text-sm font-bold ${isZero
-                                  ? "text-gray-900"
-                                  : value > 50
-                                    ? "text-white drop-shadow-lg"
-                                    : "text-gray-900 drop-shadow-sm"
+                                ? "text-gray-900"
+                                : value > 50
+                                  ? "text-white drop-shadow-lg"
+                                  : "text-gray-900 drop-shadow-sm"
                                 }`}
                               style={
                                 !isZero && value > 50
