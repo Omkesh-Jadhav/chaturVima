@@ -12,7 +12,6 @@ import {
   Camera,
   Hash,
   IdCard,
-  UserCircle,
   Mail,
   MapPin,
   FileText,

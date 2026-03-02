@@ -4,7 +4,7 @@
  */
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Shield, ChevronRight } from "lucide-react";
+import { User, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../../components/ui";
 
 interface SettingsOption {

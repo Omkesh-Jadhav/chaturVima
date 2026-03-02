@@ -87,18 +87,6 @@ const EmotionalIntensityHeatmap = () => {
     }));
   }, [emotionalIntensityHeatmap, assessmentTypes]);
 
-  // Only show logical outcomes from API; no synthesized or hardcoded text
-  const logicalOutcomes = useMemo(() => {
-    if (!summary?.logical_outcomes?.length) return [];
-    return summary.logical_outcomes
-      .map((entry) => {
-        const [, description] =
-          Object.entries(entry).find(([key]) => key !== "sr_no") ?? [];
-        return typeof description === "string" ? description : "";
-      })
-      .filter((text) => text.trim().length > 0);
-  }, [summary]);
-
   const headerColors: Record<
     string,
     { bg: string; border: string; dot: string }
