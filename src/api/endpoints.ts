@@ -29,6 +29,8 @@ export const API_ENDPOINTS = {
         GET_EMPLOYEE_CYCLE_TRANSITION_LAB: `/api/method/chaturvima_api.api.dashboard.get_employee_cycle_transition_lab`,
         // Pending cycles with questionnaires for an employee
         GET_EMPLOYEE_CYCLES_WITH_QUESTIONNAIRES: `/api/method/chaturvima_api.api.dashboard.get_employee_cycles_with_questionnaires`,
+        // SWOT Analysis by sub-stage name (GET /api/resource/SWOT Analysis/{subStageName})
+        SWOT_ANALYSIS_RESOURCE: `/api/resource/SWOT Analysis`,
     },
 
     ORGANIZATION: {
