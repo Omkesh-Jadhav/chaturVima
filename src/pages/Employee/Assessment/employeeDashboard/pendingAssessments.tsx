@@ -56,8 +56,8 @@ const PendingAssessments = () => {
               return mappedType ?? q.name;
             }) ?? [];
           return {
-            id: `${cycle.cycle_name}-${index}`,
-            cycleId: cycle.cycle_name,
+            id: `${cycle.assessment_cycle}-${index}`,
+            cycleId: cycle.assessment_cycle,
             cycleName: cycle.cycle_name,
             assessmentTypes: types,
             startDate: cycle.start_date,
