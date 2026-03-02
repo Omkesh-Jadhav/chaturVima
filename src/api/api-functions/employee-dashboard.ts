@@ -159,3 +159,47 @@ export const employeeAssessmentHistory = async (employeeId: string) => {
     const response = await api.get(API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_ASSESSMENT_HISTORY, { params: { employee: employeeId } });
     return response.data;
 }
+// SWOT Analysis (Frappe resource) – item with description (API typo: threat uses "desription")
+export interface SwotItem {
+  name: string;
+  description?: string;
+  desription?: string;
+  parent?: string;
+  parentfield?: string;
+  parenttype?: string;
+  doctype?: string;
+}
+
+export interface SwotRecommendation {
+  name: string;
+  recommendations_title?: string;
+  recommendations_description?: string;
+  parent?: string;
+  parentfield?: string;
+  parenttype?: string;
+  doctype?: string;
+}
+
+export interface SwotAnalysisData {
+  name: string;
+  stage?: string;
+  sub_stage?: string;
+  strategic_recommendations?: string;
+  strength?: SwotItem[];
+  weakness?: SwotItem[];
+  opportunities?: SwotItem[];
+  threat?: SwotItem[];
+  reccomendation?: SwotRecommendation[];
+  actionable_steps?: SwotItem[];
+}
+
+/** Get SWOT Analysis doc by sub-stage name (e.g. "Emerging Challenges - Steady State"). Frappe GET returns { data: SwotAnalysisData }. */
+export const getSwotAnalysisBySubStage = async (
+  subStageName: string
+): Promise<SwotAnalysisData | null> => {
+  if (!subStageName?.trim()) return null;
+  const encoded = encodeURIComponent(subStageName.trim());
+  const url = `${API_ENDPOINTS.EMPLOYEE_DASHBOARD.SWOT_ANALYSIS_RESOURCE}/${encoded}`;
+  const response = await api.get<{ data?: SwotAnalysisData }>(url);
+  return response.data?.data ?? null;
+};

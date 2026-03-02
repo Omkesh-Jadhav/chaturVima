@@ -237,8 +237,8 @@ const EmotionalIntensityHeatmap = () => {
                         <div
                           key={`${row.assessmentType}-${stage}`}
                           className={`relative rounded-lg transition-all hover:shadow-lg group overflow-hidden ${isZero
-                              ? "border border-gray-200 bg-white"
-                              : "bg-gray-50"
+                            ? "border border-gray-200 bg-white"
+                            : "bg-gray-50"
                             }`}
                           style={
                             !isZero
@@ -312,10 +312,10 @@ const EmotionalIntensityHeatmap = () => {
                           <div className="relative z-10 flex items-center justify-center min-h-[55px] px-3 py-2.5">
                             <span
                               className={`text-sm font-bold ${isZero
-                                  ? "text-gray-900"
-                                  : value > 50
-                                    ? "text-white drop-shadow-lg"
-                                    : "text-gray-900 drop-shadow-sm"
+                                ? "text-gray-900"
+                                : value > 50
+                                  ? "text-white drop-shadow-lg"
+                                  : "text-gray-900 drop-shadow-sm"
                                 }`}
                               style={
                                 !isZero && value > 50
