@@ -1,22 +1,77 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatedContainer } from "@/components/ui";
-import { SearchInput, Button } from "@/components/ui";
-import { MOCK_COMPLETED_ASSESSMENTS } from "@/data/assessmentDashboard";
+import { SearchInput } from "@/components/ui";
 import { formatDisplayDate } from "@/utils/dateUtils";
 import { getCategoryPalette } from "@/utils/assessmentConfig";
-import { useAssessmentSearch } from "@/hooks/useAssessmentHooks";
+import { employeeAssessmentHistory } from "@/api/api-functions/employee-dashboard";
+import { ChevronDown } from "lucide-react";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
+interface AssessmentHistoryItem {
+  assessment_cycle: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  last_submitted_on: string;
+  dominant_stage: string | null;
+  stages: Array<{
+    stage: string;
+    percentage: number;
+  }>;
+  items: Array<{
+    submission_id: string;
+    questionnaire: string;
+    status: string;
+    last_submitted_on: string;
+    dominant_stage: string | null;
+    dominant_sub_stage: string | null;
+    stages: Array<{
+      stage: string;
+      percentage: number;
+    }>;
+  }>;
+}
+
 const TestHistory = () => {
   const navigate = useNavigate();
-  const completed = MOCK_COMPLETED_ASSESSMENTS;
-  const {
-    searchQuery,
-    setSearchQuery,
-    filteredAssessments: visibleHistory,
-  } = useAssessmentSearch(completed);
+  const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  // Filter assessments based on search query
+  const visibleHistory = assessmentHistory.filter((item) =>
+    item.dominant_stage?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.assessment_cycle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    const fetchAssessmentHistory = async () => {
+      try {
+        setLoading(true);
+        // TODO: Get actual employee ID from context/props
+        const employeeId = "HR-EMP-00049"; // Replace with actual employee ID
+        const response = await employeeAssessmentHistory(employeeId);
+        setAssessmentHistory(response.message || []);
+      } catch (err) {
+        console.error("Failed to fetch assessment history:", err);
+        setError("Failed to load assessment history");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssessmentHistory();
+  }, []);
+
+  const getDominantStageScore = (stages: Array<{ stage: string; percentage: number }>, dominantStage: string | null) => {
+    if (!dominantStage || !stages.length) return 0;
+    const stage = stages.find(s => s.stage === dominantStage);
+    return stage?.percentage || 0;
+  };
 
   return (
     <AnimatedContainer
@@ -44,108 +99,257 @@ const TestHistory = () => {
           />
         </div>
       </div>
-      <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 bg-linear-to-r from-brand-teal/5 via-white to-brand-navy/5">
-              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                Assessment
-              </th>
-              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                Dominant Stage
-              </th>
-              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                Completed
-              </th>
-              <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                Metrics
-              </th>
-              <th className="whitespace-nowrap px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {visibleHistory.map((row) => {
-              const palette = getCategoryPalette(row.category);
-              const scoreProgress = Math.min(100, row.score);
+      <div className="mt-4 overflow-x-auto overflow-y-visible" style={{ minHeight: '400px' }}>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-gray-500">Loading assessment history...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-red-500">{error}</div>
+          </div>
+        ) : visibleHistory.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-gray-500">No assessment history found</div>
+          </div>
+        ) : (
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 bg-linear-to-r from-brand-teal/5 via-white to-brand-navy/5">
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Assessment
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Dominant Stage
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Completed
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Metrics
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {visibleHistory.map((row, index) => {
+                const palette = getCategoryPalette(row.dominant_stage || 'Unknown');
+                const dominantStageScore = getDominantStageScore(row.stages, row.dominant_stage);
+                const scoreProgress = Math.min(100, dominantStageScore);
 
-              return (
-                <tr
-                  key={row.id}
-                  className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
-                >
-                  <td className="px-4 py-3">
-                    <div className="font-semibold text-gray-900">
-                      {row.title}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-                      style={{
-                        borderColor: `${palette.accent}33`,
-                        color: palette.accent,
-                        background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
-                      }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                      {row.category}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
-                    <div className="font-semibold text-gray-900">
-                      {formatDisplayDate(row.date)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-medium text-gray-500">
-                          Score:
-                        </span>
-                        <span className="text-sm font-bold text-gray-900">
-                          {row.score}
-                        </span>
+                return (
+                  <tr
+                    key={`${row.assessment_cycle}-${index}`}
+                    className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-gray-900">
+                        {row.assessment_cycle}
                       </div>
-                      <div className="h-1.5 w-24 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.dominant_stage ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
                           style={{
-                            width: `${scoreProgress}%`,
-                            background: `linear-gradient(90deg, ${palette.from}, ${palette.accent})`,
+                            borderColor: `${palette.accent}33`,
+                            color: palette.accent,
+                            background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
                           }}
-                        />
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                          {row.dominant_stage}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">Not determined</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <div className="font-semibold text-gray-900">
+                        {formatDisplayDate(row.last_submitted_on)}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate("/assessment-report");
-                      }}
-                      variant="gradient"
-                      size="sm"
-                      className="relative overflow-hidden"
-                    >
-                      <span
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{
-                          background:
-                            "radial-gradient(circle at 30% 50%, rgba(255,255,255,0.2), transparent 50%)",
-                        }}
-                      />
-                      <span className="relative">View Report</span>
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-medium text-gray-500">
+                            Score:
+                          </span>
+                          <span className="text-sm font-bold text-gray-900">
+                            {dominantStageScore}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-24 rounded-full bg-gray-100 overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${scoreProgress}%`,
+                              background: `linear-gradient(90deg, ${palette.from}, ${palette.accent})`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {row.items && row.items.length > 0 ? (
+                        <ReportDropdown items={row.items} onSelect={(questionnaire) => {
+                          // TODO: Handle navigation to specific report
+                          console.log('Navigate to report for:', questionnaire);
+                          navigate("/assessment-report");
+                        }} />
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">No reports</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </AnimatedContainer>
+  );
+};
+
+// Report Dropdown Component
+interface ReportDropdownProps {
+  items: Array<{
+    submission_id: string;
+    questionnaire: string;
+    status: string;
+  }>;
+  onSelect: (questionnaire: string) => void;
+}
+
+const ReportDropdown = ({ items, onSelect }: ReportDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  const getQuestionnaireDisplayName = (questionnaire: string) => {
+    const displayNames: Record<string, string> = {
+      "Self": "Employee Self Assessment",
+      "Boss": "Manager Relationship Assessment", 
+      "DEPT": "Department Assessment",
+      "Company": "Company Assessment"
+    };
+    return displayNames[questionnaire] || questionnaire;
+  };
+  
+  const calculateDropdownPosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const dropdownHeight = Math.min(items.length * 44 + 20, 200);
+    const dropdownWidth = 220;
+    
+    let top = buttonRect.bottom + 4;
+    let left = buttonRect.right - dropdownWidth;
+    
+    // Check if dropdown would go below viewport
+    if (top + dropdownHeight > viewportHeight) {
+      top = buttonRect.top - dropdownHeight - 4;
+    }
+    
+    // Check if dropdown would go outside left edge
+    if (left < 8) {
+      left = 8;
+    }
+    
+    // Check if dropdown would go outside right edge
+    if (left + dropdownWidth > viewportWidth - 8) {
+      left = viewportWidth - dropdownWidth - 8;
+    }
+    
+    setDropdownStyle({
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      width: `${dropdownWidth}px`,
+      maxHeight: '200px',
+      overflowY: 'auto',
+      zIndex: 9999
+    });
+  }, [items.length]);
+  
+  const handleToggle = () => {
+    if (!isOpen) {
+      calculateDropdownPosition();
+    }
+    setIsOpen(!isOpen);
+  };
+  
+  const handleSelect = (questionnaire: string) => {
+    onSelect(questionnaire);
+    setIsOpen(false);
+  };
+  
+  useEffect(() => {
+    if (isOpen) {
+      const handleScroll = () => {
+        if (isOpen) {
+          calculateDropdownPosition();
+        }
+      };
+      
+      const handleResize = () => {
+        if (isOpen) {
+          calculateDropdownPosition();
+        }
+      };
+      
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isOpen, calculateDropdownPosition]);
+
+  return (
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        onClick={handleToggle}
+        className="inline-flex items-center gap-2 rounded-lg border border-brand-teal/40 bg-white px-3 py-1.5 text-xs font-medium text-brand-teal transition-colors hover:bg-brand-teal/5 hover:border-brand-teal/60"
+      >
+        View Report
+        <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-9998" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div 
+            className="rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black/5"
+            style={dropdownStyle}
+          >
+            <div className="h-0.5 bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal" />
+            <div className="p-1">
+              {items.map((item, index) => (
+                <button
+                  key={`${item.submission_id}-${index}`}
+                  onClick={() => handleSelect(item.questionnaire)}
+                  className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-brand-teal/10 hover:text-brand-teal"
+                >
+                  {getQuestionnaireDisplayName(item.questionnaire)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
