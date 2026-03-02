@@ -155,6 +155,10 @@ export const getEmployeePendingCycles = async (
   return response.data?.message ?? [];
 };
 
+export const employeeAssessmentHistory = async (employeeId: string) => {
+    const response = await api.get(API_ENDPOINTS.EMPLOYEE_DASHBOARD.GET_EMPLOYEE_ASSESSMENT_HISTORY, { params: { employee: employeeId } });
+    return response.data;
+}
 // SWOT Analysis (Frappe resource) – item with description (API typo: threat uses "desription")
 export interface SwotItem {
   name: string;
