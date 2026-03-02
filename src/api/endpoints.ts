@@ -27,6 +27,8 @@ export const API_ENDPOINTS = {
         GET_EMPLOYEE_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_assessment_summary`,
         GET_EMPLOYEE_WEIGHTED_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_weighted_assessment_summary`,
         GET_EMPLOYEE_CYCLE_TRANSITION_LAB: `/api/method/chaturvima_api.api.dashboard.get_employee_cycle_transition_lab`,
+        // Pending cycles with questionnaires for an employee
+        GET_EMPLOYEE_CYCLES_WITH_QUESTIONNAIRES: `/api/method/chaturvima_api.api.dashboard.get_employee_cycles_with_questionnaires`,
     },
 
     ORGANIZATION: {

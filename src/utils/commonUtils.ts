@@ -31,3 +31,14 @@ export const getInitials = (name: string): string => {
     .toUpperCase();
 };
 
+/**
+ * Get first letter for avatar (single letter from name or email)
+ */
+export const getFirstLetter = (name?: string | null, email?: string | null): string => {
+  const fromName = name?.trim();
+  if (fromName && fromName.length > 0) return fromName.charAt(0).toUpperCase();
+  const fromEmail = email?.trim();
+  if (fromEmail && fromEmail.length > 0) return fromEmail.charAt(0).toUpperCase();
+  return "?";
+};
+
