@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Play, Calendar } from "lucide-react";
 import { AnimatedContainer, Button } from "@/components/ui";
 import { useUser } from "@/context/UserContext";
+import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import { formatDisplayDate } from "@/utils/dateUtils";
 import { mapQuestionnaireToAssessmentType } from "@/utils/assessmentUtils";
 import {
@@ -14,6 +16,7 @@ const CARD_BASE_CLASSES =
 
 interface PendingCard {
   id: string;
+  cycleId: string;
   cycleName: string;
   assessmentTypes: string[];
   startDate: string;
@@ -22,8 +25,18 @@ interface PendingCard {
 
 const PendingAssessments = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
+  const { setSelectedCycle } = useSelectedAssessmentCycle();
   const [pending, setPending] = useState<PendingCard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleStartTest = (item: PendingCard) => {
+    setSelectedCycle({
+      cycleId: item.cycleId,
+      cycleName: item.cycleName,
+    });
+    navigate("/assessment/questions");
+  };
 
   useEffect(() => {
     const employeeId = user?.employee_id;
@@ -44,6 +57,7 @@ const PendingAssessments = () => {
             }) ?? [];
           return {
             id: `${cycle.cycle_name}-${index}`,
+            cycleId: cycle.cycle_name,
             cycleName: cycle.cycle_name,
             assessmentTypes: types,
             startDate: cycle.start_date,
@@ -122,6 +136,7 @@ const PendingAssessments = () => {
                   variant="gradient"
                   size="sm"
                   className="w-full relative overflow-hidden text-xs py-1.5"
+                  onClick={() => handleStartTest(item)}
                 >
                   <Play className="h-3.5 w-3.5 mr-1" />
                   Start Test
