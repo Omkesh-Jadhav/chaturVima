@@ -113,6 +113,7 @@ export interface User {
   email: string;
   employee_id?: string;
   role_profile: string[];
+  current_role?: string;
   api_key: string;
   api_secret: string;
   authorization_header: string;
