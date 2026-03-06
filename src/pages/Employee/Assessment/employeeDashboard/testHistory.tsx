@@ -1,17 +1,21 @@
-import { useNavigate } from "react-router-dom";
+// Removed useNavigate import as we're opening reports in new tabs
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatedContainer } from "@/components/ui";
 import { SearchInput } from "@/components/ui";
 import { formatDisplayDate } from "@/utils/dateUtils";
 import { getCategoryPalette } from "@/utils/assessmentConfig";
 import { employeeAssessmentHistory } from "@/api/api-functions/employee-dashboard";
+import { reportGenerationBySubmission } from "@/api/api-functions/reports";
+import { useUser } from "@/context/UserContext";
 import { ChevronDown } from "lucide-react";
+import { API_ENDPOINTS } from "@/api/endpoints";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 interface AssessmentHistoryItem {
   assessment_cycle: string;
+  cycle_name: string;
   status: string;
   start_date: string;
   end_date: string;
@@ -36,7 +40,7 @@ interface AssessmentHistoryItem {
 }
 
 const TestHistory = () => {
-  const navigate = useNavigate();
+  const { user } = useUser();
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,9 +56,11 @@ const TestHistory = () => {
     const fetchAssessmentHistory = async () => {
       try {
         setLoading(true);
-        // TODO: Get actual employee ID from context/props
-        const employeeId = "HR-EMP-00049"; // Replace with actual employee ID
-        const response = await employeeAssessmentHistory(employeeId);
+        if (!user?.employee_id) {
+          setError("Employee ID not found. Please log in again.");
+          return;
+        }
+        const response = await employeeAssessmentHistory(user.employee_id);
         setAssessmentHistory(response.message || []);
       } catch (err) {
         console.error("Failed to fetch assessment history:", err);
@@ -65,7 +71,7 @@ const TestHistory = () => {
     };
 
     fetchAssessmentHistory();
-  }, []);
+  }, [user?.employee_id]);
 
   const getDominantStageScore = (stages: Array<{ stage: string; percentage: number }>, dominantStage: string | null) => {
     if (!dominantStage || !stages.length) return 0;
@@ -141,12 +147,12 @@ const TestHistory = () => {
 
                 return (
                   <tr
-                    key={`${row.assessment_cycle}-${index}`}
+                    key={`${row.assessment_cycle}-${row.cycle_name}-${index}`}
                     className="group transition-colors cursor-pointer bg-white hover:bg-brand-teal/5"
                   >
                     <td className="px-4 py-3">
                       <div className="font-semibold text-gray-900">
-                        {row.assessment_cycle}
+                        {row.cycle_name}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -194,11 +200,15 @@ const TestHistory = () => {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {row.items && row.items.length > 0 ? (
-                        <ReportDropdown items={row.items} onSelect={(questionnaire) => {
-                          // TODO: Handle navigation to specific report
-                          console.log('Navigate to report for:', questionnaire);
-                          navigate("/assessment-report");
-                        }} />
+                        <ReportDropdown 
+                          items={row.items} 
+                          employeeId={user?.employee_id || ""}
+                          cycleName={row.assessment_cycle}
+                          onSelect={(item) => {
+                            console.log('Opening report for:', item.questionnaire, 'with submission ID:', item.submission_id);
+                            // Report will be opened in new tab by the dropdown component
+                          }} 
+                        />
                       ) : (
                         <span className="text-xs text-gray-400 italic">No reports</span>
                       )}
@@ -221,10 +231,12 @@ interface ReportDropdownProps {
     questionnaire: string;
     status: string;
   }>;
-  onSelect: (questionnaire: string) => void;
+  employeeId: string;
+  cycleName: string;
+  onSelect: (item: { submission_id: string; questionnaire: string }) => void;
 }
 
-const ReportDropdown = ({ items, onSelect }: ReportDropdownProps) => {
+const ReportDropdown = ({ items, employeeId, cycleName, onSelect }: ReportDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -284,8 +296,42 @@ const ReportDropdown = ({ items, onSelect }: ReportDropdownProps) => {
     setIsOpen(!isOpen);
   };
   
-  const handleSelect = (questionnaire: string) => {
-    onSelect(questionnaire);
+  const handleSelect = async (item: { submission_id: string; questionnaire: string }) => {
+    try {
+      console.log('Generating report for:', item.questionnaire, 'with submission ID:', item.submission_id);
+      const response = await reportGenerationBySubmission(employeeId, cycleName, item.submission_id);
+      console.log('Report generation response:', response);
+
+      // Check if response contains report_url
+      if (response && response.report_url) {
+        // Construct full URL using base URL + report_url from response
+        const fullReportUrl = `${API_ENDPOINTS.REPORT.REPORT_PDF}${response.report_url}`;
+        console.log('Opening report URL:', fullReportUrl);
+        
+        // Validate and open URL in new tab
+        try {
+          const url = new URL(fullReportUrl);
+          if (url.protocol === 'http:' || url.protocol === 'https:') {
+            window.open(fullReportUrl, '_blank');
+          } else {
+            throw new Error('Invalid URL protocol');
+          }
+        } catch (urlError) {
+          console.error('Invalid report URL:', fullReportUrl, urlError);
+          alert('Invalid report URL received from server');
+          return;
+        }
+      } else {
+        console.error('No report_url in response:', response);
+        alert('Report URL not found in server response');
+      }
+      
+      onSelect(item);
+    } catch (error) {
+      console.error('Failed to open report:', error);
+      alert('Failed to open report. Please try again.');
+      onSelect(item);
+    }
     setIsOpen(false);
   };
   
@@ -339,7 +385,7 @@ const ReportDropdown = ({ items, onSelect }: ReportDropdownProps) => {
               {items.map((item, index) => (
                 <button
                   key={`${item.submission_id}-${index}`}
-                  onClick={() => handleSelect(item.questionnaire)}
+                  onClick={() => handleSelect({ submission_id: item.submission_id, questionnaire: item.questionnaire })}
                   className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-brand-teal/10 hover:text-brand-teal"
                 >
                   {getQuestionnaireDisplayName(item.questionnaire)}

@@ -15,8 +15,10 @@ import type {
   CycleFormPayload,
 } from "@/types/assessmentCycles";
 import { useDepartments } from "@/hooks/useDepartments";
+import { useSelectedAssessmentCycleOptional } from "@/context/SelectedAssessmentCycleContext";
 
 const AssessmentCycles = () => {
+  const cycleContext = useSelectedAssessmentCycleOptional();
   // Fetch departments from API
   const { data: departments = [] } = useDepartments();
   const departmentOptions = useMemo(() => {
@@ -88,6 +90,7 @@ const AssessmentCycles = () => {
     mutationFn: createAssessmentCycle,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      cycleContext?.refreshCycles();
       closeDrawer();
     },
     onError: (error) => {
@@ -107,6 +110,7 @@ const AssessmentCycles = () => {
       updateAssessmentCycle(cycleId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      cycleContext?.refreshCycles();
       if (variables.closeOnSuccess) {
         closeDrawer();
       } else {
@@ -132,6 +136,7 @@ const AssessmentCycles = () => {
     mutationFn: (cycleId: string) => scheduleAssessmentCycle(cycleId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assessmentCycles"] });
+      cycleContext?.refreshCycles();
       closeDrawer();
     },
     onError: (error) => {

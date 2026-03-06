@@ -37,7 +37,6 @@ import {
   submitAssessmentAnswers,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
-import { reportGeneration } from "../../../api/api-functions/reports";
 import type { Question } from "../../../types";
 
 const QUESTIONNAIRE_DISPLAY_NAMES: Record<string, string> = {
@@ -694,17 +693,6 @@ const AssessmentQuestions = () => {
     setIsSubmitted(true);
     setShowSuccessModal(true);
 
-    // Call report generation API
-    if (user?.employee_id && selectedCycle?.cycleId) {
-      try {
-        await reportGeneration(user.employee_id, selectedCycle.cycleId);
-        console.log("Report generation initiated successfully");
-      } catch (error) {
-        console.error("Failed to initiate report generation:", error);
-        // Note: We don't show error to user as this is a background process
-      }
-    }
-
     // Save cycle-specific submission status when modal is confirmed
     // Each cycle has its own submission flag: chaturvima_submitted_cycle_{cycleId}_{email}
     if (user?.email && assessmentsByQuestionnaire && Object.keys(assessmentsByQuestionnaire).length > 0) {
@@ -720,7 +708,7 @@ const AssessmentQuestions = () => {
     }
 
     clearPageStorage(user?.email);
-  }, [submitAssessment, user?.email, user?.employee_id, selectedCycle?.cycleId, assessmentsByQuestionnaire]);
+  }, [submitAssessment, user?.email, assessmentsByQuestionnaire]);
 
   // Handle view report
   const handleViewReport = useCallback((questionnaire?: string) => {
@@ -763,13 +751,15 @@ const AssessmentQuestions = () => {
     return questionnaires.map((questionnaire) => {
       const questions = questionsByQuestionnaire[questionnaire] || [];
       const { isComplete } = getQuestionnaireStats(questions, answers);
+      const assessment = assessmentsByQuestionnaire[questionnaire];
       return {
         name: questionnaire,
         displayName: mapQuestionnaireToDisplayName(questionnaire),
-        isComplete
+        isComplete,
+        submission_name: assessment?.submission_name
       };
     });
-  }, [questionnaires, questionsByQuestionnaire, answers]);
+  }, [questionnaires, questionsByQuestionnaire, answers, assessmentsByQuestionnaire]);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -1427,6 +1417,7 @@ const AssessmentQuestions = () => {
         onClose={handleCloseSuccessModal}
         onViewReport={handleViewReport}
         questionnaires={successModalQuestionnaires}
+        cycleId={selectedCycle?.cycleId}
       />
     </div>
   );

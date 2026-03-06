@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
@@ -6,10 +6,7 @@ import { ASSESSMENT_TYPES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getCategoryPalette, getStageColor } from "@/utils/assessmentConfig";
 import { useUser } from "@/context/UserContext";
 import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
-import {
-  getEmployeeWeightedAssessmentSummary,
-  type EmployeeWeightedAssessmentSummary,
-} from "@/api/api-functions/employee-dashboard";
+import { useEmployeeWeightedSummary } from "@/hooks/useEmployeeWeightedSummary";
 import type { EmotionalIntensityRow } from "@/data/assessmentDashboard";
 
 const CARD_BASE_CLASSES =
@@ -18,31 +15,10 @@ const CARD_BASE_CLASSES =
 const EmotionalIntensityHeatmap = () => {
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
-  const [summary, setSummary] =
-    useState<EmployeeWeightedAssessmentSummary | null>(null);
-
-  useEffect(() => {
-    const employeeId = user?.employee_id;
-    if (!employeeId) return;
-
-    const fetchData = async () => {
-      try {
-        const data = await getEmployeeWeightedAssessmentSummary(
-          employeeId,
-          selectedCycle?.cycleId
-        );
-        setSummary(data);
-      } catch (error) {
-        console.error(
-          "Failed to fetch employee weighted assessment summary for heatmap:",
-          error
-        );
-        setSummary(null);
-      }
-    };
-
-    fetchData();
-  }, [user?.employee_id, selectedCycle?.cycleId]);
+  const { data: summary } = useEmployeeWeightedSummary(
+    user?.employee_id,
+    selectedCycle?.cycleId
+  );
 
   const emotionalIntensityHeatmap: EmotionalIntensityRow[] = useMemo(() => {
     if (!summary?.stages?.length) {

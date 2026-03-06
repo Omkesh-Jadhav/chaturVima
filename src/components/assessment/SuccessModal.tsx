@@ -10,11 +10,15 @@ import { Trophy, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui";
 // import { cn } from "@/utils/cn";
 import { CONFETTI_COLORS } from "@/data/assessmentDashboard";
+import { reportGenerationBySubmission } from "@/api/api-functions/reports";
+import { API_ENDPOINTS } from "@/api/endpoints";
+import { useUser } from "@/context/UserContext";
 
 interface Questionnaire {
   name: string;
   displayName: string;
   isComplete: boolean;
+  submission_name?: string;
 }
 
 interface SuccessModalProps {
@@ -22,11 +26,13 @@ interface SuccessModalProps {
   onClose: () => void;
   onViewReport: (questionnaire?: string) => void;
   questionnaires?: Questionnaire[];
+  cycleId?: string;
 }
 
 // const iconMap = { Target, Star, Zap };
 
-const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [] }: SuccessModalProps) => {
+const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [], cycleId }: SuccessModalProps) => {
+  const { user } = useUser();
   const [confetti, setConfetti] = useState<
     Array<{ id: number; x: number; y: number; color: string; delay: number }>
   >([]);
@@ -44,6 +50,58 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [] }: Su
       );
     }
   }, [isOpen]);
+
+  // Handle report opening: Call POST API and use report_url from response
+  const handleViewReport = async (questionnaire: Questionnaire) => {
+    if (!user?.employee_id) {
+      alert('Employee ID not found. Please log in again.');
+      return;
+    }
+
+    if (!questionnaire.submission_name) {
+      // Fallback to original behavior if no submission_name
+      onViewReport(questionnaire.name);
+      return;
+    }
+
+    if (!cycleId) {
+      alert('Cycle ID not found. Please try again.');
+      return;
+    }
+
+    try {
+      // Call POST API to generate report
+      console.log('Generating report for:', questionnaire.name, 'with submission ID:', questionnaire.submission_name);
+      const response = await reportGenerationBySubmission(user.employee_id, cycleId, questionnaire.submission_name);
+      console.log('Report generation response:', response);
+
+      // Check if response contains report_url
+      if (response && response.report_url) {
+        // Construct full URL using base URL + report_url from response
+        const fullReportUrl = `${API_ENDPOINTS.REPORT.REPORT_PDF}${response.report_url}`;
+        console.log('Opening report URL:', fullReportUrl);
+        
+        // Validate and open URL in new tab
+        try {
+          const url = new URL(fullReportUrl);
+          if (url.protocol === 'http:' || url.protocol === 'https:') {
+            window.open(fullReportUrl, '_blank');
+          } else {
+            throw new Error('Invalid URL protocol');
+          }
+        } catch (urlError) {
+          console.error('Invalid report URL:', fullReportUrl, urlError);
+          alert('Invalid report URL received from server');
+        }
+      } else {
+        console.error('No report_url in response:', response);
+        alert('Report URL not found in server response. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      alert('Failed to generate report. Please try again.');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -176,7 +234,7 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [] }: Su
                     {questionnaires.map((questionnaire) => (
                       <Button
                         key={questionnaire.name}
-                        onClick={() => onViewReport(questionnaire.name)}
+                        onClick={() => handleViewReport(questionnaire)}
                         className="w-full cursor-pointer bg-gradient-to-r from-brand-teal to-brand-navy hover:from-brand-teal/90 hover:to-brand-navy/90"
                         disabled={!questionnaire.isComplete}
                       >

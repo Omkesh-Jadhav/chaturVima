@@ -4,8 +4,8 @@ import { AnimatedContainer } from "@/components/ui";
 import { SectionHeader, SWOT_CONFIG } from "@/components/assessmentDashboard";
 import { useUser } from "@/context/UserContext";
 import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
+import { useEmployeeWeightedSummary } from "@/hooks/useEmployeeWeightedSummary";
 import {
-  getEmployeeWeightedAssessmentSummary,
   getSwotAnalysisBySubStage,
   type EmployeeWeightedAssessmentSummary,
   type SwotAnalysisData,
@@ -52,37 +52,41 @@ function getHighScoreSubStage(summary: EmployeeWeightedAssessmentSummary | null)
 const SWOTAnalysis = () => {
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
-  const [weightedSummary, setWeightedSummary] = useState<EmployeeWeightedAssessmentSummary | null>(null);
+  const { data: weightedSummary, isLoading: isLoadingSummary } = useEmployeeWeightedSummary(
+    user?.employee_id,
+    selectedCycle?.cycleId
+  );
   const [swotData, setSwotData] = useState<SwotAnalysisData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSwot, setIsLoadingSwot] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const highScoreSubStage = useMemo(() => getHighScoreSubStage(weightedSummary), [weightedSummary]);
+  const highScoreSubStage = useMemo(() => getHighScoreSubStage(weightedSummary ?? null), [weightedSummary]);
 
   useEffect(() => {
-    const employeeId = user?.employee_id;
-    if (!employeeId) {
-      setIsLoading(false);
+    if (!user?.employee_id) {
       setError("User not found");
+      setSwotData(null);
+      return;
+    }
+    setError(null);
+    if (isLoadingSummary) return;
+    if (!weightedSummary) {
+      setSwotData(null);
       return;
     }
 
-    const fetchData = async () => {
-      setIsLoading(true);
+    const subStage = getHighScoreSubStage(weightedSummary);
+    if (!subStage) {
+      setError("No sub-stage score available for this cycle.");
+      setSwotData(null);
+      return;
+    }
+
+    const fetchSwot = async () => {
+      setIsLoadingSwot(true);
       setError(null);
       setSwotData(null);
       try {
-        const summary = await getEmployeeWeightedAssessmentSummary(
-          employeeId,
-          selectedCycle?.cycleId
-        );
-        setWeightedSummary(summary);
-        const subStage = getHighScoreSubStage(summary);
-        if (!subStage) {
-          setError("No sub-stage score available for this cycle.");
-          setIsLoading(false);
-          return;
-        }
         const swot = await getSwotAnalysisBySubStage(subStage);
         setSwotData(swot ?? null);
         if (!swot) setError("SWOT analysis not found for your dominant sub-stage.");
@@ -90,12 +94,14 @@ const SWOTAnalysis = () => {
         console.error("SWOT Analysis fetch error:", err);
         setError("Failed to load SWOT analysis.");
       } finally {
-        setIsLoading(false);
+        setIsLoadingSwot(false);
       }
     };
 
-    fetchData();
-  }, [user?.employee_id, selectedCycle?.cycleId]);
+    fetchSwot();
+  }, [user?.employee_id, weightedSummary, isLoadingSummary]);
+
+  const isLoading = isLoadingSummary || isLoadingSwot;
 
   if (isLoading) {
     return (

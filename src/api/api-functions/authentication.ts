@@ -60,15 +60,33 @@ export const loginUser = async (email: string, password: string) => {
 
 export const LogoutUser = async () => {
   try {
+    // Get user data from localStorage before clearing it
+    const userData = localStorage.getItem('chaturvima_user');
+    let user = null;
+    
+    if (userData) {
+      try {
+        user = JSON.parse(userData);
+      } catch (parseError) {
+        console.error('Error parsing user data:', parseError);
+      }
+    }
+
+    // Prepare logout request with JSON body
+    const logoutData = {
+      usr: user?.email || ''
+    };
+
     const response = await api({
       method: 'POST',
       url: API_ENDPOINTS.AUTH.LOG_OUT,
+      data: logoutData,
       headers: {
         'Content-Type': 'application/json',
       }
     });
 
-    // Clear all authentication related data from localStorage
+    // Only clear localStorage AFTER successful API call
     const itemsToRemove = [
       'apiKey',
       'apiSecret',

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { AnimatedContainer } from "@/components/ui";
 import type { EmotionalStageAssessment as EmotionalStageAssessmentType } from "@/data/assessmentDashboard";
@@ -15,9 +15,7 @@ import { CARD_BASE_CLASSES } from "@/utils/gaugeStyles";
 import Aura from "./aura";
 import { useUser } from "@/context/UserContext";
 import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
-import {
-  getEmployeeWeightedAssessmentSummary,
-} from "@/api/api-functions/employee-dashboard";
+import { useEmployeeWeightedSummary } from "@/hooks/useEmployeeWeightedSummary";
 import { getStagePieColor } from "@/utils/assessmentConfig";
 
 interface EmotionalStageAssessmentProps {
@@ -33,41 +31,17 @@ const EmotionalStageAssessment = ({
 }: EmotionalStageAssessmentProps) => {
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
-  const [emotionalStageAssessment, setEmotionalStageAssessment] =
-    useState<EmotionalStageAssessmentType[] | null>(null);
+  const { data: summary } = useEmployeeWeightedSummary(
+    user?.employee_id,
+    selectedCycle?.cycleId
+  );
 
-  useEffect(() => {
-    const employeeId = user?.employee_id;
-    if (!employeeId) return;
-
-    const fetchData = async () => {
-      try {
-        const data = await getEmployeeWeightedAssessmentSummary(
-          employeeId,
-          selectedCycle?.cycleId
-        );
-        const rawStages = data?.stages ?? [];
-        const stages: EmotionalStageAssessmentType[] = rawStages.map(
-          (stage) => ({
-            stage: stage.stage,
-            score: stage.score,
-            color: getStagePieColor(stage.stage as any),
-          })
-        );
-        setEmotionalStageAssessment(stages);
-      } catch (error) {
-        console.error(
-          "Failed to fetch employee weighted assessment summary:",
-          error
-        );
-        setEmotionalStageAssessment(null);
-      }
-    };
-
-    fetchData();
-  }, [user?.employee_id, selectedCycle?.cycleId]);
-
-  const stages = emotionalStageAssessment ?? [];
+  const stages: EmotionalStageAssessmentType[] =
+    summary?.stages?.map((stage) => ({
+      stage: stage.stage,
+      score: stage.score,
+      color: getStagePieColor(stage.stage as any),
+    })) ?? [];
   // const maxScore = findMaxByKey(stages, "score");
 
   // Find the stage with the highest score

@@ -27,10 +27,8 @@ export const API_ENDPOINTS = {
         GET_EMPLOYEE_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_assessment_summary`,
         GET_EMPLOYEE_WEIGHTED_ASSESSMENT_SUMMARY: `/api/method/chaturvima_api.api.dashboard.get_employee_weighted_assessment_summary`,
         GET_EMPLOYEE_CYCLE_TRANSITION_LAB: `/api/method/chaturvima_api.api.dashboard.get_employee_cycle_transition_lab`,
-        // Pending cycles with questionnaires for an employee
         GET_EMPLOYEE_CYCLES_WITH_QUESTIONNAIRES: `/api/method/chaturvima_api.api.dashboard.get_employee_cycles_with_questionnaires`,
-        GET_EMPLOYEE_ASSESSMENT_HISTORY: `https://cvdev.m.frappe.cloud/api/method/chaturvima_api.api.dashboard.get_employee_cycle_detailed_dashboard`,
-        // SWOT Analysis by sub-stage name (GET /api/resource/SWOT Analysis/{subStageName})
+        GET_EMPLOYEE_ASSESSMENT_HISTORY: `/api/method/chaturvima_api.api.dashboard.get_employee_cycle_detailed_dashboard`,
         SWOT_ANALYSIS_RESOURCE: `/api/resource/SWOT Analysis`,
     },
 
@@ -47,7 +45,6 @@ export const API_ENDPOINTS = {
         DELETE_DEPARTMENT: `/api/resource/Department`,
 
         CREATE_EMPLOYEE: `/api/method/chaturvima_api.api.user_employee.create_user_and_employee`,
-        // GET_EMPLOYEES: `/api/resource/Employee`,
         GET_EMPLOYEES: `/api/method/chaturvima_api.api.user_employee.get_employee_list`,
         GET_EMPLOYEE_DETAILS: `/api/resource/Employee`,
         EDIT_EMPLOYEE_DETAILS: `/api/resource/Employee`,
@@ -56,7 +53,8 @@ export const API_ENDPOINTS = {
     },
 
     REPORT: {
-        REPORT_GENERATION: `http://16.16.64.172:5000/generate-employee-report`
+        REPORT_GENERATION: `${import.meta.env.VITE_REPORT_BASE_URL}/generate-employee-report`,
+        REPORT_PDF: `${import.meta.env.VITE_REPORT_BASE_URL}`
     },
 
     USER: {

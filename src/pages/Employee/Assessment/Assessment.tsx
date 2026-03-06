@@ -60,7 +60,7 @@ const Assessment = () => {
   const getCycleId = (submissionName: string): string => {
     const parts = submissionName.split('-');
     if (parts.length >= 7) {
-      return `${parts[5]}-${parts[6]}`; // dimension-cycleNumber
+      return `${parts[5]}-${parts[6]}`; // dimension-cycleNumber added
     }
     return '';
   };
