@@ -129,7 +129,10 @@ const TestHistory = () => {
                   Dominant Stage
                 </th>
                 <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                  Completed
+                  Completion Date
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                  Cycle Status
                 </th>
                 <th className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                   Metrics
@@ -177,6 +180,11 @@ const TestHistory = () => {
                         {formatDisplayDate(row.last_submitted_on)}
                       </div>
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <div className="font-semibold text-gray-900">
+                        {row.status}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
@@ -206,7 +214,6 @@ const TestHistory = () => {
                           cycleName={row.assessment_cycle}
                           onSelect={(item) => {
                             console.log('Opening report for:', item.questionnaire, 'with submission ID:', item.submission_id);
-                            // Report will be opened in new tab by the dropdown component
                           }} 
                         />
                       ) : (
@@ -382,15 +389,29 @@ const ReportDropdown = ({ items, employeeId, cycleName, onSelect }: ReportDropdo
           >
             <div className="h-0.5 bg-linear-to-r from-brand-teal via-brand-navy to-brand-teal" />
             <div className="p-1">
-              {items.map((item, index) => (
-                <button
-                  key={`${item.submission_id}-${index}`}
-                  onClick={() => handleSelect({ submission_id: item.submission_id, questionnaire: item.questionnaire })}
-                  className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-brand-teal/10 hover:text-brand-teal"
-                >
-                  {getQuestionnaireDisplayName(item.questionnaire)}
-                </button>
-              ))}
+              {items.map((item, index) => {
+                const isCompleted = item.status === "Completed";
+                
+                return isCompleted ? (
+                  <button
+                    key={`${item.submission_id}-${index}`}
+                    onClick={() => handleSelect({ submission_id: item.submission_id, questionnaire: item.questionnaire })}
+                    className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-brand-teal/10 hover:text-brand-teal"
+                  >
+                    {getQuestionnaireDisplayName(item.questionnaire)}
+                  </button>
+                ) : (
+                  <div
+                    key={`${item.submission_id}-${index}`}
+                    className="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-gray-400 cursor-not-allowed opacity-60"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>{getQuestionnaireDisplayName(item.questionnaire)}</span>
+                      <span className="text-xs text-gray-400">({item.status})</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>

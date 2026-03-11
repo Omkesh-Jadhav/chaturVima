@@ -37,6 +37,7 @@ import {
   submitAssessmentAnswers,
   type EmployeeAssessment,
 } from "../../../api/api-functions/assessment";
+import { reportGenerationBySubmission } from "../../../api/api-functions/reports";
 import type { Question } from "../../../types";
 
 const QUESTIONNAIRE_DISPLAY_NAMES: Record<string, string> = {
@@ -641,7 +642,7 @@ const AssessmentQuestions = () => {
   );
 
   // Handle save
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!selectedQuestionnaire) return;
 
     // Save current page to API
@@ -658,6 +659,20 @@ const AssessmentQuestions = () => {
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), ASSESSMENT_CONFIG.toastDuration);
 
+    // Generate report for the completed questionnaire
+    if (user?.employee_id && selectedCycle?.cycleId && assessmentsByQuestionnaire?.[selectedQuestionnaire]) {
+      const assessment = assessmentsByQuestionnaire[selectedQuestionnaire];
+      if (assessment?.submission_name) {
+        try {
+          console.log('Generating report for:', selectedQuestionnaire, 'with submission ID:', assessment.submission_name);
+          const response = await reportGenerationBySubmission(user.employee_id, selectedCycle.cycleId, assessment.submission_name);
+          console.log('Report generation response:', response);
+        } catch (error) {
+          console.error('Error generating report:', error);
+        }
+      }
+    }
+
     const currentIndex = questionnaires.findIndex((q) => q === selectedQuestionnaire);
     const nextTab = questionnaires[currentIndex + 1];
 
@@ -673,10 +688,13 @@ const AssessmentQuestions = () => {
     currentPage,
     answers,
     user?.email,
+    user?.employee_id,
     selectedQuestionnaire,
     questionnaires,
     submitAssessmentAnswersForQuestionnaire,
     submitCurrentPageAnswers,
+    selectedCycle?.cycleId,
+    assessmentsByQuestionnaire,
   ]);
 
   // Handle submit

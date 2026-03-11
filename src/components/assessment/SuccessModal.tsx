@@ -51,7 +51,7 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [], cycl
     }
   }, [isOpen]);
 
-  // Handle report opening: Call POST API and use report_url from response
+  // Handle report opening: Call API to get report URL and open in new tab
   const handleViewReport = async (questionnaire: Questionnaire) => {
     if (!user?.employee_id) {
       alert('Employee ID not found. Please log in again.');
@@ -70,10 +70,10 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [], cycl
     }
 
     try {
-      // Call POST API to generate report
-      console.log('Generating report for:', questionnaire.name, 'with submission ID:', questionnaire.submission_name);
+      // Call API to get report URL (report should already be generated from Save Progress)
+      console.log('Getting report URL for:', questionnaire.name, 'with submission ID:', questionnaire.submission_name);
       const response = await reportGenerationBySubmission(user.employee_id, cycleId, questionnaire.submission_name);
-      console.log('Report generation response:', response);
+      console.log('Report response:', response);
 
       // Check if response contains report_url
       if (response && response.report_url) {
@@ -87,19 +87,20 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [], cycl
           if (url.protocol === 'http:' || url.protocol === 'https:') {
             window.open(fullReportUrl, '_blank');
           } else {
-            throw new Error('Invalid URL protocol');
+            console.error('Invalid URL protocol:', url.protocol);
+            alert('Invalid report URL. Please try again.');
           }
         } catch (urlError) {
-          console.error('Invalid report URL:', fullReportUrl, urlError);
-          alert('Invalid report URL received from server');
+          console.error('Invalid URL format:', fullReportUrl, urlError);
+          alert('Invalid report URL format. Please try again.');
         }
       } else {
         console.error('No report_url in response:', response);
-        alert('Report URL not found in server response. Please try again.');
+        alert('Report URL not found in response. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to generate report:', error);
-      alert('Failed to generate report. Please try again.');
+      console.error('Error getting report:', error);
+      alert('Failed to get report. Please try again.');
     }
   };
 
