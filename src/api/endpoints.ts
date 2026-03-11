@@ -53,8 +53,10 @@ export const API_ENDPOINTS = {
     },
 
     REPORT: {
-        REPORT_GENERATION: `${import.meta.env.VITE_REPORT_BASE_URL}/generate-employee-report`,
-        REPORT_PDF: `${import.meta.env.VITE_REPORT_BASE_URL}`
+        // REPORT_GENERATION: `${import.meta.env.VITE_REPORT_BASE_URL}/generate-employee-report`,
+        // REPORT_PDF: `${import.meta.env.VITE_REPORT_BASE_URL}`
+        REPORT_GENERATION: `/api/generate-employee-report`,
+        REPORT_PDF: `/api`
     },
 
     USER: {
