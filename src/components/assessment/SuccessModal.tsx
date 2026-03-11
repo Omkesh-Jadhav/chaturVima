@@ -81,14 +81,20 @@ const SuccessModal = ({ isOpen, onClose, onViewReport, questionnaires = [], cycl
         const fullReportUrl = `${API_ENDPOINTS.REPORT.REPORT_PDF}${response.report_url}`;
         console.log('Opening report URL:', fullReportUrl);
         
-        // Validate and open URL in new tab
+        // Open URL in new tab (relative URLs are valid for same-origin requests)
         try {
-          const url = new URL(fullReportUrl);
-          if (url.protocol === 'http:' || url.protocol === 'https:') {
+          // For relative URLs, just open directly without URL validation
+          if (fullReportUrl.startsWith('/')) {
             window.open(fullReportUrl, '_blank');
           } else {
-            console.error('Invalid URL protocol:', url.protocol);
-            alert('Invalid report URL. Please try again.');
+            // For absolute URLs, validate protocol
+            const url = new URL(fullReportUrl);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              window.open(fullReportUrl, '_blank');
+            } else {
+              console.error('Invalid URL protocol:', url.protocol);
+              alert('Invalid report URL. Please try again.');
+            }
           }
         } catch (urlError) {
           console.error('Invalid URL format:', fullReportUrl, urlError);

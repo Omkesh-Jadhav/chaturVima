@@ -315,13 +315,19 @@ const ReportDropdown = ({ items, employeeId, cycleName, onSelect }: ReportDropdo
         const fullReportUrl = `${API_ENDPOINTS.REPORT.REPORT_PDF}${response.report_url}`;
         console.log('Opening report URL:', fullReportUrl);
         
-        // Validate and open URL in new tab
+        // Open URL in new tab (relative URLs are valid for same-origin requests)
         try {
-          const url = new URL(fullReportUrl);
-          if (url.protocol === 'http:' || url.protocol === 'https:') {
+          // For relative URLs, just open directly without URL validation
+          if (fullReportUrl.startsWith('/')) {
             window.open(fullReportUrl, '_blank');
           } else {
-            throw new Error('Invalid URL protocol');
+            // For absolute URLs, validate protocol
+            const url = new URL(fullReportUrl);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              window.open(fullReportUrl, '_blank');
+            } else {
+              throw new Error('Invalid URL protocol');
+            }
           }
         } catch (urlError) {
           console.error('Invalid report URL:', fullReportUrl, urlError);
