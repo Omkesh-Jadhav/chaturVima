@@ -6,7 +6,6 @@ import { getCategoryPalette } from "@/utils/assessmentConfig";
 import { employeeAssessmentHistory } from "@/api/api-functions/employee-dashboard";
 import { reportGenerationBySubmission } from "@/api/api-functions/reports";
 import { useUser } from "@/context/UserContext";
-import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
 import { ChevronDown } from "lucide-react";
 import { API_ENDPOINTS } from "@/api/endpoints";
 
@@ -41,7 +40,6 @@ interface AssessmentHistoryItem {
 
 const TestHistory = () => {
   const { user } = useUser();
-  const { selectedCycle } = useSelectedAssessmentCycle();
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,11 +59,7 @@ const TestHistory = () => {
           setError("Employee ID not found. Please log in again.");
           return;
         }
-        if (!selectedCycle?.cycleId) {
-          setError("No assessment cycle selected. Please select a cycle.");
-          return;
-        }
-        const response = await employeeAssessmentHistory(user.employee_id, selectedCycle.cycleId);
+        const response = await employeeAssessmentHistory(user.employee_id);
         setAssessmentHistory(response.message || []);
       } catch (err) {
         console.error("Failed to fetch assessment history:", err);
@@ -76,7 +70,7 @@ const TestHistory = () => {
     };
 
     fetchAssessmentHistory();
-  }, [user?.employee_id, selectedCycle?.cycleId]);
+  }, [user?.employee_id]);
 
   const getDominantStageScore = (stages: Array<{ stage: string; percentage: number }>, dominantStage: string | null) => {
     if (!dominantStage || !stages.length) return 0;
