@@ -611,6 +611,7 @@ const CycleDrawer = forwardRef<CycleDrawerRef, CycleDrawerProps>(
                     value={form.startDate}
                     onChange={(next) => handleChange("startDate", next)}
                     disabled={isEditDatesOnly}
+                    min={new Date().toISOString().split('T')[0]}
                   />
                   <CalendarInput
                     label="End Date"
