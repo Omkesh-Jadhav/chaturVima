@@ -6,7 +6,7 @@ import { ASSESSMENT_TYPES, STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getCategoryPalette, getStageColor } from "@/utils/assessmentConfig";
 import { useUser } from "@/context/UserContext";
 import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
-import { useEmployeeWeightedSummary } from "@/hooks/useEmployeeWeightedSummary";
+import { useEmployeeAssessmentHistory } from "@/hooks/useEmployeeAssessmentHistory";
 import type { EmotionalIntensityRow } from "@/data/assessmentDashboard";
 
 const CARD_BASE_CLASSES =
@@ -15,15 +15,21 @@ const CARD_BASE_CLASSES =
 const EmotionalIntensityHeatmap = () => {
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
-  const { data: summary } = useEmployeeWeightedSummary(
+  const { data: historyData } = useEmployeeAssessmentHistory(
     user?.employee_id,
     selectedCycle?.cycleId
   );
 
   const emotionalIntensityHeatmap: EmotionalIntensityRow[] = useMemo(() => {
-    if (!summary?.stages?.length) {
-      // Show full UI with 0% when no data
-      return STAGE_ORDER.map((stage) => ({
+    const questionnaireMapping: Record<string, string> = {
+      "Employee Self Assessment": "self",
+      "Manager Relationship Assessment": "boss", 
+      "Department Assessment": "dept",
+      "Company Assessment": "company"
+    };
+
+    if (!historyData?.message?.length) {
+      return STAGE_ORDER.map((stage: string) => ({
         stage,
         values: {
           "Employee Self Assessment": 0,
@@ -34,16 +40,44 @@ const EmotionalIntensityHeatmap = () => {
       }));
     }
 
-    return summary.stages.map((stage) => ({
-      stage: stage.stage,
-      values: {
-        "Employee Self Assessment": stage.percentage,
-        "Manager Relationship Assessment": stage.percentage,
-        "Department Assessment": stage.percentage,
-        "Company Assessment": stage.percentage,
-      },
-    }));
-  }, [summary]);
+    // Get the first cycle data (current cycle)
+    const currentCycle = historyData.message[0];
+    
+    // Create a map of questionnaire -> stages data
+    const questionnaireStagesMap: Record<string, Record<string, number>> = {};
+    
+    // Process each item (questionnaire submission)
+    currentCycle.items?.forEach((item) => {
+      const questionnaireKey = item.questionnaire.toLowerCase();
+      questionnaireStagesMap[questionnaireKey] = {};
+      
+      // Map stages to percentages for this questionnaire
+      item.stages?.forEach((stageData) => {
+        questionnaireStagesMap[questionnaireKey][stageData.stage] = stageData.percentage;
+      });
+    });
+
+    // Build the heatmap data structure
+    return STAGE_ORDER.map((stage: string) => {
+      const values = {
+        "Employee Self Assessment": 0,
+        "Manager Relationship Assessment": 0,
+        "Department Assessment": 0,
+        "Company Assessment": 0,
+      };
+      
+      // For each assessment type, find the corresponding questionnaire data
+      Object.entries(questionnaireMapping).forEach(([assessmentType, questionnaireKey]) => {
+        const stageData = questionnaireStagesMap[questionnaireKey];
+        values[assessmentType as keyof typeof values] = stageData?.[stage] ?? 0;
+      });
+
+      return {
+        stage,
+        values,
+      };
+    });
+  }, [historyData]);
 
   const assessmentTypes = ASSESSMENT_TYPES;
 
@@ -62,18 +96,6 @@ const EmotionalIntensityHeatmap = () => {
       }, {} as Record<string, number>),
     }));
   }, [emotionalIntensityHeatmap, assessmentTypes]);
-
-  // Only show logical outcomes from API; no synthesized or hardcoded text
-  // const logicalOutcomes = useMemo(() => {
-  //   if (!summary?.logical_outcomes?.length) return [];
-  //   return summary.logical_outcomes
-  //     .map((entry) => {
-  //       const [, description] =
-  //         Object.entries(entry).find(([key]) => key !== "sr_no") ?? [];
-  //       return typeof description === "string" ? description : "";
-  //     })
-  //     .filter((text) => text.trim().length > 0);
-  // }, [summary]);
 
   const headerColors: Record<
     string,
@@ -327,39 +349,6 @@ const EmotionalIntensityHeatmap = () => {
           </div>
         </div>
 
-        {/* <div className="mt-4 border-t border-gray-200 pt-4">
-          <div className="rounded-xl bg-linear-to-br from-blue-50 via-indigo-50/30 to-purple-50/20 border-2 border-blue-100/60 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-1 w-8 bg-linear-to-r from-blue-500 to-indigo-500 rounded-full" />
-              <h3 className="text-sm font-bold text-gray-900">
-                Logical Outcomes
-              </h3>
-            </div>
-            <ul className="space-y-2.5">
-              {logicalOutcomes.length === 0 ? (
-                <li className="p-2.5 rounded-lg bg-white/60 border border-gray-200/40 text-sm text-gray-500">
-                  Not Available
-                </li>
-              ) : (
-                logicalOutcomes.map((outcome, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-start gap-3 p-2.5 rounded-lg bg-white/60 border border-gray-200/40 hover:bg-white hover:shadow-sm transition-all"
-                  >
-                    <div className="shrink-0 w-5 h-5 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center mt-0.5 shadow-sm">
-                      <span className="text-[10px] font-bold text-white">
-                        {idx + 1}
-                      </span>
-                    </div>
-                    <span className="text-sm text-gray-800 leading-relaxed flex-1">
-                      {outcome}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div> */}
       </div>
     </AnimatedContainer>
   );
