@@ -1,31 +1,104 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatedContainer, Tooltip } from "@/components/ui";
 import { SectionHeader } from "@/components/assessmentDashboard";
-import { ASSESSMENT_TYPES, STAGE_ORDER } from "@/data/assessmentDashboard";
+import { STAGE_ORDER } from "@/data/assessmentDashboard";
 import { getStageColor } from "@/utils/assessmentConfig";
 import { useUser } from "@/context/UserContext";
 import { useSelectedAssessmentCycle } from "@/context/SelectedAssessmentCycleContext";
-import { useEmployeeWeightedSummary } from "@/hooks/useEmployeeWeightedSummary";
+import { employeeAssessmentHistory } from "@/api/api-functions/employee-dashboard";
 
 const CARD_BASE_CLASSES =
   "group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md";
 
 const STAGES = STAGE_ORDER;
 
+// Assessment type mapping
+const ASSESSMENT_TYPE_MAPPING: Record<string, string> = {
+  "Self": "Employee Self Assessment",
+  "Boss": "Manager Relationship Management", 
+  "Dept": "Department Assessment",
+  "Company": "Company Assessment"
+};
+
+interface SubStage {
+  sub_stage: string;
+  score: number;
+  percentage: number;
+}
+
+interface Stage {
+  stage: string;
+  percentage: number;
+  sub_stages: SubStage[];
+}
+
+interface AssessmentHistoryItem {
+  submission_id: string;
+  questionnaire: string;
+  status: string;
+  last_submitted_on: string;
+  dominant_stage: string;
+  stages: Stage[];
+}
+
+interface AssessmentData {
+  assessment_cycle: string;
+  cycle_name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  last_submitted_on: string;
+  dominant_stage: string;
+  stages: Stage[];
+  items: AssessmentHistoryItem[];
+}
+
+interface SubStageDisplay {
+  id: string;
+  label: string;
+  value: number;
+}
+
+
 const AssessmentTypesSubStagesHeatmap = () => {
   const { user } = useUser();
   const { selectedCycle } = useSelectedAssessmentCycle();
-  const { data: summary } = useEmployeeWeightedSummary(
-    user?.employee_id,
-    selectedCycle?.cycleId
-  );
+  
+  const { data: historyData } = useQuery({
+    queryKey: ['employeeAssessmentHistory', user?.employee_id, selectedCycle?.cycleId],
+    queryFn: () => {
+      if (!user?.employee_id) return Promise.reject('No employee ID');
+      return employeeAssessmentHistory(user.employee_id, selectedCycle?.cycleId);
+    },
+    enabled: !!user?.employee_id && !!selectedCycle?.cycleId,
+  });
+
+  const assessmentData: AssessmentData | undefined = historyData?.message?.[0];
+
+  // Get unique assessment types from API data
+  const availableAssessmentTypes = useMemo(() => {
+    if (!assessmentData?.items) return [];
+    const types = [...new Set(assessmentData.items.map((item: AssessmentHistoryItem) => item.questionnaire))];
+    return types.map((type: string) => ASSESSMENT_TYPE_MAPPING[type] || type);
+  }, [assessmentData]);
 
   const subStagesByStage = useMemo(() => {
+    if (!assessmentData?.items?.length) {
+      return STAGES.map((stage) => ({
+        stage,
+        subStages: [{ id: `${stage}-0`, label: "Not Available", value: 0 }]
+      }));
+    }
+
     return STAGES.map((stage) => {
-      const stageData = summary?.stages?.find((s) => s.stage === stage);
-      const subStages = stageData?.sub_stages?.length
-        ? stageData.sub_stages.map((subStage, index) => ({
+      // Get sub-stages from the first item (they should be consistent across assessment types)
+      const firstItem = assessmentData.items[0];
+      const stageData = firstItem?.stages?.find((s: Stage) => s.stage === stage);
+      
+      const subStages: SubStageDisplay[] = stageData?.sub_stages?.length
+        ? stageData.sub_stages.map((subStage: SubStage, index: number) => ({
             id: `${stage}-${index}`,
             label: subStage.sub_stage,
             value: subStage.percentage,
@@ -33,7 +106,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
         : [{ id: `${stage}-0`, label: "Not Available", value: 0 }];
       return { stage, subStages };
     });
-  }, [summary]);
+  }, [assessmentData]);
 
   // Group stages in pairs for quadrant layout
   const stagePairs = useMemo(() => {
@@ -45,30 +118,33 @@ const AssessmentTypesSubStagesHeatmap = () => {
   }, [subStagesByStage]);
 
   const getSubStageValue = (
-    // assessmentType: string,
+    assessmentType: string,
     stage: string,
-    subStageIndex: number,
-    // totalSubStages: number
+    subStageIndex: number
   ): number => {
-    const stages = summary?.stages ?? [];
-    const stageData = stages.find((s) => s.stage === stage);
+    if (!assessmentData?.items) return 0;
+
+    // Find the original questionnaire type from the mapping
+    const originalType = Object.keys(ASSESSMENT_TYPE_MAPPING).find(
+      key => ASSESSMENT_TYPE_MAPPING[key] === assessmentType
+    );
+    
+    if (!originalType) return 0;
+
+    // Find the assessment item for this type
+    const assessmentItem = assessmentData.items.find(
+      (item: AssessmentHistoryItem) => item.questionnaire === originalType
+    );
+    
+    if (!assessmentItem) return 0;
+
+    const stageData = assessmentItem.stages.find((s: Stage) => s.stage === stage);
     if (!stageData?.sub_stages) return 0;
 
     const subStage = stageData.sub_stages[subStageIndex];
     if (!subStage) return 0;
 
-    // Use percentage directly from API; fall back to proportional score if needed
-    const valueFromPercentage = subStage.percentage;
-
-    if (typeof valueFromPercentage === "number") {
-      return Math.min(100, Math.max(0, Math.round(valueFromPercentage)));
-    }
-
-    const totalScore =
-      stageData.sub_stages.reduce((sum, s) => sum + (s.score || 0), 0) || 1;
-    const proportionalScore = (subStage.score / totalScore) * 100;
-
-    return Math.min(100, Math.max(0, Math.round(proportionalScore)));
+    return Math.min(100, Math.max(0, Math.round(subStage.percentage)));
   };
 
   const headerColors: Record<
@@ -176,7 +252,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
                       <div className="flex items-center justify-start pl-2 text-[10px] font-bold text-gray-700 bg-gray-50 rounded-lg py-2 shrink-0 shadow-sm border border-gray-200">
                         Assessment
                       </div>
-                      {subStages.map((subStage) => (
+                      {subStages.map((subStage: SubStageDisplay) => (
                         <Tooltip
                           key={subStage.id}
                           content={subStage.label}
@@ -201,7 +277,7 @@ const AssessmentTypesSubStagesHeatmap = () => {
 
                   {/* Assessment Type Rows */}
                   <div className="space-y-1.5 overflow-x-auto scrollbar-hide">
-                    {ASSESSMENT_TYPES.map((assessmentType, rowIdx) => {
+                    {availableAssessmentTypes.map((assessmentType, rowIdx) => {
                       return (
                         <motion.div
                           key={assessmentType}
@@ -229,12 +305,11 @@ const AssessmentTypesSubStagesHeatmap = () => {
                             </div>
                           </Tooltip>
 
-                          {subStages.map((subStage, cellIdx) => {
+                          {subStages.map((subStage: SubStageDisplay, cellIdx: number) => {
                             const value = getSubStageValue(
-                              // assessmentType,
+                              assessmentType,
                               stage,
                               cellIdx
-                              // subStages.length
                             );
                             const isZero = value === 0;
 
